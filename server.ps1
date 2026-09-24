@@ -236,9 +236,11 @@ function Get-TtsInstructions([string]$Language, [string]$Pace) {
 }
 
 $OpenAIKey = Get-OpenAIKey
-$TtsModel = 'gpt-4o-mini-tts'
-$TtsCacheDir = Join-Path $Root '.cache\tts'
-if (-not [System.IO.Directory]::Exists($TtsCacheDir)) { [void][System.IO.Directory]::CreateDirectory($TtsCacheDir) }
+$TtsModel = 'gpt-4o-mini-tts-2025-12-15'
+$TtsProfile = 'teacher-v1'
+$SharedTtsDir = Join-Path $Root 'audio\tts'
+$LegacyTtsCacheDir = Join-Path $Root '.cache\tts'
+if (-not [System.IO.Directory]::Exists($SharedTtsDir)) { [void][System.IO.Directory]::CreateDirectory($SharedTtsDir) }
 $HttpClient = [System.Net.Http.HttpClient]::new()
 $HttpClient.Timeout = [TimeSpan]::FromSeconds(45)
 
@@ -249,9 +251,19 @@ function Get-AiSpeechBytes([string]$InputText, [string]$Language, [string]$Voice
   if (@('slow','medium','natural') -notcontains $Pace) { $Pace = 'medium' }
 
   $instructions = Get-TtsInstructions $Language $Pace
-  $cacheKey = Get-Sha256 ($TtsModel + '|' + $Voice + '|' + $Language + '|' + $Pace + '|' + $InputText)
-  $cacheFile = Join-Path $TtsCacheDir ($cacheKey + '.mp3')
-  if ([System.IO.File]::Exists($cacheFile)) { return [System.IO.File]::ReadAllBytes($cacheFile) }
+  $cacheKey = Get-Sha256 ($TtsModel + '|' + $TtsProfile + '|' + $Voice + '|' + $Language + '|' + $Pace + '|' + $InputText)
+  $sharedFile = Join-Path $SharedTtsDir ($cacheKey + '.mp3')
+  if ([System.IO.File]::Exists($sharedFile)) {
+    return [System.IO.File]::ReadAllBytes($sharedFile)
+  }
+
+  # One-time migration path from the old local-only cache.
+  $legacyKey = Get-Sha256 ('gpt-4o-mini-tts' + '|' + $Voice + '|' + $Language + '|' + $Pace + '|' + $InputText)
+  $legacyFile = Join-Path $LegacyTtsCacheDir ($legacyKey + '.mp3')
+  if ([System.IO.File]::Exists($legacyFile)) {
+    [System.IO.File]::Copy($legacyFile, $sharedFile, $true)
+    return [System.IO.File]::ReadAllBytes($sharedFile)
+  }
 
   $payload = @{
     model = $TtsModel
@@ -272,7 +284,9 @@ function Get-AiSpeechBytes([string]$InputText, [string]$Language, [string]$Voice
       $errorText = [System.Text.Encoding]::UTF8.GetString($bytes)
       throw ('OpenAI TTS error ' + [int]$response.StatusCode + ': ' + $errorText)
     }
-    [System.IO.File]::WriteAllBytes($cacheFile, $bytes)
+    # Save directly into the shared static cache. This file can be committed
+    # and reused by every device without another OpenAI request.
+    [System.IO.File]::WriteAllBytes($sharedFile, $bytes)
     return $bytes
   } finally {
     $request.Dispose()
@@ -325,6 +339,7 @@ if ([string]::IsNullOrWhiteSpace($OpenAIKey)) {
   Write-Host 'Run SETUP-AI-VOICE.bat once to enable OpenAI TTS.' -ForegroundColor Yellow
 } else {
   Write-Host ('AI Voice: ENABLED - ' + $TtsModel + ' / English voice: marin') -ForegroundColor Green
+  Write-Host 'Shared audio cache: audio\tts\  (generated once, reusable everywhere)' -ForegroundColor Green
 }
 if ($Lan) {
   if ($MobileUrl) { Write-Host ('Phone (same Wi-Fi): ' + $MobileUrl) -ForegroundColor Green }
@@ -434,6 +449,8 @@ try {
           enabled = -not [string]::IsNullOrWhiteSpace($OpenAIKey)
           provider = if ([string]::IsNullOrWhiteSpace($OpenAIKey)) { 'browser' } else { 'openai' }
           model = $TtsModel
+          profile = $TtsProfile
+          sharedCache = $true
           englishVoice = 'marin'
           japaneseVoice = 'cedar'
           aiGenerated = $true
