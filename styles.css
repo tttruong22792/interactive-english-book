@@ -57,3 +57,61 @@ body{background:var(--bg);color:var(--ink)}
 .settings-card .primary-button{margin-top:auto;align-self:flex-start}
 .data-summary{margin-top:18px}.data-note{padding:14px 16px;background:#f1edff;border:1px solid #d8d0ff;font-size:13px;line-height:1.65}
 @media(max-width:760px){.device-banner{align-items:flex-start;flex-direction:column;padding:23px 20px}.settings-grid{grid-template-columns:1fr}.settings-card{min-height:210px}}
+
+
+/* ===== SECTIONED LESSON BLOCKS ===== */
+.purple-box{
+  margin:14px 0;
+  padding:18px 20px;
+  border:1px solid #b9adff;
+  background:#f0edff;
+  color:#4c4382;
+  line-height:1.7;
+}
+.bad-box{
+  margin:14px 0;
+  padding:18px 20px;
+  border:1px solid #efaaa2;
+  background:#fff0ee;
+  color:#8c2f25;
+  line-height:1.7;
+}
+.meaning-chip-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin:14px 0 18px;
+}
+.meaning-chip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 13px;
+  border:1px solid var(--line);
+  background:#fff;
+}
+.meaning-chip strong{
+  font-size:14px;
+  color:var(--ink);
+}
+.meaning-chip span{
+  font-size:12px;
+  color:var(--muted);
+  text-align:right;
+}
+.book-section code,
+.book-header code{
+  padding:2px 6px;
+  background:#f0edff;
+  border-radius:4px;
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+.book-section .compare-grid > div:not(.head){
+  line-height:1.65;
+}
+@media(max-width:680px){
+  .meaning-chip-grid{grid-template-columns:1fr}
+  .meaning-chip{align-items:flex-start;flex-direction:column}
+  .meaning-chip span{text-align:left}
+}
