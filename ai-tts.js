@@ -13,6 +13,16 @@
 
   function endpoint() { return window.LANGUAGE_STUDIO_TTS_ENDPOINT || "/api/tts"; }
   function statusEndpoint() { return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT || (endpoint() + "/status"); }
+
+  function dynamicAllowed() {
+    if (window.LANGUAGE_STUDIO_TTS_ENDPOINT) return true;
+    var host = String(location.hostname || "").toLowerCase();
+    if (host === "127.0.0.1" || host === "localhost") return true;
+    if (/^192\.168\./.test(host) || /^10\./.test(host)) return true;
+    var m = host.match(/^172\.(\d+)\./);
+    if (m && Number(m[1]) >= 16 && Number(m[1]) <= 31) return true;
+    return false;
+  }
   function detectLanguage(text) { return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text || "")) ? "ja-JP" : "en-US"; }
   function voiceFor(language) { return /^ja/i.test(language || "") ? "cedar" : "marin"; }
 
@@ -75,6 +85,9 @@
   }
 
   async function status(force) {
+    if (!dynamicAllowed()) {
+      return { enabled:false, provider:"static-cache", reason:"static-host", sharedCache:true };
+    }
     var now = Date.now();
     if (!force && statusCache && (now - statusAt) < STATUS_TTL) return statusCache;
     try {
@@ -105,7 +118,13 @@
       return staticBlob;
     }
 
-    // 2) Dynamic backend: only used when the shared cache does not exist.
+    // 2) Dynamic backend: local/private-network only by default.
+    // Public HTTPS hosting never spends OpenAI credits unless a secure endpoint
+    // is explicitly configured in window.LANGUAGE_STUDIO_TTS_ENDPOINT.
+    if (!dynamicAllowed()) {
+      throw new Error("Shared AI audio is not published for this sentence yet.");
+    }
+
     var response = await fetch(endpoint(), {
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
@@ -173,6 +192,7 @@
     stop:stop,
     detectLanguage:detectLanguage,
     voiceFor:voiceFor,
+    dynamicAllowed:dynamicAllowed,
     model:TTS_MODEL,
     profile:TTS_PROFILE,
     staticAudioUrl:staticAudioUrl,
