@@ -12,3 +12,8 @@ tts-cache/
 .DS_Store
 Thumbs.db
 .vscode/settings.local.json
+
+# Local static build output
+dist/
+
+# audio/tts is intentionally tracked as the shared cross-device cache.
