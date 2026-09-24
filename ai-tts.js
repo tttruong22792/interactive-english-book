@@ -80,13 +80,11 @@
   }
 
   function endpoint(){
-    if(window.LANGUAGE_STUDIO_TTS_ENDPOINT) return window.LANGUAGE_STUDIO_TTS_ENDPOINT;
-    return isLocalHost() ? "/api/tts" : CLOUD_TTS_ENDPOINT;
+    return window.LANGUAGE_STUDIO_TTS_ENDPOINT || CLOUD_TTS_ENDPOINT;
   }
 
   function statusEndpoint(){
-    if(window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT) return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT;
-    return isLocalHost() ? endpoint()+"/status" : CLOUD_TTS_ENDPOINT;
+    return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT || endpoint();
   }
 
   function detectLanguage(text){
@@ -125,7 +123,8 @@
 
   function staticAudioUrl(text,language,voice){
     var hash=cacheHash(text,language,voice);
-    return isLocalHost() ? localAudioUrl(hash) : cloudAudioUrl(hash);
+    if(isLocalHost() && knownLocal(hash)===true) return localAudioUrl(hash);
+    return cloudAudioUrl(hash);
   }
 
   function knownLocal(hash){
@@ -220,29 +219,6 @@
     return statusCache;
   }
 
-  async function fetchLocalBlob(text,language,voice){
-    var response=await fetch(endpoint(),{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
-      body:JSON.stringify({
-        input:String(text),
-        language:language,
-        voice:voice,
-        pace:MASTER_PACE,
-        model:TTS_MODEL,
-        profile:TTS_PROFILE
-      })
-    });
-    if(!response.ok){
-      var message="AI voice request failed";
-      try{var data=await response.json();if(data&&data.error)message=data.error;}catch(e){}
-      throw new Error(message);
-    }
-    var blob=await response.blob();
-    if(!blob.size) throw new Error("AI voice returned empty audio");
-    return blob;
-  }
-
   async function ensureCloudAudio(hash){
     var response=await fetch(CLOUD_TTS_ENDPOINT,{
       method:"POST",
@@ -263,19 +239,10 @@
 
   async function speakLocal(text,language,voice,hash,options){
     var known=knownLocal(hash);
-
     if(known===true){
       return playAudioSource(localAudioUrl(hash),text,options,false);
     }
-
-    if(known===null){
-      try{
-        return await playAudioSource(localAudioUrl(hash),text,options,false);
-      }catch(e){}
-    }
-
-    var blob=await fetchLocalBlob(text,language,voice);
-    return playAudioSource(URL.createObjectURL(blob),text,options,true);
+    return speakCloud(text,language,voice,hash,options);
   }
 
   async function speakCloud(text,language,voice,hash,options){
@@ -296,10 +263,7 @@
     var voice=options.voice||voiceFor(language);
     var hash=cacheHash(text,language,voice);
 
-    if(isLocalHost() && !window.LANGUAGE_STUDIO_TTS_ENDPOINT){
-      return speakLocal(text,language,voice,hash,options);
-    }
-
+    if(isLocalHost()) return speakLocal(text,language,voice,hash,options);
     return speakCloud(text,language,voice,hash,options);
   }
 
