@@ -75,3 +75,11 @@ To add another English pattern using the existing renderer, copy the template an
 Progress keys are now scoped by lesson id, so future lessons do not overwrite Pattern 01 progress.
 
 See `CONTENT-SCHEMA.md`.
+
+
+## English content currently available
+
+- Pattern 01 — **I’d like to…**
+- Pattern 02 — **I’m going to…**
+
+Pattern 02 uses the reusable `sectioned-pattern` renderer and keeps its lesson content in `data/english/patterns/002.js`.
