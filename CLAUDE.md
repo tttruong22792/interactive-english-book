@@ -87,3 +87,19 @@ Read `CONTENT-SCHEMA.md` before adding learning content.
 - Pattern 03: `data/english/patterns/003.js`
 
 Patterns 02 and 03 demonstrate the reusable `sectioned-pattern` layout.
+
+
+## AI Voice architecture
+
+- `ai-tts.js` is the browser-side AI audio client.
+- `START-ENGLISH-BOOK.ps1` exposes local `/api/tts` and `/api/tts/status`.
+- OpenAI model: `gpt-4o-mini-tts`.
+- English voice: `marin`.
+- Japanese voice: `cedar`.
+- Local MP3 cache: `.cache/tts/`.
+- Browser SpeechSynthesis is the automatic fallback.
+
+SECURITY RULE:
+Never place `OPENAI_API_KEY` in frontend code, committed files, screenshots, logs, or documentation. The local key belongs only in the ignored `.env.local` file or a secure server environment variable.
+
+For a future hosted/mobile-anywhere version, keep the same frontend contract and point `window.LANGUAGE_STUDIO_TTS_ENDPOINT` at a secure server-side/edge endpoint.
