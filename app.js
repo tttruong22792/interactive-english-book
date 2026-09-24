@@ -65,7 +65,12 @@
   function quizBestFor(id=CORE_LESSON_ID){ return Number(state.quizBestByLesson?.[id] || 0); }
   function quizRunsFor(id=CORE_LESSON_ID){ return Number(state.quizRunsByLesson?.[id] || 0); }
   function lessonPercent(id=CORE_LESSON_ID){
-    return Math.min(100,Math.round(((Math.min(20,learnedCount(id))+Math.min(10,quizBestFor(id)))/30)*100));
+    const lesson=STORE?.get?.(id);
+    const sentenceTotal=lesson?Math.max(1,collectLessonSentences(lesson).length):20;
+    const quizTotal=lesson?Math.max(1,quizItemsFromLessons([lesson]).length):10;
+    const learnedPart=Math.min(sentenceTotal,learnedCount(id))/sentenceTotal;
+    const quizPart=Math.min(quizTotal,quizBestFor(id))/quizTotal;
+    return Math.min(100,Math.round((learnedPart*0.7+quizPart*0.3)*100));
   }
   function savedCount(){ return Object.keys(state.saved || {}).length; }
 
@@ -190,7 +195,8 @@
     if($('#sidebarProgressLabel')) $('#sidebarProgressLabel').textContent=`English · Pattern ${String(meta?.order||1).padStart(2,'0')}`;
     $('#sidebarProgressText').textContent=pct+'%';
     $('#sidebarProgressBar').style.width=pct+'%';
-    $('#sidebarProgressNote').textContent=pct>=100 ? `${meta?.title||'Bài học'} đã hoàn thành` : `${learnedCount(lessonId)}/20 câu đã đánh dấu thuộc`;
+    const sentenceTotal=currentLessonSentenceTotal(lessonId);
+    $('#sidebarProgressNote').textContent=pct>=100 ? `${meta?.title||'Bài học'} đã hoàn thành` : `${Math.min(sentenceTotal,learnedCount(lessonId))}/${sentenceTotal} câu đã đánh dấu thuộc`;
     $('#savedCountBadge').textContent = savedCount();
     $('#globalRateSelect').value = String(state.rate);
     $('#hideViBtn').textContent = state.hideVi ? 'Hiện tiếng Việt' : 'Ẩn tiếng Việt';
@@ -1052,8 +1058,19 @@
 
   async function renderProgress(){
     await ensureCoreEnglish();
-    setHeader('Progress','Tiến độ học'); const pct=lessonPercent();
-    $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PROGRESS</div><h1>Tiến độ Mẫu 01</h1><p>Tiến độ được tính từ 20 câu bạn đánh dấu “đã thuộc” và điểm tốt nhất của bài luyện 10 câu.</p></section><section class="stats-grid"><div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}/20</strong></div><div class="stat-card"><small>Quiz tốt nhất</small><strong>${quizBestFor()}/10</strong></div><div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div><div class="stat-card"><small>Số lượt làm quiz</small><strong>${quizRunsFor()}</strong></div></section><section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div><div class="check-grid">${L.sentences20.map((x,i)=>`<div class="check-row ${state.learned[scopedLearnKey(`s20-${i}`,CORE_LESSON_ID)]?'done':''}"><span>${state.learned[scopedLearnKey(`s20-${i}`,CORE_LESSON_ID)]?'✓':'○'}</span><span>${esc(x[0])}</span></div>`).join('')}</div></section>`;
+    setHeader('Progress','Tiến độ học');
+    const all=collectLessonSentences(L);
+    const quizTotal=quizItemsFromLessons([L]).length;
+    const pct=lessonPercent();
+    $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PROGRESS</div><h1>Tiến độ Mẫu 01</h1><p>Tiến độ dùng toàn bộ câu trong bài và toàn bộ phần luyện Việt → Anh, không còn giới hạn 20/10.</p></section>
+      <section class="stats-grid">
+        <div class="stat-card"><small>Câu đã thuộc</small><strong>${Math.min(all.length,learnedCount())}/${all.length}</strong></div>
+        <div class="stat-card"><small>Quiz tốt nhất</small><strong>${Math.min(quizTotal,quizBestFor())}/${quizTotal}</strong></div>
+        <div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div>
+        <div class="stat-card"><small>Số lượt làm quiz</small><strong>${quizRunsFor()}</strong></div>
+      </section>
+      <section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div>
+      <div class="check-grid">${all.map(x=>{const key=scopedLearnKey(sentenceLearnKey(x.en),CORE_LESSON_ID);const done=!!state.learned[key];return `<div class="check-row ${done?'done':''}"><span>${done?'✓':'○'}</span><span>${esc(x.en)}</span></div>`;}).join('')}</div></section>`;
     bindGenericRoutes();
   }
 
