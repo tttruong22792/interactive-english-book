@@ -1,9 +1,9 @@
-const CACHE='language-studio-v4-pattern-003';
+const CACHE='language-studio-v5-ai-voice';
 const ASSETS=[
   './','./index.html','./styles.css',
   './data/content-index.js','./data/content-loader.js',
   './data/english/patterns/001.js','./data/english/patterns/002.js','./data/english/patterns/003.js','./data/japanese/daily-life/001.js',
-  './platform-data.js','./catalog.js','./app.js',
+  './platform-data.js','./catalog.js','./ai-tts.js','./app.js',
   './manifest.webmanifest','./icons/icon.svg'
 ];
 
