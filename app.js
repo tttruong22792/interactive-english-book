@@ -22,6 +22,7 @@
   let flashIndex = 0;
   let builder = [];
   let installPrompt = null;
+  let aiVoiceBrokenUntil = 0;
 
   function loadState(){
     try {
@@ -456,20 +457,88 @@
     if(/^ja/i.test(lang)) return voices.find(v=>/^ja-JP/i.test(v.lang) && /Nanami|Haruka|Google|Kyoko/i.test(v.name)) || voices.find(v=>/^ja/i.test(v.lang)) || null;
     return voices.find(v=>/^en-US/i.test(v.lang) && /Aria|Jenny|Google|Samantha|Ava/i.test(v.name)) || voices.find(v=>/^en-US/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang)) || null;
   }
-  function stopSpeech(){ if('speechSynthesis' in window) speechSynthesis.cancel(); $$('.speaking').forEach(x=>x.classList.remove('speaking')); $$('.playing').forEach(x=>x.classList.remove('playing')); }
-  function speak(text, highlightEl=null, rate=state.rate){
+  function stopSpeech(){
+    if(window.AITTS) window.AITTS.stop();
+    if('speechSynthesis' in window) speechSynthesis.cancel();
+    $('.speaking').forEach(x=>x.classList.remove('speaking'));
+    $('.playing').forEach(x=>x.classList.remove('playing'));
+  }
+
+  function updateVoiceBadge(mode,detail=''){
+    const badge=$('#voiceModeBadge');
+    if(!badge) return;
+    if(mode==='ai'){
+      badge.textContent='✨ AI-generated voice';
+      badge.classList.add('ai');
+      badge.classList.remove('browser');
+      badge.title=detail || 'Giọng AI được tạo bởi OpenAI TTS, không phải giọng người thật.';
+    }else{
+      badge.textContent='🔊 Browser voice';
+      badge.classList.add('browser');
+      badge.classList.remove('ai');
+      badge.title=detail || 'Đang dùng giọng đọc có sẵn của trình duyệt.';
+    }
+  }
+
+  async function refreshVoiceBadge(force=false){
+    if(!window.AITTS){updateVoiceBadge('browser','AI Voice module chưa tải.');return {enabled:false};}
+    const status=await window.AITTS.status(force);
+    if(status.enabled) updateVoiceBadge('ai',`OpenAI ${status.model||'TTS'} · ${status.englishVoice||'marin'} · AI-generated`);
+    else updateVoiceBadge('browser','Chưa cấu hình OPENAI_API_KEY hoặc AI endpoint chưa hoạt động.');
+
+    const box=$('#aiVoiceStatus');
+    if(box){
+      box.className='ai-voice-status '+(status.enabled?'ready':'fallback');
+      box.innerHTML=status.enabled
+        ? '<strong>AI Voice đã sẵn sàng</strong><span>OpenAI gpt-4o-mini-tts · English: marin · Japanese: cedar</span><small>Giọng nghe là AI-generated, không phải giọng người thật.</small>'
+        : '<strong>Đang dùng Browser Voice</strong><span>Chạy SETUP-AI-VOICE.bat và khởi động lại server để bật AI Voice.</span>';
+    }
+    return status;
+  }
+
+  function browserSpeak(text,highlightEl=null,rate=state.rate){
     return new Promise(resolve=>{
-      if(!('speechSynthesis' in window)){ toast('Trình duyệt này không hỗ trợ đọc văn bản.'); resolve(); return; }
-      stopSpeech();
-      const u=new SpeechSynthesisUtterance(text); const lang=detectSpeechLang(text); u.lang=lang; u.rate=Number(rate)||.88; const v=bestVoice(lang); if(v) u.voice=v;
-      const card=highlightEl?.closest?.('[data-sentence-card]'); if(card) card.classList.add('playing');
+      if(!('speechSynthesis' in window)){toast('Trình duyệt này không hỗ trợ đọc văn bản.');resolve();return;}
+      const u=new SpeechSynthesisUtterance(text);
+      const lang=detectSpeechLang(text);
+      u.lang=lang;
+      u.rate=Number(rate)||.88;
+      const v=bestVoice(lang);
+      if(v) u.voice=v;
+      const card=highlightEl?.closest?.('[data-sentence-card]');
+      if(card) card.classList.add('playing');
       u.onboundary=e=>{
         if(!highlightEl || typeof e.charIndex!=='number') return;
-        $$('.word-token',highlightEl).forEach(w=>{const a=+w.dataset.start,b=+w.dataset.end;w.classList.toggle('speaking',e.charIndex>=a && e.charIndex<b);});
+        $('.word-token',highlightEl).forEach(w=>{const a=+w.dataset.start,b=+w.dataset.end;w.classList.toggle('speaking',e.charIndex>=a&&e.charIndex<b);});
       };
-      const done=()=>{if(highlightEl) $$('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking')); if(card) card.classList.remove('playing'); resolve();};
-      u.onend=done; u.onerror=done; speechSynthesis.speak(u);
+      const done=()=>{if(highlightEl) $('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking'));if(card) card.classList.remove('playing');resolve();};
+      u.onend=done;u.onerror=done;speechSynthesis.speak(u);
     });
+  }
+
+  async function speak(text,highlightEl=null,rate=state.rate){
+    stopSpeech();
+    const card=highlightEl?.closest?.('[data-sentence-card]');
+    if(card) card.classList.add('playing');
+
+    if(window.AITTS && Date.now()>=aiVoiceBrokenUntil){
+      try{
+        const status=await window.AITTS.status();
+        if(status.enabled){
+          updateVoiceBadge('ai',`OpenAI ${status.model||'TTS'} · AI-generated voice`);
+          await window.AITTS.speak(text,{rate,language:detectSpeechLang(text),highlightEl});
+          if(card) card.classList.remove('playing');
+          return;
+        }
+      }catch(error){
+        console.warn('AI Voice fallback:',error);
+        aiVoiceBrokenUntil=Date.now()+60000;
+        updateVoiceBadge('browser','AI Voice tạm thời lỗi; đang dùng giọng trình duyệt.');
+      }
+    }
+
+    if(card) card.classList.remove('playing');
+    return browserSpeak(text,highlightEl,rate);
   }
   async function speakSequence(items){ for(const item of items){ await speak(item[0],item[1]||null); await wait(180); } }
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -621,6 +690,18 @@
         </article>
       </section>
 
+      <section class="book-section ai-voice-panel">
+        <div class="section-title-row">
+          <div>
+            <h2>✨ AI Voice</h2>
+            <p>Ưu tiên giọng OpenAI tự nhiên; nếu API không sẵn sàng, app tự chuyển về Browser Voice.</p>
+          </div>
+          <button id="testAiVoiceBtn" class="primary-button">Nghe thử</button>
+        </div>
+        <div id="aiVoiceStatus" class="ai-voice-status"><strong>Đang kiểm tra…</strong></div>
+        <div class="data-note"><b>Bảo mật:</b> API key không được đặt trong JavaScript hoặc GitHub. Key chỉ nằm trong <code>.env.local</code> trên máy chạy server. Giọng AI được phát là giọng tổng hợp bởi AI, không phải giọng người thật.</div>
+      </section>
+
       <section class="book-section data-summary">
         <div class="section-title-row"><div><h2>Dữ liệu hiện tại trên thiết bị này</h2><p>Không gửi lên server ở phiên bản hiện tại.</p></div></div>
         <div class="stats-grid">
@@ -638,6 +719,8 @@
     $('#importDataFile').onchange=e=>{const file=e.target.files?.[0];if(file) importLearningData(file);e.target.value='';};
     $('#shareAppBtn').onclick=shareCurrentPage;
     $('#installAppBtn').onclick=installApp;
+    $('#testAiVoiceBtn').onclick=()=>speak("I'm going to study English tonight.");
+    refreshVoiceBadge(true);
   }
 
   function exportLearningData(){
@@ -789,5 +872,6 @@
   window.addEventListener('appinstalled',()=>{installPrompt=null;toast('Language Studio đã được cài.');});
   if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  refreshVoiceBadge();
   if(!location.hash) location.hash='#home'; else render();
 })();
