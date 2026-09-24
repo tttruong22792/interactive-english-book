@@ -171,7 +171,7 @@ $OpenAIKey = Get-OpenAIKey
 $TtsModel = 'gpt-4o-mini-tts'
 $TtsCacheDir = Join-Path $Root '.cache\tts'
 if (-not [System.IO.Directory]::Exists($TtsCacheDir)) { [void][System.IO.Directory]::CreateDirectory($TtsCacheDir) }
-$HttpClient = New-Object System.Net.Http.HttpClient
+$HttpClient = [System.Net.Http.HttpClient]::new()
 $HttpClient.Timeout = [TimeSpan]::FromSeconds(45)
 
 function Get-AiSpeechBytes([string]$InputText, [string]$Language, [string]$Voice, [string]$Pace) {
@@ -193,9 +193,9 @@ function Get-AiSpeechBytes([string]$InputText, [string]$Language, [string]$Voice
     response_format = 'mp3'
   } | ConvertTo-Json -Depth 6 -Compress
 
-  $request = New-Object System.Net.Http.HttpRequestMessage([System.Net.Http.HttpMethod]::Post, 'https://api.openai.com/v1/audio/speech')
-  $request.Headers.Authorization = New-Object System.Net.Http.Headers.AuthenticationHeaderValue('Bearer', $OpenAIKey)
-  $request.Content = New-Object System.Net.Http.StringContent($payload, [System.Text.Encoding]::UTF8, 'application/json')
+  $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Post, [System.Uri]'https://api.openai.com/v1/audio/speech')
+  $request.Headers.Authorization = [System.Net.Http.Headers.AuthenticationHeaderValue]::new('Bearer', $OpenAIKey)
+  $request.Content = [System.Net.Http.StringContent]::new($payload, [System.Text.Encoding]::UTF8, 'application/json')
 
   try {
     $response = $HttpClient.SendAsync($request).GetAwaiter().GetResult()
