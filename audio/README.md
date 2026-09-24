@@ -1,22 +1,14 @@
-# Shared AI audio cache
+# Legacy audio directory
 
-Files in this folder are intentionally tracked by Git.
+Language Studio audio is now stored centrally in Supabase Storage:
 
-Cache key:
+```text
+bucket: language-studio-audio
+path:   tts/<hash>.mp3
+```
 
-SHA256(model | profile | voice | language | pace | exact text)
+The old GitHub-tracked MP3 files were migrated to Supabase and removed from the repository.
 
-Current profile:
-- model: gpt-4o-mini-tts-2025-12-15
-- profile: teacher-v1
-- English voice: marin
-- Japanese voice: cedar
+This directory remains only as a compatibility placeholder for older local scripts.
 
-Behavior:
-1. Browser checks this static folder first.
-2. If a matching MP3 exists, it is reused with zero OpenAI request.
-3. On the local Windows server, a cache miss calls OpenAI once and writes the MP3 here.
-4. Run PUBLISH-AUDIO-CACHE.bat to push newly generated MP3s to GitHub.
-5. Public static hosting uses these MP3s. If a sentence has not been published, it falls back to browser TTS instead of spending OpenAI credits.
-
-Do not put API keys or other secrets in this folder.
+Do not commit API keys or new MP3 files here.
