@@ -79,3 +79,11 @@ Copy the correct template, add the lesson data file, then add metadata to the co
 Progress is lesson-scoped. Preserve stable content IDs so saved progress continues to map correctly.
 
 Read `CONTENT-SCHEMA.md` before adding learning content.
+
+
+## Current English pattern references
+- Pattern 01: `data/english/patterns/001.js`
+- Pattern 02: `data/english/patterns/002.js`
+- Pattern 03: `data/english/patterns/003.js`
+
+Patterns 02 and 03 demonstrate the reusable `sectioned-pattern` layout.
