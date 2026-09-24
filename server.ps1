@@ -341,10 +341,22 @@ try { Start-Process $Url } catch { Write-Host ('Open this address manually: ' + 
 try {
   while ($true) {
     $client = $listener.AcceptTcpClient()
-    $client.ReceiveTimeout = if ($Lan) { 1500 } else { 300 }
     $stream = $null
     try {
       $stream = $client.GetStream()
+
+      # Chrome may open speculative TCP connections that never send an HTTP request.
+      # Do not let one empty connection block this single-threaded local server.
+      $waitMs = if ($Lan) { 1500 } else { 500 }
+      $waited = 0
+      while (-not $stream.DataAvailable -and $waited -lt $waitMs) {
+        Start-Sleep -Milliseconds 10
+        $waited += 10
+      }
+      if (-not $stream.DataAvailable) {
+        continue
+      }
+
       $request = Read-HttpRequest $stream
       $method = $request.Method
       $rawTarget = [string]$request.Target
@@ -433,7 +445,10 @@ try {
           Send-Response $stream 500 'Internal Server Error' $body 'text/plain; charset=utf-8'
         } catch {}
       }
-      Write-Host $_.Exception.Message -ForegroundColor DarkYellow
+      $msg = $_.Exception.Message
+      if ($msg -notmatch 'transport connection|timed out|failed to respond') {
+        Write-Host $msg -ForegroundColor DarkYellow
+      }
     } finally {
       if ($stream) { $stream.Dispose() }
       $client.Close()
