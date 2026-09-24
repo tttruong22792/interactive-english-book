@@ -10,7 +10,7 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
   "title": "I hope to…",
   "meaning": "Tôi hy vọng sẽ… / Tôi mong có thể…",
   "description": "Dùng để nói về mong muốn trong tương lai khi kết quả chưa chắc chắn 100%.",
-  "sourceVersion": 1,
+  "sourceVersion": 2,
   "ui": {
     "eyebrow": "MẪU CÂU SỐ 5",
     "meaningTitle": "“Tôi hy vọng sẽ…” — mong một điều xảy ra trong tương lai nhưng chưa chắc chắn hoàn toàn",
@@ -21,16 +21,16 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
   },
   "introExamples": [
     [
-      "I hope to see you again.",
-      "Tôi hy vọng sẽ gặp lại bạn."
+      "I hope to spend more time with my family.",
+      "Tôi hy vọng có thể dành nhiều thời gian hơn cho gia đình."
     ],
     [
-      "I hope to improve my English.",
-      "Tôi hy vọng sẽ cải thiện tiếng Anh."
+      "I hope to improve my English over the next few months.",
+      "Tôi hy vọng sẽ cải thiện tiếng Anh trong vài tháng tới."
     ],
     [
-      "I hope to finish everything today.",
-      "Tôi hy vọng sẽ hoàn thành mọi thứ hôm nay."
+      "I hope to hear from you soon.",
+      "Tôi hy vọng sẽ sớm nhận được tin từ bạn."
     ]
   ],
   "sections": [
@@ -351,21 +351,8 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
           "type": "compare",
           "leftTitle": "I want to…",
           "rightTitle": "I hope to…",
-          "leftHtml": "Tôi muốn… — bạn đang nói về mong muốn của mình.",
-          "rightHtml": "Tôi hy vọng sẽ… — bạn muốn điều đó xảy ra, nhưng không hoàn toàn kiểm soát được kết quả."
-        },
-        {
-          "type": "sentences",
-          "items": [
-            [
-              "I want to change jobs.",
-              "Tôi muốn đổi việc."
-            ],
-            [
-              "I hope to find a better job.",
-              "Tôi hy vọng sẽ tìm được một công việc tốt hơn."
-            ]
-          ]
+          "leftHtml": "Tôi muốn… — bạn đang nói về mong muốn của mình.<br><br><b>I want to change jobs.</b><br>Tôi muốn đổi việc.",
+          "rightHtml": "Tôi hy vọng sẽ… — bạn muốn điều đó xảy ra, nhưng không hoàn toàn kiểm soát được kết quả.<br><br><b>I hope to find a better job.</b><br>Tôi hy vọng sẽ tìm được một công việc tốt hơn."
         }
       ]
     },
@@ -377,30 +364,13 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
           "type": "compare",
           "leftTitle": "I plan to…",
           "rightTitle": "I hope to…",
-          "leftHtml": "Có kế hoạch cụ thể hơn.",
-          "rightHtml": "Chưa chắc chắn bằng; kết quả còn phụ thuộc vào hoàn cảnh."
-        },
-        {
-          "type": "sentences",
-          "items": [
-            [
-              "I plan to take the exam next year.",
-              "Tôi dự định thi vào năm sau."
-            ],
-            [
-              "I hope to pass the exam next year.",
-              "Tôi hy vọng sẽ đỗ kỳ thi vào năm sau."
-            ],
-            [
-              "I plan to take the exam next year, and I hope to pass it on my first try.",
-              "Tôi dự định thi vào năm sau và hy vọng sẽ đỗ ngay lần đầu."
-            ]
-          ]
+          "leftHtml": "Có kế hoạch cụ thể hơn.<br><br><b>I plan to take the exam next year.</b><br>Tôi dự định thi vào năm sau.",
+          "rightHtml": "Chưa chắc chắn bằng.<br><br><b>I hope to pass the exam next year.</b><br>Tôi hy vọng sẽ đỗ kỳ thi vào năm sau."
         },
         {
           "type": "callout",
           "tone": "green",
-          "html": "Hai mẫu có thể đi cùng nhau rất tự nhiên. Đây là kiểu kết hợp mẫu câu cần luyện dần."
+          "html": "Hai mẫu có thể đi cùng nhau rất tự nhiên:<br><br><b>I plan to take the exam next year, and I hope to pass it on my first try.</b><br>→ Tôi dự định thi vào năm sau và hy vọng sẽ đỗ ngay lần đầu."
         }
       ]
     },
@@ -425,31 +395,20 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
               "Tôi hy vọng bạn sớm khỏe hơn."
             ],
             [
-              "I hope they can fix it.",
-              "Tôi hy vọng họ có thể sửa được nó."
-            ],
-            [
-              "I hope it works.",
-              "Tôi hy vọng nó hoạt động."
-            ],
-            [
-              "I hope we can meet again.",
-              "Tôi hy vọng chúng ta có thể gặp lại nhau."
-            ],
-            [
-              "I hope to see you again.",
-              "Chủ thể thực hiện hành động là I."
-            ],
-            [
               "I hope you can come.",
-              "Người thực hiện hành động là you."
+              "Tôi hy vọng bạn có thể đến."
             ]
           ]
         },
         {
           "type": "callout",
+          "tone": "purple",
+          "html": "Các ví dụ khác rất thường gặp:<br><b>I hope they can fix it.</b> → Tôi hy vọng họ có thể sửa được nó.<br><b>I hope it works.</b> → Tôi hy vọng nó hoạt động.<br><b>I hope we can meet again.</b> → Tôi hy vọng chúng ta có thể gặp lại nhau."
+        },
+        {
+          "type": "callout",
           "tone": "amber",
-          "html": "Không nói: <b>❌ I hope to you come.</b><br>Nếu người thực hiện hành động là một chủ ngữ khác, dùng <b>I hope + chủ ngữ + động từ</b>."
+          "html": "<b>I hope to see you again.</b>: chủ thể thực hiện hành động là <b>I</b>.<br><b>I hope you can come.</b>: người thực hiện hành động là <b>you</b>.<br><br>Không nói: <b>❌ I hope to you come.</b>"
         }
       ]
     },
@@ -470,23 +429,15 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
               "Tôi hy vọng sẽ không mắc lại lỗi tương tự."
             ],
             [
-              "I hope not to be late.",
-              "Tôi hy vọng sẽ không bị muộn."
-            ],
-            [
               "I hope I don’t forget anything.",
               "Tôi hy vọng mình không quên gì."
-            ],
-            [
-              "I hope I don’t have to work this weekend.",
-              "Tôi hy vọng cuối tuần này mình không phải làm việc."
             ]
           ]
         },
         {
           "type": "callout",
           "tone": "purple",
-          "html": "<b>I hope not to + V</b> dùng được, nhưng trong nhiều tình huống người bản xứ thường chọn <b>I hope I don’t…</b> tự nhiên hơn."
+          "html": "<b>I hope not to + V</b> dùng được, nhưng nhiều tình huống tự nhiên hơn với <b>I hope I don’t…</b><br><br><b>I hope not to be late.</b> → Tôi hy vọng sẽ không bị muộn.<br><b>I hope I don’t have to work this weekend.</b> → Tôi hy vọng cuối tuần này mình không phải làm việc."
         }
       ]
     },
@@ -498,14 +449,6 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
           "type": "sentences",
           "items": [
             [
-              "I hope to hear from you soon.",
-              "Tôi hy vọng sớm nhận được phản hồi từ bạn."
-            ],
-            [
-              "I hope to get the chance to work with you again.",
-              "Tôi hy vọng có cơ hội được làm việc với bạn lần nữa."
-            ],
-            [
               "I hope to be able to speak English comfortably someday.",
               "Tôi hy vọng một ngày nào đó có thể nói tiếng Anh một cách thoải mái."
             ]
@@ -516,11 +459,15 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
           "items": [
             [
               "I hope to hear from you soon.",
-              "Câu rất phổ biến trong email và giao tiếp công việc."
+              "Tôi hy vọng sớm nhận được phản hồi từ bạn — rất phổ biến trong email và công việc."
             ],
             [
               "I hope to get the chance to…",
               "Tôi hy vọng có cơ hội để…"
+            ],
+            [
+              "I hope to get the chance to work with you again.",
+              "Tôi hy vọng có cơ hội được làm việc với bạn lần nữa."
             ],
             [
               "I hope to be able to…",
@@ -531,7 +478,7 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
         {
           "type": "callout",
           "tone": "green",
-          "html": "<b>I hope to be able to...</b> rất hữu ích khi bạn muốn nói: “Tôi hy vọng sau này mình có khả năng/cơ hội làm được việc đó.”"
+          "html": "<b>I hope to be able to...</b> rất hữu ích khi bạn muốn nói rằng mình hy vọng sau này có khả năng hoặc cơ hội làm được việc đó."
         }
       ]
     },
@@ -541,52 +488,12 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
       "blocks": [
         {
           "type": "paragraph",
-          "html": "<p>Thử tự nói các câu tiếng Anh trước khi nhìn đáp án. Các câu này cũng được đưa vào phần <b>Luyện toàn bộ câu</b>.</p>"
+          "html": "<p>Thử tự nói trước khi nhìn đáp án:</p>\n    <ol>\n      <li>Tôi hy vọng sẽ cải thiện tiếng Anh.</li>\n      <li>Tôi hy vọng sẽ sớm giải quyết được vấn đề.</li>\n      <li>Tôi hy vọng sẽ tìm được một cơ hội tốt hơn.</li>\n      <li>Tôi hy vọng có thể dành nhiều thời gian hơn cho gia đình.</li>\n      <li>Tôi hy vọng sẽ có thêm kinh nghiệm thực tế.</li>\n      <li>Tôi hy vọng sẽ tận dụng tốt cơ hội này.</li>\n      <li>Tôi hy vọng sẽ trả hết khoản vay sớm.</li>\n      <li>Tôi hy vọng sẽ sớm nhận được tin từ bạn.</li>\n      <li>Tôi hy vọng sẽ trở nên tự tin hơn.</li>\n      <li>Tôi hy vọng sẽ không mắc lại lỗi tương tự.</li>\n    </ol>"
         },
         {
-          "type": "sentences",
-          "items": [
-            [
-              "I hope to improve my English.",
-              "Tôi hy vọng sẽ cải thiện tiếng Anh."
-            ],
-            [
-              "I hope to resolve the issue soon.",
-              "Tôi hy vọng sẽ sớm giải quyết được vấn đề."
-            ],
-            [
-              "I hope to find a better opportunity.",
-              "Tôi hy vọng sẽ tìm được một cơ hội tốt hơn."
-            ],
-            [
-              "I hope to spend more time with my family.",
-              "Tôi hy vọng có thể dành nhiều thời gian hơn cho gia đình."
-            ],
-            [
-              "I hope to gain more hands-on experience.",
-              "Tôi hy vọng sẽ có thêm kinh nghiệm thực tế."
-            ],
-            [
-              "I hope to make the most of this opportunity.",
-              "Tôi hy vọng sẽ tận dụng tốt cơ hội này."
-            ],
-            [
-              "I hope to pay off the loan early.",
-              "Tôi hy vọng sẽ trả hết khoản vay sớm."
-            ],
-            [
-              "I hope to hear from you soon.",
-              "Tôi hy vọng sẽ sớm nhận được tin từ bạn."
-            ],
-            [
-              "I hope to become more confident.",
-              "Tôi hy vọng sẽ trở nên tự tin hơn."
-            ],
-            [
-              "I hope not to make the same mistake again.",
-              "Tôi hy vọng sẽ không mắc lại lỗi tương tự."
-            ]
-          ]
+          "type": "callout",
+          "tone": "green",
+          "html": "<b>Đáp án gợi ý</b><br><br>\n    I hope to improve my English.<br>\n    I hope to resolve the issue soon.<br>\n    I hope to find a better opportunity.<br>\n    I hope to spend more time with my family.<br>\n    I hope to gain more hands-on experience.<br>\n    I hope to make the most of this opportunity.<br>\n    I hope to pay off the loan early.<br>\n    I hope to hear from you soon.<br>\n    I hope to become more confident.<br>\n    I hope not to make the same mistake again."
         }
       ]
     },
@@ -620,29 +527,13 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
           ]
         },
         {
-          "type": "sentences",
-          "items": [
-            [
-              "I want to improve my English.",
-              "Tôi muốn cải thiện tiếng Anh."
-            ],
-            [
-              "I plan to practice every day.",
-              "Tôi dự định luyện mỗi ngày."
-            ],
-            [
-              "I’m going to study for 30 minutes tonight.",
-              "Tối nay tôi sẽ học 30 phút."
-            ],
-            [
-              "I hope to become more confident over the next few months.",
-              "Tôi hy vọng sẽ trở nên tự tin hơn trong vài tháng tới."
-            ]
-          ]
+          "type": "callout",
+          "tone": "green",
+          "html": "<b>I want to improve my English.</b><br>Tôi muốn cải thiện tiếng Anh.<br><br>\n    <b>I plan to practice every day.</b><br>Tôi dự định luyện mỗi ngày.<br><br>\n    <b>I’m going to study for 30 minutes tonight.</b><br>Tối nay tôi sẽ học 30 phút.<br><br>\n    <b>I hope to become more confident over the next few months.</b><br>Tôi hy vọng sẽ trở nên tự tin hơn trong vài tháng tới."
         },
         {
           "type": "callout",
-          "tone": "green",
+          "tone": "purple",
           "html": "Từ mẫu này trở đi, mỗi bài sẽ tiếp tục đưa thêm phrasal verbs, collocations và từ vựng trung cấp thường dùng, nhưng vẫn ưu tiên câu thực tế cho đời sống và công việc."
         }
       ]
