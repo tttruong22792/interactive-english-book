@@ -427,11 +427,9 @@
   function lessonActionPanel(id){
     const all=collectLessonSentences(L);
     const quizCount=quizItemsFromLessons([L]).length;
-    return `<section class="lesson-action-panel">
+    return `<div class="lesson-action-panel lesson-action-panel-top">
       <div class="lesson-action-copy">
-        <div class="eyebrow">HỌC & LUYỆN TOÀN BỘ BÀI</div>
-        <h2>Chuyển sang chế độ riêng để học tập trung</h2>
-        <p>Trang bài học chính không hiển thị toàn bộ danh sách dài nữa. Chọn một trong hai chế độ dưới đây.</p>
+        <h2>HỌC & LUYỆN TOÀN BỘ BÀI</h2>
       </div>
       <div class="lesson-action-buttons">
         <button class="lesson-action-card" data-go="lesson/${id}/sentences">
@@ -445,7 +443,7 @@
           <b>→</b>
         </button>
       </div>
-    </section>`;
+    </div>`;
   }
 
   function renderLessonSentencesPage(id,meta,lesson){
@@ -500,6 +498,7 @@
       <article class="book-header">
         <div class="eyebrow">${esc(u.eyebrow||'ENGLISH PATTERN')}</div><h1>${esc(L.title||'')}</h1>
         <div class="meaning">${esc(u.meaningTitle||L.meaning||'')}</div>
+        ${lessonActionPanel(L.order||1)}
         ${u.leadHtml?`<div class="lead-box">${u.leadHtml}</div>`:''}
         ${u.formula?`<h3>Công thức</h3><div class="formula-box">${esc(u.formula)}</div>`:''}
         <div class="sentence-list">${(L.introExamples||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
@@ -522,8 +521,6 @@
         ${c.homeLabel?`<p>${esc(c.homeLabel)}</p>`:''}${maybeSentence(c.homeSentence)}
         ${c.publicLabel?`<p>${esc(c.publicLabel)}</p>`:''}${maybeSentence(c.publicSentence)}
         ${c.noteHtml?`<div class="amber-box">${c.noteHtml}</div>`:''}</section>`:''}
-
-      ${lessonActionPanel(L.order||1)}
 
       <section class="book-section"><h2>${esc(w.title||'Trong công việc')}</h2>${w.intro?`<p>${esc(w.intro)}</p>`:''}
         <div class="sentence-list">${(L.work||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
@@ -559,6 +556,7 @@
         <div class="eyebrow">${esc(u.eyebrow||'ENGLISH PATTERN')}</div>
         <h1>${esc(L.title||'')}</h1>
         <div class="meaning">${esc(u.meaningTitle||L.meaning||'')}</div>
+        ${lessonActionPanel(L.order||1)}
         ${u.leadHtml?`<div class="lead-box">${u.leadHtml}</div>`:''}
         ${u.formula?`<h3>Công thức</h3><div class="formula-box">${esc(u.formula)}</div>`:''}
         <div class="sentence-list">${(L.introExamples||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
@@ -574,8 +572,7 @@
     const hasLearnable=(section.blocks||[]).some(block=>block?.type==='sentences'&&block.learnable);
     const hasQuiz=(section.blocks||[]).some(block=>block?.type==='quiz');
 
-    if(hasLearnable) return lessonActionPanel(L.order||1);
-    if(hasQuiz) return '';
+    if(hasLearnable || hasQuiz) return '';
 
     return `<section class="book-section" id="${id}">
       <h2>${section.title||''}</h2>
