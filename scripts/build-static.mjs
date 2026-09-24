@@ -46,7 +46,18 @@ const runtimeFiles = [
 ];
 
 const uniqueFiles = [...new Set(runtimeFiles)];
-const runtimeParts = ["window.__LS_RUNTIME_STARTED = true;"];
+const audioHashes = [];
+if (await exists(join(root, "audio/tts"))) {
+  const { readdir } = await import("node:fs/promises");
+  for (const name of await readdir(join(root, "audio/tts"))) {
+    if (name.endsWith(".mp3")) audioHashes.push(name.slice(0, -4));
+  }
+}
+
+const runtimeParts = [
+  "window.__LS_RUNTIME_STARTED = true;",
+  "window.LS_AUDIO_CACHE = new Set(" + JSON.stringify(audioHashes) + ");"
+];
 
 for (const relative of uniqueFiles) {
   const source = await readFile(join(root, relative), "utf8");
