@@ -460,8 +460,8 @@
   function stopSpeech(){
     if(window.AITTS) window.AITTS.stop();
     if('speechSynthesis' in window) speechSynthesis.cancel();
-    $('.speaking').forEach(x=>x.classList.remove('speaking'));
-    $('.playing').forEach(x=>x.classList.remove('playing'));
+    $$('.speaking').forEach(x=>x.classList.remove('speaking'));
+    $$('.playing').forEach(x=>x.classList.remove('playing'));
   }
 
   function browserSpeak(text,highlightEl=null,rate=state.rate){
@@ -477,10 +477,10 @@
       if(card) card.classList.add('playing');
       u.onboundary=e=>{
         if(!highlightEl || typeof e.charIndex!=='number') return;
-        $('.word-token',highlightEl).forEach(w=>{const a=+w.dataset.start,b=+w.dataset.end;w.classList.toggle('speaking',e.charIndex>=a && e.charIndex<b);});
+        $$('.word-token',highlightEl).forEach(w=>{const a=+w.dataset.start,b=+w.dataset.end;w.classList.toggle('speaking',e.charIndex>=a && e.charIndex<b);});
       };
       const done=()=>{
-        if(highlightEl) $('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking'));
+        if(highlightEl) $$('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking'));
         if(card) card.classList.remove('playing');
         resolve();
       };
