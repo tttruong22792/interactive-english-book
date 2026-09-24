@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  window.__LS_APP_LOADED = true;
   let L = null;
   const CATALOG = window.PATTERN_CATALOG || [];
   const PLATFORM = window.PLATFORM_DATA || {};
@@ -125,6 +126,7 @@
     updateGlobalUI();
     $('#mainView').focus({preventScroll:true});
     window.scrollTo({top:0, behavior:'instant'});
+    window.__LS_RENDERED = true;
   }
 
   async function ensureContent(id){
@@ -871,7 +873,14 @@
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
   window.addEventListener('appinstalled',()=>{installPrompt=null;toast('Language Studio đã được cài.');});
   if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
-  if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  if('serviceWorker' in navigator){
+    if(location.protocol==='https:'){
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }else if(location.hostname==='127.0.0.1' || location.hostname==='localhost'){
+      navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>reg.unregister())).catch(()=>{});
+      if('caches' in window) caches.keys().then(keys=>keys.forEach(key=>caches.delete(key))).catch(()=>{});
+    }
+  }
   refreshVoiceBadge();
   if(!location.hash) location.hash='#home'; else render();
 })();
