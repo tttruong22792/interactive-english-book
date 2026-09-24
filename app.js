@@ -609,7 +609,16 @@
     }
 
     if(type==='chips'){
-      return `<div class="meaning-chip-grid">${(block.items||[]).map(x=>`<div class="meaning-chip"><strong>${esc(x[0])}</strong><span data-vi-only>${esc(x[1]||'')}</span></div>`).join('')}</div>`;
+      return `<div class="meaning-chip-grid">${(block.items||[]).map(x=>{
+        const phrase=String(x[0]||'');
+        return `<div class="meaning-chip">
+          <div class="meaning-chip-main">
+            <button class="speaker chip-speaker" data-speak="${escAttr(phrase)}" aria-label="Nghe cụm từ" title="Nghe cụm từ">🔊</button>
+            <strong class="english-text chip-english" data-en="${escAttr(phrase)}"></strong>
+          </div>
+          <span data-vi-only>${esc(x[1]||'')}</span>
+        </div>`;
+      }).join('')}</div>`;
     }
 
     if(type==='compare'){
@@ -1253,11 +1262,13 @@
     const normalized=normalizeText(term);
     if(!L) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ điển bài học chưa được tải.',example:'',type:'word'};
     if(type==='phrase' || normalized.includes(' ')){
-      const p=L.phrases[normalized]; if(p) return {key:'p:'+normalized,term,ipa:p[0],meaning:p[1],example:p[2],type:'phrase'};
+      const p=(L.phrases&&L.phrases[normalized]) || (window.CORE_PHRASES&&window.CORE_PHRASES[normalized]);
+      if(p) return {key:'p:'+normalized,term,ipa:p[0],meaning:p[1],example:p[2],type:'phrase'};
       const words=normalized.split(' ').map(w=>lookupData(w,'word')).filter(Boolean);
-      return {key:'p:'+normalized,term,ipa:'',meaning:'Cụm này chưa có nghĩa cố định trong từ điển của bài hiện tại.',example:'',type:'phrase',breakdown:words};
+      return {key:'p:'+normalized,term,ipa:'',meaning:'Cụm này chưa có nghĩa cố định trong từ điển, nhưng bạn có thể xem nghĩa từng từ bên dưới.',example:'',type:'phrase',breakdown:words};
     }
-    const w=L.dictionary[normalized]; if(!w) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ này chưa có trong từ điển của bài hiện tại.',example:'',type:'word'};
+    const w=(L.dictionary&&L.dictionary[normalized]) || (window.CORE_DICTIONARY&&window.CORE_DICTIONARY[normalized]);
+    if(!w) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ này chưa có trong từ điển chung.',example:'',type:'word'};
     return {key:'w:'+normalized,term,ipa:w[0],meaning:w[1],example:w[2],type:'word'};
   }
   function openLookup(term,type='word'){
