@@ -248,21 +248,28 @@ function Get-AiSpeechBytes([string]$InputText, [string]$Language, [string]$Voice
   if ([string]::IsNullOrWhiteSpace($OpenAIKey)) { throw 'OPENAI_API_KEY is not configured.' }
   $allowedVoices = @('alloy','ash','ballad','coral','echo','fable','nova','onyx','sage','shimmer','verse','marin','cedar')
   if ($allowedVoices -notcontains $Voice) { $Voice = if ($Language.StartsWith('ja')) { 'cedar' } else { 'marin' } }
-  if (@('slow','medium','natural') -notcontains $Pace) { $Pace = 'medium' }
 
-  $instructions = Get-TtsInstructions $Language $Pace
-  $cacheKey = Get-Sha256 ($TtsModel + '|' + $TtsProfile + '|' + $Voice + '|' + $Language + '|' + $Pace + '|' + $InputText)
+  # Cost control: generate ONE natural master recording per sentence.
+  # Slow/medium/natural are playback speeds in the browser, not separate OpenAI generations.
+  $MasterPace = 'natural'
+  $instructions = Get-TtsInstructions $Language $MasterPace
+  $cacheKey = Get-Sha256 ($TtsModel + '|' + $TtsProfile + '|' + $Voice + '|' + $Language + '|' + $MasterPace + '|' + $InputText)
   $sharedFile = Join-Path $SharedTtsDir ($cacheKey + '.mp3')
   if ([System.IO.File]::Exists($sharedFile)) {
     return [System.IO.File]::ReadAllBytes($sharedFile)
   }
 
   # One-time migration path from the old local-only cache.
-  $legacyKey = Get-Sha256 ('gpt-4o-mini-tts' + '|' + $Voice + '|' + $Language + '|' + $Pace + '|' + $InputText)
-  $legacyFile = Join-Path $LegacyTtsCacheDir ($legacyKey + '.mp3')
-  if ([System.IO.File]::Exists($legacyFile)) {
-    [System.IO.File]::Copy($legacyFile, $sharedFile, $true)
-    return [System.IO.File]::ReadAllBytes($sharedFile)
+  $legacyKeys = @(
+    (Get-Sha256 ('gpt-4o-mini-tts' + '|' + $Voice + '|' + $Language + '|natural|' + $InputText)),
+    (Get-Sha256 ('gpt-4o-mini-tts' + '|' + $Voice + '|' + $Language + '|' + $Pace + '|' + $InputText))
+  )
+  foreach ($legacyKey in $legacyKeys) {
+    $legacyFile = Join-Path $LegacyTtsCacheDir ($legacyKey + '.mp3')
+    if ([System.IO.File]::Exists($legacyFile)) {
+      [System.IO.File]::Copy($legacyFile, $sharedFile, $true)
+      return [System.IO.File]::ReadAllBytes($sharedFile)
+    }
   }
 
   $payload = @{
@@ -394,6 +401,13 @@ try {
 
         $builder = New-Object System.Text.StringBuilder
         [void]$builder.AppendLine('window.__LS_RUNTIME_STARTED = true;')
+        $audioHashes = @()
+        if ([System.IO.Directory]::Exists($SharedTtsDir)) {
+          $audioHashes = @(Get-ChildItem -LiteralPath $SharedTtsDir -Filter '*.mp3' -File | ForEach-Object { $_.BaseName })
+        }
+        $audioJson = $audioHashes | ConvertTo-Json -Compress
+        if ([string]::IsNullOrWhiteSpace($audioJson)) { $audioJson = '[]' }
+        [void]$builder.AppendLine('window.LS_AUDIO_CACHE = new Set(' + $audioJson + ');')
         foreach ($runtimeFile in $runtimeFiles) {
           $runtimePath = Join-Path $Root $runtimeFile
           if (-not [System.IO.File]::Exists($runtimePath)) {
