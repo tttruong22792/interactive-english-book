@@ -69,6 +69,7 @@ Lesson content has moved out of root app files.
 Use:
 - `data/content-index.js` for lesson metadata
 - `data/content-loader.js` for lazy loading
+- `data/english/core-dictionary.js` for shared English word/phrase fallback
 - `data/english/patterns/*.js` for English pattern content
 - `data/japanese/**` for Japanese content
 - `data/templates/` when creating new lessons
@@ -79,6 +80,11 @@ Copy the correct template, add the lesson data file, then add metadata to the co
 Progress is lesson-scoped. Preserve stable content IDs so saved progress continues to map correctly.
 
 Read `CONTENT-SCHEMA.md` before adding learning content.
+
+When adding a new English lesson:
+- keep lesson-specific vocabulary in the lesson dictionary when useful;
+- audit every clickable English word against the lesson dictionary + `CORE_DICTIONARY`;
+- phrase/chip audio must remain separate from the lesson sentence/practice list.
 
 
 ## Current English pattern references
