@@ -105,3 +105,49 @@ Khi đó hãy tạo một renderer tái sử dụng cho cả một loại bài, 
 - `ja-service-001`
 
 Không đổi ID sau khi người dùng đã có progress gắn với nội dung đó.
+
+
+## Sectioned pattern renderer
+
+For lessons with many sections that do not fit the original Pattern 01 layout, use:
+
+```js
+layout: "sectioned-pattern"
+```
+
+and provide:
+
+```js
+sections: [
+  {
+    id: "section-id",
+    title: "1. Section title",
+    blocks: [
+      { type: "paragraph", html: "<p>...</p>" },
+      { type: "formula", text: "Pattern + V", note: "..." },
+      { type: "sentences", items: [["English.", "Nghĩa."]] },
+      { type: "callout", tone: "green", html: "..." },
+      { type: "chips", items: [["today", "hôm nay"]] },
+      { type: "compare", leftTitle: "A", rightTitle: "B", leftHtml: "...", rightHtml: "..." },
+      { type: "builder", title: "Luyện ghép câu", base: "I’m going to" },
+      { type: "dialogs", items: [] },
+      { type: "quiz" }
+    ]
+  }
+]
+```
+
+Supported callout tones: `green`, `amber`, `purple`, `bad`.
+
+For a 20-sentence mastery list:
+
+```js
+{
+  type: "sentences",
+  learnable: true,
+  controls: true,
+  items: [...]
+}
+```
+
+Pattern 02 (`data/english/patterns/002.js`) is the reference implementation.
