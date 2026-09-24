@@ -432,7 +432,7 @@
     $$('.english-text[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
     $$('[data-speak]',root).forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation(); const card=btn.closest('[data-sentence-card]'); speak(btn.dataset.speak, card?$('.english-text',card):btn.parentElement); }));
     $$('[data-sentence-card]',root).forEach(card=>card.addEventListener('click',e=>{if(e.target.closest('button,input,label,.word-token')) return; speak(card.dataset.enCard,$('.english-text',card));}));
-    $('.word-token',root).forEach(w=>w.addEventListener('click',async e=>{e.stopPropagation();try{await ensureCoreEnglish();openLookup(w.dataset.word,'word');}catch(error){toast(error.message);}}));
+    $('.word-token',root).forEach(w=>w.addEventListener('click',async e=>{e.stopPropagation();try{if(!L)await ensureCoreEnglish();openLookup(w.dataset.word,'word');}catch(error){toast(error.message);}}));
   }
   function buildWordSpans(el,text){
     el.innerHTML='';
