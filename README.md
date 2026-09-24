@@ -84,3 +84,27 @@ See `CONTENT-SCHEMA.md`.
 - Pattern 03 — **I want to…**
 
 Pattern 02 and Pattern 03 use the reusable `sectioned-pattern` renderer and keep lesson content in `data/english/patterns/002.js` and `data/english/patterns/003.js`.
+
+
+## AI Voice
+
+Language Studio can now use OpenAI `gpt-4o-mini-tts` for more natural pronunciation.
+
+First-time Windows setup:
+
+```text
+1. git pull
+2. double-click SETUP-AI-VOICE.bat
+3. paste the OpenAI API key into the hidden local prompt
+4. restart RUN-WINDOWS.bat
+```
+
+The key is stored only in `.env.local`, which is ignored by Git. Never put the key in frontend JavaScript.
+
+Default voices:
+- English: `marin`
+- Japanese: `cedar`
+
+If AI Voice is unavailable, the app automatically falls back to browser TTS. Generated local audio is cached in `.cache/tts/`.
+
+See `AI-VOICE.md`.
