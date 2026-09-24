@@ -47,6 +47,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-004",
+    language: "en",
+    category: "patterns",
+    order: 4,
+    title: "I plan to…",
+    meaning: "Tôi dự định… / Tôi có kế hoạch sẽ…",
+    description: "Dùng để nói về kế hoạch và dự định đã được suy nghĩ tương đối rõ ràng trong cuộc sống và công việc.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/004.js",
+    route: "lesson/4",
+    accent: "orange",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
