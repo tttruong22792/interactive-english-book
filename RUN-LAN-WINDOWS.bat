@@ -10,7 +10,7 @@ echo.
 echo PC and phone must be on the same Wi-Fi.
 echo Windows Firewall may ask for Private network access.
 echo.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0START-ENGLISH-BOOK.ps1" -PreferredPort 5525 -Lan
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0START-ENGLISH-BOOK.ps1" -PreferredPort 5535 -Lan
 if errorlevel 1 (
   echo.
   echo Server stopped with an error.
