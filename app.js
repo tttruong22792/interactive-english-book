@@ -969,10 +969,77 @@
   }
 
   async function renderPracticeHub(){
-    await ensureCoreEnglish();
-    setHeader('Practice','Practice Center'); quiz={index:0,correct:0,counted:new Set(),revealed:false};
-    $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PRACTICE CENTER</div><h1>Luyện nghe – bật câu – kiểm tra</h1><p>Tất cả bài luyện hiện tại dùng nội dung Mẫu 01, không thêm câu ngoài tài liệu gốc.</p><div class="hero-actions"><button id="playDaily5Hub" class="primary-button">🔊 Nghe 5 câu hôm nay</button><button class="secondary-button" data-go="lesson/1">Mở bài học đầy đủ</button></div></section><div class="section-title-row"><div><h2>Dịch Việt → Anh</h2><p>10 câu trong phần “Bài luyện hôm nay”.</p></div></div><section id="practiceQuizWrap" class="paper-card" style="padding:20px">${quizHTML('hub')}</section><div class="section-title-row"><div><h2>5 câu cần bật ra ngay</h2><p>Nghe và nói lại mỗi câu nhiều lần.</p></div></div><section class="paper-card" style="padding:16px"><div class="daily-list">${L.dailyFive.map(s=>`<div class="daily-item">${inlineSentence(s)}</div>`).join('')}</div></section>`;
-    bindGenericRoutes();hydrateSentences($('#mainView'));bindQuiz($('#practiceQuizWrap'));$('#playDaily5Hub').onclick=()=>speakSequence(L.dailyFive.map(s=>[s,null]));
+    L=null;
+    setHeader('Practice','Practice Center');
+
+    const metas=(STORE?.list({language:'en',category:'patterns'})||[])
+      .filter(item=>item.status==='available'&&item.source)
+      .sort((a,b)=>(a.order||0)-(b.order||0));
+    practiceLessons=await Promise.all(metas.map(item=>ensureContent(item.id)));
+
+    const visited=practiceLessons.filter(lesson=>Number(state.lessonVisitsByLesson?.[lesson.id]||0)>0);
+    const defaultLessons=visited.length?visited:practiceLessons;
+    const defaultIds=new Set(defaultLessons.map(lesson=>lesson.id));
+
+    const cards=practiceLessons.map(lesson=>{
+      const count=collectLessonSentences(lesson).length;
+      const visits=Number(state.lessonVisitsByLesson?.[lesson.id]||0);
+      return `<label class="practice-lesson-card">
+        <input type="checkbox" data-practice-lesson="${escAttr(lesson.id)}" ${defaultIds.has(lesson.id)?'checked':''}>
+        <span class="practice-lesson-number">${String(lesson.order||'').padStart(2,'0')}</span>
+        <span><strong>${esc(lesson.title||'')}</strong><small>${count} câu · đã mở ${visits} lần</small></span>
+      </label>`;
+    }).join('');
+
+    const initialItems=quizItemsFromLessons(defaultLessons);
+    quiz=makeQuizSession(initialItems,'random','mixed:'+defaultLessons.map(x=>x.id).join(','),'hub');
+
+    $('#mainView').innerHTML=`
+      <section class="page-hero">
+        <div class="eyebrow">PRACTICE CENTER</div>
+        <h1>Luyện toàn bộ nội dung đã học</h1>
+        <p>Chọn một hoặc nhiều bài. Ví dụ chọn Mẫu 02 + Mẫu 03 thì hệ thống sẽ trộn câu của hai bài. Nếu cùng một nghĩa có nhiều cách diễn đạt, nhập đúng bất kỳ cách nào đều được tính đúng.</p>
+      </section>
+
+      <section class="practice-mixer">
+        <div class="section-title-row"><div><h2>Chọn bài cần luyện</h2><p>Có thể chọn riêng một bài hoặc trộn nhiều bài với nhau.</p></div></div>
+        <div class="practice-lesson-grid">${cards}</div>
+        <div class="practice-mixer-actions">
+          <label>Thứ tự
+            <select id="practiceMixOrder">
+              <option value="random" selected>Random</option>
+              <option value="sequential">Tuần tự</option>
+            </select>
+          </label>
+          <button id="startMixedPractice" class="primary-button">Bắt đầu luyện các bài đã chọn</button>
+          <span id="practiceMixSummary" class="muted">${defaultLessons.length} bài · ${initialItems.length} ý/câu luyện</span>
+        </div>
+      </section>
+
+      <section id="practiceQuizWrap" class="paper-card practice-main-quiz" style="padding:20px">${quizHTML('hub')}</section>
+    `;
+
+    const startSelectedPractice=()=>{
+      const selectedIds=$$('[data-practice-lesson]:checked').map(input=>input.dataset.practiceLesson);
+      if(!selectedIds.length){toast('Hãy chọn ít nhất một bài để luyện.');return;}
+      const selectedLessons=practiceLessons.filter(lesson=>selectedIds.includes(lesson.id));
+      const items=quizItemsFromLessons(selectedLessons);
+      const mode=$('#practiceMixOrder').value;
+      quiz=makeQuizSession(items,mode,'mixed:'+selectedIds.join(','),'hub');
+      $('#practiceMixSummary').textContent=`${selectedLessons.length} bài · ${items.length} ý/câu luyện`;
+      const holder=$('#practiceQuizWrap');
+      holder.innerHTML=quizHTML('hub');
+      bindQuiz(holder);
+      holder.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+
+    $('#startMixedPractice').onclick=startSelectedPractice;
+    $$('[data-practice-lesson]').forEach(input=>input.onchange=()=>{
+      const ids=$$('[data-practice-lesson]:checked').map(x=>x.dataset.practiceLesson);
+      const lessons=practiceLessons.filter(lesson=>ids.includes(lesson.id));
+      $('#practiceMixSummary').textContent=`${lessons.length} bài · ${quizItemsFromLessons(lessons).length} ý/câu luyện`;
+    });
+    bindQuiz($('#practiceQuizWrap'));
   }
 
   async function renderProgress(){
