@@ -115,12 +115,6 @@ if (await exists(join(root, "icons"))) {
   await cp(join(root, "icons"), join(dist, "icons"), { recursive: true });
 }
 
-// Keep legacy audio in the static build only during the migration phase.
-// The Supabase Edge Function can copy these MP3s into the central bucket.
-if (await exists(join(root, "audio"))) {
-  await cp(join(root, "audio"), join(dist, "audio"), { recursive: true });
-}
-
 const indexSource = await readFile(join(root, "data/content-index.js"), "utf8");
 const sourceMatches = [...indexSource.matchAll(/source:\s*"([^"]+\.js)"/g)]
   .map((match) => match[1].replace(/^\.\//, ""));
@@ -137,16 +131,9 @@ const runtimeFiles = [
 
 const uniqueFiles = [...new Set(runtimeFiles)];
 
-const audioHashes = [];
-if (await exists(join(root, "audio/tts"))) {
-  for (const name of await readdir(join(root, "audio/tts"))) {
-    if (name.endsWith(".mp3")) audioHashes.push(name.slice(0, -4));
-  }
-}
-
 const runtimeParts = [
   "window.__LS_RUNTIME_STARTED = true;",
-  "window.LS_AUDIO_CACHE = new Set(" + JSON.stringify(audioHashes) + ");"
+  "window.LS_AUDIO_CACHE = new Set([]);"
 ];
 
 for (const relative of uniqueFiles) {
@@ -201,4 +188,4 @@ await writeFile(join(dist, ".nojekyll"), "", "utf8");
 console.log("Built static site:", dist);
 console.log("Runtime files:", uniqueFiles.length);
 console.log("Cloud TTS allow-list sentences:", ttsManifest.count);
-console.log("Legacy shared audio copied for migration:", await exists(join(root, "audio/tts")));
+console.log("Audio delivery: Supabase Storage + per-device Cache Storage");
