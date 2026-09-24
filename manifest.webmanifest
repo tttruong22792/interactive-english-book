@@ -1,0 +1,12 @@
+{
+  "name": "80 Mẫu Câu Tiếng Anh – Interactive Book",
+  "short_name": "80 Mẫu Câu",
+  "start_url": "./index.html#home",
+  "display": "standalone",
+  "background_color": "#f3f6fa",
+  "theme_color": "#173b5e",
+  "lang": "vi",
+  "icons": [
+    {"src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
