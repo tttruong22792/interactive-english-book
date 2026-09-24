@@ -556,7 +556,22 @@
         const payload=JSON.parse(String(reader.result||''));
         const next=payload?.state;
         if(!next || typeof next!=='object' || Array.isArray(next)) throw new Error('invalid');
-        state={...defaults,...next,learned:{...(next.learned||{})},saved:{...(next.saved||{})}};
+        state={
+          ...defaults,...next,
+          learned:{...(next.learned||{})},
+          saved:{...(next.saved||{})},
+          quizBestByLesson:{...(next.quizBestByLesson||{})},
+          quizRunsByLesson:{...(next.quizRunsByLesson||{})},
+          lessonVisitsByLesson:{...(next.lessonVisitsByLesson||{})}
+        };
+        Object.keys(state.learned).forEach(key=>{
+          if(!key.includes(':')){
+            state.learned[`${CORE_LESSON_ID}:${key}`]=state.learned[key];
+            delete state.learned[key];
+          }
+        });
+        if(state.quizBest && state.quizBestByLesson[CORE_LESSON_ID]==null) state.quizBestByLesson[CORE_LESSON_ID]=state.quizBest;
+        if(state.quizRuns && state.quizRunsByLesson[CORE_LESSON_ID]==null) state.quizRunsByLesson[CORE_LESSON_ID]=state.quizRuns;
         saveState();
         toast('Đã khôi phục dữ liệu học.');
         renderSettings();
