@@ -8,7 +8,7 @@
   <title>Language Studio – English + Japanese</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=20260924-ai-fix2" />
+  <link rel="stylesheet" href="styles.css?v=20260924-stable1" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -50,8 +50,7 @@
           </div>
         </div>
         <div id="lessonControls" class="lesson-controls hidden">
-          <span id="voiceModeBadge" class="voice-mode-badge browser" title="Đang kiểm tra giọng đọc">🔊 Browser voice</span>
-          <button id="hideViBtn" class="pill-button">Ẩn tiếng Việt</button>
+<button id="hideViBtn" class="pill-button">Ẩn tiếng Việt</button>
           <label class="speed-pill">Tốc độ
             <select id="globalRateSelect" aria-label="Tốc độ đọc">
               <option value="0.68">Chậm</option>
@@ -101,30 +100,11 @@
 
   <div id="toast" class="toast hidden" aria-live="polite"></div>
 
-  <script>
-    window.__LS_BOOT_ERRORS = [];
-    window.addEventListener('error', function (event) {
-      window.__LS_BOOT_ERRORS.push(event.message || 'Unknown script error');
-    });
-    window.setTimeout(function () {
-      if (window.__LS_RENDERED) return;
-      var main = document.getElementById('mainView');
-      if (!main) return;
-      var details = window.__LS_BOOT_ERRORS.length
-        ? window.__LS_BOOT_ERRORS.join(' | ')
-        : 'app.js chưa chạy hoặc bị trình duyệt giữ cache cũ.';
-      main.innerHTML =
-        '<section class="page-hero"><div class="eyebrow">STARTUP DIAGNOSTIC</div>' +
-        '<h1>Language Studio chưa khởi động được</h1>' +
-        '<p>' + details.replace(/[&<>]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];}) + '</p>' +
-        '<p style="margin-top:12px">Hãy đóng cửa sổ server, chạy git pull rồi mở lại RUN-WINDOWS.bat.</p></section>';
-    }, 2500);
-  </script>
-  <script src="data/content-index.js?v=20260924-ai-fix2"></script>
-  <script src="data/content-loader.js?v=20260924-ai-fix2"></script>
-  <script src="platform-data.js?v=20260924-ai-fix2"></script>
-  <script src="catalog.js?v=20260924-ai-fix2"></script>
-  <script src="ai-tts.js?v=20260924-ai-fix2"></script>
-  <script src="app.js?v=20260924-ai-fix2"></script>
+  <script src="data/content-index.js?v=20260924-stable1"></script>
+  <script src="data/content-loader.js?v=20260924-stable1"></script>
+  <script src="platform-data.js?v=20260924-stable1"></script>
+  <script src="catalog.js?v=20260924-stable1"></script>
+  <script src="ai-tts.js?v=20260924-stable1"></script>
+  <script src="app.js?v=20260924-stable1"></script>
 </body>
 </html>
