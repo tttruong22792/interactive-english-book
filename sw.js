@@ -1,4 +1,4 @@
-const CACHE='language-studio-v8-full-practice';
+const CACHE='language-studio-v9-subpages-vi-edit';
 const ASSETS=[
   './',
   './index.html',
