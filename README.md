@@ -81,5 +81,6 @@ See `CONTENT-SCHEMA.md`.
 
 - Pattern 01 — **I’d like to…**
 - Pattern 02 — **I’m going to…**
+- Pattern 03 — **I want to…**
 
-Pattern 02 uses the reusable `sectioned-pattern` renderer and keeps its lesson content in `data/english/patterns/002.js`.
+Pattern 02 and Pattern 03 use the reusable `sectioned-pattern` renderer and keep lesson content in `data/english/patterns/002.js` and `data/english/patterns/003.js`.
