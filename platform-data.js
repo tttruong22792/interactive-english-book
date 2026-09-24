@@ -5,17 +5,7 @@ window.PLATFORM_DATA = {
     { code:"★", route:"vocab", title:"My Vocabulary", subtitle:"Từ và cụm của riêng bạn", description:"Chạm vào từ trong bài, nghe riêng, xem nghĩa rồi lưu lại để ôn bằng flashcard.", accent:"yellow" },
     { code:"▶", route:"practice", title:"Practice", subtitle:"Listen · Speak · Review", description:"Nghe câu, lặp lại, nói bằng micro, làm bài Việt → Anh và theo dõi tiến độ.", accent:"orange" }
   ],
-  modules: [
-    { lang:"English", tag:"Đang học", title:"I’d like to…", desc:"Mẫu 01 · Tôi muốn… / Tôi muốn được…", route:"lesson/1", accent:"purple" },
-    { lang:"English", tag:"Tiếp theo", title:"I need to…", desc:"Mẫu 02 · Tôi cần phải…", route:"patterns", accent:"yellow" },
-    { lang:"Japanese", tag:"Chuẩn bị", title:"Daily Japanese", desc:"Mẫu câu thiết thực cho cuộc sống ở Nhật.", route:"japanese", accent:"green" },
+  utilityModules: [
     { lang:"Practice", tag:"Có sẵn", title:"Speaking & Review", desc:"Quiz, audio, flashcard và luyện nói.", route:"practice", accent:"orange" }
-  ],
-  japanesePhrases: [
-    ["ありがとうございます。", "Arigatou gozaimasu.", "Cảm ơn."],
-    ["お願いします。", "Onegaishimasu.", "Làm ơn / Nhờ bạn."],
-    ["もう一度お願いします。", "Mou ichido onegaishimasu.", "Xin hãy nói lại một lần nữa."],
-    ["わかりました。", "Wakarimashita.", "Tôi hiểu rồi."],
-    ["ちょっと待ってください。", "Chotto matte kudasai.", "Xin hãy đợi một chút."]
   ]
 };
