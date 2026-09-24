@@ -38,6 +38,15 @@ function Get-RuntimeIndexBytes {
   $html = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
 
   $version = '20260924-ai-fix2'
+
+  $cssPath = Join-Path $Root 'styles.css'
+  if ([System.IO.File]::Exists($cssPath)) {
+    $css = [System.IO.File]::ReadAllText($cssPath, [System.Text.Encoding]::UTF8)
+    $cssTag = '<link rel="stylesheet" href="styles.css?v=' + $version + '" />'
+    $styleInline = '<style>' + [Environment]::NewLine + $css + [Environment]::NewLine + '</style>'
+    $html = $html.Replace($cssTag, $styleInline)
+  }
+
   $inlineMap = @(
     @{ Tag = '<script src="data/content-index.js?v=' + $version + '"></script>'; Path = 'data\content-index.js' },
     @{ Tag = '<script src="data/content-loader.js?v=' + $version + '"></script>'; Path = 'data\content-loader.js' },
@@ -309,7 +318,8 @@ Write-Host '================================================' -ForegroundColor C
 Write-Host '  LANGUAGE STUDIO - SAFE BOOT + AI VOICE' -ForegroundColor Cyan
 Write-Host '================================================' -ForegroundColor Cyan
 Write-Host ('Folder: ' + $Root)
-Write-Host ('PC address: ' + $Url) -ForegroundColor Green`nWrite-Host 'Safe Boot: ON - JavaScript is embedded into the first HTML response.' -ForegroundColor Green
+Write-Host ('PC address: ' + $Url) -ForegroundColor Green
+Write-Host 'Safe Boot: ON - HTML, CSS and JavaScript are embedded into the first response.' -ForegroundColor Green
 if ([string]::IsNullOrWhiteSpace($OpenAIKey)) {
   Write-Host 'AI Voice: NOT CONFIGURED - browser voice fallback is active.' -ForegroundColor Yellow
   Write-Host 'Run SETUP-AI-VOICE.bat once to enable OpenAI TTS.' -ForegroundColor Yellow
@@ -331,6 +341,7 @@ try { Start-Process $Url } catch { Write-Host ('Open this address manually: ' + 
 try {
   while ($true) {
     $client = $listener.AcceptTcpClient()
+    $client.ReceiveTimeout = if ($Lan) { 1500 } else { 300 }
     $stream = $null
     try {
       $stream = $client.GetStream()
