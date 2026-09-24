@@ -572,11 +572,12 @@
     if(/^ja/i.test(lang)) return voices.find(v=>/^ja-JP/i.test(v.lang) && /Nanami|Haruka|Google|Kyoko/i.test(v.name)) || voices.find(v=>/^ja/i.test(v.lang)) || null;
     return voices.find(v=>/^en-US/i.test(v.lang) && /Aria|Jenny|Google|Samantha|Ava/i.test(v.name)) || voices.find(v=>/^en-US/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang)) || null;
   }
-  function stopSpeech(){
+  function stopSpeech(cancelSequence=true){
+    if(cancelSequence) sequenceRun++;
     if(window.AITTS) window.AITTS.stop();
     if('speechSynthesis' in window) speechSynthesis.cancel();
-    $$('.speaking').forEach(x=>x.classList.remove('speaking'));
-    $$('.playing').forEach(x=>x.classList.remove('playing'));
+    $('.speaking').forEach(x=>x.classList.remove('speaking'));
+    $('.playing').forEach(x=>x.classList.remove('playing'));
   }
 
   function browserSpeak(text,highlightEl=null,rate=state.rate){
@@ -605,8 +606,8 @@
     });
   }
 
-  async function speak(text,highlightEl=null,rate=state.rate){
-    stopSpeech();
+  async function speak(text,highlightEl=null,rate=state.rate,sequenceToken=null){
+    stopSpeech(sequenceToken===null);
     const card=highlightEl?.closest?.('[data-sentence-card]');
     if(card) card.classList.add('playing');
 
@@ -625,20 +626,29 @@
     if(card) card.classList.remove('playing');
     return browserSpeak(text,highlightEl,rate);
   }
-  async function speakSequence(items){ for(const item of items){ await speak(item[0],item[1]||null); await wait(180); } }
+  async function speakSequence(items,repeats=1){
+    const token=++sequenceRun;
+    stopSpeech(false);
+    for(let round=0;round<repeats;round++){
+      for(const item of items){
+        if(token!==sequenceRun) return;
+        await speak(item[0],item[1]||null,state.rate,token);
+        if(token!==sequenceRun) return;
+        await wait(180);
+      }
+    }
+  }
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
   function bindLessonEvents(){
-    $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
-    if($('#playAll20')){
-      const items=(L._learnableSentences?.length?L._learnableSentences:(L.sentences20||[]));
-      $('#playAll20').onclick=()=>speakSequence(items.map((x,i)=>[x[0],$$('#sectionLearnableSentences .english-text, #sentences20 .english-text')[i]]));
-    }
-    if($('#repeatDaily5')) $('#repeatDaily5').onclick=()=>speakSequence((L.dailyFive||[]).map(s=>[s,null]));
-    $$('[data-builder]').forEach(btn=>btn.onclick=()=>{builder.push(btn.dataset.builder);updateBuilder();});
-    if($('#builderUndo')) $('#builderUndo').onclick=()=>{builder.pop();updateBuilder();};
-    if($('#builderReset')) $('#builderReset').onclick=()=>{builder=[];updateBuilder();};
-    if($('#speakBuilder')) $('#speakBuilder').onclick=()=>speak(builderSentence());
+    $('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
+    const lessonItems=(L._learnableSentences?.length
+      ? L._learnableSentences
+      : collectLessonSentences(L).map(x=>[x.en,x.vi]));
+    const lessonEls=$('#sectionLearnableSentences .english-text');
+    const sequenceItems=lessonItems.map((x,i)=>[x[0],lessonEls[i]||null]);
+    if($('#playAllLesson')) $('#playAllLesson').onclick=()=>speakSequence(sequenceItems,1);
+    if($('#repeatAllLesson5')) $('#repeatAllLesson5').onclick=()=>speakSequence(sequenceItems,5);
     $$('[data-dialog-play]').forEach(btn=>btn.onclick=()=>{
       const pool=(L._renderDialogs?.length?L._renderDialogs:(L.dialogs||[]));
       const dialog=pool[+btn.dataset.dialogPlay];
@@ -656,8 +666,6 @@
     if(lessonQuiz) bindQuiz(lessonQuiz);
     else if($('#lessonPractice')) bindQuiz($('#lessonPractice'));
   }
-  function builderSentence(){const base=L?._builderBase||L?.ui?.builder?.base||L?.title?.replace(/…|\.\.\.$/g,'').trim()||"I'd like to";return builder.length?`${base} ${builder.join(' ')}.`:`${base}…`;}
-  function updateBuilder(){ $('#builderOutput').textContent=builderSentence(); }
 
   function quizHTML(context){
     const items=L.practice||[];
