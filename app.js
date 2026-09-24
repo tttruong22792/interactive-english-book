@@ -387,8 +387,7 @@
     if(lessonId===CORE_LESSON_ID) state.lessonVisits=state.lessonVisitsByLesson[lessonId];
     saveState();
     setHeader(`English › Patterns › ${String(id).padStart(2,'0')}`,L.title||meta.title,true);
-    builder=[];
-    quiz={index:0,correct:0,counted:new Set(),revealed:false};
+    quiz=makeQuizSession(quizItemsFromLessons([L]),'sequential',lessonId,'lesson');
     $('#mainView').innerHTML=lessonHTML();
     hydrateSentences($('#mainView'));
     bindLessonEvents();
@@ -425,9 +424,9 @@
         ${c.publicLabel?`<p>${esc(c.publicLabel)}</p>`:''}${maybeSentence(c.publicSentence)}
         ${c.noteHtml?`<div class="amber-box">${c.noteHtml}</div>`:''}</section>`:''}
 
-      <section class="book-section" id="sentences20"><h2>${esc(m.title||'Câu cần thuộc')}</h2>${m.intro?`<p>${esc(m.intro)}</p>`:''}
-        <div class="study-toolbar"><button id="playAll20" class="primary-button">▶ Nghe toàn bộ</button><button id="repeatDaily5" class="secondary-button">🔁 Lặp 5 câu hôm nay</button><span class="muted">Đánh dấu ✓ khi câu đã bật ra tự nhiên.</span></div>
-        <div class="sentence-table"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${(L.sentences20||[]).map((x,i)=>sentenceRow(x[0],x[1],`s20-${i}`)).join('')}</div></section>
+      <section class="book-section" id="sentences20"><h2>4. Tất cả câu trong bài (${collectLessonSentences(L).length} câu)</h2><p>Danh sách này tự gom toàn bộ câu xuất hiện trong bài học và bỏ các câu trùng hệt nhau.</p>
+        <div class="study-toolbar"><button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button><button id="repeatAllLesson5" class="secondary-button">🔁 Lặp toàn bộ ×5</button><span class="muted">Nếu bạn bấm một câu khác khi danh sách đang phát, danh sách sẽ dừng ngay để đọc câu vừa chọn.</span></div>
+        <div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${collectLessonSentences(L).map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}</div></section>
 
       <section class="book-section"><h2>${esc(w.title||'Trong công việc')}</h2>${w.intro?`<p>${esc(w.intro)}</p>`:''}
         <div class="sentence-list">${(L.work||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
@@ -440,7 +439,6 @@
       <section class="book-section" id="builderSection"><h2>${esc(b.title||'Mở rộng câu')}</h2>${b.intro?`<p>${esc(b.intro)}</p>`:''}
         <div class="builder-steps">${(L.buildSteps||[]).map(s=>`<div class="builder-step"><small>${esc(s[0])}</small>${inlineSentence(s[1])}<div class="vi" data-vi-only>${esc(s[2])}</div></div>`).join('')}</div>
         ${b.summaryHtml?`<div class="amber-box" style="text-align:center">${b.summaryHtml}</div>`:''}${b.note?`<p>${esc(b.note)}</p>`:''}
-        <div class="builder-lab"><div class="builder-top"><div><div class="eyebrow">${esc(b.labEyebrow||'SENTENCE BUILDER')}</div><strong>${esc(b.labTitle||'Tự ghép câu')}</strong></div><button id="speakBuilder" class="speaker">🔊</button></div><div id="builderOutput" class="builder-output">${esc((b.base||L.title||'')+'…')}</div><div id="builderGroups" class="builder-groups">${(L.builderGroups||[]).map(g=>`<div class="builder-group"><strong>${esc(g.label)}</strong><div class="chip-row">${g.options.map(o=>`<button class="word-chip" data-builder="${escAttr(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}</div><div class="builder-actions"><button id="builderUndo" class="secondary-button">← Xóa phần cuối</button><button id="builderReset" class="secondary-button">Làm lại</button></div></div>
         <h2 style="margin-top:30px">${esc(b.dialogTitle||'Hội thoại')}</h2>${(L.dialogs||[]).map((dialog,di)=>dialogCard(dialog,di)).join('')}</section>
 
       <section class="book-section"><h2>${esc(q.title||'Câu hỏi / biến thể')}</h2>
@@ -450,8 +448,8 @@
 
       <section class="book-section" id="lessonPractice"><h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}</section>
 
-      <section class="book-section"><div class="eyebrow">${esc(d.eyebrow||'CÁCH HỌC HÔM NAY')}</div><h2>${esc(d.title||'Chọn một số câu để luyện')}</h2>
-        <div class="daily-list">${(L.dailyFive||[]).map(s=>`<div class="daily-item">${inlineSentence(s)}</div>`).join('')}</div>${d.intro?`<p>${esc(d.intro)}</p>`:''}
+      <section class="book-section"><div class="eyebrow">${esc(d.eyebrow||'CÁCH HỌC HÔM NAY')}</div><h2>Luyện toàn bộ bài, không giới hạn 5 câu</h2>
+        <p>Danh sách nghe ở mục 4 và phần luyện Việt → Anh đều dùng toàn bộ câu có trong bài học.</p>
         ${d.formula?`<div class="formula-box">${esc(d.formula)}</div>`:''}${d.goalHtml?`<div class="completion-box">${d.goalHtml}</div>`:''}
         <div class="footer-next"><div><span class="eyebrow">${esc(d.nextEyebrow||'BÀI TIẾP THEO')}</span><br><strong>${esc(d.nextTitle||'')}</strong><div>${esc(d.nextMeaning||'')}</div><small>${esc(d.nextNote||'')}</small></div><button class="secondary-button" id="nextPatternInfo">Xem trạng thái bài tiếp theo</button></div></section>`;
   }
@@ -478,8 +476,14 @@
 
   function renderLessonSection(section,sectionIndex){
     const id=escAttr(section.id||`section-${sectionIndex+1}`);
+    const hasLearnable=(section.blocks||[]).some(block=>block?.type==='sentences'&&block.learnable);
+    const numberPrefix=(section.title||'').match(/^\s*(\d+\.)/)?.[1]||'';
+    const title=hasLearnable
+      ? `${numberPrefix?numberPrefix+' ':''}Tất cả câu trong bài (${collectLessonSentences(L).length} câu)`
+      : (section.title||'');
     return `<section class="book-section" id="${id}">
-      <h2>${section.title||''}</h2>
+      <h2>${esc(title)}</h2>
+      ${hasLearnable?'<p>Danh sách này tự gom toàn bộ câu xuất hiện trong bài học và bỏ các câu trùng hệt nhau.</p>':''}
       ${(section.blocks||[]).map((block,blockIndex)=>renderLessonBlock(block,section,blockIndex)).join('')}
     </section>`;
   }
@@ -502,13 +506,14 @@
     }
 
     if(type==='sentences'){
-      const items=block.items||[];
-      if(block.learnable) L._learnableSentences=items;
-      const controls=block.controls?`<div class="study-toolbar"><button id="playAll20" class="primary-button">▶ Nghe toàn bộ</button><button id="repeatDaily5" class="secondary-button">🔁 Lặp 5 câu hôm nay</button><span class="muted">Đánh dấu ✓ khi câu đã bật ra tự nhiên.</span></div>`:'';
+      const sourceItems=block.items||[];
       if(block.learnable){
-        return `${controls}<div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${items.map((x,i)=>sentenceRow(x[0],x[1],`s20-${i}`)).join('')}</div>`;
+        const allItems=collectLessonSentences(L);
+        L._learnableSentences=allItems.map(x=>[x.en,x.vi]);
+        const controls=`<div class="study-toolbar"><button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button><button id="repeatAllLesson5" class="secondary-button">🔁 Lặp toàn bộ ×5</button><span class="muted">Bấm một câu khác để dừng danh sách và nghe câu đó ngay.</span></div>`;
+        return `${controls}<div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${allItems.map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}</div>`;
       }
-      return `<div class="sentence-list">${items.map(x=>sentenceRow(x[0],x[1])).join('')}</div>`;
+      return `<div class="sentence-list">${sourceItems.map(x=>sentenceRow(x[0],x[1])).join('')}</div>`;
     }
 
     if(type==='chips'){
@@ -519,11 +524,7 @@
       return `<div class="compare-grid"><div class="head">${esc(block.leftTitle||'')}</div><div class="head">${esc(block.rightTitle||'')}</div><div>${block.leftHtml||esc(block.leftText||'')}</div><div>${block.rightHtml||esc(block.rightText||'')}</div></div>`;
     }
 
-    if(type==='builder'){
-      L._builderBase=block.base||L.title||'';
-      return `<div class="builder-lab"><div class="builder-top"><div><div class="eyebrow">SENTENCE BUILDER</div><strong>${esc(block.title||'Tự ghép câu')}</strong></div><button id="speakBuilder" class="speaker">🔊</button></div><div id="builderOutput" class="builder-output">${esc((block.base||L.title||'')+'…')}</div><div id="builderGroups" class="builder-groups">${(L.builderGroups||[]).map(g=>`<div class="builder-group"><strong>${esc(g.label)}</strong><div class="chip-row">${g.options.map(o=>`<button class="word-chip" data-builder="${escAttr(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}</div><div class="builder-actions"><button id="builderUndo" class="secondary-button">← Xóa phần cuối</button><button id="builderReset" class="secondary-button">Làm lại</button></div></div>`;
-    }
-
+    if(type==='builder') return '';
     if(type==='dialogs'){
       return (block.items||[]).map(dialog=>{
         const index=L._renderDialogs.push(dialog)-1;
