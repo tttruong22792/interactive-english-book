@@ -343,7 +343,7 @@
       </section>
 
       <section class="split-promo">
-        <div class="promo-copy"><span class="landing-kicker">CURRENT LESSON</span><h2>I’d like to…</h2><p>Giữ nguyên bài học tương tác nhưng nâng cấp phần luyện: toàn bộ câu trong bài, nghe lặp toàn bộ và quiz theo tuần tự hoặc random.</p><button class="primary-button" data-go="lesson/1">Mở bài đầy đủ</button></div>
+        <div class="promo-copy"><span class="landing-kicker">CURRENT LESSON</span><h2>I’d like to…</h2><p>Giữ nguyên bài học tương tác nhưng chuyển danh sách toàn bộ câu và phần luyện sang hai chế độ riêng để trang bài học gọn hơn.</p><button class="primary-button" data-go="lesson/1">Mở bài đầy đủ</button></div>
         <div class="promo-preview"><div class="preview-label">Tap to listen</div>
           ${sentenceRow("I'd like to buy this.","Tôi muốn mua cái này.")}
           ${sentenceRow("I'd like to ask you something.","Tôi muốn hỏi bạn một việc.")}
@@ -419,6 +419,7 @@
     saveState();
     setHeader(`English › Patterns › ${String(id).padStart(2,'0')}`,L.title||meta.title,true);
     $('#mainView').innerHTML=lessonHTML();
+    bindGenericRoutes();
     hydrateSentences($('#mainView'));
     bindLessonEvents();
   }
@@ -469,8 +470,8 @@
       </section>`;
     bindGenericRoutes();
     hydrateSentences($('#mainView'));
-    $('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
-    const els=$('#sectionLearnableSentences .english-text');
+    $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
+    const els=$$('#sectionLearnableSentences .english-text');
     const sequenceItems=items.map((x,i)=>[x.en,els[i]||null]);
     $('#playAllLesson').onclick=()=>speakSequence(sequenceItems,1);
   }
@@ -663,7 +664,7 @@
     else state.meaningOverrides[key]=next;
     saveState();
 
-    $('[data-meaning-key]').filter(node=>node.dataset.meaningKey===key).forEach(node=>{
+    $$('[data-meaning-key]').filter(node=>node.dataset.meaningKey===key).forEach(node=>{
       const text=$('.vi-text',node);
       const input=$('.meaning-edit-input',node);
       if(text) text.textContent=next;
@@ -674,7 +675,7 @@
   }
 
   function bindMeaningEditors(root){
-    $('[data-edit-meaning]',root).forEach(btn=>btn.onclick=e=>{
+    $$('[data-edit-meaning]',root).forEach(btn=>btn.onclick=e=>{
       e.stopPropagation();
       const editor=btn.closest('[data-meaning-key]');
       const panel=$('.meaning-edit-panel',editor);
@@ -683,26 +684,26 @@
       input.value=$('.vi-text',editor)?.textContent||'';
       setTimeout(()=>{input.focus();input.select();},0);
     });
-    $('[data-cancel-meaning]',root).forEach(btn=>btn.onclick=e=>{
+    $$('[data-cancel-meaning]',root).forEach(btn=>btn.onclick=e=>{
       e.stopPropagation();
       const editor=btn.closest('[data-meaning-key]');
       $('.meaning-edit-panel',editor).classList.add('hidden');
     });
-    $('[data-save-meaning]',root).forEach(btn=>btn.onclick=e=>{
+    $$('[data-save-meaning]',root).forEach(btn=>btn.onclick=e=>{
       e.stopPropagation();
       const editor=btn.closest('[data-meaning-key]');
       if(saveMeaningOverride(editor,$('.meaning-edit-input',editor).value)){
         $('.meaning-edit-panel',editor).classList.add('hidden');
       }
     });
-    $('[data-reset-meaning]',root).forEach(btn=>btn.onclick=e=>{
+    $$('[data-reset-meaning]',root).forEach(btn=>btn.onclick=e=>{
       e.stopPropagation();
       const editor=btn.closest('[data-meaning-key]');
       const key=editor.dataset.meaningKey;
       const original=editor.dataset.originalVi||'';
       delete state.meaningOverrides[key];
       saveState();
-      $('[data-meaning-key]').filter(node=>node.dataset.meaningKey===key).forEach(node=>{
+      $$('[data-meaning-key]').filter(node=>node.dataset.meaningKey===key).forEach(node=>{
         const text=$('.vi-text',node);
         const input=$('.meaning-edit-input',node);
         if(text) text.textContent=original;
@@ -711,7 +712,7 @@
       });
       toast('Đã khôi phục nghĩa gốc.');
     });
-    $('.meaning-edit-input',root).forEach(input=>input.addEventListener('keydown',e=>{
+    $$('.meaning-edit-input',root).forEach(input=>input.addEventListener('keydown',e=>{
       if(e.key==='Enter'){
         e.preventDefault();
         const editor=input.closest('[data-meaning-key]');
@@ -731,7 +732,7 @@
   function dialogCard(d,di){ return `<div class="dialog-card"><div class="dialog-title"><span>${esc(d.place)}</span><button class="mini-button" data-dialog-play="${di}">▶ Nghe hội thoại</button></div>${d.rows.map(r=>`<div class="dialog-row"><span class="role">${esc(r[0])}</span><div class="english-text" data-en="${escAttr(r[1])}"></div>${editableMeaningHTML(r[1],r[2]||'','dialog-meaning')}</div>`).join('')}</div>`; }
 
   function hydrateSentences(root){
-    $('.english-text[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
+    $$('.english-text[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
     bindMeaningEditors(root);
     $$('[data-speak]',root).forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation(); const card=btn.closest('[data-sentence-card]'); speak(btn.dataset.speak, card?$('.english-text',card):btn.parentElement); }));
     $$('[data-sentence-card]',root).forEach(card=>card.addEventListener('click',e=>{if(e.target.closest('button,input,label,.word-token')) return; speak(card.dataset.enCard,$('.english-text',card));}));
@@ -840,7 +841,6 @@
     const lessonEls=$$('#sectionLearnableSentences .english-text');
     const sequenceItems=lessonItems.map((x,i)=>[x[0],lessonEls[i]||null]);
     if($('#playAllLesson')) $('#playAllLesson').onclick=()=>speakSequence(sequenceItems,1);
-    if($('#repeatAllLesson5')) $('#repeatAllLesson5').onclick=()=>speakSequence(sequenceItems,5);
     $$('[data-dialog-play]').forEach(btn=>btn.onclick=()=>{
       const pool=(L._renderDialogs?.length?L._renderDialogs:(L.dialogs||[]));
       const dialog=pool[+btn.dataset.dialogPlay];
