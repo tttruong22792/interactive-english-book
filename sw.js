@@ -1,4 +1,4 @@
-const CACHE='language-studio-v6-shared-audio';
+const CACHE='language-studio-v7-one-ai-master';
 const ASSETS=[
   './',
   './index.html',
