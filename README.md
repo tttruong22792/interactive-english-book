@@ -82,49 +82,42 @@ See `CONTENT-SCHEMA.md`.
 - Pattern 01 — **I’d like to…**
 - Pattern 02 — **I’m going to…**
 - Pattern 03 — **I want to…**
+- Pattern 04 — **I plan to…**
 
-Pattern 02 and Pattern 03 use the reusable `sectioned-pattern` renderer and keep lesson content in `data/english/patterns/002.js` and `data/english/patterns/003.js`.
+Patterns 02–04 use the reusable `sectioned-pattern` renderer.
 
 
-## AI Voice
+## AI Voice and central audio
 
-Language Studio can now use OpenAI `gpt-4o-mini-tts` for more natural pronunciation.
-
-First-time Windows setup:
+Language Studio uses OpenAI TTS with a central Supabase audio cache.
 
 ```text
-1. git pull
-2. double-click SETUP-AI-VOICE.bat
-3. paste the OpenAI API key into the hidden local prompt
-4. restart RUN-WINDOWS.bat
+GitHub Pages
+    ↓
+Device Cache Storage
+    ↓ (cache miss)
+Supabase Storage
+    ↓ (object missing)
+Supabase Edge Function
+    ↓
+OpenAI TTS
 ```
 
-The key is stored only in `.env.local`, which is ignored by Git. Never put the key in frontend JavaScript.
+Central bucket:
 
-Default voices:
-- English: `marin`
-- Japanese: `cedar`
+```text
+language-studio-audio/tts/<hash>.mp3
+```
 
-If AI Voice is unavailable, the app automatically falls back to browser TTS. Generated local audio is cached in `.cache/tts/`.
+A sentence is generated at most once centrally. Each phone/computer downloads the MP3 once, stores it in its own Cache Storage, and reuses it on later plays.
 
-See `AI-VOICE.md`.
+Slow / Medium / Natural use one master MP3 with different playback rates.
 
+OpenAI secrets are server-side only. Never put an API key in frontend JavaScript or GitHub.
 
-## Shared AI audio cache
+See `AI-VOICE.md` and `SHARED-AUDIO-CACHE.md`.
 
-Language Studio now reuses AI-generated MP3 files across PC and phone.
-
-Playback order:
-1. Check `audio/tts/<hash>.mp3`.
-2. If it exists, play it with no OpenAI request.
-3. On localhost/private LAN only, a cache miss calls OpenAI once.
-4. The Windows server saves the MP3 directly into `audio/tts/`.
-5. Run `PUBLISH-AUDIO-CACHE.bat` to push only those MP3 files.
-6. Online static hosting reuses the published MP3 files on every device.
-
-Public HTTPS static hosting does **not** call OpenAI automatically. If an MP3 has not been published, the app falls back to browser TTS instead of spending API credit.
-
-The static deployment build is:
+## Static deployment
 
 ```text
 npm run build
@@ -135,5 +128,3 @@ Output:
 ```text
 dist/
 ```
-
-See `SHARED-AUDIO-CACHE.md` and `ONLINE-DEPLOY.md`.
