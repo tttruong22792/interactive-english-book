@@ -32,8 +32,8 @@ if (await exists(join(root, "audio"))) {
 }
 
 const indexSource = await readFile(join(root, "data/content-index.js"), "utf8");
-const sourceMatches = [...indexSource.matchAll(/source:\\s*"([^"]+\\.js)"/g)]
-  .map(match => match[1].replace(/^\\.\\//, ""));
+const sourceMatches = [...indexSource.matchAll(/source:\s*"([^"]+\.js)"/g)]
+  .map(match => match[1].replace(/^\.\//, ""));
 
 const runtimeFiles = [
   "data/content-index.js",
