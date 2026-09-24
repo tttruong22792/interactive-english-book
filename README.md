@@ -108,3 +108,32 @@ Default voices:
 If AI Voice is unavailable, the app automatically falls back to browser TTS. Generated local audio is cached in `.cache/tts/`.
 
 See `AI-VOICE.md`.
+
+
+## Shared AI audio cache
+
+Language Studio now reuses AI-generated MP3 files across PC and phone.
+
+Playback order:
+1. Check `audio/tts/<hash>.mp3`.
+2. If it exists, play it with no OpenAI request.
+3. On localhost/private LAN only, a cache miss calls OpenAI once.
+4. The Windows server saves the MP3 directly into `audio/tts/`.
+5. Run `PUBLISH-AUDIO-CACHE.bat` to push only those MP3 files.
+6. Online static hosting reuses the published MP3 files on every device.
+
+Public HTTPS static hosting does **not** call OpenAI automatically. If an MP3 has not been published, the app falls back to browser TTS instead of spending API credit.
+
+The static deployment build is:
+
+```text
+npm run build
+```
+
+Output:
+
+```text
+dist/
+```
+
+See `SHARED-AUDIO-CACHE.md` and `ONLINE-DEPLOY.md`.
