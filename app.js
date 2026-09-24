@@ -68,10 +68,14 @@
   function savedCount(){ return Object.keys(state.saved || {}).length; }
 
   function updateGlobalUI(){
-    const pct = lessonPercent();
-    $('#sidebarProgressText').textContent = pct + '%';
-    $('#sidebarProgressBar').style.width = pct + '%';
-    $('#sidebarProgressNote').textContent = pct >= 100 ? 'Mẫu 01 đã hoàn thành' : `${learnedCount()}/20 câu đã đánh dấu thuộc`;
+    const route=parseRoute();
+    const lessonId=route.name==='lesson' && L?.id ? L.id : CORE_LESSON_ID;
+    const pct=lessonPercent(lessonId);
+    const meta=STORE?.meta?.(lessonId);
+    if($('#sidebarProgressLabel')) $('#sidebarProgressLabel').textContent=`English · Pattern ${String(meta?.order||1).padStart(2,'0')}`;
+    $('#sidebarProgressText').textContent=pct+'%';
+    $('#sidebarProgressBar').style.width=pct+'%';
+    $('#sidebarProgressNote').textContent=pct>=100 ? `${meta?.title||'Bài học'} đã hoàn thành` : `${learnedCount(lessonId)}/20 câu đã đánh dấu thuộc`;
     $('#savedCountBadge').textContent = savedCount();
     $('#globalRateSelect').value = String(state.rate);
     $('#hideViBtn').textContent = state.hideVi ? 'Hiện tiếng Việt' : 'Ẩn tiếng Việt';
@@ -273,6 +277,7 @@
   }
 
   function lessonHTML(){
+    if(L.layout==='sectioned-pattern') return sectionedLessonHTML();
     const u=L.ui||{},p=u.pronunciation||{},c=u.comparison||{},m=u.masterList||{},w=u.work||{},r=u.restaurant||{},b=u.builder||{},q=u.questions||{},z=u.quiz||{},d=u.daily||{};
     const maybeSentence=pair=>Array.isArray(pair)&&pair[0]?sentenceRow(pair[0],pair[1]||''):'';
     return `
@@ -333,6 +338,88 @@
         <div class="footer-next"><div><span class="eyebrow">${esc(d.nextEyebrow||'BÀI TIẾP THEO')}</span><br><strong>${esc(d.nextTitle||'')}</strong><div>${esc(d.nextMeaning||'')}</div><small>${esc(d.nextNote||'')}</small></div><button class="secondary-button" id="nextPatternInfo">Xem trạng thái bài tiếp theo</button></div></section>`;
   }
 
+  function sectionedLessonHTML(){
+    const u=L.ui||{};
+    L._learnableSentences=[];
+    L._renderDialogs=[];
+    L._builderBase=L.title||'';
+    return `
+      <article class="book-header">
+        <div class="eyebrow">${esc(u.eyebrow||'ENGLISH PATTERN')}</div>
+        <h1>${esc(L.title||'')}</h1>
+        <div class="meaning">${esc(u.meaningTitle||L.meaning||'')}</div>
+        ${u.leadHtml?`<div class="lead-box">${u.leadHtml}</div>`:''}
+        ${u.formula?`<h3>Công thức</h3><div class="formula-box">${esc(u.formula)}</div>`:''}
+        <div class="sentence-list">${(L.introExamples||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
+        ${u.introNoteHtml?`<div class="green-box">${u.introNoteHtml}</div>`:''}
+        ${u.sourceNote?`<div class="source-note">${esc(u.sourceNote)}</div>`:''}
+      </article>
+      ${(L.sections||[]).map(renderLessonSection).join('')}
+    `;
+  }
+
+  function renderLessonSection(section,sectionIndex){
+    const id=escAttr(section.id||`section-${sectionIndex+1}`);
+    return `<section class="book-section" id="${id}">
+      <h2>${section.title||''}</h2>
+      ${(section.blocks||[]).map((block,blockIndex)=>renderLessonBlock(block,section,blockIndex)).join('')}
+    </section>`;
+  }
+
+  function renderLessonBlock(block,section,blockIndex){
+    if(!block) return '';
+    const type=block.type||'paragraph';
+
+    if(type==='paragraph'){
+      return block.html || (block.text?`<p>${esc(block.text)}</p>`:'');
+    }
+
+    if(type==='formula'){
+      return `<div class="formula-box">${esc(block.text||'')}${block.note?`<small>${esc(block.note)}</small>`:''}</div>`;
+    }
+
+    if(type==='callout'){
+      const cls=block.tone==='amber'?'amber-box':block.tone==='bad'?'bad-box':block.tone==='purple'?'purple-box':'green-box';
+      return `<div class="${cls}">${block.html||esc(block.text||'')}</div>`;
+    }
+
+    if(type==='sentences'){
+      const items=block.items||[];
+      if(block.learnable) L._learnableSentences=items;
+      const controls=block.controls?`<div class="study-toolbar"><button id="playAll20" class="primary-button">▶ Nghe toàn bộ</button><button id="repeatDaily5" class="secondary-button">🔁 Lặp 5 câu hôm nay</button><span class="muted">Đánh dấu ✓ khi câu đã bật ra tự nhiên.</span></div>`:'';
+      if(block.learnable){
+        return `${controls}<div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${items.map((x,i)=>sentenceRow(x[0],x[1],`s20-${i}`)).join('')}</div>`;
+      }
+      return `<div class="sentence-list">${items.map(x=>sentenceRow(x[0],x[1])).join('')}</div>`;
+    }
+
+    if(type==='chips'){
+      return `<div class="meaning-chip-grid">${(block.items||[]).map(x=>`<div class="meaning-chip"><strong>${esc(x[0])}</strong><span data-vi-only>${esc(x[1]||'')}</span></div>`).join('')}</div>`;
+    }
+
+    if(type==='compare'){
+      return `<div class="compare-grid"><div class="head">${esc(block.leftTitle||'')}</div><div class="head">${esc(block.rightTitle||'')}</div><div>${block.leftHtml||esc(block.leftText||'')}</div><div>${block.rightHtml||esc(block.rightText||'')}</div></div>`;
+    }
+
+    if(type==='builder'){
+      L._builderBase=block.base||L.title||'';
+      return `<div class="builder-lab"><div class="builder-top"><div><div class="eyebrow">SENTENCE BUILDER</div><strong>${esc(block.title||'Tự ghép câu')}</strong></div><button id="speakBuilder" class="speaker">🔊</button></div><div id="builderOutput" class="builder-output">${esc((block.base||L.title||'')+'…')}</div><div id="builderGroups" class="builder-groups">${(L.builderGroups||[]).map(g=>`<div class="builder-group"><strong>${esc(g.label)}</strong><div class="chip-row">${g.options.map(o=>`<button class="word-chip" data-builder="${escAttr(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}</div><div class="builder-actions"><button id="builderUndo" class="secondary-button">← Xóa phần cuối</button><button id="builderReset" class="secondary-button">Làm lại</button></div></div>`;
+    }
+
+    if(type==='dialogs'){
+      return (block.items||[]).map(dialog=>{
+        const index=L._renderDialogs.push(dialog)-1;
+        return dialogCard(dialog,index);
+      }).join('');
+    }
+
+    if(type==='quiz'){
+      return `<div data-lesson-quiz-wrap>${quizHTML('lesson')}</div>`;
+    }
+
+    return '';
+  }
+
   function sentenceRow(en,vi,learnKey=''){
     const scoped=learnKey?scopedLearnKey(learnKey):'';
     const checked=scoped && state.learned[scoped] ? 'checked' : '';
@@ -386,14 +473,18 @@
 
   function bindLessonEvents(){
     $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
-    if($('#playAll20')) $('#playAll20').onclick=()=>speakSequence((L.sentences20||[]).map((x,i)=>[x[0],$$('#sentences20 .english-text')[i]]));
+    if($('#playAll20')){
+      const items=(L._learnableSentences?.length?L._learnableSentences:(L.sentences20||[]));
+      $('#playAll20').onclick=()=>speakSequence(items.map((x,i)=>[x[0],$$('#sectionLearnableSentences .english-text, #sentences20 .english-text')[i]]));
+    }
     if($('#repeatDaily5')) $('#repeatDaily5').onclick=()=>speakSequence((L.dailyFive||[]).map(s=>[s,null]));
     $$('[data-builder]').forEach(btn=>btn.onclick=()=>{builder.push(btn.dataset.builder);updateBuilder();});
     if($('#builderUndo')) $('#builderUndo').onclick=()=>{builder.pop();updateBuilder();};
     if($('#builderReset')) $('#builderReset').onclick=()=>{builder=[];updateBuilder();};
     if($('#speakBuilder')) $('#speakBuilder').onclick=()=>speak(builderSentence());
     $$('[data-dialog-play]').forEach(btn=>btn.onclick=()=>{
-      const dialog=(L.dialogs||[])[+btn.dataset.dialogPlay];
+      const pool=(L._renderDialogs?.length?L._renderDialogs:(L.dialogs||[]));
+      const dialog=pool[+btn.dataset.dialogPlay];
       if(!dialog)return;
       const card=btn.closest('.dialog-card');
       const els=$$('.english-text',card);
@@ -404,9 +495,11 @@
       toast(next?`${next.title} = ${next.meaning}`:'Chưa có bài tiếp theo.');
       routeTo('patterns');
     };
-    if($('#lessonPractice')) bindQuiz($('#lessonPractice'));
+    const lessonQuiz=$('[data-lesson-quiz-wrap]');
+    if(lessonQuiz) bindQuiz(lessonQuiz);
+    else if($('#lessonPractice')) bindQuiz($('#lessonPractice'));
   }
-  function builderSentence(){const base=L?.ui?.builder?.base||L?.title?.replace(/…|\.\.\.$/g,'').trim()||"I'd like to";return builder.length?`${base} ${builder.join(' ')}.`:`${base}…`;}
+  function builderSentence(){const base=L?._builderBase||L?.ui?.builder?.base||L?.title?.replace(/…|\.\.\.$/g,'').trim()||"I'd like to";return builder.length?`${base} ${builder.join(' ')}.`:`${base}…`;}
   function updateBuilder(){ $('#builderOutput').textContent=builderSentence(); }
 
   function quizHTML(context){
@@ -452,9 +545,15 @@
     mic.onclick=()=>startRecognition(input);
   }
   function rerenderQuiz(root){
+    if(root.matches('[data-lesson-quiz-wrap]')){
+      root.innerHTML=quizHTML('lesson');
+      hydrateSentences(root);
+      bindQuiz(root);
+      return;
+    }
     const holder=root.matches('.book-section')?root:$('#practiceQuizWrap',root);
-    if(holder.matches('.book-section')){const z=L?.ui?.quiz||{};holder.innerHTML=`<h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}`;hydrateSentences(holder);bindQuiz(holder);}
-    else{holder.innerHTML=quizHTML('hub');bindQuiz(holder);}
+    if(holder?.matches('.book-section')){const z=L?.ui?.quiz||{};holder.innerHTML=`<h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}`;hydrateSentences(holder);bindQuiz(holder);}
+    else if(holder){holder.innerHTML=quizHTML('hub');bindQuiz(holder);}
   }
   function startRecognition(input){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -644,9 +743,9 @@
     if(type==='phrase' || normalized.includes(' ')){
       const p=L.phrases[normalized]; if(p) return {key:'p:'+normalized,term,ipa:p[0],meaning:p[1],example:p[2],type:'phrase'};
       const words=normalized.split(' ').map(w=>lookupData(w,'word')).filter(Boolean);
-      return {key:'p:'+normalized,term,ipa:'',meaning:'Cụm này chưa có nghĩa cố định trong từ điển của Mẫu 01.',example:'',type:'phrase',breakdown:words};
+      return {key:'p:'+normalized,term,ipa:'',meaning:'Cụm này chưa có nghĩa cố định trong từ điển của bài hiện tại.',example:'',type:'phrase',breakdown:words};
     }
-    const w=L.dictionary[normalized]; if(!w) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ này chưa có trong từ điển của Mẫu 01.',example:'',type:'word'};
+    const w=L.dictionary[normalized]; if(!w) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ này chưa có trong từ điển của bài hiện tại.',example:'',type:'word'};
     return {key:'w:'+normalized,term,ipa:w[0],meaning:w[1],example:w[2],type:'word'};
   }
   function openLookup(term,type='word'){
@@ -678,7 +777,7 @@
   document.addEventListener('touchend',()=>setTimeout(detectSelection,120));
   $('#menuBtn').onclick=openSidebar;$('#drawerShade').onclick=closeSidebar;
   $('#closePopoverBtn').onclick=closePopover;$('#speakWordBtn').onclick=()=>currentLookup&&speak(currentLookup.term);$('#saveWordBtn').onclick=saveCurrentLookup;
-  $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
+  $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{if(!L)await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
   $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz={index:0,correct:0,counted:new Set(),revealed:false};render();toast('Đã xóa dữ liệu học.');}};
   window.addEventListener('hashchange',render);
