@@ -1,10 +1,10 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title English Book Launcher
+title Language Studio
 cls
 echo ================================================
-echo  80 MAU CAU TIENG ANH - INTERACTIVE BOOK V2.2
+echo  LANGUAGE STUDIO - ENGLISH + JAPANESE + AI VOICE
 echo ================================================
 echo.
 echo Starting local server...
@@ -13,7 +13,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0START-ENGLISH-BOOK
 if errorlevel 1 (
   echo.
   echo Server stopped with an error.
-  echo Please take a screenshot of this window and send it to ChatGPT.
+  echo Please take a screenshot of this window if you need help.
   pause
 )
 endlocal
