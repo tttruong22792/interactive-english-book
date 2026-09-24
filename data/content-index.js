@@ -62,6 +62,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-005",
+    language: "en",
+    category: "patterns",
+    order: 5,
+    title: "I hope to…",
+    meaning: "Tôi hy vọng sẽ… / Tôi mong có thể…",
+    description: "Dùng để nói về mong muốn trong tương lai khi kết quả chưa chắc chắn 100%.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/005.js",
+    route: "lesson/5",
+    accent: "purple",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
