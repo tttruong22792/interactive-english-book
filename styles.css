@@ -329,3 +329,126 @@ body{background:var(--bg);color:var(--ink)}
   .quiz-config label{width:100%;justify-content:space-between}
   .quiz-config select{min-width:130px}
 }
+
+
+/* ===== LESSON SUBPAGES + EDITABLE VI v9 ===== */
+.lesson-action-panel{
+  margin:18px 0;
+  padding:22px;
+  background:#fffdf8;
+  border:1px solid #d9d3ca;
+}
+.lesson-action-copy h2{
+  margin:5px 0 8px;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:30px;
+  font-weight:400;
+}
+.lesson-action-copy p{margin:0;color:var(--muted);line-height:1.65}
+.lesson-action-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:18px;
+}
+.lesson-action-card{
+  display:grid;
+  grid-template-columns:44px 1fr auto;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  border:1px solid #cfc7c0;
+  background:#f5f1ff;
+  padding:16px;
+  text-align:left;
+  cursor:pointer;
+  color:var(--ink);
+}
+.lesson-action-card.practice{background:#ecfbf3;border-color:#a8ddc2}
+.lesson-action-card:hover{transform:translateY(-1px);border-color:#9a88ef}
+.lesson-action-icon{
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  font-size:20px;
+}
+.lesson-action-card strong{display:block;font-size:15px}
+.lesson-action-card small{display:block;margin-top:3px;color:var(--muted);font-size:11px;line-height:1.5}
+.lesson-action-card>b{font-size:20px}
+
+.subpage-hero{
+  margin-bottom:16px;
+  padding:24px;
+  background:#fffdf8;
+  border:1px solid #d9d3ca;
+}
+.subpage-hero h1{
+  margin:6px 0 8px;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:38px;
+  font-weight:400;
+}
+.subpage-hero p{margin:0;color:var(--muted);line-height:1.65}
+.subpage-back{margin-bottom:14px}
+.compact-subpage{margin-top:0}
+
+.meaning-editor{min-width:0}
+.meaning-display-row{
+  display:flex;
+  align-items:flex-start;
+  gap:6px;
+}
+.meaning-display-row .vi-text{
+  flex:1;
+  min-width:0;
+  line-height:1.55;
+}
+.meaning-edit-button{
+  flex:0 0 auto;
+  width:24px;
+  height:24px;
+  border:1px solid #d8d1c9;
+  background:#fff;
+  color:#6f6871;
+  cursor:pointer;
+  font-size:12px;
+  line-height:1;
+}
+.meaning-edit-button:hover{background:#f2edff;border-color:#ab9cf4;color:#594ac5}
+.meaning-edit-panel{
+  margin-top:7px;
+  padding:8px;
+  border:1px solid #d8d1c9;
+  background:#fffdf8;
+}
+.meaning-edit-input{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #cfc8c1;
+  background:#fff;
+  color:var(--ink);
+  padding:8px 9px;
+  font:inherit;
+}
+.meaning-edit-input:focus{outline:2px solid #b6a8ff;outline-offset:1px}
+.meaning-edit-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:7px;
+}
+.dialog-meaning{font-size:12px;color:var(--muted)}
+.hide-vietnamese .meaning-edit-button{pointer-events:none}
+
+@media(max-width:700px){
+  .lesson-action-panel{padding:18px 14px}
+  .lesson-action-buttons{grid-template-columns:1fr}
+  .lesson-action-copy h2{font-size:26px}
+  .subpage-hero{padding:20px 15px}
+  .subpage-hero h1{font-size:31px}
+  .meaning-edit-button{width:28px;height:28px}
+}
