@@ -8,7 +8,13 @@
   const $ = (s, root=document) => root.querySelector(s);
   const $$ = (s, root=document) => [...root.querySelectorAll(s)];
 
-  const defaults = { hideVi:false, rate:0.88, learned:{}, saved:{}, quizBest:0, quizRuns:0, lessonVisits:0 };
+  const CORE_LESSON_ID = 'en-pattern-001';
+  const defaults = {
+    hideVi:false, rate:0.88, learned:{}, saved:{},
+    quizBest:0, quizRuns:0,
+    quizBestByLesson:{}, quizRunsByLesson:{},
+    lessonVisits:0, lessonVisitsByLesson:{}
+  };
   let state = loadState();
   let currentLookup = null;
   let currentSelection = '';
@@ -18,16 +24,47 @@
   let installPrompt = null;
 
   function loadState(){
-    try { return {...defaults, ...JSON.parse(localStorage.getItem(KEY) || '{}')}; }
-    catch { return {...defaults}; }
+    try {
+      const raw=JSON.parse(localStorage.getItem(KEY) || '{}');
+      const next={
+        ...defaults,
+        ...raw,
+        learned:{...(raw.learned||{})},
+        saved:{...(raw.saved||{})},
+        quizBestByLesson:{...(raw.quizBestByLesson||{})},
+        quizRunsByLesson:{...(raw.quizRunsByLesson||{})},
+        lessonVisitsByLesson:{...(raw.lessonVisitsByLesson||{})}
+      };
+
+      // Migrate V2 single-lesson progress to scoped lesson keys once.
+      Object.keys(next.learned).forEach(key=>{
+        if(!key.includes(':')){
+          next.learned[`${CORE_LESSON_ID}:${key}`]=next.learned[key];
+          delete next.learned[key];
+        }
+      });
+      if(next.quizBest && next.quizBestByLesson[CORE_LESSON_ID]==null) next.quizBestByLesson[CORE_LESSON_ID]=next.quizBest;
+      if(next.quizRuns && next.quizRunsByLesson[CORE_LESSON_ID]==null) next.quizRunsByLesson[CORE_LESSON_ID]=next.quizRuns;
+      if(next.lessonVisits && next.lessonVisitsByLesson[CORE_LESSON_ID]==null) next.lessonVisitsByLesson[CORE_LESSON_ID]=next.lessonVisits;
+      return next;
+    } catch { return {...defaults}; }
   }
   function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); updateGlobalUI(); }
   function esc(s=''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function escAttr(s=''){ return esc(s); }
   function normalizeText(s=''){ return String(s).toLowerCase().replace(/[’]/g,"'").replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim(); }
   function keyFor(s=''){ return normalizeText(s).replace(/\s+/g,'-'); }
-  function learnedCount(){ return Object.keys(state.learned || {}).filter(k => state.learned[k]).length; }
-  function lessonPercent(){ return Math.min(100, Math.round(((Math.min(20, learnedCount()) + Math.min(10, state.quizBest || 0)) / 30) * 100)); }
+  function currentLessonId(){ return L?.id || CORE_LESSON_ID; }
+  function scopedLearnKey(localKey,id=currentLessonId()){ return `${id}:${localKey}`; }
+  function learnedCount(id=CORE_LESSON_ID){
+    const prefix=`${id}:`;
+    return Object.keys(state.learned||{}).filter(key=>key.startsWith(prefix)&&state.learned[key]).length;
+  }
+  function quizBestFor(id=CORE_LESSON_ID){ return Number(state.quizBestByLesson?.[id] || 0); }
+  function quizRunsFor(id=CORE_LESSON_ID){ return Number(state.quizRunsByLesson?.[id] || 0); }
+  function lessonPercent(id=CORE_LESSON_ID){
+    return Math.min(100,Math.round(((Math.min(20,learnedCount(id))+Math.min(10,quizBestFor(id)))/30)*100));
+  }
   function savedCount(){ return Object.keys(state.saved || {}).length; }
 
   function updateGlobalUI(){
@@ -117,7 +154,7 @@
           <div class="hero-mini-stats">
             <div><strong>${pct}%</strong><span>Pattern 01</span></div>
             <div><strong>${savedCount()}</strong><span>Từ đã lưu</span></div>
-            <div><strong>${state.quizBest||0}/10</strong><span>Quiz tốt nhất</span></div>
+            <div><strong>${quizBestFor()}/10</strong><span>Quiz tốt nhất</span></div>
           </div>
         </div>
         <div class="hero-showcase">
@@ -224,7 +261,10 @@
     const lesson=await ensureContent(meta.contentId);
     if(lesson.renderer!=='english-pattern') throw new Error(`Unsupported renderer: ${lesson.renderer}`);
     L=lesson;
-    state.lessonVisits=(state.lessonVisits||0)+1;saveState();
+    const lessonId=lesson.id||CORE_LESSON_ID;
+    state.lessonVisitsByLesson[lessonId]=(state.lessonVisitsByLesson[lessonId]||0)+1;
+    if(lessonId===CORE_LESSON_ID) state.lessonVisits=state.lessonVisitsByLesson[lessonId];
+    saveState();
     setHeader(`English › Patterns › ${String(id).padStart(2,'0')}`,L.title||meta.title,true);
     builder=[];
     $('#mainView').innerHTML=lessonHTML();
@@ -294,8 +334,9 @@
   }
 
   function sentenceRow(en,vi,learnKey=''){
-    const checked=learnKey && state.learned[learnKey] ? 'checked' : '';
-    return `<div class="sentence-card" data-sentence-card="1" data-en-card="${escAttr(en)}"><div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div><div class="vi" data-vi-only>${esc(vi)}</div>${learnKey?`<label class="learn-toggle"><input type="checkbox" data-learn="${learnKey}" ${checked}> Đã thuộc</label>`:''}</div>`;
+    const scoped=learnKey?scopedLearnKey(learnKey):'';
+    const checked=scoped && state.learned[scoped] ? 'checked' : '';
+    return `<div class="sentence-card" data-sentence-card="1" data-en-card="${escAttr(en)}"><div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div><div class="vi" data-vi-only>${esc(vi)}</div>${scoped?`<label class="learn-toggle"><input type="checkbox" data-learn="${scoped}" ${checked}> Đã thuộc</label>`:''}</div>`;
   }
   function inlineSentence(en){ return `<span class="en-wrap" style="display:inline-flex"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe">🔊</button><span class="english-text" data-en="${escAttr(en)}"></span></span>`; }
   function dialogCard(d,di){ return `<div class="dialog-card"><div class="dialog-title"><span>${esc(d.place)}</span><button class="mini-button" data-dialog-play="${di}">▶ Nghe hội thoại</button></div>${d.rows.map(r=>`<div class="dialog-row"><span class="role">${esc(r[0])}</span><div class="english-text" data-en="${escAttr(r[1])}"></div><div class="vi" data-vi-only>${esc(r[2])}</div></div>`).join('')}</div>`; }
@@ -344,26 +385,45 @@
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
   function bindLessonEvents(){
-    $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked; saveState();});
-    $('#playAll20').onclick=()=>speakSequence(L.sentences20.map((x,i)=>[x[0],$$('#sentences20 .english-text')[i]]));
-    $('#repeatDaily5').onclick=()=>speakSequence(L.dailyFive.map(s=>[s,null]));
-    $$('[data-builder]').forEach(b=>b.onclick=()=>{builder.push(b.dataset.builder);updateBuilder();});
-    $('#builderUndo').onclick=()=>{builder.pop();updateBuilder();}; $('#builderReset').onclick=()=>{builder=[];updateBuilder();}; $('#speakBuilder').onclick=()=>speak(builderSentence());
-    $$('[data-dialog-play]').forEach(b=>b.onclick=()=>{const d=L.dialogs[+b.dataset.dialogPlay]; const card=b.closest('.dialog-card'); const els=$$('.english-text',card); speakSequence(d.rows.map((r,i)=>[r[1],els[i]]));});
-    $('#nextPatternInfo').onclick=()=>{toast('Mẫu 02: I need to... = Tôi cần phải… Nội dung chi tiết chưa được thêm.'); routeTo('patterns');};
-    bindQuiz($('#lessonPractice'));
+    $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
+    if($('#playAll20')) $('#playAll20').onclick=()=>speakSequence((L.sentences20||[]).map((x,i)=>[x[0],$$('#sentences20 .english-text')[i]]));
+    if($('#repeatDaily5')) $('#repeatDaily5').onclick=()=>speakSequence((L.dailyFive||[]).map(s=>[s,null]));
+    $$('[data-builder]').forEach(btn=>btn.onclick=()=>{builder.push(btn.dataset.builder);updateBuilder();});
+    if($('#builderUndo')) $('#builderUndo').onclick=()=>{builder.pop();updateBuilder();};
+    if($('#builderReset')) $('#builderReset').onclick=()=>{builder=[];updateBuilder();};
+    if($('#speakBuilder')) $('#speakBuilder').onclick=()=>speak(builderSentence());
+    $$('[data-dialog-play]').forEach(btn=>btn.onclick=()=>{
+      const dialog=(L.dialogs||[])[+btn.dataset.dialogPlay];
+      if(!dialog)return;
+      const card=btn.closest('.dialog-card');
+      const els=$$('.english-text',card);
+      speakSequence(dialog.rows.map((row,i)=>[row[1],els[i]]));
+    });
+    if($('#nextPatternInfo')) $('#nextPatternInfo').onclick=()=>{
+      const next=CATALOG.find(item=>item.id===(L.order||1)+1);
+      toast(next?`${next.title} = ${next.meaning}`:'Chưa có bài tiếp theo.');
+      routeTo('patterns');
+    };
+    if($('#lessonPractice')) bindQuiz($('#lessonPractice'));
   }
   function builderSentence(){const base=L?.ui?.builder?.base||L?.title?.replace(/…|\.\.\.$/g,'').trim()||"I'd like to";return builder.length?`${base} ${builder.join(' ')}.`:`${base}…`;}
   function updateBuilder(){ $('#builderOutput').textContent=builderSentence(); }
 
   function quizHTML(context){
-    const item=L.practice[quiz.index] || L.practice[0];
-    return `<div class="quiz-card" data-quiz="${context}"><div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/10</span><span>Điểm lượt này: <b id="quizScore">${quiz.correct}</b>/10</span></div><div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item[0])}</div><input id="quizInput" class="quiz-input" autocomplete="off" placeholder="Nhập câu tiếng Anh..."/><div class="quiz-actions"><button id="quizCheck" class="primary-button">Kiểm tra</button><button id="quizMic" class="secondary-button">🎤 Nói</button><button id="quizShow" class="secondary-button">Xem đáp án</button><button id="quizNext" class="secondary-button hidden">Câu tiếp theo →</button></div><div id="quizFeedback" class="quiz-feedback"></div></div><details style="margin-top:12px"><summary style="cursor:pointer;color:var(--navy);font-weight:700">Xem toàn bộ đáp án</summary><ol class="answer-list">${L.practice.map(x=>`<li>${esc(x[1])}</li>`).join('')}</ol></details>`;
+    const items=L.practice||[];
+    if(!items.length) return '<div class="empty-state">Bài này chưa có quiz.</div>';
+    if(quiz.index>=items.length) quiz.index=0;
+    const item=items[quiz.index];
+    const total=items.length;
+    return `<div class="quiz-card" data-quiz="${context}"><div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/${total}</span><span>Điểm lượt này: <b id="quizScore">${quiz.correct}</b>/${total}</span></div><div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item[0])}</div><input id="quizInput" class="quiz-input" autocomplete="off" placeholder="Nhập câu tiếng Anh..."/><div class="quiz-actions"><button id="quizCheck" class="primary-button">Kiểm tra</button><button id="quizMic" class="secondary-button">🎤 Nói</button><button id="quizShow" class="secondary-button">Xem đáp án</button><button id="quizNext" class="secondary-button hidden">Câu tiếp theo →</button></div><div id="quizFeedback" class="quiz-feedback"></div></div><details style="margin-top:12px"><summary style="cursor:pointer;color:var(--navy);font-weight:700">Xem toàn bộ đáp án</summary><ol class="answer-list">${items.map(x=>`<li>${esc(x[1])}</li>`).join('')}</ol></details>`;
   }
   function bindQuiz(root){
     const q=$('[data-quiz]',root); if(!q) return;
     const input=$('#quizInput',q), check=$('#quizCheck',q), show=$('#quizShow',q), next=$('#quizNext',q), mic=$('#quizMic',q), feedback=$('#quizFeedback',q);
-    const answer=L.practice[quiz.index][1];
+    const items=L.practice||[];
+    if(!items.length) return;
+    const answer=items[quiz.index][1];
+    const lessonId=currentLessonId();
     const evaluate=()=>{
       if(!input.value.trim()){feedback.className='quiz-feedback bad';feedback.textContent='Hãy nhập hoặc nói câu trả lời trước.';return;}
       const good=normalizeText(input.value)===normalizeText(answer);
@@ -376,14 +436,24 @@
     check.onclick=evaluate; input.addEventListener('keydown',e=>{if(e.key==='Enter') evaluate();});
     show.onclick=()=>{feedback.className='quiz-feedback';feedback.innerHTML=`Đáp án: <b>${esc(answer)}</b> <button class="mini-button" id="quizAnswerSpeak">🔊 Nghe</button>`;$('#quizAnswerSpeak',feedback).onclick=()=>speak(answer);next.classList.remove('hidden');};
     next.onclick=()=>{
-      if(quiz.index<9){quiz.index++; rerenderQuiz(root);}
-      else{state.quizRuns=(state.quizRuns||0)+1;state.quizBest=Math.max(state.quizBest||0,quiz.correct);saveState();feedback.className='quiz-feedback good';feedback.innerHTML=`Hoàn thành: <b>${quiz.correct}/10</b>. Điểm tốt nhất: <b>${state.quizBest}/10</b>.`;next.textContent='Làm lại 10 câu';next.classList.remove('hidden');next.onclick=()=>{quiz={index:0,correct:0,counted:new Set(),revealed:false};rerenderQuiz(root);};}
+      if(quiz.index<items.length-1){quiz.index++;rerenderQuiz(root);}
+      else{
+        state.quizRunsByLesson[lessonId]=(state.quizRunsByLesson[lessonId]||0)+1;
+        state.quizBestByLesson[lessonId]=Math.max(quizBestFor(lessonId),quiz.correct);
+        if(lessonId===CORE_LESSON_ID){state.quizRuns=state.quizRunsByLesson[lessonId];state.quizBest=state.quizBestByLesson[lessonId];}
+        saveState();
+        feedback.className='quiz-feedback good';
+        feedback.innerHTML=`Hoàn thành: <b>${quiz.correct}/${items.length}</b>. Điểm tốt nhất: <b>${quizBestFor(lessonId)}/${items.length}</b>.`;
+        next.textContent='Làm lại';
+        next.classList.remove('hidden');
+        next.onclick=()=>{quiz={index:0,correct:0,counted:new Set(),revealed:false};rerenderQuiz(root);};
+      }
     };
     mic.onclick=()=>startRecognition(input);
   }
   function rerenderQuiz(root){
     const holder=root.matches('.book-section')?root:$('#practiceQuizWrap',root);
-    if(holder.matches('.book-section')){const details=$('details',holder);holder.innerHTML=`<h2>10. Bài luyện hôm nay</h2><p>Tôi đưa tiếng Việt. Bạn cố nói tiếng Anh không nhìn đáp án trước.</p>${quizHTML('lesson')}`;hydrateSentences(holder);bindQuiz(holder);}
+    if(holder.matches('.book-section')){const z=L?.ui?.quiz||{};holder.innerHTML=`<h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}`;hydrateSentences(holder);bindQuiz(holder);}
     else{holder.innerHTML=quizHTML('hub');bindQuiz(holder);}
   }
   function startRecognition(input){
@@ -453,8 +523,8 @@
         <div class="stats-grid">
           <div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}</strong></div>
           <div class="stat-card"><small>Từ / cụm đã lưu</small><strong>${savedCount()}</strong></div>
-          <div class="stat-card"><small>Quiz tốt nhất</small><strong>${state.quizBest||0}/10</strong></div>
-          <div class="stat-card"><small>Lượt quiz</small><strong>${state.quizRuns||0}</strong></div>
+          <div class="stat-card"><small>Quiz tốt nhất</small><strong>${quizBestFor()}/10</strong></div>
+          <div class="stat-card"><small>Lượt quiz</small><strong>${quizRunsFor()}</strong></div>
         </div>
         <div class="data-note"><b>Bước sau:</b> khi cần đồng bộ tự động giữa PC và điện thoại, chúng ta sẽ thêm tài khoản + cloud sync thay vì phụ thuộc vào file JSON.</div>
       </section>
@@ -547,7 +617,7 @@
   async function renderProgress(){
     await ensureCoreEnglish();
     setHeader('Progress','Tiến độ học'); const pct=lessonPercent();
-    $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PROGRESS</div><h1>Tiến độ Mẫu 01</h1><p>Tiến độ được tính từ 20 câu bạn đánh dấu “đã thuộc” và điểm tốt nhất của bài luyện 10 câu.</p></section><section class="stats-grid"><div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}/20</strong></div><div class="stat-card"><small>Quiz tốt nhất</small><strong>${state.quizBest||0}/10</strong></div><div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div><div class="stat-card"><small>Số lượt làm quiz</small><strong>${state.quizRuns||0}</strong></div></section><section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div><div class="check-grid">${L.sentences20.map((x,i)=>`<div class="check-row ${state.learned[`s20-${i}`]?'done':''}"><span>${state.learned[`s20-${i}`]?'✓':'○'}</span><span>${esc(x[0])}</span></div>`).join('')}</div></section>`;
+    $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PROGRESS</div><h1>Tiến độ Mẫu 01</h1><p>Tiến độ được tính từ 20 câu bạn đánh dấu “đã thuộc” và điểm tốt nhất của bài luyện 10 câu.</p></section><section class="stats-grid"><div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}/20</strong></div><div class="stat-card"><small>Quiz tốt nhất</small><strong>${quizBestFor()}/10</strong></div><div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div><div class="stat-card"><small>Số lượt làm quiz</small><strong>${quizRunsFor()}</strong></div></section><section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div><div class="check-grid">${L.sentences20.map((x,i)=>`<div class="check-row ${state.learned[scopedLearnKey(`s20-${i}`,CORE_LESSON_ID)]?'done':''}"><span>${state.learned[scopedLearnKey(`s20-${i}`,CORE_LESSON_ID)]?'✓':'○'}</span><span>${esc(x[0])}</span></div>`).join('')}</div></section>`;
     bindGenericRoutes();
   }
 
