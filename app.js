@@ -101,12 +101,13 @@
     const out=[]; const seen=new Set();
     const add=(en,vi='',source='')=>{
       if(typeof en!=='string') return;
-      en=en.trim(); vi=typeof vi==='string'?vi.trim():'';
-      vi=meaningFor(en,vi,lesson?.id||currentLessonId());
+      en=en.trim();
+      const originalVi=typeof vi==='string'?vi.trim():'';
+      vi=meaningFor(en,originalVi,lesson?.id||currentLessonId());
       const key=normalizeText(en);
       if(!key || seen.has(key) || !/[a-z]/i.test(en) || /^\//.test(en)) return;
       seen.add(key);
-      out.push({en,vi,source});
+      out.push({en,vi,originalVi,source});
     };
     const addPairs=(items,source='')=>(items||[]).forEach(x=>{
       if(Array.isArray(x) && typeof x[0]==='string') add(x[0],x[1]||'',source);
@@ -463,7 +464,7 @@
       <section class="book-section compact-subpage">
         <div class="sentence-table" id="sectionLearnableSentences">
           <div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>
-          ${items.map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}
+          ${items.map(x=>sentenceRow(x.en,x.originalVi??x.vi,sentenceLearnKey(x.en))).join('')}
         </div>
       </section>`;
     bindGenericRoutes();
@@ -632,16 +633,106 @@
     return '';
   }
 
+  function editableMeaningHTML(en,originalVi='',extraClass=''){
+    const lessonId=currentLessonId();
+    const key=meaningOverrideKey(en,lessonId);
+    const shown=meaningFor(en,originalVi,lessonId);
+    return `<div class="vi meaning-editor ${escAttr(extraClass)}" data-vi-only data-meaning-key="${escAttr(key)}" data-meaning-en="${escAttr(en)}" data-original-vi="${escAttr(originalVi||'')}">
+      <div class="meaning-display-row">
+        <span class="vi-text">${esc(shown)}</span>
+        <button class="meaning-edit-button" type="button" data-edit-meaning aria-label="Sửa nghĩa tiếng Việt" title="Sửa nghĩa tiếng Việt">✎</button>
+      </div>
+      <div class="meaning-edit-panel hidden">
+        <input class="meaning-edit-input" type="text" value="${escAttr(shown)}" autocomplete="off" />
+        <div class="meaning-edit-actions">
+          <button class="mini-button" type="button" data-save-meaning>Lưu</button>
+          <button class="mini-button" type="button" data-cancel-meaning>Hủy</button>
+          <button class="text-button" type="button" data-reset-meaning>Khôi phục gốc</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function saveMeaningOverride(editor,value){
+    const key=editor.dataset.meaningKey;
+    const en=editor.dataset.meaningEn||'';
+    const original=editor.dataset.originalVi||'';
+    const next=String(value||'').trim();
+    if(!next){toast('Nghĩa tiếng Việt không được để trống.');return false;}
+    if(normalizeMeaning(next)===normalizeMeaning(original)) delete state.meaningOverrides[key];
+    else state.meaningOverrides[key]=next;
+    saveState();
+
+    $('[data-meaning-key]').filter(node=>node.dataset.meaningKey===key).forEach(node=>{
+      const text=$('.vi-text',node);
+      const input=$('.meaning-edit-input',node);
+      if(text) text.textContent=next;
+      if(input) input.value=next;
+    });
+    toast('Đã lưu nghĩa tiếng Việt.');
+    return true;
+  }
+
+  function bindMeaningEditors(root){
+    $('[data-edit-meaning]',root).forEach(btn=>btn.onclick=e=>{
+      e.stopPropagation();
+      const editor=btn.closest('[data-meaning-key]');
+      const panel=$('.meaning-edit-panel',editor);
+      const input=$('.meaning-edit-input',editor);
+      panel.classList.remove('hidden');
+      input.value=$('.vi-text',editor)?.textContent||'';
+      setTimeout(()=>{input.focus();input.select();},0);
+    });
+    $('[data-cancel-meaning]',root).forEach(btn=>btn.onclick=e=>{
+      e.stopPropagation();
+      const editor=btn.closest('[data-meaning-key]');
+      $('.meaning-edit-panel',editor).classList.add('hidden');
+    });
+    $('[data-save-meaning]',root).forEach(btn=>btn.onclick=e=>{
+      e.stopPropagation();
+      const editor=btn.closest('[data-meaning-key]');
+      if(saveMeaningOverride(editor,$('.meaning-edit-input',editor).value)){
+        $('.meaning-edit-panel',editor).classList.add('hidden');
+      }
+    });
+    $('[data-reset-meaning]',root).forEach(btn=>btn.onclick=e=>{
+      e.stopPropagation();
+      const editor=btn.closest('[data-meaning-key]');
+      const key=editor.dataset.meaningKey;
+      const original=editor.dataset.originalVi||'';
+      delete state.meaningOverrides[key];
+      saveState();
+      $('[data-meaning-key]').filter(node=>node.dataset.meaningKey===key).forEach(node=>{
+        const text=$('.vi-text',node);
+        const input=$('.meaning-edit-input',node);
+        if(text) text.textContent=original;
+        if(input) input.value=original;
+        $('.meaning-edit-panel',node)?.classList.add('hidden');
+      });
+      toast('Đã khôi phục nghĩa gốc.');
+    });
+    $('.meaning-edit-input',root).forEach(input=>input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        const editor=input.closest('[data-meaning-key]');
+        if(saveMeaningOverride(editor,input.value)) $('.meaning-edit-panel',editor).classList.add('hidden');
+      }else if(e.key==='Escape'){
+        input.closest('.meaning-edit-panel')?.classList.add('hidden');
+      }
+    }));
+  }
+
   function sentenceRow(en,vi,learnKey=''){
     const scoped=learnKey?scopedLearnKey(learnKey):'';
     const checked=scoped && state.learned[scoped] ? 'checked' : '';
-    return `<div class="sentence-card" data-sentence-card="1" data-en-card="${escAttr(en)}"><div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div><div class="vi" data-vi-only>${esc(vi)}</div>${scoped?`<label class="learn-toggle"><input type="checkbox" data-learn="${scoped}" ${checked}> Đã thuộc</label>`:''}</div>`;
+    return `<div class="sentence-card" data-sentence-card="1" data-en-card="${escAttr(en)}"><div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div>${editableMeaningHTML(en,vi)}${scoped?`<label class="learn-toggle"><input type="checkbox" data-learn="${scoped}" ${checked}> Đã thuộc</label>`:''}</div>`;
   }
   function inlineSentence(en){ return `<span class="en-wrap" style="display:inline-flex"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe">🔊</button><span class="english-text" data-en="${escAttr(en)}"></span></span>`; }
-  function dialogCard(d,di){ return `<div class="dialog-card"><div class="dialog-title"><span>${esc(d.place)}</span><button class="mini-button" data-dialog-play="${di}">▶ Nghe hội thoại</button></div>${d.rows.map(r=>`<div class="dialog-row"><span class="role">${esc(r[0])}</span><div class="english-text" data-en="${escAttr(r[1])}"></div><div class="vi" data-vi-only>${esc(r[2])}</div></div>`).join('')}</div>`; }
+  function dialogCard(d,di){ return `<div class="dialog-card"><div class="dialog-title"><span>${esc(d.place)}</span><button class="mini-button" data-dialog-play="${di}">▶ Nghe hội thoại</button></div>${d.rows.map(r=>`<div class="dialog-row"><span class="role">${esc(r[0])}</span><div class="english-text" data-en="${escAttr(r[1])}"></div>${editableMeaningHTML(r[1],r[2]||'','dialog-meaning')}</div>`).join('')}</div>`; }
 
   function hydrateSentences(root){
-    $$('.english-text[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
+    $('.english-text[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
+    bindMeaningEditors(root);
     $$('[data-speak]',root).forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation(); const card=btn.closest('[data-sentence-card]'); speak(btn.dataset.speak, card?$('.english-text',card):btn.parentElement); }));
     $$('[data-sentence-card]',root).forEach(card=>card.addEventListener('click',e=>{if(e.target.closest('button,input,label,.word-token')) return; speak(card.dataset.enCard,$('.english-text',card));}));
     $$('.word-token',root).forEach(w=>w.addEventListener('click',async e=>{e.stopPropagation();try{if(!L)await ensureCoreEnglish();openLookup(w.dataset.word,'word');}catch(error){toast(error.message);}}));
