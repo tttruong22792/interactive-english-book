@@ -9,7 +9,7 @@ echo ================================================
 echo.
 echo Starting local server...
 echo.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0START-ENGLISH-BOOK.ps1" -PreferredPort 5525
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0START-ENGLISH-BOOK.ps1" -PreferredPort 5535
 if errorlevel 1 (
   echo.
   echo Server stopped with an error.
