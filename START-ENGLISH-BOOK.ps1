@@ -366,7 +366,8 @@ try {
       if ($rawPath -eq '/api/health' -and $method -eq 'GET') {
         Send-Json $stream 200 'OK' @{
           ok = $true
-          safeBoot = $true
+          safeBoot = $false
+          staticBoot = $true
           aiVoiceConfigured = -not [string]::IsNullOrWhiteSpace($OpenAIKey)
           port = $Port
         }
