@@ -131,11 +131,12 @@
     return STORE.load(id);
   }
   async function ensureCoreEnglish(){
-    if(!L) L=await ensureContent('en-pattern-001');
+    if(!L || L.id!==CORE_LESSON_ID) L=await ensureContent(CORE_LESSON_ID);
     return L;
   }
 
   function renderHome(){
+    L=null;
     setHeader('Trang chủ','Language Studio');
     const pct=lessonPercent();
     const tracks=(PLATFORM.tracks||[]).map(trackCard).join('');
@@ -235,6 +236,7 @@
   function feature(icon,title,text){ return `<article class="feature-card"><div class="feature-icon">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`; }
 
   function renderPatterns(){
+    L=null;
     setHeader('English','English Learning');
     $('#mainView').innerHTML = `
       <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>80 mẫu câu chỉ là một track đầu tiên. Sau này khu vực English có thể mở rộng sang vocabulary, listening, speaking, reading và tình huống công việc.</p></section>
@@ -563,6 +565,7 @@
   }
 
   async function renderJapanese(){
+    L=null;
     setHeader('Japanese','Japanese Learning');
     const modules=(STORE?.list({language:'ja'})||[]);
     const first=modules.find(item=>item.status==='available'&&item.source);
