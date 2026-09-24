@@ -7,11 +7,44 @@
   var activeObjectUrl = null;
   var activeTimer = null;
   var STATUS_TTL = 30000;
+  var TTS_MODEL = "gpt-4o-mini-tts-2025-12-15";
+  var TTS_PROFILE = "teacher-v1";
+  var STATIC_AUDIO_BASE = "./audio/tts/";
 
   function endpoint() { return window.LANGUAGE_STUDIO_TTS_ENDPOINT || "/api/tts"; }
   function statusEndpoint() { return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT || (endpoint() + "/status"); }
   function detectLanguage(text) { return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text || "")) ? "ja-JP" : "en-US"; }
   function voiceFor(language) { return /^ja/i.test(language || "") ? "cedar" : "marin"; }
+
+  async function sha256(text) {
+    if (!window.crypto || !window.crypto.subtle) return null;
+    var bytes = new TextEncoder().encode(String(text));
+    var digest = await window.crypto.subtle.digest("SHA-256", bytes);
+    return Array.prototype.map.call(new Uint8Array(digest), function (b) {
+      return b.toString(16).padStart(2, "0");
+    }).join("");
+  }
+
+  async function staticAudioUrl(text, language, voice, pace) {
+    var raw = [TTS_MODEL, TTS_PROFILE, voice, language, pace, String(text)].join("|");
+    var hash = await sha256(raw);
+    if (!hash) return null;
+    return new URL(STATIC_AUDIO_BASE + hash + ".mp3", document.baseURI).toString();
+  }
+
+  async function tryStaticAudio(text, language, voice, pace) {
+    var url = await staticAudioUrl(text, language, voice, pace);
+    if (!url) return null;
+    try {
+      var response = await fetch(url, { method:"GET", cache:"force-cache" });
+      if (!response.ok) return null;
+      var blob = await response.blob();
+      if (!blob.size) return null;
+      return blob;
+    } catch (e) {
+      return null;
+    }
+  }
   function paceName(rate) { var r = Number(rate) || 0.88; return r <= 0.72 ? "slow" : (r >= 0.98 ? "natural" : "medium"); }
 
   function clearHighlight(el) {
@@ -60,18 +93,38 @@
     var language = options.language || detectLanguage(text);
     var voice = options.voice || voiceFor(language);
     var pace = paceName(options.rate);
-    var key = JSON.stringify([text, language, voice, pace]);
+    var key = JSON.stringify([TTS_MODEL, TTS_PROFILE, text, language, voice, pace]);
+
     if (cache.has(key)) return cache.get(key);
+
+    // 1) Shared static cache: works on PC, phone and any HTTPS static host.
+    var staticBlob = await tryStaticAudio(text, language, voice, pace);
+    if (staticBlob) {
+      if (cache.size > 120) cache.clear();
+      cache.set(key, staticBlob);
+      return staticBlob;
+    }
+
+    // 2) Dynamic backend: only used when the shared cache does not exist.
     var response = await fetch(endpoint(), {
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
-      body:JSON.stringify({ input:String(text), language:language, voice:voice, pace:pace })
+      body:JSON.stringify({
+        input:String(text),
+        language:language,
+        voice:voice,
+        pace:pace,
+        model:TTS_MODEL,
+        profile:TTS_PROFILE
+      })
     });
+
     if (!response.ok) {
       var message = "AI voice request failed";
       try { var data = await response.json(); if (data && data.error) message = data.error; } catch (e) {}
       throw new Error(message);
     }
+
     var blob = await response.blob();
     if (!blob.size) throw new Error("AI voice returned empty audio");
     if (cache.size > 120) cache.clear();
@@ -120,6 +173,9 @@
     stop:stop,
     detectLanguage:detectLanguage,
     voiceFor:voiceFor,
+    model:TTS_MODEL,
+    profile:TTS_PROFILE,
+    staticAudioUrl:staticAudioUrl,
     clearStatusCache:function () { statusCache = null; statusAt = 0; }
   };
 }());
