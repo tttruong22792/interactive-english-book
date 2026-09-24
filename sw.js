@@ -1,4 +1,4 @@
-const CACHE='language-studio-v7-one-ai-master';
+const CACHE='language-studio-v8-full-practice';
 const ASSETS=[
   './',
   './index.html',
