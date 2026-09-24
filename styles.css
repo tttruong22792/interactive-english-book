@@ -480,3 +480,31 @@ body{background:var(--bg);color:var(--ink)}
     line-height:1.3;
   }
 }
+
+
+/* ===== LISTENABLE PHRASE CHIPS ===== */
+.meaning-chip-main{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  flex:1 1 auto;
+}
+.meaning-chip-main .chip-speaker{
+  flex:0 0 auto;
+}
+.meaning-chip-main .chip-english{
+  min-width:0;
+  font-size:14px;
+  font-weight:800;
+  color:var(--ink);
+  line-height:1.45;
+}
+.meaning-chip-main .word-token{
+  cursor:pointer;
+}
+@media(max-width:680px){
+  .meaning-chip-main{
+    width:100%;
+  }
+}
