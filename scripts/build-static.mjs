@@ -90,6 +90,32 @@ function collectLessonSentences(lesson) {
   return out;
 }
 
+function collectLessonAudioExtras(lesson) {
+  const out = [];
+  const seen = new Set();
+
+  const add = (text) => {
+    if (typeof text !== "string") return;
+    const value = text.trim();
+    const key = normalizeText(value);
+    if (!key || seen.has(key) || !/[a-z]/i.test(value)) return;
+    seen.add(key);
+    out.push(value);
+  };
+
+  (lesson?.sections || []).forEach((section) => {
+    (section.blocks || []).forEach((block) => {
+      if (block?.type === "chips") {
+        (block.items || []).forEach((item) => {
+          if (Array.isArray(item)) add(item[0]);
+        });
+      }
+    });
+  });
+
+  return out;
+}
+
 function detectLanguage(text) {
   return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text || "")) ? "ja-JP" : "en-US";
 }
@@ -122,6 +148,7 @@ const sourceMatches = [...indexSource.matchAll(/source:\s*"([^"]+\.js)"/g)]
 const runtimeFiles = [
   "data/content-index.js",
   "data/content-loader.js",
+  "data/english/core-dictionary.js",
   "platform-data.js",
   "catalog.js",
   "ai-tts.js",
@@ -154,20 +181,27 @@ for (const relative of sourceMatches.filter((p) => p.startsWith("data/english/pa
 const entries = {};
 for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
   if (!lesson || lesson.language !== "en" || lesson.category !== "patterns") continue;
-  for (const item of collectLessonSentences(lesson)) {
-    const language = detectLanguage(item.en);
+  const allowedAudio = [
+    ...collectLessonSentences(lesson).map((item) => ({ text: item.en, kind: "sentence" })),
+    ...collectLessonAudioExtras(lesson).map((text) => ({ text, kind: "phrase" }))
+  ];
+
+  for (const item of allowedAudio) {
+    const language = detectLanguage(item.text);
     const voice = voiceFor(language);
-    const hash = ttsHash(item.en, language, voice);
+    const hash = ttsHash(item.text, language, voice);
     const existing = entries[hash];
     if (existing) {
       if (!existing.lessonIds.includes(lesson.id)) existing.lessonIds.push(lesson.id);
+      if (!existing.kinds.includes(item.kind)) existing.kinds.push(item.kind);
       continue;
     }
     entries[hash] = {
-      text: item.en,
+      text: item.text,
       language,
       voice,
-      lessonIds: [lesson.id]
+      lessonIds: [lesson.id],
+      kinds: [item.kind]
     };
   }
 }
@@ -187,5 +221,5 @@ await writeFile(join(dist, ".nojekyll"), "", "utf8");
 
 console.log("Built static site:", dist);
 console.log("Runtime files:", uniqueFiles.length);
-console.log("Cloud TTS allow-list sentences:", ttsManifest.count);
+console.log("Cloud TTS allow-list sentences + phrases:", ttsManifest.count);
 console.log("Audio delivery: Supabase Storage + per-device Cache Storage");
