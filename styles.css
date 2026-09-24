@@ -508,3 +508,10 @@ body{background:var(--bg);color:var(--ink)}
     width:100%;
   }
 }
+
+.meaning-chip-main .chip-english .word-token{
+  font-size:inherit;
+  color:inherit;
+  text-align:inherit;
+  font-weight:inherit;
+}
