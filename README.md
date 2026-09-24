@@ -55,3 +55,23 @@ This is the temporary cross-device method. Automatic cloud sync will be a later 
 ## GitHub Pages deployment
 The repository includes `.github/workflows/pages.yml`, so the static site is ready for GitHub Pages deployment after Pages is enabled for the repository/account.
 See `DEPLOY.md`.
+
+
+## Content architecture v4
+
+Learning content is now separated from the application engine:
+
+```text
+data/
+├── content-index.js
+├── content-loader.js
+├── english/patterns/001.js
+├── japanese/daily-life/001.js
+└── templates/
+```
+
+To add another English pattern using the existing renderer, copy the template and add metadata to `data/content-index.js`. You do **not** need to edit `app.js`.
+
+Progress keys are now scoped by lesson id, so future lessons do not overwrite Pattern 01 progress.
+
+See `CONTENT-SCHEMA.md`.
