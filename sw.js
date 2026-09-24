@@ -1,10 +1,11 @@
-const CACHE='language-studio-v5-ai-voice-fix2';
+const CACHE='language-studio-v6-shared-audio';
 const ASSETS=[
-  './','./index.html','./styles.css',
-  './data/content-index.js','./data/content-loader.js',
-  './data/english/patterns/001.js','./data/english/patterns/002.js','./data/english/patterns/003.js','./data/japanese/daily-life/001.js',
-  './platform-data.js','./catalog.js','./ai-tts.js','./app.js',
-  './manifest.webmanifest','./icons/icon.svg'
+  './',
+  './index.html',
+  './styles.css',
+  './runtime.js',
+  './manifest.webmanifest',
+  './icons/icon.svg'
 ];
 
 self.addEventListener('install',event=>{
@@ -13,17 +14,22 @@ self.addEventListener('install',event=>{
 });
 
 self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  event.waitUntil(
+    caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+  );
   self.clients.claim();
 });
 
 self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
+  if(event.request.method!=='GET') return;
+
   event.respondWith(
     fetch(event.request)
       .then(response=>{
-        const copy=response.clone();
-        caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+        if(response && response.ok){
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+        }
         return response;
       })
       .catch(()=>caches.match(event.request).then(hit=>{
