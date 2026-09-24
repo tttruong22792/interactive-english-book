@@ -521,9 +521,7 @@
         ${c.publicLabel?`<p>${esc(c.publicLabel)}</p>`:''}${maybeSentence(c.publicSentence)}
         ${c.noteHtml?`<div class="amber-box">${c.noteHtml}</div>`:''}</section>`:''}
 
-      <section class="book-section" id="sentences20"><h2>4. Tất cả câu trong bài (${collectLessonSentences(L).length} câu)</h2><p>Danh sách này tự gom toàn bộ câu xuất hiện trong bài học và bỏ các câu trùng hệt nhau.</p>
-        <div class="study-toolbar"><button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button><button id="repeatAllLesson5" class="secondary-button">🔁 Lặp toàn bộ ×5</button><span class="muted">Nếu bạn bấm một câu khác khi danh sách đang phát, danh sách sẽ dừng ngay để đọc câu vừa chọn.</span></div>
-        <div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${collectLessonSentences(L).map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}</div></section>
+      ${lessonActionPanel(L.order||1)}
 
       <section class="book-section"><h2>${esc(w.title||'Trong công việc')}</h2>${w.intro?`<p>${esc(w.intro)}</p>`:''}
         <div class="sentence-list">${(L.work||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
@@ -542,8 +540,6 @@
         ${q.formula?`<div class="formula-box">${esc(q.formula)}${q.formulaNote?`<small>${esc(q.formulaNote)}</small>`:''}</div>`:''}
         <div class="sentence-list">${(L.questions||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>${q.answerIntro?`<p>${esc(q.answerIntro)}</p>`:''}
         <div class="green-box">${(q.answers||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div></section>
-
-      <section class="book-section" id="lessonPractice"><h2>10. Luyện toàn bộ câu trong bài</h2><p>Không còn giới hạn 10 câu. Bạn có thể luyện tuần tự hoặc random.</p>${quizHTML('lesson')}</section>
 
       <section class="book-section"><div class="eyebrow">${esc(d.eyebrow||'CÁCH HỌC HÔM NAY')}</div><h2>Luyện toàn bộ bài, không giới hạn 5 câu</h2>
         <p>Danh sách nghe ở mục 4 và phần luyện Việt → Anh đều dùng toàn bộ câu có trong bài học.</p>
@@ -575,16 +571,13 @@
     const id=escAttr(section.id||`section-${sectionIndex+1}`);
     const hasLearnable=(section.blocks||[]).some(block=>block?.type==='sentences'&&block.learnable);
     const hasQuiz=(section.blocks||[]).some(block=>block?.type==='quiz');
-    const numberPrefix=(section.title||'').match(/^\s*(\d+\.)/)?.[1]||'';
-    const title=hasLearnable
-      ? `${numberPrefix?numberPrefix+' ':''}Tất cả câu trong bài (${collectLessonSentences(L).length} câu)`
-      : hasQuiz
-        ? `${numberPrefix?numberPrefix+' ':''}Luyện toàn bộ câu trong bài`
-        : (section.title||'');
+
+    if(hasLearnable) return lessonActionPanel(L.order||1);
+    if(hasQuiz) return '';
+
     return `<section class="book-section" id="${id}">
-      <h2>${esc(title)}</h2>
-      ${hasLearnable?'<p>Danh sách này tự gom toàn bộ câu xuất hiện trong bài học và bỏ các câu trùng hệt nhau.</p>':''}
-      ${(hasQuiz?(section.blocks||[]).filter(block=>block?.type==='quiz'):(section.blocks||[])).map((block,blockIndex)=>renderLessonBlock(block,section,blockIndex)).join('')}
+      <h2>${section.title||''}</h2>
+      ${(section.blocks||[]).map((block,blockIndex)=>renderLessonBlock(block,section,blockIndex)).join('')}
     </section>`;
   }
 
@@ -610,7 +603,7 @@
       if(block.learnable){
         const allItems=collectLessonSentences(L);
         L._learnableSentences=allItems.map(x=>[x.en,x.vi]);
-        const controls=`<div class="study-toolbar"><button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button><button id="repeatAllLesson5" class="secondary-button">🔁 Lặp toàn bộ ×5</button><span class="muted">Bấm một câu khác để dừng danh sách và nghe câu đó ngay.</span></div>`;
+        const controls=`<div class="study-toolbar"><button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button><span class="muted">Bấm một câu khác để dừng danh sách và nghe câu đó ngay.</span></div>`;
         return `${controls}<div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${allItems.map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}</div>`;
       }
       return `<div class="sentence-list">${sourceItems.map(x=>sentenceRow(x[0],x[1])).join('')}</div>`;
