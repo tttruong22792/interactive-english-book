@@ -322,7 +322,7 @@
       </section>
 
       <section class="split-promo">
-        <div class="promo-copy"><span class="landing-kicker">CURRENT LESSON</span><h2>I’d like to…</h2><p>Giữ nguyên toàn bộ bài học tương tác từ tài liệu của bạn: cách đọc, 20 câu, công việc, nhà hàng, sentence builder, hội thoại và quiz.</p><button class="primary-button" data-go="lesson/1">Mở bài đầy đủ</button></div>
+        <div class="promo-copy"><span class="landing-kicker">CURRENT LESSON</span><h2>I’d like to…</h2><p>Giữ nguyên bài học tương tác nhưng nâng cấp phần luyện: toàn bộ câu trong bài, nghe lặp toàn bộ và quiz theo tuần tự hoặc random.</p><button class="primary-button" data-go="lesson/1">Mở bài đầy đủ</button></div>
         <div class="promo-preview"><div class="preview-label">Tap to listen</div>
           ${sentenceRow("I'd like to buy this.","Tôi muốn mua cái này.")}
           ${sentenceRow("I'd like to ask you something.","Tôi muốn hỏi bạn một việc.")}
@@ -487,7 +487,7 @@
     return `<section class="book-section" id="${id}">
       <h2>${esc(title)}</h2>
       ${hasLearnable?'<p>Danh sách này tự gom toàn bộ câu xuất hiện trong bài học và bỏ các câu trùng hệt nhau.</p>':''}
-      ${(section.blocks||[]).map((block,blockIndex)=>renderLessonBlock(block,section,blockIndex)).join('')}
+      ${(hasQuiz?(section.blocks||[]).filter(block=>block?.type==='quiz'):(section.blocks||[])).map((block,blockIndex)=>renderLessonBlock(block,section,blockIndex)).join('')}
     </section>`;
   }
 
@@ -579,8 +579,8 @@
     if(cancelSequence) sequenceRun++;
     if(window.AITTS) window.AITTS.stop();
     if('speechSynthesis' in window) speechSynthesis.cancel();
-    $('.speaking').forEach(x=>x.classList.remove('speaking'));
-    $('.playing').forEach(x=>x.classList.remove('playing'));
+    $$('.speaking').forEach(x=>x.classList.remove('speaking'));
+    $$('.playing').forEach(x=>x.classList.remove('playing'));
   }
 
   function browserSpeak(text,highlightEl=null,rate=state.rate){
@@ -644,11 +644,11 @@
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
   function bindLessonEvents(){
-    $('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
+    $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
     const lessonItems=(L._learnableSentences?.length
       ? L._learnableSentences
       : collectLessonSentences(L).map(x=>[x.en,x.vi]));
-    const lessonEls=$('#sectionLearnableSentences .english-text');
+    const lessonEls=$$('#sectionLearnableSentences .english-text');
     const sequenceItems=lessonItems.map((x,i)=>[x[0],lessonEls[i]||null]);
     if($('#playAllLesson')) $('#playAllLesson').onclick=()=>speakSequence(sequenceItems,1);
     if($('#repeatAllLesson5')) $('#repeatAllLesson5').onclick=()=>speakSequence(sequenceItems,5);
@@ -1093,7 +1093,7 @@
   $('#closePopoverBtn').onclick=closePopover;$('#speakWordBtn').onclick=()=>currentLookup&&speak(currentLookup.term);$('#saveWordBtn').onclick=saveCurrentLookup;
   $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{if(!L)await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
-  $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz={index:0,correct:0,counted:new Set(),revealed:false};render();toast('Đã xóa dữ liệu học.');}};
+  $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz=makeQuizSession([], 'sequential', null, 'lesson');render();toast('Đã xóa dữ liệu học.');}};
   window.addEventListener('hashchange',render);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
   window.addEventListener('appinstalled',()=>{installPrompt=null;toast('Language Studio đã được cài.');});
