@@ -33,6 +33,65 @@ function Get-ContentType([string]$Path) {
   }
 }
 
+function Get-RuntimeIndexBytes {
+  $indexPath = Join-Path $Root 'index.html'
+  $html = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
+
+  $version = '20260924-ai-fix2'
+  $inlineMap = @(
+    @{ Tag = '<script src="data/content-index.js?v=' + $version + '"></script>'; Path = 'data\content-index.js' },
+    @{ Tag = '<script src="data/content-loader.js?v=' + $version + '"></script>'; Path = 'data\content-loader.js' },
+    @{ Tag = '<script src="platform-data.js?v=' + $version + '"></script>'; Path = 'platform-data.js' },
+    @{ Tag = '<script src="catalog.js?v=' + $version + '"></script>'; Path = 'catalog.js' },
+    @{ Tag = '<script src="ai-tts.js?v=' + $version + '"></script>'; Path = 'ai-tts.js' }
+  )
+
+  foreach ($item in $inlineMap) {
+    $sourcePath = Join-Path $Root $item.Path
+    if (-not [System.IO.File]::Exists($sourcePath)) {
+      throw ('Runtime inline source missing: ' + $item.Path)
+    }
+    $source = [System.IO.File]::ReadAllText($sourcePath, [System.Text.Encoding]::UTF8)
+    $inline = '<script>' + [Environment]::NewLine +
+              '// Runtime-inline: ' + $item.Path + [Environment]::NewLine +
+              $source + [Environment]::NewLine +
+              '</script>'
+    $html = $html.Replace($item.Tag, $inline)
+  }
+
+  $preloadPaths = @(
+    'data\english\patterns\001.js',
+    'data\english\patterns\002.js',
+    'data\english\patterns\003.js',
+    'data\japanese\daily-life\001.js'
+  )
+
+  $preload = ''
+  foreach ($relative in $preloadPaths) {
+    $sourcePath = Join-Path $Root $relative
+    if ([System.IO.File]::Exists($sourcePath)) {
+      $source = [System.IO.File]::ReadAllText($sourcePath, [System.Text.Encoding]::UTF8)
+      $preload += '<script>' + [Environment]::NewLine +
+                  '// Runtime-preload: ' + $relative + [Environment]::NewLine +
+                  $source + [Environment]::NewLine +
+                  '</script>' + [Environment]::NewLine
+    }
+  }
+
+  $appTag = '<script src="app.js?v=' + $version + '"></script>'
+  $appPath = Join-Path $Root 'app.js'
+  if (-not [System.IO.File]::Exists($appPath)) { throw 'Runtime inline source missing: app.js' }
+  $appSource = [System.IO.File]::ReadAllText($appPath, [System.Text.Encoding]::UTF8)
+  $appInline = $preload +
+               '<script>' + [Environment]::NewLine +
+               '// Runtime-inline: app.js' + [Environment]::NewLine +
+               $appSource + [Environment]::NewLine +
+               '</script>'
+  $html = $html.Replace($appTag, $appInline)
+
+  return [System.Text.Encoding]::UTF8.GetBytes($html)
+}
+
 function Send-Response {
   param(
     $Stream,
@@ -247,10 +306,10 @@ if ($Lan) {
 
 Clear-Host
 Write-Host '================================================' -ForegroundColor Cyan
-Write-Host '  LANGUAGE STUDIO - LOCAL SERVER V4 + AI VOICE' -ForegroundColor Cyan
+Write-Host '  LANGUAGE STUDIO - SAFE BOOT + AI VOICE' -ForegroundColor Cyan
 Write-Host '================================================' -ForegroundColor Cyan
 Write-Host ('Folder: ' + $Root)
-Write-Host ('PC address: ' + $Url) -ForegroundColor Green
+Write-Host ('PC address: ' + $Url) -ForegroundColor Green`nWrite-Host 'Safe Boot: ON - JavaScript is embedded into the first HTML response.' -ForegroundColor Green
 if ([string]::IsNullOrWhiteSpace($OpenAIKey)) {
   Write-Host 'AI Voice: NOT CONFIGURED - browser voice fallback is active.' -ForegroundColor Yellow
   Write-Host 'Run SETUP-AI-VOICE.bat once to enable OpenAI TTS.' -ForegroundColor Yellow
@@ -344,6 +403,12 @@ try {
       if (-not [System.IO.File]::Exists($fullPath)) {
         $body = [System.Text.Encoding]::UTF8.GetBytes('Not Found')
         Send-Response $stream 404 'Not Found' $body 'text/plain; charset=utf-8'
+        continue
+      }
+
+      if ($decoded -eq 'index.html' -and $method -eq 'GET') {
+        $bytes = Get-RuntimeIndexBytes
+        Send-Response $stream 200 'OK' $bytes 'text/html; charset=utf-8'
         continue
       }
 
