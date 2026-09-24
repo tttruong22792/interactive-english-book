@@ -622,10 +622,18 @@
         if(card) card.classList.remove('playing');
         return;
       }catch(error){
+        if(sequenceToken!==null && sequenceToken!==sequenceRun){
+          if(card) card.classList.remove('playing');
+          return;
+        }
         console.warn('Shared/AI voice unavailable; using browser voice.',error);
       }
     }
 
+    if(sequenceToken!==null && sequenceToken!==sequenceRun){
+      if(card) card.classList.remove('playing');
+      return;
+    }
     if(card) card.classList.remove('playing');
     return browserSpeak(text,highlightEl,rate);
   }
