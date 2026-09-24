@@ -497,14 +497,13 @@
 
     if(window.AITTS){
       try{
-        const status=await window.AITTS.status();
-        if(status && status.enabled){
-          await window.AITTS.speak(text,{rate,language:detectSpeechLang(text),highlightEl});
-          if(card) card.classList.remove('playing');
-          return;
-        }
+        // AITTS checks the shared static MP3 cache first.
+        // Only when the file is missing does it call the dynamic OpenAI backend.
+        await window.AITTS.speak(text,{rate,language:detectSpeechLang(text),highlightEl});
+        if(card) card.classList.remove('playing');
+        return;
       }catch(error){
-        console.warn('AI Voice failed; using browser voice.',error);
+        console.warn('Shared/AI voice unavailable; using browser voice.',error);
       }
     }
 
