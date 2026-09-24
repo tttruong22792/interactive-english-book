@@ -1,0 +1,1 @@
+@echo off\r\nsetlocal\r\ncd /d "%~dp0"\r\ntitle Language Studio - OpenAI AI Voice Setup\r\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0SETUP-AI-VOICE.ps1"\r\nendlocal\r\n
