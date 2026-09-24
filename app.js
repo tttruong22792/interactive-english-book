@@ -660,7 +660,7 @@
     const original=editor.dataset.originalVi||'';
     const next=String(value||'').trim();
     if(!next){toast('Nghĩa tiếng Việt không được để trống.');return false;}
-    if(normalizeMeaning(next)===normalizeMeaning(original)) delete state.meaningOverrides[key];
+    if(next===original) delete state.meaningOverrides[key];
     else state.meaningOverrides[key]=next;
     saveState();
 
