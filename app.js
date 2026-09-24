@@ -1,8 +1,9 @@
 (() => {
   'use strict';
-  const L = window.LESSON;
+  let L = null;
   const CATALOG = window.PATTERN_CATALOG || [];
   const PLATFORM = window.PLATFORM_DATA || {};
+  const STORE = window.ContentStore;
   const KEY = 'interactiveEnglishBook:v2';
   const $ = (s, root=document) => root.querySelector(s);
   const $$ = (s, root=document) => [...root.querySelectorAll(s)];
@@ -57,31 +58,52 @@
     $('#pageTitle').textContent = title;
     $('#lessonControls').classList.toggle('hidden', !lesson);
   }
-  function render(){
+  async function render(){
     stopSpeech();
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
     setNavActive(r.name === 'lesson' ? 'patterns' : r.name);
-    if (r.name === 'home') renderHome();
-    else if (r.name === 'patterns') renderPatterns();
-    else if (r.name === 'japanese') renderJapanese();
-    else if (r.name === 'lesson') renderLesson(r.id);
-    else if (r.name === 'vocab') renderVocab();
-    else if (r.name === 'practice') renderPracticeHub();
-    else if (r.name === 'progress') renderProgress();
-    else if (r.name === 'settings') renderSettings();
-    else renderHome();
+    try {
+      if (r.name === 'home') renderHome();
+      else if (r.name === 'patterns') renderPatterns();
+      else if (r.name === 'japanese') await renderJapanese();
+      else if (r.name === 'lesson') await renderLesson(r.id);
+      else if (r.name === 'vocab') renderVocab();
+      else if (r.name === 'practice') await renderPracticeHub();
+      else if (r.name === 'progress') await renderProgress();
+      else if (r.name === 'settings') renderSettings();
+      else renderHome();
+    } catch (error) {
+      console.error(error);
+      setHeader('Content','Không tải được nội dung');
+      $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">CONTENT ERROR</div><h1>Không tải được bài học</h1><p>${esc(error?.message||'Unknown content error')}</p><div class="hero-actions"><button class="primary-button" data-go="home">Về trang chủ</button></div></section>`;
+      bindGenericRoutes();
+    }
     updateGlobalUI();
     $('#mainView').focus({preventScroll:true});
     window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  async function ensureContent(id){
+    if(!STORE) throw new Error('ContentStore is not available.');
+    return STORE.load(id);
+  }
+  async function ensureCoreEnglish(){
+    if(!L) L=await ensureContent('en-pattern-001');
+    return L;
   }
 
   function renderHome(){
     setHeader('Trang chủ','Language Studio');
     const pct=lessonPercent();
     const tracks=(PLATFORM.tracks||[]).map(trackCard).join('');
-    const modules=(PLATFORM.modules||[]).map(moduleCard).join('');
+    const indexedModules=(STORE?.index||[]).filter(item=>item.featured).map(item=>({
+      lang:item.language==='en'?'English':item.language==='ja'?'Japanese':item.language,
+      tag:item.status==='available'?'Có bài':item.status==='next'?'Tiếp theo':'Chuẩn bị',
+      title:item.title,desc:item.meaning||item.description||'',route:item.route||'home',accent:item.accent||'purple'
+    }));
+    const modules=[...indexedModules,...(PLATFORM.utilityModules||[])].map(moduleCard).join('');
     $('#mainView').innerHTML = `
       <section class="landing-hero">
         <div class="hero-copy-new">
@@ -196,82 +218,79 @@
     return `<article class="pattern-card ${cls}"><span class="pattern-number">MẪU ${String(p.id).padStart(2,'0')}</span><span class="status-chip ${cls}">${status}</span><h3>${esc(p.title)}</h3><p>${esc(p.meaning)}</p><div class="card-action">${p.status==='available'?`<button class="primary-button" data-go="lesson/${p.id}">Mở bài học</button>`:`<button class="secondary-button" data-disabled="1" data-status="${p.status}">Chưa có nội dung</button>`}</div></article>`;
   }
 
-  function renderLesson(id){
-    if(id!==1){ toast('Hiện tại chỉ Mẫu 01 có nội dung hoàn chỉnh.'); routeTo('patterns'); return; }
-    state.lessonVisits=(state.lessonVisits||0)+1; saveState();
-    setHeader('English › Patterns › 01','I’d like to…',true);
+  async function renderLesson(id){
+    const meta=CATALOG.find(item=>item.id===id);
+    if(!meta || meta.status!=='available' || !meta.contentId){toast('Bài này chưa có nội dung hoàn chỉnh.');routeTo('patterns');return;}
+    const lesson=await ensureContent(meta.contentId);
+    if(lesson.renderer!=='english-pattern') throw new Error(`Unsupported renderer: ${lesson.renderer}`);
+    L=lesson;
+    state.lessonVisits=(state.lessonVisits||0)+1;saveState();
+    setHeader(`English › Patterns › ${String(id).padStart(2,'0')}`,L.title||meta.title,true);
     builder=[];
-    $('#mainView').innerHTML = lessonHTML();
+    $('#mainView').innerHTML=lessonHTML();
     hydrateSentences($('#mainView'));
     bindLessonEvents();
   }
+
   function lessonHTML(){
+    const u=L.ui||{},p=u.pronunciation||{},c=u.comparison||{},m=u.masterList||{},w=u.work||{},r=u.restaurant||{},b=u.builder||{},q=u.questions||{},z=u.quiz||{},d=u.daily||{};
+    const maybeSentence=pair=>Array.isArray(pair)&&pair[0]?sentenceRow(pair[0],pair[1]||''):'';
     return `
       <article class="book-header">
-        <div class="eyebrow">MẪU CÂU SỐ 1</div><h1>I’d like to…</h1>
-        <div class="meaning">“Tôi muốn…” — một mẫu câu cực kỳ hữu ích trong giao tiếp hằng ngày</div>
-        <div class="lead-box"><strong>I’d like to… = Tôi muốn… / Tôi muốn được…</strong><br>Đây là cách nói lịch sự, tự nhiên hơn so với <b>I want to...</b></div>
-        <h3>Công thức</h3><div class="formula-box">I’d like to + động từ nguyên mẫu</div>
-        <div class="sentence-list">${L.introExamples.map((x,i)=>sentenceRow(x[0],x[1])).join('')}</div>
-        <div class="green-box">Hãy học cả cụm <b>“I’d like to…”</b> như một khối. Khi nghĩ “Tôi muốn…”, mục tiêu là miệng tự bật ra “I’d like to…”.</div>
-        <div class="source-note">Nội dung bài học dựa trên Mẫu 01 trong tài liệu bạn đã cung cấp.</div>
+        <div class="eyebrow">${esc(u.eyebrow||'ENGLISH PATTERN')}</div><h1>${esc(L.title||'')}</h1>
+        <div class="meaning">${esc(u.meaningTitle||L.meaning||'')}</div>
+        ${u.leadHtml?`<div class="lead-box">${u.leadHtml}</div>`:''}
+        ${u.formula?`<h3>Công thức</h3><div class="formula-box">${esc(u.formula)}</div>`:''}
+        <div class="sentence-list">${(L.introExamples||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
+        ${u.introNoteHtml?`<div class="green-box">${u.introNoteHtml}</div>`:''}
+        ${u.sourceNote?`<div class="source-note">${esc(u.sourceNote)}</div>`:''}
       </article>
 
-      <section class="book-section" id="pronunciation">
-        <h2>1. Cách đọc</h2>
-        <div class="read-box">${inlineSentence("I'd like to")}
-          <div style="text-align:center"><strong style="font-size:23px;color:var(--blue)">/aɪd laɪk tə/</strong><br><span data-vi-only>Người Việt có thể đọc gần như: <b>“ai-đ lai-k tờ”</b></span></div>
-        </div>
-        <p>Khi nói tự nhiên, không cần tách từng từ:</p>
-        <div class="natural-box">${inlineSentence("I'd like to")}<strong>I’d-like-to...</strong><div data-vi-only>aiđ-lai(k)-tờ...</div></div>
-        <h3>Ví dụ</h3>${sentenceRow("I'd like to go home.","Đọc chậm: Aiđ lai-k tờ gâu hôum. · Đọc tự nhiên: Aiđ-lai(k)-tờ-gâu-hôum.")}
-        <h2 style="margin-top:28px">2. <code>I’d</code> là gì?</h2>
-        <p><b>I’d like to = I would like to</b></p><p><code>I’d</code> ở đây là dạng rút gọn của <b>I would</b>.</p>
-        <div class="green-box" style="text-align:center">Bạn không cần suy nghĩ về “would” khi đang nói. Hãy học cả cụm:<br><strong style="font-size:20px;color:var(--blue)">I’d like to = tôi muốn</strong><br>Giống như học một khối duy nhất.</div>
-        <div class="sentence-list">${sentenceRow('I like to buy this.','Tôi thích mua cái này.')}${sentenceRow("I'd like to buy this.",'Tôi muốn mua cái này.')}</div>
-        <p>Chỉ khác chữ ’d, nhưng nghĩa thay đổi rất nhiều.</p>
-      </section>
+      ${p.title?`<section class="book-section" id="pronunciation"><h2>${p.title}</h2>
+        <div class="read-box">${p.phrase?inlineSentence(p.phrase):''}<div style="text-align:center">${p.ipa?`<strong style="font-size:23px;color:var(--blue)">${esc(p.ipa)}</strong><br>`:''}${p.vnReadingHtml?`<span data-vi-only>${p.vnReadingHtml}</span>`:''}</div></div>
+        ${p.naturalIntro?`<p>${esc(p.naturalIntro)}</p>`:''}
+        ${p.naturalReading?`<div class="natural-box">${inlineSentence(p.phrase||L.title)}<strong>${esc(p.naturalReading)}</strong>${p.naturalVi?`<div data-vi-only>${esc(p.naturalVi)}</div>`:''}</div>`:''}
+        ${p.exampleTitle?`<h3>${esc(p.exampleTitle)}</h3>`:''}${p.exampleSentence?sentenceRow(p.exampleSentence,p.exampleMeaning||''):''}
+        ${p.contractionTitle?`<h2 style="margin-top:28px">${p.contractionTitle}</h2>`:''}${p.contractionIntroHtml?`<p>${p.contractionIntroHtml}</p>`:''}
+        ${p.contractionCalloutHtml?`<div class="green-box" style="text-align:center">${p.contractionCalloutHtml}</div>`:''}
+        <div class="sentence-list">${(p.contrastSentences||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>${p.contrastNote?`<p>${esc(p.contrastNote)}</p>`:''}</section>`:''}
 
-      <section class="book-section">
-        <h2>3. So sánh với <code>I want to</code></h2><p>Cả hai đều có nghĩa là “tôi muốn…”.</p>
-        ${sentenceRow('I want to go home.','Tôi muốn về nhà.')}${sentenceRow("I'd like to go home.",'Tôi muốn về nhà.')}
-        <div class="compare-grid"><div class="head">I want to...</div><div class="head">I’d like to...</div><div>Trực tiếp, bình thường.</div><div>Mềm hơn, lịch sự hơn.</div></div>
-        <p>Ví dụ ở nhà:</p>${sentenceRow('I want to sleep.','Tôi muốn ngủ. Hoàn toàn bình thường.')}
-        <p>Nhưng nói với nhân viên cửa hàng:</p>${sentenceRow("I'd like to buy this.",'Tôi muốn mua cái này. Nghe tự nhiên hơn.')}
-        <div class="amber-box">Với trình độ hiện tại, hãy ưu tiên dùng <b>I’d like to...</b> khi nói với người khác.</div>
-      </section>
+      ${c.title?`<section class="book-section"><h2>${c.title}</h2>${c.intro?`<p>${esc(c.intro)}</p>`:''}
+        ${(c.examples||[]).map(x=>sentenceRow(x[0],x[1])).join('')}
+        ${c.leftTitle||c.rightTitle?`<div class="compare-grid"><div class="head">${esc(c.leftTitle||'')}</div><div class="head">${esc(c.rightTitle||'')}</div><div>${esc(c.leftText||'')}</div><div>${esc(c.rightText||'')}</div></div>`:''}
+        ${c.homeLabel?`<p>${esc(c.homeLabel)}</p>`:''}${maybeSentence(c.homeSentence)}
+        ${c.publicLabel?`<p>${esc(c.publicLabel)}</p>`:''}${maybeSentence(c.publicSentence)}
+        ${c.noteHtml?`<div class="amber-box">${c.noteHtml}</div>`:''}</section>`:''}
 
-      <section class="book-section" id="sentences20">
-        <h2>4. 20 câu đầu tiên cần thuộc</h2><p>Đừng cố học từ riêng lẻ. Hãy đọc nguyên cả câu.</p>
+      <section class="book-section" id="sentences20"><h2>${esc(m.title||'Câu cần thuộc')}</h2>${m.intro?`<p>${esc(m.intro)}</p>`:''}
         <div class="study-toolbar"><button id="playAll20" class="primary-button">▶ Nghe toàn bộ</button><button id="repeatDaily5" class="secondary-button">🔁 Lặp 5 câu hôm nay</button><span class="muted">Đánh dấu ✓ khi câu đã bật ra tự nhiên.</span></div>
-        <div class="sentence-table"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${L.sentences20.map((x,i)=>sentenceRow(x[0],x[1],`s20-${i}`)).join('')}</div>
-      </section>
+        <div class="sentence-table"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${(L.sentences20||[]).map((x,i)=>sentenceRow(x[0],x[1],`s20-${i}`)).join('')}</div></section>
 
-      <section class="book-section">
-        <h2>5. Đặc biệt hữu ích trong công việc</h2><p>Bạn có thể dùng mẫu này rất nhiều khi làm việc bằng tiếng Anh:</p>
-        <div class="sentence-list">${L.work.map(x=>sentenceRow(x[0],x[1])).join('')}</div>
-        <div class="green-box"><div class="eyebrow">CÂU NÊN THUỘC NGAY</div>${sentenceRow("I'd like to confirm one thing.",'Hãy coi câu này như một khối duy nhất, không cần dịch từng từ khi nói.')}</div>
-        <h2 style="margin-top:28px">6. Dùng trong nhà hàng</h2><p>Bạn sẽ gặp dạng hơi khác:</p><div class="formula-box">I’d like + danh từ<small>Không có to.</small></div>
-        <div class="sentence-list">${L.restaurantNouns.map(x=>sentenceRow(x[0],x[1])).join('')}</div>
-        <div class="compare-grid"><div class="head">I’d like + danh từ</div><div class="head">I’d like to + động từ</div><div>${inlineSentence("I'd like a coffee.")}</div><div>${inlineSentence("I'd like to order a coffee.")}</div></div>
-      </section>
+      <section class="book-section"><h2>${esc(w.title||'Trong công việc')}</h2>${w.intro?`<p>${esc(w.intro)}</p>`:''}
+        <div class="sentence-list">${(L.work||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
+        ${w.calloutSentence?`<div class="green-box"><div class="eyebrow">${esc(w.calloutEyebrow||'CÂU NÊN THUỘC')}</div>${sentenceRow(w.calloutSentence,w.calloutMeaning||'')}</div>`:''}
+        ${r.title?`<h2 style="margin-top:28px">${esc(r.title)}</h2>`:''}${r.intro?`<p>${esc(r.intro)}</p>`:''}
+        ${r.formula?`<div class="formula-box">${esc(r.formula)}${r.formulaNote?`<small>${esc(r.formulaNote)}</small>`:''}</div>`:''}
+        <div class="sentence-list">${(L.restaurantNouns||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>
+        ${r.leftExample||r.rightExample?`<div class="compare-grid"><div class="head">${esc(r.leftTitle||'')}</div><div class="head">${esc(r.rightTitle||'')}</div><div>${r.leftExample?inlineSentence(r.leftExample):''}</div><div>${r.rightExample?inlineSentence(r.rightExample):''}</div></div>`:''}</section>
 
-      <section class="book-section" id="builderSection">
-        <h2>7. Cách mở rộng câu</h2><p>Đây mới là phần quan trọng. Bạn không cần học một câu dài ngay từ đầu. Hãy xây câu từng lớp:</p>
-        <div class="builder-steps">${L.buildSteps.map(s=>`<div class="builder-step"><small>${esc(s[0])}</small>${inlineSentence(s[1])}<div class="vi" data-vi-only>${esc(s[2])}</div></div>`).join('')}</div>
-        <div class="amber-box" style="text-align:center">I’d like to… → I’d like to go… → I’d like to go there… → I’d like to go there tomorrow…</div><p>Đây là cách nên luyện trong 3 tháng tới.</p>
-        <div class="builder-lab"><div class="builder-top"><div><div class="eyebrow">SENTENCE BUILDER</div><strong>Tự ghép phần phía sau</strong></div><button id="speakBuilder" class="speaker">🔊</button></div><div id="builderOutput" class="builder-output">I’d like to…</div><div id="builderGroups" class="builder-groups">${L.builderGroups.map((g,gi)=>`<div class="builder-group"><strong>${esc(g.label)}</strong><div class="chip-row">${g.options.map(o=>`<button class="word-chip" data-builder="${escAttr(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}</div><div class="builder-actions"><button id="builderUndo" class="secondary-button">← Xóa phần cuối</button><button id="builderReset" class="secondary-button">Làm lại</button></div></div>
-        <h2 style="margin-top:30px">8. Mẫu hội thoại cực ngắn</h2>${L.dialogs.map((d,di)=>dialogCard(d,di)).join('')}
-      </section>
+      <section class="book-section" id="builderSection"><h2>${esc(b.title||'Mở rộng câu')}</h2>${b.intro?`<p>${esc(b.intro)}</p>`:''}
+        <div class="builder-steps">${(L.buildSteps||[]).map(s=>`<div class="builder-step"><small>${esc(s[0])}</small>${inlineSentence(s[1])}<div class="vi" data-vi-only>${esc(s[2])}</div></div>`).join('')}</div>
+        ${b.summaryHtml?`<div class="amber-box" style="text-align:center">${b.summaryHtml}</div>`:''}${b.note?`<p>${esc(b.note)}</p>`:''}
+        <div class="builder-lab"><div class="builder-top"><div><div class="eyebrow">${esc(b.labEyebrow||'SENTENCE BUILDER')}</div><strong>${esc(b.labTitle||'Tự ghép câu')}</strong></div><button id="speakBuilder" class="speaker">🔊</button></div><div id="builderOutput" class="builder-output">${esc((b.base||L.title||'')+'…')}</div><div id="builderGroups" class="builder-groups">${(L.builderGroups||[]).map(g=>`<div class="builder-group"><strong>${esc(g.label)}</strong><div class="chip-row">${g.options.map(o=>`<button class="word-chip" data-builder="${escAttr(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}</div><div class="builder-actions"><button id="builderUndo" class="secondary-button">← Xóa phần cuối</button><button id="builderReset" class="secondary-button">Làm lại</button></div></div>
+        <h2 style="margin-top:30px">${esc(b.dialogTitle||'Hội thoại')}</h2>${(L.dialogs||[]).map((dialog,di)=>dialogCard(dialog,di)).join('')}</section>
 
-      <section class="book-section">
-        <h2>9. Biến thành câu hỏi</h2><div class="formula-box">Would you like to…?<small>= Bạn có muốn… không?</small></div>
-        <div class="sentence-list">${L.questions.map(x=>sentenceRow(x[0],x[1])).join('')}</div><p>Bạn có thể trả lời:</p><div class="green-box">${sentenceRow("Yes, I'd like to.",'Vâng, tôi muốn.')}${sentenceRow("I'd love to.",'Rất muốn.')}</div>
-      </section>
+      <section class="book-section"><h2>${esc(q.title||'Câu hỏi / biến thể')}</h2>
+        ${q.formula?`<div class="formula-box">${esc(q.formula)}${q.formulaNote?`<small>${esc(q.formulaNote)}</small>`:''}</div>`:''}
+        <div class="sentence-list">${(L.questions||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>${q.answerIntro?`<p>${esc(q.answerIntro)}</p>`:''}
+        <div class="green-box">${(q.answers||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div></section>
 
-      <section class="book-section" id="lessonPractice"><h2>10. Bài luyện hôm nay</h2><p>Tôi đưa tiếng Việt. Bạn cố nói tiếng Anh không nhìn đáp án trước.</p>${quizHTML('lesson')}</section>
+      <section class="book-section" id="lessonPractice"><h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}</section>
 
-      <section class="book-section"><div class="eyebrow">CÁCH HỌC MẪU NÀY HÔM NAY</div><h2>Không cần học 50 câu. Chỉ cần chọn 5 câu.</h2><div class="daily-list">${L.dailyFive.map(s=>`<div class="daily-item">${inlineSentence(s)}</div>`).join('')}</div><p>Mỗi câu nói 10 lần, sau đó tự thay phần phía sau:</p><div class="formula-box">I’d like to + ______.</div><div class="completion-box"><span>MỤC TIÊU</span><br>Không phải là nhớ ngữ pháp. Khi bạn nghĩ “Tôi muốn…”, miệng tự bật ra:<br><strong>I’d like to…</strong><br>Đó mới là giao tiếp thực tế.</div><div class="footer-next"><div><span class="eyebrow">MẪU TIẾP THEO</span><br><strong>Mẫu số 2: I need to...</strong><div>= Tôi cần phải…</div><small>Hai mẫu I’d like to... và I need to... kết hợp với nhau cực kỳ mạnh trong giao tiếp hằng ngày.</small></div><button class="secondary-button" id="nextPatternInfo">Xem trạng thái Mẫu 02</button></div></section>`;
+      <section class="book-section"><div class="eyebrow">${esc(d.eyebrow||'CÁCH HỌC HÔM NAY')}</div><h2>${esc(d.title||'Chọn một số câu để luyện')}</h2>
+        <div class="daily-list">${(L.dailyFive||[]).map(s=>`<div class="daily-item">${inlineSentence(s)}</div>`).join('')}</div>${d.intro?`<p>${esc(d.intro)}</p>`:''}
+        ${d.formula?`<div class="formula-box">${esc(d.formula)}</div>`:''}${d.goalHtml?`<div class="completion-box">${d.goalHtml}</div>`:''}
+        <div class="footer-next"><div><span class="eyebrow">${esc(d.nextEyebrow||'BÀI TIẾP THEO')}</span><br><strong>${esc(d.nextTitle||'')}</strong><div>${esc(d.nextMeaning||'')}</div><small>${esc(d.nextNote||'')}</small></div><button class="secondary-button" id="nextPatternInfo">Xem trạng thái bài tiếp theo</button></div></section>`;
   }
 
   function sentenceRow(en,vi,learnKey=''){
@@ -285,7 +304,7 @@
     $$('.english-text[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
     $$('[data-speak]',root).forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation(); const card=btn.closest('[data-sentence-card]'); speak(btn.dataset.speak, card?$('.english-text',card):btn.parentElement); }));
     $$('[data-sentence-card]',root).forEach(card=>card.addEventListener('click',e=>{if(e.target.closest('button,input,label,.word-token')) return; speak(card.dataset.enCard,$('.english-text',card));}));
-    $$('.word-token',root).forEach(w=>w.addEventListener('click',e=>{e.stopPropagation(); openLookup(w.dataset.word,'word');}));
+    $('.word-token',root).forEach(w=>w.addEventListener('click',async e=>{e.stopPropagation();try{await ensureCoreEnglish();openLookup(w.dataset.word,'word');}catch(error){toast(error.message);}}));
   }
   function buildWordSpans(el,text){
     el.innerHTML='';
@@ -334,7 +353,7 @@
     $('#nextPatternInfo').onclick=()=>{toast('Mẫu 02: I need to... = Tôi cần phải… Nội dung chi tiết chưa được thêm.'); routeTo('patterns');};
     bindQuiz($('#lessonPractice'));
   }
-  function builderSentence(){ return builder.length ? `I'd like to ${builder.join(' ')}.` : "I'd like to..."; }
+  function builderSentence(){const base=L?.ui?.builder?.base||L?.title?.replace(/…|\.\.\.$/g,'').trim()||"I'd like to";return builder.length?`${base} ${builder.join(' ')}.`:`${base}…`;}
   function updateBuilder(){ $('#builderOutput').textContent=builderSentence(); }
 
   function quizHTML(context){
@@ -373,21 +392,19 @@
     const r=new SR();r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;toast('Đang nghe... hãy nói câu tiếng Anh.');r.onresult=e=>{input.value=e.results[0][0].transcript;toast('Đã nhận giọng nói. Bấm Kiểm tra.');};r.onerror=()=>toast('Không nhận được giọng nói. Hãy thử lại.');r.start();
   }
 
-  function renderJapanese(){
+  async function renderJapanese(){
     setHeader('Japanese','Japanese Learning');
-    const phrases=PLATFORM.japanesePhrases||[];
+    const modules=(STORE?.list({language:'ja'})||[]);
+    const first=modules.find(item=>item.status==='available'&&item.source);
+    const lesson=first?await ensureContent(first.id):{phrases:[]};
+    const phrases=lesson.phrases||[];
     $('#mainView').innerHTML=`
-      <section class="page-hero japanese-hero"><div class="eyebrow">JAPANESE · 日本語</div><h1>Tiếng Nhật cho cuộc sống tại Nhật</h1><p>Khu vực này đã được tách thành một track riêng để sau này có thể thêm bài học sinh hoạt, công việc, trường học, bệnh viện, nhà hàng và giao tiếp với khách hàng.</p></section>
-      <section class="jp-intro-grid">
-        <article class="jp-plan accent-green"><span>01</span><h3>Daily Life</h3><p>Mua sắm, bệnh viện, hàng xóm, trường học và thủ tục.</p></article>
-        <article class="jp-plan accent-purple"><span>02</span><h3>Work</h3><p>Công sở, báo cáo, xác nhận, hỏi lại và xử lý tình huống.</p></article>
-        <article class="jp-plan accent-yellow"><span>03</span><h3>Service</h3><p>Nhà hàng, cửa hàng và các mẫu câu lịch sự thường dùng.</p></article>
-      </section>
-      <section class="book-section"><div class="section-title-row"><div><h2>5 câu Nhật thử nghiệm</h2><p>Bấm loa để nghe bằng giọng ja-JP của thiết bị.</p></div></div><div class="jp-list">${phrases.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[0])}">🔊</button><div><strong class="jp-text">${esc(x[0])}</strong><span>${esc(x[1])}</span><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div><div class="green-box">Đây mới là khung đầu tiên. Nội dung Japanese sẽ được thêm theo module, không làm chung lẫn vào 80 mẫu câu English.</div></section>
+      <section class="page-hero japanese-hero"><div class="eyebrow">JAPANESE · 日本語</div><h1>Tiếng Nhật cho cuộc sống tại Nhật</h1><p>Nội dung Japanese bây giờ được tách thành file riêng theo từng nhóm. Thêm lesson mới không cần nhét dữ liệu vào app.js.</p></section>
+      <section class="jp-intro-grid">${modules.map((item,i)=>`<article class="jp-plan accent-${esc(item.accent||['green','purple','yellow'][i%3])}"><span>${String(item.order||i+1).padStart(2,'0')}</span><h3>${esc(item.title)}</h3><p>${esc(item.meaning||item.description||'')}</p><small>${esc(item.category||'')}</small></article>`).join('')}<article class="jp-plan accent-purple"><span>+</span><h3>Work / Service / School…</h3><p>Chỉ cần thêm file lesson + một dòng metadata vào content-index.</p></article></section>
+      <section class="book-section"><div class="section-title-row"><div><h2>${esc(lesson.title||'Japanese starter')}</h2><p>Bấm loa để nghe bằng giọng ja-JP của thiết bị.</p></div></div><div class="jp-list">${phrases.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[0])}">🔊</button><div><strong class="jp-text">${esc(x[0])}</strong><span>${esc(x[1])}</span><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div><div class="green-box">Dữ liệu đến từ <code>data/japanese/daily-life/001.js</code>.</div></section>
     `;
     hydrateSentences($('#mainView'));
   }
-
 
   function renderSettings(){
     setHeader('Thiết bị','Thiết bị & dữ liệu');
@@ -520,13 +537,15 @@
     flashIndex=0; const draw=()=>{const x=items[flashIndex%items.length];$('#vocabArea').innerHTML=`<div class="flashcard"><div><div class="front">${esc(x.term)}</div><div class="ipa">${esc(x.ipa||'')}</div><div id="flashBack" class="back hidden"><strong>${esc(x.meaning||'')}</strong>${x.example?`<p>${esc(x.example)}</p>`:''}</div><div class="quiz-actions" style="justify-content:center;margin-top:22px"><button id="flashSpeak" class="secondary-button">🔊 Nghe</button><button id="flashReveal" class="primary-button">Hiện nghĩa</button><button id="flashNext" class="secondary-button">Từ tiếp theo →</button></div></div></div>`;$('#flashSpeak').onclick=()=>speak(x.term);$('#flashReveal').onclick=()=>$('#flashBack').classList.toggle('hidden');$('#flashNext').onclick=()=>{flashIndex=(flashIndex+1)%items.length;draw();};};draw();
   }
 
-  function renderPracticeHub(){
+  async function renderPracticeHub(){
+    await ensureCoreEnglish();
     setHeader('Practice','Practice Center'); quiz={index:0,correct:0,counted:new Set(),revealed:false};
     $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PRACTICE CENTER</div><h1>Luyện nghe – bật câu – kiểm tra</h1><p>Tất cả bài luyện hiện tại dùng nội dung Mẫu 01, không thêm câu ngoài tài liệu gốc.</p><div class="hero-actions"><button id="playDaily5Hub" class="primary-button">🔊 Nghe 5 câu hôm nay</button><button class="secondary-button" data-go="lesson/1">Mở bài học đầy đủ</button></div></section><div class="section-title-row"><div><h2>Dịch Việt → Anh</h2><p>10 câu trong phần “Bài luyện hôm nay”.</p></div></div><section id="practiceQuizWrap" class="paper-card" style="padding:20px">${quizHTML('hub')}</section><div class="section-title-row"><div><h2>5 câu cần bật ra ngay</h2><p>Nghe và nói lại mỗi câu nhiều lần.</p></div></div><section class="paper-card" style="padding:16px"><div class="daily-list">${L.dailyFive.map(s=>`<div class="daily-item">${inlineSentence(s)}</div>`).join('')}</div></section>`;
     bindGenericRoutes();hydrateSentences($('#mainView'));bindQuiz($('#practiceQuizWrap'));$('#playDaily5Hub').onclick=()=>speakSequence(L.dailyFive.map(s=>[s,null]));
   }
 
-  function renderProgress(){
+  async function renderProgress(){
+    await ensureCoreEnglish();
     setHeader('Progress','Tiến độ học'); const pct=lessonPercent();
     $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PROGRESS</div><h1>Tiến độ Mẫu 01</h1><p>Tiến độ được tính từ 20 câu bạn đánh dấu “đã thuộc” và điểm tốt nhất của bài luyện 10 câu.</p></section><section class="stats-grid"><div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}/20</strong></div><div class="stat-card"><small>Quiz tốt nhất</small><strong>${state.quizBest||0}/10</strong></div><div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div><div class="stat-card"><small>Số lượt làm quiz</small><strong>${state.quizRuns||0}</strong></div></section><section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div><div class="check-grid">${L.sentences20.map((x,i)=>`<div class="check-row ${state.learned[`s20-${i}`]?'done':''}"><span>${state.learned[`s20-${i}`]?'✓':'○'}</span><span>${esc(x[0])}</span></div>`).join('')}</div></section>`;
     bindGenericRoutes();
@@ -536,6 +555,7 @@
 
   function lookupData(term,type='word'){
     const normalized=normalizeText(term);
+    if(!L) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ điển bài học chưa được tải.',example:'',type:'word'};
     if(type==='phrase' || normalized.includes(' ')){
       const p=L.phrases[normalized]; if(p) return {key:'p:'+normalized,term,ipa:p[0],meaning:p[1],example:p[2],type:'phrase'};
       const words=normalized.split(' ').map(w=>lookupData(w,'word')).filter(Boolean);
@@ -573,7 +593,7 @@
   document.addEventListener('touchend',()=>setTimeout(detectSelection,120));
   $('#menuBtn').onclick=openSidebar;$('#drawerShade').onclick=closeSidebar;
   $('#closePopoverBtn').onclick=closePopover;$('#speakWordBtn').onclick=()=>currentLookup&&speak(currentLookup.term);$('#saveWordBtn').onclick=saveCurrentLookup;
-  $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=()=>{if(currentSelection)openLookup(currentSelection,'phrase');hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
+  $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
   $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz={index:0,correct:0,counted:new Set(),revealed:false};render();toast('Đã xóa dữ liệu học.');}};
   window.addEventListener('hashchange',render);
