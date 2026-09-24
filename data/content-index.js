@@ -32,6 +32,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-003",
+    language: "en",
+    category: "patterns",
+    order: 3,
+    title: "I want to…",
+    meaning: "Tôi muốn…",
+    description: "Một trong những mẫu quan trọng nhất vì dùng được gần như mỗi ngày.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/003.js",
+    route: "lesson/3",
+    accent: "green",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
