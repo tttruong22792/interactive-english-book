@@ -1810,6 +1810,31 @@ window.CORE_DICTIONARY = {
     "/zoʊn/",
     "khu vực / vùng",
     "comfort zone"
+  ],
+  "how": [
+    "/haʊ/",
+    "như thế nào / bằng cách nào",
+    "How are you?"
+  ],
+  "love": [
+    "/lʌv/",
+    "yêu; rất thích",
+    "I love this one."
+  ],
+  "questions": [
+    "/ˈkwestʃənz/",
+    "các câu hỏi",
+    "questions"
+  ],
+  "thing": [
+    "/θɪŋ/",
+    "thứ / việc / điều",
+    "one thing"
+  ],
+  "yes": [
+    "/jes/",
+    "vâng / có / đúng",
+    "Yes, I can."
   ]
 };
 
