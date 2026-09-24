@@ -1,53 +1,67 @@
-# Shared Audio Cache — cost-safe design
+# Central + device audio cache
 
-Goal: generate OpenAI TTS at most once for the same exact combination of:
-- model
-- voice
-- language
-- pace
-- text
+Language Studio uses two cache layers.
 
-## Cache key
+## 1. Central cache
 
-SHA256(model | profile | voice | language | pace | exact text)
+Supabase Storage bucket:
 
-Current fixed profile:
-- model: gpt-4o-mini-tts-2025-12-15
-- profile: teacher-v1
-- English voice: marin
-- Japanese voice: cedar
+```text
+language-studio-audio/
+└── tts/
+    └── <sha256>.mp3
+```
 
-## Playback order
+The key is:
 
-1. Browser checks audio/tts/<hash>.mp3.
-2. If it exists, play it immediately. No OpenAI API request.
-3. If it does not exist and the app is running on localhost/private LAN, call /api/tts once.
-4. The Windows server saves the result directly to audio/tts/<hash>.mp3.
-5. Future plays on that PC use the static MP3.
-6. Run PUBLISH-AUDIO-CACHE.bat to push only those MP3 files to GitHub.
-7. Online deployments reuse the same MP3 files on every phone/computer.
+```text
+SHA256(model identity | profile | voice | language | natural | exact text)
+```
 
-## Public online mode
+Current identity:
+- model identity: `gpt-4o-mini-tts-2025-12-15`
+- API model used by the cloud generator: `gpt-4o-mini-tts`
+- profile: `teacher-v1`
+- English voice: `marin`
+- Japanese voice: `cedar`
 
-Public HTTPS static hosting does NOT call OpenAI by default.
+One natural master MP3 is reused for Slow / Medium / Natural playback speeds.
 
-If a shared MP3 exists:
-- AI voice plays.
+## 2. Device cache
 
-If it does not exist:
-- app falls back to browser TTS.
-- no OpenAI credit is spent.
+Online devices use Service Worker + Cache Storage:
 
-A future secure cloud TTS backend can be explicitly configured with:
+```text
+language-studio-audio-v1
+```
 
-window.LANGUAGE_STUDIO_TTS_ENDPOINT = "https://your-secure-backend/api/tts";
+First listen:
+- device cache miss
+- download from Supabase
+- store locally
+- play
 
-Do not put an OpenAI API key in browser JavaScript.
+Later listens:
+- play from local device cache
+- no MP3 download
 
-## Why audio/tts is tracked
+The browser/OS may eventually reclaim site storage. If that happens, the device downloads the MP3 from Supabase again, but OpenAI does not regenerate it.
 
-The old .cache/tts directory was device-local only.
-The new audio/tts directory is the cross-device cache and is intentionally committed.
+## Missing central audio
 
-Only publish audio you actually generated or deliberately pre-generated.
-This avoids bulk-generating hundreds of sentences nobody has listened to.
+The browser asks the Supabase Edge Function `language-studio-tts`.
+
+The function:
+1. validates the requested hash against `tts-manifest.json`
+2. reuses existing Storage audio if present
+3. otherwise generates one OpenAI TTS MP3
+4. uploads it to Supabase Storage
+5. returns the ready audio
+
+This keeps OpenAI usage bounded to published lesson sentences.
+
+## GitHub
+
+GitHub stores code and lesson content only.
+
+MP3 files are no longer the normal GitHub publishing mechanism.
