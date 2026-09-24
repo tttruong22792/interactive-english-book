@@ -271,6 +271,7 @@
     saveState();
     setHeader(`English › Patterns › ${String(id).padStart(2,'0')}`,L.title||meta.title,true);
     builder=[];
+    quiz={index:0,correct:0,counted:new Set(),revealed:false};
     $('#mainView').innerHTML=lessonHTML();
     hydrateSentences($('#mainView'));
     bindLessonEvents();
