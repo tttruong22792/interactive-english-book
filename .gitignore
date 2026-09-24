@@ -1,0 +1,1 @@
+# Local secrets\n.env.local\n.env\n*.secret\n*.secrets\n\n# Generated AI audio cache\n.cache/\ntts-cache/\n\n# OS/editor\n.DS_Store\nThumbs.db\n.vscode/settings.local.json\n
