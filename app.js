@@ -162,7 +162,7 @@
     return `<article class="module-card-new accent-${esc(item.accent||'purple')}"><div class="module-top"><span>${esc(item.lang||'')}</span><em>${esc(item.tag||'')}</em></div><h3>${esc(item.title||'')}</h3><p>${esc(item.desc||'')}</p><button class="secondary-button" data-go="${escAttr(item.route||'home')}">Mở module</button></article>`;
   }
 
-  function feature(  function feature(icon,title,text){ return `<article class="feature-card"><div class="feature-icon">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`; }
+  function feature(icon,title,text){ return `<article class="feature-card"><div class="feature-icon">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`; }
 
   function renderPatterns(){
     setHeader('English','English Learning');
