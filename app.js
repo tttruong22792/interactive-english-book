@@ -2,6 +2,7 @@
   'use strict';
   const L = window.LESSON;
   const CATALOG = window.PATTERN_CATALOG || [];
+  const PLATFORM = window.PLATFORM_DATA || {};
   const KEY = 'interactiveEnglishBook:v2';
   const $ = (s, root=document) => root.querySelector(s);
   const $$ = (s, root=document) => [...root.querySelectorAll(s)];
@@ -63,6 +64,7 @@
     setNavActive(r.name === 'lesson' ? 'patterns' : r.name);
     if (r.name === 'home') renderHome();
     else if (r.name === 'patterns') renderPatterns();
+    else if (r.name === 'japanese') renderJapanese();
     else if (r.name === 'lesson') renderLesson(r.id);
     else if (r.name === 'vocab') renderVocab();
     else if (r.name === 'practice') renderPracticeHub();
@@ -74,47 +76,98 @@
   }
 
   function renderHome(){
-    setHeader('Trang chủ','80 Mẫu Câu Tiếng Anh');
+    setHeader('Trang chủ','Language Studio');
     const pct=lessonPercent();
+    const tracks=(PLATFORM.tracks||[]).map(trackCard).join('');
+    const modules=(PLATFORM.modules||[]).map(moduleCard).join('');
     $('#mainView').innerHTML = `
-      <section class="page-hero">
-        <div class="eyebrow">INTERACTIVE ENGLISH BOOK</div>
-        <h1>Học theo mẫu câu.<br>Chạm để nghe. Chạm từ để hiểu.</h1>
-        <p>Giữ cách trình bày như một cuốn sách, nhưng thêm nghe câu, tra từ, lưu từ, luyện nói, bài tập và theo dõi tiến độ.</p>
-        <div class="hero-actions">
-          <button class="primary-button" data-go="lesson/1">Tiếp tục Mẫu 01 →</button>
-          <button class="secondary-button" data-go="patterns">Xem 80 mẫu câu</button>
+      <section class="landing-hero">
+        <div class="hero-copy-new">
+          <div class="landing-kicker">ENGLISH · JAPANESE · VOCABULARY · SPEAKING</div>
+          <h1 class="display-title">Một <span class="marker marker-purple">hệ thống</span> học ngôn ngữ<br>cho <span class="marker marker-green">cuộc sống thật</span>.</h1>
+          <p class="hero-lead">Không còn là một website chỉ dành cho 80 mẫu câu. Đây là nền tảng để bạn học English, Japanese, từ vựng, nghe, nói và luyện phản xạ — tất cả trong cùng một nơi.</p>
+          <div class="hero-actions">
+            <button class="primary-button" data-go="lesson/1">Tiếp tục bài đang học →</button>
+            <button class="secondary-button" data-go="patterns">Khám phá English</button>
+          </div>
+          <div class="hero-mini-stats">
+            <div><strong>${pct}%</strong><span>Pattern 01</span></div>
+            <div><strong>${savedCount()}</strong><span>Từ đã lưu</span></div>
+            <div><strong>${state.quizBest||0}/10</strong><span>Quiz tốt nhất</span></div>
+          </div>
+        </div>
+        <div class="hero-showcase">
+          <div class="showcase-window">
+            <div class="window-top"><span></span><span></span><span></span><b>Today · English</b></div>
+            <div class="showcase-body">
+              <div class="showcase-side"><div class="tiny-logo">LS</div><span class="active"></span><span></span><span></span><span></span></div>
+              <div class="showcase-main">
+                <div class="tiny-label">CURRENT LESSON</div><h3>I’d like to…</h3><p>Tôi muốn… / Tôi muốn được…</p>
+                <div class="mini-sentence">${sentenceRow("I'd like to go home.","Tôi muốn về nhà.")}</div>
+                <div class="showcase-progress"><i style="width:${pct}%"></i></div>
+                <div class="showcase-tags"><span>Listen</span><span>Words</span><span>Speak</span><span>Review</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="float-shape shape-a"></div><div class="float-shape shape-b"></div>
+          <div class="float-note">日<br><small>Japanese<br>next</small></div>
         </div>
       </section>
-      <section class="stats-grid">
-        <div class="stat-card"><small>Tiến độ Mẫu 01</small><strong>${pct}%</strong><span class="muted">${learnedCount()}/20 câu đã thuộc</span></div>
-        <div class="stat-card"><small>Điểm bài luyện tốt nhất</small><strong>${state.quizBest || 0}/10</strong><span class="muted">Việt → Anh</span></div>
-        <div class="stat-card"><small>Từ / cụm đã lưu</small><strong>${savedCount()}</strong><span class="muted">Ôn lại bất cứ lúc nào</span></div>
-        <div class="stat-card"><small>Nội dung hiện có</small><strong>1/80</strong><span class="muted">Mẫu 02 đã có khung chờ</span></div>
+
+      <section class="big-statement">
+        <h2>Bạn không cần thêm nhiều app học rời rạc.<br>Bạn cần <span class="marker marker-purple">một nơi</span> để học và <span class="marker marker-yellow">tiếp tục tiến bộ</span>.</h2>
+        <p>Mỗi phần học dùng chung một hệ thống: nghe → hiểu → nói → lưu → ôn lại. Nội dung có thể mở rộng mà không phải làm lại website từ đầu.</p>
+        <div class="scribble" aria-hidden="true">⌁⌁⌁  ↗  ⌁⌁⌁</div>
       </section>
-      <div class="section-title-row"><div><h2>Học theo cách tương tác</h2><p>Mỗi chức năng đều phục vụ việc nghe – hiểu – bật câu ra miệng.</p></div></div>
-      <section class="card-grid">
-        ${feature('🔊','Nghe cả câu','Bấm biểu tượng loa hoặc phần trống của dòng câu để nghe; từ đang được đọc sẽ được tô sáng khi trình duyệt hỗ trợ.')}
-        ${feature('👆','Chạm từng từ','Chạm một từ tiếng Anh để xem IPA, nghĩa, ví dụ, nghe riêng và lưu từ.')}
-        ${feature('🖍️','Bôi đen cụm từ','Bôi đen một cụm để nghe hoặc tra cụm. Với cụm chưa có sẵn, web sẽ hiển thị nghĩa từng từ đã biết.')}
-        ${feature('🧩','Xây câu từng lớp','Luyện đúng cách của bài: I’d like to go → go there → tomorrow → with my family.')}
-        ${feature('🎤','Nói lại câu','Bài luyện có nút micro trên trình duyệt hỗ trợ Speech Recognition.')}
-        ${feature('★','Từ vựng cá nhân','Mỗi từ/cụm được lưu vào danh sách riêng và có chế độ flashcard để ôn lại.')}
+
+      <section class="landing-section">
+        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING TRACKS</span><h2>Một hệ thống, nhiều hướng học</h2></div><p>English hôm nay, Japanese ngày mai — dữ liệu và trải nghiệm học vẫn nằm trong cùng một nền tảng.</p></div>
+        <div class="track-grid-new">${tracks}</div>
       </section>
-      <div class="section-title-row"><div><h2>Bài đang học</h2><p>Nội dung Mẫu 01 được chuyển từ tài liệu bạn cung cấp.</p></div></div>
-      <section class="card-grid">
-        ${patternCard(CATALOG[0])}
-        ${patternCard(CATALOG[1])}
-      </section>`;
+
+      <section class="purple-band">
+        <div><span class="landing-kicker light">INTERACTIVE LEARNING</span><h2>Đọc như một cuốn sách.<br>Chạm vào là học.</h2></div>
+        <div class="band-features">
+          <div><b>01</b><strong>Nghe câu</strong><span>Click câu để phát âm và highlight từ.</span></div>
+          <div><b>02</b><strong>Tra từ</strong><span>Click một từ để xem IPA, nghĩa và ví dụ.</span></div>
+          <div><b>03</b><strong>Lưu & ôn</strong><span>Lưu từ rồi ôn lại bằng flashcard.</span></div>
+          <div><b>04</b><strong>Nói lại</strong><span>Dùng micro trong bài luyện trên trình duyệt hỗ trợ.</span></div>
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="landing-section-head"><div><span class="landing-kicker">YOUR LIBRARY</span><h2>Nội dung đang phát triển</h2></div><p>Không khóa cấu trúc vào một khóa học duy nhất. Mỗi module là một khối có thể mở rộng.</p></div>
+        <div class="module-grid-new">${modules}</div>
+      </section>
+
+      <section class="split-promo">
+        <div class="promo-copy"><span class="landing-kicker">CURRENT LESSON</span><h2>I’d like to…</h2><p>Giữ nguyên toàn bộ bài học tương tác từ tài liệu của bạn: cách đọc, 20 câu, công việc, nhà hàng, sentence builder, hội thoại và quiz.</p><button class="primary-button" data-go="lesson/1">Mở bài đầy đủ</button></div>
+        <div class="promo-preview"><div class="preview-label">Tap to listen</div>
+          ${sentenceRow("I'd like to buy this.","Tôi muốn mua cái này.")}
+          ${sentenceRow("I'd like to ask you something.","Tôi muốn hỏi bạn một việc.")}
+          ${sentenceRow("I'd like to check something.","Tôi muốn kiểm tra một việc.")}
+        </div>
+      </section>
+    `;
     bindGenericRoutes();
     hydrateSentences($('#mainView'));
   }
-  function feature(icon,title,text){ return `<article class="feature-card"><div class="feature-icon">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`; }
+
+  function trackCard(item){
+    const a=esc(item.accent||'purple');
+    return `<article class="track-card-new accent-${a}"><div class="track-code">${esc(item.code||'')}</div><div><span class="track-sub">${esc(item.subtitle||'')}</span><h3>${esc(item.title||'')}</h3><p>${esc(item.description||'')}</p></div><button class="round-arrow" data-go="${escAttr(item.route||'home')}" aria-label="Mở ${escAttr(item.title||'')}">↗</button></article>`;
+  }
+
+  function moduleCard(item){
+    return `<article class="module-card-new accent-${esc(item.accent||'purple')}"><div class="module-top"><span>${esc(item.lang||'')}</span><em>${esc(item.tag||'')}</em></div><h3>${esc(item.title||'')}</h3><p>${esc(item.desc||'')}</p><button class="secondary-button" data-go="${escAttr(item.route||'home')}">Mở module</button></article>`;
+  }
+
+  function feature(  function feature(icon,title,text){ return `<article class="feature-card"><div class="feature-icon">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></article>`; }
 
   function renderPatterns(){
-    setHeader('Thư viện','80 mẫu câu');
+    setHeader('English','English Learning');
     $('#mainView').innerHTML = `
-      <section class="page-hero"><div class="eyebrow">THƯ VIỆN BÀI HỌC</div><h1>80 Mẫu Câu Tiếng Anh Giao Tiếp</h1><p>Khung 80 bài đã sẵn sàng. Mẫu 01 có đầy đủ nội dung; Mẫu 02 là bài tiếp theo được giới thiệu trong tài liệu. Các vị trí còn lại đang chờ nội dung.</p></section>
+      <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>80 mẫu câu chỉ là một track đầu tiên. Sau này khu vực English có thể mở rộng sang vocabulary, listening, speaking, reading và tình huống công việc.</p></section>
       <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
       <section id="patternsGrid" class="card-grid"></section>`;
     let filter='all';
@@ -139,7 +192,7 @@
   function renderLesson(id){
     if(id!==1){ toast('Hiện tại chỉ Mẫu 01 có nội dung hoàn chỉnh.'); routeTo('patterns'); return; }
     state.lessonVisits=(state.lessonVisits||0)+1; saveState();
-    setHeader('80 mẫu câu › Mẫu 01','I’d like to…',true);
+    setHeader('English › Patterns › 01','I’d like to…',true);
     builder=[];
     $('#mainView').innerHTML = lessonHTML();
     hydrateSentences($('#mainView'));
@@ -238,8 +291,12 @@
     }
   }
 
-  function bestVoice(){
+  function detectSpeechLang(text=''){
+    return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text)) ? 'ja-JP' : 'en-US';
+  }
+  function bestVoice(lang='en-US'){
     const voices=speechSynthesis.getVoices();
+    if(/^ja/i.test(lang)) return voices.find(v=>/^ja-JP/i.test(v.lang) && /Nanami|Haruka|Google|Kyoko/i.test(v.name)) || voices.find(v=>/^ja/i.test(v.lang)) || null;
     return voices.find(v=>/^en-US/i.test(v.lang) && /Aria|Jenny|Google|Samantha|Ava/i.test(v.name)) || voices.find(v=>/^en-US/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang)) || null;
   }
   function stopSpeech(){ if('speechSynthesis' in window) speechSynthesis.cancel(); $$('.speaking').forEach(x=>x.classList.remove('speaking')); $$('.playing').forEach(x=>x.classList.remove('playing')); }
@@ -247,7 +304,7 @@
     return new Promise(resolve=>{
       if(!('speechSynthesis' in window)){ toast('Trình duyệt này không hỗ trợ đọc văn bản.'); resolve(); return; }
       stopSpeech();
-      const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=Number(rate)||.88; const v=bestVoice(); if(v) u.voice=v;
+      const u=new SpeechSynthesisUtterance(text); const lang=detectSpeechLang(text); u.lang=lang; u.rate=Number(rate)||.88; const v=bestVoice(lang); if(v) u.voice=v;
       const card=highlightEl?.closest?.('[data-sentence-card]'); if(card) card.classList.add('playing');
       u.onboundary=e=>{
         if(!highlightEl || typeof e.charIndex!=='number') return;
@@ -309,8 +366,23 @@
     const r=new SR();r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;toast('Đang nghe... hãy nói câu tiếng Anh.');r.onresult=e=>{input.value=e.results[0][0].transcript;toast('Đã nhận giọng nói. Bấm Kiểm tra.');};r.onerror=()=>toast('Không nhận được giọng nói. Hãy thử lại.');r.start();
   }
 
+  function renderJapanese(){
+    setHeader('Japanese','Japanese Learning');
+    const phrases=PLATFORM.japanesePhrases||[];
+    $('#mainView').innerHTML=`
+      <section class="page-hero japanese-hero"><div class="eyebrow">JAPANESE · 日本語</div><h1>Tiếng Nhật cho cuộc sống tại Nhật</h1><p>Khu vực này đã được tách thành một track riêng để sau này có thể thêm bài học sinh hoạt, công việc, trường học, bệnh viện, nhà hàng và giao tiếp với khách hàng.</p></section>
+      <section class="jp-intro-grid">
+        <article class="jp-plan accent-green"><span>01</span><h3>Daily Life</h3><p>Mua sắm, bệnh viện, hàng xóm, trường học và thủ tục.</p></article>
+        <article class="jp-plan accent-purple"><span>02</span><h3>Work</h3><p>Công sở, báo cáo, xác nhận, hỏi lại và xử lý tình huống.</p></article>
+        <article class="jp-plan accent-yellow"><span>03</span><h3>Service</h3><p>Nhà hàng, cửa hàng và các mẫu câu lịch sự thường dùng.</p></article>
+      </section>
+      <section class="book-section"><div class="section-title-row"><div><h2>5 câu Nhật thử nghiệm</h2><p>Bấm loa để nghe bằng giọng ja-JP của thiết bị.</p></div></div><div class="jp-list">${phrases.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[0])}">🔊</button><div><strong class="jp-text">${esc(x[0])}</strong><span>${esc(x[1])}</span><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div><div class="green-box">Đây mới là khung đầu tiên. Nội dung Japanese sẽ được thêm theo module, không làm chung lẫn vào 80 mẫu câu English.</div></section>
+    `;
+    hydrateSentences($('#mainView'));
+  }
+
   function renderVocab(){
-    setHeader('Từ vựng','Từ đã lưu');
+    setHeader('Library','Từ đã lưu');
     const items=Object.values(state.saved||{}).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
     $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">MY VOCABULARY</div><h1>Từ và cụm bạn đã lưu</h1><p>Chạm một từ trong bài học rồi bấm “Lưu”. Danh sách này nằm trên chính thiết bị của bạn.</p></section><div class="vocab-toolbar"><strong>${items.length} mục đã lưu</strong>${items.length?'<button id="startFlashcards" class="primary-button">Ôn bằng flashcard</button>':''}</div><section id="vocabArea">${items.length?vocabCards(items):emptyVocab()}</section>`;
     $$('[data-vocab-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.vocabSpeak));
@@ -324,13 +396,13 @@
   }
 
   function renderPracticeHub(){
-    setHeader('Luyện tập','Practice Center'); quiz={index:0,correct:0,counted:new Set(),revealed:false};
+    setHeader('Practice','Practice Center'); quiz={index:0,correct:0,counted:new Set(),revealed:false};
     $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PRACTICE CENTER</div><h1>Luyện nghe – bật câu – kiểm tra</h1><p>Tất cả bài luyện hiện tại dùng nội dung Mẫu 01, không thêm câu ngoài tài liệu gốc.</p><div class="hero-actions"><button id="playDaily5Hub" class="primary-button">🔊 Nghe 5 câu hôm nay</button><button class="secondary-button" data-go="lesson/1">Mở bài học đầy đủ</button></div></section><div class="section-title-row"><div><h2>Dịch Việt → Anh</h2><p>10 câu trong phần “Bài luyện hôm nay”.</p></div></div><section id="practiceQuizWrap" class="paper-card" style="padding:20px">${quizHTML('hub')}</section><div class="section-title-row"><div><h2>5 câu cần bật ra ngay</h2><p>Nghe và nói lại mỗi câu nhiều lần.</p></div></div><section class="paper-card" style="padding:16px"><div class="daily-list">${L.dailyFive.map(s=>`<div class="daily-item">${inlineSentence(s)}</div>`).join('')}</div></section>`;
     bindGenericRoutes();hydrateSentences($('#mainView'));bindQuiz($('#practiceQuizWrap'));$('#playDaily5Hub').onclick=()=>speakSequence(L.dailyFive.map(s=>[s,null]));
   }
 
   function renderProgress(){
-    setHeader('Tiến độ','Tiến độ học'); const pct=lessonPercent();
+    setHeader('Progress','Tiến độ học'); const pct=lessonPercent();
     $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">PROGRESS</div><h1>Tiến độ Mẫu 01</h1><p>Tiến độ được tính từ 20 câu bạn đánh dấu “đã thuộc” và điểm tốt nhất của bài luyện 10 câu.</p></section><section class="stats-grid"><div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}/20</strong></div><div class="stat-card"><small>Quiz tốt nhất</small><strong>${state.quizBest||0}/10</strong></div><div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div><div class="stat-card"><small>Số lượt làm quiz</small><strong>${state.quizRuns||0}</strong></div></section><section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div><div class="check-grid">${L.sentences20.map((x,i)=>`<div class="check-row ${state.learned[`s20-${i}`]?'done':''}"><span>${state.learned[`s20-${i}`]?'✓':'○'}</span><span>${esc(x[0])}</span></div>`).join('')}</div></section>`;
     bindGenericRoutes();
   }

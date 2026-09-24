@@ -1,14 +1,43 @@
-# Interactive English Book V2.2
+# Language Studio
 
-## Windows - cach chay de nhat
+A mobile-friendly self-study language platform for English + Japanese.
 
-1. Giai nen ZIP vao mot thu muc binh thuong, vi du `C:\Projects\interactive-english-book-v2.2`.
-2. Double-click `RUN-WINDOWS.bat`.
-3. Giu cua so server mo trong luc hoc.
-4. Trinh duyet se tu mo dia chi `http://127.0.0.1:5500/#home` (hoac cong 5501-5520 neu 5500 dang ban).
+The project started from **80 English sentence patterns**, but is now structured to grow into vocabulary, listening, speaking, Japanese daily phrases, quizzes and progress tracking.
 
-V2.2 khong can Python. Launcher chi dung PowerShell co san tren Windows.
+## Run on Windows
+Double-click `RUN-WINDOWS.bat`.
 
-## Neu PowerShell bi chan boi may cong ty
+## Test on your phone (same Wi-Fi)
+1. PC and phone must be on the same Wi-Fi.
+2. Double-click `RUN-LAN-WINDOWS.bat`.
+3. If Windows Firewall asks, allow **Private networks**.
+4. Open the printed phone URL, for example `http://192.168.1.20:5500/#home`.
 
-Double-click `OPEN-DIRECTLY.bat`. Website van mo duoc, nhung mot so tinh nang can localhost (vi du service worker/PWA va co the microphone) co the bi gioi han.
+LAN mode is ideal for testing the mobile layout and TTS. Microphone/PWA install on phones normally requires HTTPS. The next deployment step is an HTTPS host.
+
+## Get updates from GitHub
+```powershell
+cd C:\Projects\interactive-english-book
+git pull
+```
+
+## Main code files
+- `index.html`
+- `styles.css`
+- `platform-data.js`
+- `lesson01.js`
+- `catalog.js`
+- `app.js`
+- `CLAUDE.md`
+
+## Current learning features
+- click sentence → hear sentence
+- word click → IPA / meaning / example / hear / save
+- select phrase → lookup
+- saved vocabulary + flashcards
+- sentence builder
+- dialogue playback
+- Vietnamese → English quiz
+- speech recognition on supported browsers
+- local progress
+- Japanese starter phrase audio with ja-JP TTS

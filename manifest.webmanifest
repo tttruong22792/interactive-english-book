@@ -1,12 +1,19 @@
 {
-  "name": "80 Mẫu Câu Tiếng Anh – Interactive Book",
-  "short_name": "80 Mẫu Câu",
-  "start_url": "./index.html#home",
-  "display": "standalone",
-  "background_color": "#f3f6fa",
-  "theme_color": "#173b5e",
-  "lang": "vi",
-  "icons": [
-    {"src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  "name":"Language Studio – English + Japanese",
+  "short_name":"Language Studio",
+  "description":"Interactive self-study platform for English, Japanese, vocabulary, listening and speaking.",
+  "start_url":"./index.html#home",
+  "scope":"./",
+  "display":"standalone",
+  "orientation":"any",
+  "background_color":"#f4f0e8",
+  "theme_color":"#8f7cf7",
+  "lang":"vi",
+  "icons":[{"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],
+  "shortcuts":[
+    {"name":"English","url":"./index.html#patterns"},
+    {"name":"Japanese","url":"./index.html#japanese"},
+    {"name":"Saved Vocabulary","url":"./index.html#vocab"},
+    {"name":"Practice","url":"./index.html#practice"}
   ]
 }

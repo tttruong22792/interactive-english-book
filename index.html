@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#173b5e" />
-  <meta name="description" content="80 Mẫu Câu Tiếng Anh Giao Tiếp – sách tương tác cho người mới bắt đầu." />
-  <title>80 Mẫu Câu Tiếng Anh – Interactive Book</title>
+  <meta name="theme-color" content="#8f7cf7" />
+  <meta name="description" content="Language Studio – nền tảng tự học English + Japanese, từ vựng, nghe, nói và mẫu câu tương tác." />
+  <title>Language Studio – English + Japanese</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
@@ -14,19 +14,20 @@
   <div id="app" class="app-shell">
     <aside class="sidebar" id="sidebar">
       <button class="brand" data-route="home" aria-label="Trang chủ">
-        <span class="brand-mark">80</span>
-        <span class="brand-copy"><strong>Mẫu câu tiếng Anh</strong><small>Interactive Book</small></span>
+        <span class="brand-mark">LS</span>
+        <span class="brand-copy"><strong>Language Studio</strong><small>Learn for real life</small></span>
       </button>
 
       <div class="side-progress">
-        <div class="side-progress-top"><span>Mẫu 01</span><strong id="sidebarProgressText">0%</strong></div>
+        <div class="side-progress-top"><span>English · Pattern 01</span><strong id="sidebarProgressText">0%</strong></div>
         <div class="progress-track"><div id="sidebarProgressBar" class="progress-fill"></div></div>
         <small id="sidebarProgressNote">Bắt đầu học I’d like to…</small>
       </div>
 
       <nav class="nav-list" aria-label="Điều hướng chính">
         <button class="nav-item" data-route="home"><span>⌂</span><b>Trang chủ</b></button>
-        <button class="nav-item" data-route="patterns"><span>▦</span><b>80 mẫu câu</b></button>
+        <button class="nav-item" data-route="patterns"><span>EN</span><b>English</b></button>
+        <button class="nav-item" data-route="japanese"><span>日</span><b>Japanese</b></button>
         <button class="nav-item" data-route="vocab"><span>★</span><b>Từ đã lưu</b><em id="savedCountBadge">0</em></button>
         <button class="nav-item" data-route="practice"><span>▶</span><b>Luyện tập</b></button>
         <button class="nav-item" data-route="progress"><span>◔</span><b>Tiến độ</b></button>
@@ -34,7 +35,7 @@
 
       <div class="side-bottom">
         <button id="resetDataBtn" class="text-button">↻ Xóa dữ liệu học</button>
-        <small>Dữ liệu được lưu trên thiết bị này.</small>
+        <small>Dữ liệu hiện được lưu trên thiết bị này.</small>
       </div>
     </aside>
 
@@ -44,7 +45,7 @@
           <button id="menuBtn" class="icon-button mobile-only" aria-label="Mở menu">☰</button>
           <div>
             <div id="crumb" class="crumb">Trang chủ</div>
-            <div id="pageTitle" class="page-title-small">80 Mẫu Câu Tiếng Anh</div>
+            <div id="pageTitle" class="page-title-small">Language Studio</div>
           </div>
         </div>
         <div id="lessonControls" class="lesson-controls hidden">
@@ -62,11 +63,11 @@
       <main id="mainView" class="main-view" tabindex="-1"></main>
 
       <nav class="bottom-nav mobile-only" aria-label="Điều hướng di động">
-        <button data-route="home"><span>⌂</span><small>Trang chủ</small></button>
-        <button data-route="patterns"><span>▦</span><small>Mẫu câu</small></button>
-        <button data-route="vocab"><span>★</span><small>Từ vựng</small></button>
+        <button data-route="home"><span>⌂</span><small>Home</small></button>
+        <button data-route="patterns"><span>EN</span><small>English</small></button>
+        <button data-route="japanese"><span>日</span><small>日本語</small></button>
+        <button data-route="vocab"><span>★</span><small>Từ</small></button>
         <button data-route="practice"><span>▶</span><small>Luyện</small></button>
-        <button data-route="progress"><span>◔</span><small>Tiến độ</small></button>
       </nav>
     </div>
   </div>
@@ -98,6 +99,7 @@
 
   <div id="toast" class="toast hidden" aria-live="polite"></div>
 
+  <script src="platform-data.js"></script>
   <script src="lesson01.js"></script>
   <script src="catalog.js"></script>
   <script src="app.js"></script>

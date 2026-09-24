@@ -1,6 +1,7 @@
 param(
   [int]$PreferredPort = 5500,
-  [string]$Root = $PSScriptRoot
+  [string]$Root = $PSScriptRoot,
+  [switch]$Lan
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,7 +57,8 @@ $listener = $null
 $Port = $PreferredPort
 for ($p = $PreferredPort; $p -le ($PreferredPort + 20); $p++) {
   try {
-    $candidate = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $p)
+    $bindAddress = if ($Lan) { [System.Net.IPAddress]::Any } else { [System.Net.IPAddress]::Loopback }
+    $candidate = [System.Net.Sockets.TcpListener]::new($bindAddress, $p)
     $candidate.Start()
     $listener = $candidate
     $Port = $p
@@ -75,12 +77,26 @@ if (-not $listener) {
 }
 
 $Url = "http://127.0.0.1:$Port/#home"
+$MobileUrl = $null
+if ($Lan) {
+  try {
+    $hostIp = [System.Net.Dns]::GetHostAddresses([System.Net.Dns]::GetHostName()) |
+      Where-Object { $_.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and -not $_.ToString().StartsWith('169.254.') } |
+      Select-Object -First 1
+    if ($hostIp) { $MobileUrl = "http://$($hostIp.ToString()):$Port/#home" }
+  } catch {}
+}
 Clear-Host
 Write-Host '================================================' -ForegroundColor Cyan
-Write-Host '  80 MAU CAU TIENG ANH - LOCAL SERVER V2.2' -ForegroundColor Cyan
+Write-Host '  LANGUAGE STUDIO - LOCAL SERVER V3' -ForegroundColor Cyan
 Write-Host '================================================' -ForegroundColor Cyan
 Write-Host "Folder: $Root"
-Write-Host "Address: $Url" -ForegroundColor Green
+Write-Host "PC address: $Url" -ForegroundColor Green
+if ($Lan) {
+  if ($MobileUrl) { Write-Host "Phone (same Wi-Fi): $MobileUrl" -ForegroundColor Green }
+  else { Write-Host 'LAN mode is on. Could not detect the PC IPv4 address automatically.' -ForegroundColor Yellow }
+  Write-Host 'If Windows Firewall asks, allow Private networks.' -ForegroundColor Yellow
+}
 Write-Host ''
 Write-Host 'KEEP THIS WINDOW OPEN while using the app.' -ForegroundColor Yellow
 Write-Host 'Press Ctrl+C to stop the server.' -ForegroundColor Yellow
