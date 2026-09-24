@@ -19,10 +19,11 @@
   let state = loadState();
   let currentLookup = null;
   let currentSelection = '';
-  let quiz = { index:0, correct:0, counted:new Set(), revealed:false };
+  let quiz = { index:0, correct:0, counted:new Set(), revealed:false, mode:'sequential', baseItems:[], items:[], scopeId:null, context:'lesson' };
   let flashIndex = 0;
-  let builder = [];
   let installPrompt = null;
+  let sequenceRun = 0;
+  let practiceLessons = [];
 
   function loadState(){
     try {
@@ -67,6 +68,119 @@
     return Math.min(100,Math.round(((Math.min(20,learnedCount(id))+Math.min(10,quizBestFor(id)))/30)*100));
   }
   function savedCount(){ return Object.keys(state.saved || {}).length; }
+
+  function normalizeMeaning(s=''){
+    return String(s)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/đ/g,'d').replace(/Đ/g,'D')
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function sentenceLearnKey(en=''){ return 'sentence-' + keyFor(en); }
+
+  function collectLessonSentences(lesson){
+    const out=[]; const seen=new Set();
+    const add=(en,vi='',source='')=>{
+      if(typeof en!=='string') return;
+      en=en.trim(); vi=typeof vi==='string'?vi.trim():'';
+      const key=normalizeText(en);
+      if(!key || seen.has(key) || !/[a-z]/i.test(en) || /^\//.test(en)) return;
+      seen.add(key);
+      out.push({en,vi,source});
+    };
+    const addPairs=(items,source='')=>(items||[]).forEach(x=>{
+      if(Array.isArray(x) && typeof x[0]==='string') add(x[0],x[1]||'',source);
+    });
+
+    addPairs(lesson?.introExamples,'intro');
+
+    if(lesson?.layout==='sectioned-pattern'){
+      (lesson.sections||[]).forEach(section=>{
+        (section.blocks||[]).forEach(block=>{
+          if(block?.type==='sentences') addPairs(block.items,section.id||section.title||'section');
+          if(block?.type==='dialogs'){
+            (block.items||[]).forEach(dialog=>(dialog.rows||[]).forEach(row=>add(row[1],row[2]||'',section.id||'dialog')));
+          }
+        });
+      });
+    }else{
+      const u=lesson?.ui||{},p=u.pronunciation||{},comp=u.comparison||{},q=u.questions||{};
+      if(p.exampleSentence) add(p.exampleSentence,p.exampleMeaning||'','pronunciation');
+      addPairs(p.contrastSentences,'pronunciation');
+      addPairs(comp.examples,'comparison');
+      if(Array.isArray(comp.homeSentence)) add(comp.homeSentence[0],comp.homeSentence[1]||'','comparison');
+      if(Array.isArray(comp.publicSentence)) add(comp.publicSentence[0],comp.publicSentence[1]||'','comparison');
+      addPairs(lesson?.sentences20,'master');
+      addPairs(lesson?.work,'work');
+      addPairs(lesson?.restaurantNouns,'restaurant');
+      (lesson?.buildSteps||[]).forEach(x=>Array.isArray(x)&&add(x[1],x[2]||'','expansion'));
+      (lesson?.dialogs||[]).forEach(dialog=>(dialog.rows||[]).forEach(row=>add(row[1],row[2]||'','dialog')));
+      addPairs(lesson?.questions,'questions');
+      addPairs(q.answers,'answers');
+      if(u?.work?.calloutSentence) add(u.work.calloutSentence,u.work.calloutMeaning||'','work');
+      if(u?.restaurant?.leftExample) add(u.restaurant.leftExample,'','restaurant');
+      if(u?.restaurant?.rightExample) add(u.restaurant.rightExample,'','restaurant');
+    }
+    return out;
+  }
+
+  function quizItemsFromLessons(lessons){
+    const grouped=new Map();
+    (lessons||[]).forEach(lesson=>{
+      collectLessonSentences(lesson).forEach(item=>{
+        const vi=(item.vi||'').trim();
+        if(!vi) return;
+        if(/^(nói rõ|nói tự nhiên|đọc chậm|đọc tự nhiên|ipa\b)/i.test(vi)) return;
+        if(vi.includes('→')) return;
+        const meaningKey=normalizeMeaning(vi);
+        if(!meaningKey) return;
+        if(!grouped.has(meaningKey)){
+          grouped.set(meaningKey,{
+            prompt:vi,
+            answers:[],
+            lessonIds:[],
+            lessonTitles:[]
+          });
+        }
+        const group=grouped.get(meaningKey);
+        if(!group.answers.some(answer=>normalizeText(answer)===normalizeText(item.en))) group.answers.push(item.en);
+        if(!group.lessonIds.includes(lesson.id)) group.lessonIds.push(lesson.id);
+        if(!group.lessonTitles.includes(lesson.title)) group.lessonTitles.push(lesson.title);
+      });
+    });
+    return [...grouped.values()].filter(item=>item.answers.length);
+  }
+
+  function shuffled(items){
+    const a=[...(items||[])];
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function makeQuizSession(baseItems,mode='sequential',scopeId=null,context='lesson'){
+    const clean=[...(baseItems||[])];
+    return {
+      index:0,correct:0,counted:new Set(),revealed:false,
+      mode,
+      baseItems:clean,
+      items:mode==='random'?shuffled(clean):[...clean],
+      scopeId,
+      context
+    };
+  }
+
+  function currentLessonSentenceTotal(id=currentLessonId()){
+    const lesson=STORE?.get?.(id);
+    return lesson?collectLessonSentences(lesson).length:20;
+  }
+
 
   function updateGlobalUI(){
     const route=parseRoute();
