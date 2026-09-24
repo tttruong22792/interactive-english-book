@@ -374,6 +374,29 @@ try {
         continue
       }
 
+      if ($rawPath -eq '/api/asset-check' -and $method -eq 'GET') {
+        $assetPaths = @(
+          'index.html',
+          'styles.css',
+          'data\content-index.js',
+          'data\content-loader.js',
+          'platform-data.js',
+          'catalog.js',
+          'ai-tts.js',
+          'app.js'
+        )
+        $assetInfo = @{}
+        foreach ($asset in $assetPaths) {
+          $assetFull = Join-Path $Root $asset
+          $assetInfo[$asset] = @{
+            exists = [System.IO.File]::Exists($assetFull)
+            bytes = if ([System.IO.File]::Exists($assetFull)) { (Get-Item -LiteralPath $assetFull).Length } else { 0 }
+          }
+        }
+        Send-Json $stream 200 'OK' @{ ok = $true; assets = $assetInfo }
+        continue
+      }
+
       if ($rawPath -eq '/api/tts/status' -and $method -eq 'GET') {
         Send-Json $stream 200 'OK' @{
           enabled = -not [string]::IsNullOrWhiteSpace($OpenAIKey)
