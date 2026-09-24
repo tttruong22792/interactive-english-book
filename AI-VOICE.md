@@ -4,7 +4,7 @@ Language Studio now prefers OpenAI text-to-speech and automatically falls back t
 
 ## Model and voices
 
-- Model: `gpt-4o-mini-tts`
+- Model: `gpt-4o-mini-tts-2025-12-15`
 - English default voice: `marin`
 - Japanese default voice: `cedar`
 - Output: MP3
@@ -86,3 +86,24 @@ window.LANGUAGE_STUDIO_TTS_ENDPOINT = "https://YOUR-SERVER/api/tts";
 ```
 
 The frontend is already designed for this. The secure cloud backend is a separate deployment step.
+
+
+## Shared cross-device cache
+
+The app now uses a deterministic cache key based on:
+
+```text
+model | profile | voice | language | pace | exact text
+```
+
+Current profile: `teacher-v1`.
+
+The browser checks `audio/tts/<hash>.mp3` before contacting any dynamic TTS backend.
+
+On the local Windows server:
+- cache hit → static MP3, zero OpenAI request
+- cache miss → one OpenAI request, then the MP3 is written to `audio/tts/`
+
+Run `PUBLISH-AUDIO-CACHE.bat` to publish newly generated MP3s to GitHub.
+
+On a public static HTTPS deployment, a missing MP3 falls back to browser TTS and does not automatically spend OpenAI credit.
