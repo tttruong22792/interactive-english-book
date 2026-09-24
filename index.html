@@ -8,7 +8,7 @@
   <title>Language Studio – English + Japanese</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260924-ai-fix2" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -101,11 +101,30 @@
 
   <div id="toast" class="toast hidden" aria-live="polite"></div>
 
-  <script src="data/content-index.js"></script>
-  <script src="data/content-loader.js"></script>
-  <script src="platform-data.js"></script>
-  <script src="catalog.js"></script>
-  <script src="ai-tts.js"></script>
-  <script src="app.js"></script>
+  <script>
+    window.__LS_BOOT_ERRORS = [];
+    window.addEventListener('error', function (event) {
+      window.__LS_BOOT_ERRORS.push(event.message || 'Unknown script error');
+    });
+    window.setTimeout(function () {
+      if (window.__LS_RENDERED) return;
+      var main = document.getElementById('mainView');
+      if (!main) return;
+      var details = window.__LS_BOOT_ERRORS.length
+        ? window.__LS_BOOT_ERRORS.join(' | ')
+        : 'app.js chưa chạy hoặc bị trình duyệt giữ cache cũ.';
+      main.innerHTML =
+        '<section class="page-hero"><div class="eyebrow">STARTUP DIAGNOSTIC</div>' +
+        '<h1>Language Studio chưa khởi động được</h1>' +
+        '<p>' + details.replace(/[&<>]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];}) + '</p>' +
+        '<p style="margin-top:12px">Hãy đóng cửa sổ server, chạy git pull rồi mở lại RUN-WINDOWS.bat.</p></section>';
+    }, 2500);
+  </script>
+  <script src="data/content-index.js?v=20260924-ai-fix2"></script>
+  <script src="data/content-loader.js?v=20260924-ai-fix2"></script>
+  <script src="platform-data.js?v=20260924-ai-fix2"></script>
+  <script src="catalog.js?v=20260924-ai-fix2"></script>
+  <script src="ai-tts.js?v=20260924-ai-fix2"></script>
+  <script src="app.js?v=20260924-ai-fix2"></script>
 </body>
 </html>
