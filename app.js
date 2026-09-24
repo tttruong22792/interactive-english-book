@@ -11,7 +11,7 @@
 
   const CORE_LESSON_ID = 'en-pattern-001';
   const defaults = {
-    hideVi:false, rate:0.88, learned:{}, saved:{},
+    hideVi:false, rate:0.88, learned:{}, saved:{}, meaningOverrides:{},
     quizBest:0, quizRuns:0,
     quizBestByLesson:{}, quizRunsByLesson:{},
     lessonVisits:0, lessonVisitsByLesson:{}
@@ -33,6 +33,7 @@
         ...raw,
         learned:{...(raw.learned||{})},
         saved:{...(raw.saved||{})},
+        meaningOverrides:{...(raw.meaningOverrides||{})},
         quizBestByLesson:{...(raw.quizBestByLesson||{})},
         quizRunsByLesson:{...(raw.quizRunsByLesson||{})},
         lessonVisitsByLesson:{...(raw.lessonVisitsByLesson||{})}
@@ -86,12 +87,22 @@
   }
 
   function sentenceLearnKey(en=''){ return 'sentence-' + keyFor(en); }
+  function meaningOverrideKey(en='',lessonId=currentLessonId()){ return `${lessonId}:${normalizeText(en)}`; }
+  function meaningFor(en='',fallback='',lessonId=currentLessonId()){
+    const key=meaningOverrideKey(en,lessonId);
+    return Object.prototype.hasOwnProperty.call(state.meaningOverrides||{},key)
+      ? state.meaningOverrides[key]
+      : (fallback||'');
+  }
+  function originalMeaningFor(en='',fallback=''){ return fallback||''; }
+
 
   function collectLessonSentences(lesson){
     const out=[]; const seen=new Set();
     const add=(en,vi='',source='')=>{
       if(typeof en!=='string') return;
       en=en.trim(); vi=typeof vi==='string'?vi.trim():'';
+      vi=meaningFor(en,vi,lesson?.id||currentLessonId());
       const key=normalizeText(en);
       if(!key || seen.has(key) || !/[a-z]/i.test(en) || /^\//.test(en)) return;
       seen.add(key);
@@ -920,6 +931,7 @@
           ...defaults,...next,
           learned:{...(next.learned||{})},
           saved:{...(next.saved||{})},
+          meaningOverrides:{...(next.meaningOverrides||{})},
           quizBestByLesson:{...(next.quizBestByLesson||{})},
           quizRunsByLesson:{...(next.quizRunsByLesson||{})},
           lessonVisitsByLesson:{...(next.lessonVisitsByLesson||{})}
