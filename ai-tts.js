@@ -4,7 +4,12 @@
   var TTS_MODEL = "gpt-4o-mini-tts-2025-12-15";
   var TTS_PROFILE = "teacher-v1";
   var MASTER_PACE = "natural";
-  var STATIC_AUDIO_BASE = "./audio/tts/";
+
+  var LOCAL_AUDIO_BASE = "./audio/tts/";
+  var CLOUD_VIRTUAL_AUDIO_BASE = "./audio-cloud/";
+  var CLOUD_AUDIO_PUBLIC_BASE = "https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/";
+  var CLOUD_TTS_ENDPOINT = "https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts";
+
   var statusCache = null;
   var statusAt = 0;
   var STATUS_TTL = 30000;
@@ -66,16 +71,22 @@
     }).join("");
   }
 
-  function endpoint(){ return window.LANGUAGE_STUDIO_TTS_ENDPOINT || "/api/tts"; }
-  function statusEndpoint(){ return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT || endpoint()+"/status"; }
-
-  function dynamicAllowed(){
-    if(window.LANGUAGE_STUDIO_TTS_ENDPOINT) return true;
+  function isLocalHost(){
     var host=String(location.hostname||"").toLowerCase();
     if(host==="127.0.0.1" || host==="localhost") return true;
     if(/^192\.168\./.test(host) || /^10\./.test(host)) return true;
     var m=host.match(/^172\.(\d+)\./);
     return !!(m && Number(m[1])>=16 && Number(m[1])<=31);
+  }
+
+  function endpoint(){
+    if(window.LANGUAGE_STUDIO_TTS_ENDPOINT) return window.LANGUAGE_STUDIO_TTS_ENDPOINT;
+    return isLocalHost() ? "/api/tts" : CLOUD_TTS_ENDPOINT;
+  }
+
+  function statusEndpoint(){
+    if(window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT) return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT;
+    return isLocalHost() ? endpoint()+"/status" : CLOUD_TTS_ENDPOINT;
   }
 
   function detectLanguage(text){
@@ -93,11 +104,31 @@
     return sha256Sync([TTS_MODEL,TTS_PROFILE,voice,language,MASTER_PACE,String(text)].join("|"));
   }
 
-  function staticAudioUrl(text,language,voice){
-    return new URL(STATIC_AUDIO_BASE+cacheHash(text,language,voice)+".mp3",document.baseURI).toString();
+  function localAudioUrl(hash){
+    return new URL(LOCAL_AUDIO_BASE+hash+".mp3",document.baseURI).toString();
   }
 
-  function knownStatic(hash){
+  function cloudDirectAudioUrl(hash){
+    return CLOUD_AUDIO_PUBLIC_BASE+hash+".mp3";
+  }
+
+  function cloudVirtualAudioUrl(hash){
+    return new URL(CLOUD_VIRTUAL_AUDIO_BASE+hash+".mp3",document.baseURI).toString();
+  }
+
+  function cloudAudioUrl(hash){
+    if("serviceWorker" in navigator && navigator.serviceWorker.controller){
+      return cloudVirtualAudioUrl(hash);
+    }
+    return cloudDirectAudioUrl(hash);
+  }
+
+  function staticAudioUrl(text,language,voice){
+    var hash=cacheHash(text,language,voice);
+    return isLocalHost() ? localAudioUrl(hash) : cloudAudioUrl(hash);
+  }
+
+  function knownLocal(hash){
     var registry=window.LS_AUDIO_CACHE;
     if(!registry) return null;
     if(typeof registry.has==="function") return registry.has(hash);
@@ -172,11 +203,14 @@
   }
 
   async function status(force){
-    if(!dynamicAllowed()) return {enabled:false,provider:"static-cache",sharedCache:true,model:TTS_MODEL};
     var now=Date.now();
     if(!force && statusCache && (now-statusAt)<STATUS_TTL) return statusCache;
     try{
-      var response=await fetch(statusEndpoint(),{method:"GET",headers:{"Accept":"application/json"},cache:"no-store"});
+      var response=await fetch(statusEndpoint(),{
+        method:"GET",
+        headers:{"Accept":"application/json"},
+        cache:"no-store"
+      });
       if(!response.ok) throw new Error("AI TTS status unavailable");
       statusCache=await response.json();
     }catch(e){
@@ -186,7 +220,7 @@
     return statusCache;
   }
 
-  async function fetchDynamicBlob(text,language,voice){
+  async function fetchLocalBlob(text,language,voice){
     var response=await fetch(endpoint(),{
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
@@ -209,27 +243,64 @@
     return blob;
   }
 
+  async function ensureCloudAudio(hash){
+    var response=await fetch(CLOUD_TTS_ENDPOINT,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({hash:hash}),
+      cache:"no-store"
+    });
+
+    var data=null;
+    try{data=await response.json();}catch(e){}
+
+    if(!response.ok){
+      var message=(data&&data.message)||(data&&data.error)||"Cloud AI voice request failed";
+      throw new Error(message);
+    }
+    return data||{ok:true};
+  }
+
+  async function speakLocal(text,language,voice,hash,options){
+    var known=knownLocal(hash);
+
+    if(known===true){
+      return playAudioSource(localAudioUrl(hash),text,options,false);
+    }
+
+    if(known===null){
+      try{
+        return await playAudioSource(localAudioUrl(hash),text,options,false);
+      }catch(e){}
+    }
+
+    var blob=await fetchLocalBlob(text,language,voice);
+    return playAudioSource(URL.createObjectURL(blob),text,options,true);
+  }
+
+  async function speakCloud(text,language,voice,hash,options){
+    try{
+      return await playAudioSource(cloudAudioUrl(hash),text,options,false);
+    }catch(firstError){}
+
+    await ensureCloudAudio(hash);
+
+    // Avoid any short-lived negative HTTP cache after the initial 404.
+    var readyUrl=cloudAudioUrl(hash)+(cloudAudioUrl(hash).includes("?")?"&":"?")+"ready="+Date.now();
+    return playAudioSource(readyUrl,text,options,false);
+  }
+
   async function speak(text,options){
     options=options||{};
     var language=options.language||detectLanguage(text);
     var voice=options.voice||voiceFor(language);
     var hash=cacheHash(text,language,voice);
-    var staticKnown=knownStatic(hash);
 
-    if(staticKnown===true){
-      return playAudioSource(staticAudioUrl(text,language,voice),text,options,false);
+    if(isLocalHost() && !window.LANGUAGE_STUDIO_TTS_ENDPOINT){
+      return speakLocal(text,language,voice,hash,options);
     }
 
-    if(staticKnown===null && !dynamicAllowed()){
-      return playAudioSource(staticAudioUrl(text,language,voice),text,options,false);
-    }
-
-    if(!dynamicAllowed()){
-      throw new Error("Shared AI audio is not published for this sentence yet.");
-    }
-
-    var blob=await fetchDynamicBlob(text,language,voice);
-    return playAudioSource(URL.createObjectURL(blob),text,options,true);
+    return speakCloud(text,language,voice,hash,options);
   }
 
   function stop(){
@@ -243,12 +314,14 @@
     stop:stop,
     detectLanguage:detectLanguage,
     voiceFor:voiceFor,
-    dynamicAllowed:dynamicAllowed,
+    dynamicAllowed:function(){return true;},
     model:TTS_MODEL,
     profile:TTS_PROFILE,
     masterPace:MASTER_PACE,
     cacheHash:cacheHash,
     staticAudioUrl:staticAudioUrl,
+    cloudAudioUrl:cloudAudioUrl,
+    cloudEndpoint:CLOUD_TTS_ENDPOINT,
     clearStatusCache:function(){statusCache=null;statusAt=0;}
   };
 }());
