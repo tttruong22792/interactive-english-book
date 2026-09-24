@@ -60,3 +60,22 @@ Current progress is local-first. Do not imply automatic cloud synchronization un
 ## Deployment
 A GitHub Pages Actions workflow exists in `.github/workflows/pages.yml`.
 Keep all static asset paths relative so the app works under a repository subpath.
+
+
+## Content architecture v4 — IMPORTANT
+
+Lesson content has moved out of root app files.
+
+Use:
+- `data/content-index.js` for lesson metadata
+- `data/content-loader.js` for lazy loading
+- `data/english/patterns/*.js` for English pattern content
+- `data/japanese/**` for Japanese content
+- `data/templates/` when creating new lessons
+
+For a new lesson that uses an existing renderer, **do not edit app.js**.
+Copy the correct template, add the lesson data file, then add metadata to the content index.
+
+Progress is lesson-scoped. Preserve stable content IDs so saved progress continues to map correctly.
+
+Read `CONTENT-SCHEMA.md` before adding learning content.
