@@ -315,11 +315,11 @@ if ($Lan) {
 
 Clear-Host
 Write-Host '================================================' -ForegroundColor Cyan
-Write-Host '  LANGUAGE STUDIO - SAFE BOOT + AI VOICE' -ForegroundColor Cyan
+Write-Host '  LANGUAGE STUDIO - STABLE SERVER + AI VOICE' -ForegroundColor Cyan
 Write-Host '================================================' -ForegroundColor Cyan
 Write-Host ('Folder: ' + $Root)
 Write-Host ('PC address: ' + $Url) -ForegroundColor Green
-Write-Host 'Safe Boot: ON - HTML, CSS and JavaScript are embedded into the first response.' -ForegroundColor Green
+Write-Host 'Static boot: ON - browser loads normal CSS/JS files.' -ForegroundColor Green
 if ([string]::IsNullOrWhiteSpace($OpenAIKey)) {
   Write-Host 'AI Voice: NOT CONFIGURED - browser voice fallback is active.' -ForegroundColor Yellow
   Write-Host 'Run SETUP-AI-VOICE.bat once to enable OpenAI TTS.' -ForegroundColor Yellow
@@ -437,12 +437,6 @@ try {
       if (-not [System.IO.File]::Exists($fullPath)) {
         $body = [System.Text.Encoding]::UTF8.GetBytes('Not Found')
         Send-Response $stream 404 'Not Found' $body 'text/plain; charset=utf-8'
-        continue
-      }
-
-      if ($decoded -eq 'index.html' -and $method -eq 'GET') {
-        $bytes = Get-RuntimeIndexBytes
-        Send-Response $stream 200 'OK' $bytes 'text/html; charset=utf-8'
         continue
       }
 
