@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  window.__LS_APP_LOADED = true;
   let L = null;
   const CATALOG = window.PATTERN_CATALOG || [];
   const PLATFORM = window.PLATFORM_DATA || {};
@@ -837,5 +838,11 @@
   }
   window.__LS_RENDERED=false;
   if(!location.hash) location.hash='#home';
-  Promise.resolve(render()).finally(()=>{window.__LS_RENDERED=true;});
+  Promise.resolve(render())
+    .then(()=>{window.__LS_RENDERED=true;})
+    .catch(error=>{
+      console.error('Language Studio boot failed:',error);
+      window.__LS_BOOT_ERRORS = window.__LS_BOOT_ERRORS || [];
+      window.__LS_BOOT_ERRORS.push(error?.message || String(error));
+    });
 })();
