@@ -46,3 +46,17 @@ Do not copy another website pixel-for-pixel. Keep this product's own identity.
 
 ## Git
 Main repo: `tttruong22792/interactive-english-book`
+
+
+## Mobile / cross-device phase
+The app now has a `#settings` route for:
+- JSON export/import of learning state
+- sharing the current page
+- PWA install prompt
+- showing local-device learning stats
+
+Current progress is local-first. Do not imply automatic cloud synchronization until a backend/account system is actually implemented.
+
+## Deployment
+A GitHub Pages Actions workflow exists in `.github/workflows/pages.yml`.
+Keep all static asset paths relative so the app works under a repository subpath.

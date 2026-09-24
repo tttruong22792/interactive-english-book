@@ -14,6 +14,7 @@
   let quiz = { index:0, correct:0, counted:new Set(), revealed:false };
   let flashIndex = 0;
   let builder = [];
+  let installPrompt = null;
 
   function loadState(){
     try { return {...defaults, ...JSON.parse(localStorage.getItem(KEY) || '{}')}; }
@@ -69,6 +70,7 @@
     else if (r.name === 'vocab') renderVocab();
     else if (r.name === 'practice') renderPracticeHub();
     else if (r.name === 'progress') renderProgress();
+    else if (r.name === 'settings') renderSettings();
     else renderHome();
     updateGlobalUI();
     $('#mainView').focus({preventScroll:true});
@@ -147,6 +149,11 @@
           ${sentenceRow("I'd like to ask you something.","Tôi muốn hỏi bạn một việc.")}
           ${sentenceRow("I'd like to check something.","Tôi muốn kiểm tra một việc.")}
         </div>
+      </section>
+
+      <section class="device-banner">
+        <div><span class="landing-kicker">PHONE + PC</span><h2>Học trên nhiều thiết bị</h2><p>Tiến độ hiện được lưu riêng trên từng thiết bị. Bạn có thể xuất file dữ liệu học và nhập lại trên điện thoại hoặc máy khác. Khi site được đưa lên HTTPS, nút cài app cũng sẽ sẵn sàng.</p></div>
+        <button class="primary-button" data-go="settings">Thiết bị & dữ liệu →</button>
       </section>
     `;
     bindGenericRoutes();
@@ -381,6 +388,124 @@
     hydrateSentences($('#mainView'));
   }
 
+
+  function renderSettings(){
+    setHeader('Thiết bị','Thiết bị & dữ liệu');
+    const secure=window.isSecureContext;
+    const installed=window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    $('#mainView').innerHTML=`
+      <section class="page-hero settings-hero">
+        <div class="eyebrow">DEVICE & DATA</div>
+        <h1>Dùng Language Studio trên PC và điện thoại</h1>
+        <p>Tiến độ hiện lưu bằng localStorage nên mỗi thiết bị có dữ liệu riêng. Phần này giúp bạn sao lưu, chuyển dữ liệu, chia sẻ link và cài app khi chạy trên HTTPS.</p>
+      </section>
+
+      <section class="settings-grid">
+        <article class="settings-card accent-purple">
+          <span class="settings-step">01</span>
+          <h3>Sao lưu dữ liệu học</h3>
+          <p>Xuất tiến độ, từ đã lưu, điểm quiz và cài đặt hiện tại thành một file JSON.</p>
+          <button id="exportDataBtn" class="primary-button">Xuất dữ liệu</button>
+        </article>
+
+        <article class="settings-card accent-green">
+          <span class="settings-step">02</span>
+          <h3>Chuyển sang thiết bị khác</h3>
+          <p>Chọn file JSON đã xuất từ PC hoặc điện thoại để khôi phục tiến độ trên thiết bị này.</p>
+          <button id="importDataBtn" class="primary-button">Nhập dữ liệu</button>
+          <input id="importDataFile" type="file" accept="application/json,.json" class="hidden" />
+        </article>
+
+        <article class="settings-card accent-yellow">
+          <span class="settings-step">03</span>
+          <h3>Chia sẻ trang hiện tại</h3>
+          <p>Gửi link cho chính bạn qua Messages, LINE, Mail hoặc ứng dụng khác khi website đã được deploy.</p>
+          <button id="shareAppBtn" class="primary-button">Chia sẻ link</button>
+        </article>
+
+        <article class="settings-card accent-orange">
+          <span class="settings-step">04</span>
+          <h3>Cài như một app</h3>
+          <p>${installed?'Ứng dụng đang chạy ở chế độ standalone.':secure?'Thiết bị đang ở secure context. Nếu trình duyệt hỗ trợ PWA, bạn có thể cài app.':'Local/LAN HTTP chỉ dùng để test. Cài PWA và microphone ổn định cần bản HTTPS.'}</p>
+          <button id="installAppBtn" class="primary-button">${installed?'Đã cài':'Cài Language Studio'}</button>
+        </article>
+      </section>
+
+      <section class="book-section data-summary">
+        <div class="section-title-row"><div><h2>Dữ liệu hiện tại trên thiết bị này</h2><p>Không gửi lên server ở phiên bản hiện tại.</p></div></div>
+        <div class="stats-grid">
+          <div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}</strong></div>
+          <div class="stat-card"><small>Từ / cụm đã lưu</small><strong>${savedCount()}</strong></div>
+          <div class="stat-card"><small>Quiz tốt nhất</small><strong>${state.quizBest||0}/10</strong></div>
+          <div class="stat-card"><small>Lượt quiz</small><strong>${state.quizRuns||0}</strong></div>
+        </div>
+        <div class="data-note"><b>Bước sau:</b> khi cần đồng bộ tự động giữa PC và điện thoại, chúng ta sẽ thêm tài khoản + cloud sync thay vì phụ thuộc vào file JSON.</div>
+      </section>
+    `;
+
+    $('#exportDataBtn').onclick=exportLearningData;
+    $('#importDataBtn').onclick=()=>$('#importDataFile').click();
+    $('#importDataFile').onchange=e=>{const file=e.target.files?.[0];if(file) importLearningData(file);e.target.value='';};
+    $('#shareAppBtn').onclick=shareCurrentPage;
+    $('#installAppBtn').onclick=installApp;
+  }
+
+  function exportLearningData(){
+    const payload={app:'Language Studio',version:1,exportedAt:new Date().toISOString(),state};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const stamp=new Date().toISOString().slice(0,10);
+    a.href=url;a.download=`language-studio-backup-${stamp}.json`;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    toast('Đã tạo file sao lưu dữ liệu học.');
+  }
+
+  function importLearningData(file){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const payload=JSON.parse(String(reader.result||''));
+        const next=payload?.state;
+        if(!next || typeof next!=='object' || Array.isArray(next)) throw new Error('invalid');
+        state={...defaults,...next,learned:{...(next.learned||{})},saved:{...(next.saved||{})}};
+        saveState();
+        toast('Đã khôi phục dữ liệu học.');
+        renderSettings();
+      }catch{
+        toast('File sao lưu không hợp lệ.');
+      }
+    };
+    reader.onerror=()=>toast('Không đọc được file.');
+    reader.readAsText(file);
+  }
+
+  async function shareCurrentPage(){
+    const data={title:'Language Studio',text:'Language Studio – English + Japanese',url:location.href};
+    try{
+      if(navigator.share){await navigator.share(data);return;}
+      if(navigator.clipboard){await navigator.clipboard.writeText(location.href);toast('Đã copy link.');return;}
+      toast('Hãy copy địa chỉ trên thanh trình duyệt.');
+    }catch(e){
+      if(e?.name!=='AbortError') toast('Chưa thể chia sẻ link trên trình duyệt này.');
+    }
+  }
+
+  async function installApp(){
+    if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches){toast('Language Studio đã được cài trên thiết bị này.');return;}
+    if(installPrompt){
+      installPrompt.prompt();
+      await installPrompt.userChoice.catch(()=>null);
+      installPrompt=null;
+      return;
+    }
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    if(isIOS) toast('Trên iPhone/iPad: mở bằng Safari → Share → Add to Home Screen.');
+    else if(!window.isSecureContext) toast('Cần bản HTTPS để cài app ổn định. LAN HTTP chỉ dùng để thử giao diện.');
+    else toast('Trình duyệt chưa hiện tùy chọn cài app. Hãy dùng menu trình duyệt → Install/Add to Home Screen.');
+  }
+
   function renderVocab(){
     setHeader('Library','Từ đã lưu');
     const items=Object.values(state.saved||{}).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
@@ -452,6 +577,8 @@
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
   $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz={index:0,correct:0,counted:new Set(),revealed:false};render();toast('Đã xóa dữ liệu học.');}};
   window.addEventListener('hashchange',render);
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
+  window.addEventListener('appinstalled',()=>{installPrompt=null;toast('Language Studio đã được cài.');});
   if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   if(!location.hash) location.hash='#home'; else render();

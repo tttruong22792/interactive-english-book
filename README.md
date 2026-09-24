@@ -41,3 +41,17 @@ git pull
 - speech recognition on supported browsers
 - local progress
 - Japanese starter phrase audio with ja-JP TTS
+
+
+## Device data backup / transfer
+Open **Thiết bị & dữ liệu** in the app:
+- Export learning data to JSON
+- Import the JSON on another device
+- Share the current URL
+- Install the PWA when served over HTTPS
+
+This is the temporary cross-device method. Automatic cloud sync will be a later phase.
+
+## GitHub Pages deployment
+The repository includes `.github/workflows/pages.yml`, so the static site is ready for GitHub Pages deployment after Pages is enabled for the repository/account.
+See `DEPLOY.md`.
