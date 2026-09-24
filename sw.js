@@ -1,4 +1,4 @@
-const CACHE='language-studio-v5-ai-voice';
+const CACHE='language-studio-v5-ai-voice-fix2';
 const ASSETS=[
   './','./index.html','./styles.css',
   './data/content-index.js','./data/content-loader.js',
@@ -26,6 +26,10 @@ self.addEventListener('fetch',event=>{
         caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
         return response;
       })
-      .catch(()=>caches.match(event.request).then(hit=>hit||caches.match('./index.html')))
+      .catch(()=>caches.match(event.request).then(hit=>{
+        if(hit) return hit;
+        if(event.request.mode==='navigate') return caches.match('./index.html');
+        return Response.error();
+      }))
   );
 });
