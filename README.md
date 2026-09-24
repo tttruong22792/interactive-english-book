@@ -129,3 +129,14 @@ Output:
 ```text
 dist/
 ```
+
+
+## Shared English dictionary
+
+Clickable English words use the lesson-local dictionary first and then fall back to:
+
+```text
+data/english/core-dictionary.js
+```
+
+Phrase/collocation chips have their own listen button. They are available to cloud TTS but are intentionally not added to the lesson's **Toàn bộ câu trong bài** or quiz list.
