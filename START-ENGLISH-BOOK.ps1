@@ -315,11 +315,11 @@ if ($Lan) {
 
 Clear-Host
 Write-Host '================================================' -ForegroundColor Cyan
-Write-Host '  LANGUAGE STUDIO - STABLE SERVER + AI VOICE' -ForegroundColor Cyan
+Write-Host '  LANGUAGE STUDIO - RUNTIME BUNDLE + AI VOICE' -ForegroundColor Cyan
 Write-Host '================================================' -ForegroundColor Cyan
 Write-Host ('Folder: ' + $Root)
 Write-Host ('PC address: ' + $Url) -ForegroundColor Green
-Write-Host 'Static boot: ON - browser loads normal CSS/JS files.' -ForegroundColor Green
+Write-Host 'Runtime bundle: ON - all JavaScript loads in one request.' -ForegroundColor Green
 if ([string]::IsNullOrWhiteSpace($OpenAIKey)) {
   Write-Host 'AI Voice: NOT CONFIGURED - browser voice fallback is active.' -ForegroundColor Yellow
   Write-Host 'Run SETUP-AI-VOICE.bat once to enable OpenAI TTS.' -ForegroundColor Yellow
@@ -363,11 +363,43 @@ try {
       $rawTarget = [string]$request.Target
       $rawPath = $rawTarget.Split('?')[0]
 
+      if ($rawPath -eq '/runtime.js' -and $method -eq 'GET') {
+        $runtimeFiles = @(
+          'data\content-index.js',
+          'data\content-loader.js',
+          'platform-data.js',
+          'catalog.js',
+          'ai-tts.js',
+          'data\english\patterns\001.js',
+          'data\english\patterns\002.js',
+          'data\english\patterns\003.js',
+          'data\japanese\daily-life\001.js',
+          'app.js'
+        )
+
+        $builder = New-Object System.Text.StringBuilder
+        [void]$builder.AppendLine('window.__LS_RUNTIME_STARTED = true;')
+        foreach ($runtimeFile in $runtimeFiles) {
+          $runtimePath = Join-Path $Root $runtimeFile
+          if (-not [System.IO.File]::Exists($runtimePath)) {
+            throw ('Runtime file missing: ' + $runtimeFile)
+          }
+          [void]$builder.AppendLine()
+          [void]$builder.AppendLine('// ===== ' + $runtimeFile + ' =====')
+          [void]$builder.AppendLine([System.IO.File]::ReadAllText($runtimePath, [System.Text.Encoding]::UTF8))
+        }
+
+        $runtimeBytes = [System.Text.Encoding]::UTF8.GetBytes($builder.ToString())
+        Send-Response $stream 200 'OK' $runtimeBytes 'text/javascript; charset=utf-8'
+        continue
+      }
+
       if ($rawPath -eq '/api/health' -and $method -eq 'GET') {
         Send-Json $stream 200 'OK' @{
           ok = $true
           safeBoot = $false
-          staticBoot = $true
+          staticBoot = $false
+          runtimeBundle = $true
           aiVoiceConfigured = -not [string]::IsNullOrWhiteSpace($OpenAIKey)
           port = $Port
         }
