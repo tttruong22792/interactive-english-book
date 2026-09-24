@@ -115,3 +115,59 @@ body{background:var(--bg);color:var(--ink)}
   .meaning-chip{align-items:flex-start;flex-direction:column}
   .meaning-chip span{text-align:left}
 }
+
+
+/* ===== AI VOICE ===== */
+.voice-mode-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid var(--line);
+  background:#fffdf8;
+  color:#5f5963;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.voice-mode-badge.ai{
+  border-color:#9ad9b9;
+  background:#e9f9f1;
+  color:#21684a;
+}
+.voice-mode-badge.browser{
+  border-color:#d5cec5;
+  background:#f6f2ec;
+  color:#6e6973;
+}
+.ai-voice-panel{
+  border-top:10px solid #69dca8;
+}
+.ai-voice-status{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  padding:15px 16px;
+  border:1px solid var(--line);
+  background:#fff;
+  margin:10px 0 14px;
+}
+.ai-voice-status strong{font-size:15px}
+.ai-voice-status span{font-size:13px;color:var(--muted)}
+.ai-voice-status small{font-size:11px;color:var(--muted)}
+.ai-voice-status.ready{
+  border-color:#9ad9b9;
+  background:#effbf5;
+}
+.ai-voice-status.fallback{
+  border-color:#e5d38f;
+  background:#fff9df;
+}
+.speaker.ai-active{
+  box-shadow:0 0 0 3px rgba(105,220,168,.22);
+}
+@media(max-width:760px){
+  .voice-mode-badge{padding:6px 8px;font-size:9px}
+  .ai-voice-panel .section-title-row{align-items:flex-start}
+}
