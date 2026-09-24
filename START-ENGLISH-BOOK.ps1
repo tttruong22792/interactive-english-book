@@ -357,10 +357,21 @@ try {
         continue
       }
 
+      $client.ReceiveTimeout = 3000
       $request = Read-HttpRequest $stream
       $method = $request.Method
       $rawTarget = [string]$request.Target
       $rawPath = $rawTarget.Split('?')[0]
+
+      if ($rawPath -eq '/api/health' -and $method -eq 'GET') {
+        Send-Json $stream 200 'OK' @{
+          ok = $true
+          safeBoot = $true
+          aiVoiceConfigured = -not [string]::IsNullOrWhiteSpace($OpenAIKey)
+          port = $Port
+        }
+        continue
+      }
 
       if ($rawPath -eq '/api/tts/status' -and $method -eq 'GET') {
         Send-Json $stream 200 'OK' @{
