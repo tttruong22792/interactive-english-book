@@ -220,7 +220,10 @@
   }
   function parseRoute(){
     const hash = (location.hash || '#home').slice(1);
-    if (hash.startsWith('lesson/')) return {name:'lesson', id:Number(hash.split('/')[1]) || 1};
+    if (hash.startsWith('lesson/')){
+      const parts=hash.split('/');
+      return {name:'lesson', id:Number(parts[1])||1, view:parts[2]||'overview'};
+    }
     return {name:hash || 'home'};
   }
   function setNavActive(name){
@@ -241,7 +244,7 @@
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
       else if (r.name === 'japanese') await renderJapanese();
-      else if (r.name === 'lesson') await renderLesson(r.id);
+      else if (r.name === 'lesson') await renderLesson(r.id,r.view);
       else if (r.name === 'vocab') renderVocab();
       else if (r.name === 'practice') await renderPracticeHub();
       else if (r.name === 'progress') await renderProgress();
@@ -393,21 +396,98 @@
     return `<article class="pattern-card ${cls}"><span class="pattern-number">MẪU ${String(p.id).padStart(2,'0')}</span><span class="status-chip ${cls}">${status}</span><h3>${esc(p.title)}</h3><p>${esc(p.meaning)}</p><div class="card-action">${p.status==='available'?`<button class="primary-button" data-go="lesson/${p.id}">Mở bài học</button>`:`<button class="secondary-button" data-disabled="1" data-status="${p.status}">Chưa có nội dung</button>`}</div></article>`;
   }
 
-  async function renderLesson(id){
+  async function renderLesson(id,view='overview'){
     const meta=CATALOG.find(item=>item.id===id);
     if(!meta || meta.status!=='available' || !meta.contentId){toast('Bài này chưa có nội dung hoàn chỉnh.');routeTo('patterns');return;}
     const lesson=await ensureContent(meta.contentId);
     if(lesson.renderer!=='english-pattern') throw new Error(`Unsupported renderer: ${lesson.renderer}`);
     L=lesson;
     const lessonId=lesson.id||CORE_LESSON_ID;
+
+    if(view==='sentences'){
+      renderLessonSentencesPage(id,meta,lesson);
+      return;
+    }
+    if(view==='practice'){
+      renderLessonPracticePage(id,meta,lesson);
+      return;
+    }
+
     state.lessonVisitsByLesson[lessonId]=(state.lessonVisitsByLesson[lessonId]||0)+1;
     if(lessonId===CORE_LESSON_ID) state.lessonVisits=state.lessonVisitsByLesson[lessonId];
     saveState();
     setHeader(`English › Patterns › ${String(id).padStart(2,'0')}`,L.title||meta.title,true);
-    quiz=makeQuizSession(quizItemsFromLessons([L]),'sequential',lessonId,'lesson');
     $('#mainView').innerHTML=lessonHTML();
     hydrateSentences($('#mainView'));
     bindLessonEvents();
+  }
+
+  function lessonActionPanel(id){
+    const all=collectLessonSentences(L);
+    const quizCount=quizItemsFromLessons([L]).length;
+    return `<section class="lesson-action-panel">
+      <div class="lesson-action-copy">
+        <div class="eyebrow">HỌC & LUYỆN TOÀN BỘ BÀI</div>
+        <h2>Chuyển sang chế độ riêng để học tập trung</h2>
+        <p>Trang bài học chính không hiển thị toàn bộ danh sách dài nữa. Chọn một trong hai chế độ dưới đây.</p>
+      </div>
+      <div class="lesson-action-buttons">
+        <button class="lesson-action-card" data-go="lesson/${id}/sentences">
+          <span class="lesson-action-icon">📚</span>
+          <span><strong>Toàn bộ câu trong bài</strong><small>${all.length} câu · nghe từng câu hoặc nghe toàn bộ</small></span>
+          <b>→</b>
+        </button>
+        <button class="lesson-action-card practice" data-go="lesson/${id}/practice">
+          <span class="lesson-action-icon">✍️</span>
+          <span><strong>Luyện toàn bộ câu</strong><small>${quizCount} ý/câu luyện · tuần tự hoặc random</small></span>
+          <b>→</b>
+        </button>
+      </div>
+    </section>`;
+  }
+
+  function renderLessonSentencesPage(id,meta,lesson){
+    const items=collectLessonSentences(lesson);
+    setHeader(`English › Pattern ${String(id).padStart(2,'0')} › Sentences`,`Toàn bộ câu · ${lesson.title}`,true);
+    $('#mainView').innerHTML=`
+      <section class="subpage-hero">
+        <button class="text-button subpage-back" data-go="lesson/${id}">← Quay lại bài học</button>
+        <div class="eyebrow">ALL SENTENCES</div>
+        <h1>Toàn bộ câu trong bài</h1>
+        <p>${items.length} câu không trùng hệt nhau. Bạn có thể sửa nghĩa tiếng Việt ngay trên từng câu.</p>
+        <div class="study-toolbar">
+          <button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button>
+          <span class="muted">Bấm một câu bất kỳ để dừng danh sách và nghe câu đó ngay.</span>
+        </div>
+      </section>
+      <section class="book-section compact-subpage">
+        <div class="sentence-table" id="sectionLearnableSentences">
+          <div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>
+          ${items.map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}
+        </div>
+      </section>`;
+    bindGenericRoutes();
+    hydrateSentences($('#mainView'));
+    $('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
+    const els=$('#sectionLearnableSentences .english-text');
+    const sequenceItems=items.map((x,i)=>[x.en,els[i]||null]);
+    $('#playAllLesson').onclick=()=>speakSequence(sequenceItems,1);
+  }
+
+  function renderLessonPracticePage(id,meta,lesson){
+    const items=quizItemsFromLessons([lesson]);
+    quiz=makeQuizSession(items,'sequential',lesson.id||CORE_LESSON_ID,'lesson');
+    setHeader(`English › Pattern ${String(id).padStart(2,'0')} › Practice`,`Luyện tập · ${lesson.title}`,true);
+    $('#mainView').innerHTML=`
+      <section class="subpage-hero">
+        <button class="text-button subpage-back" data-go="lesson/${id}">← Quay lại bài học</button>
+        <div class="eyebrow">FULL PRACTICE</div>
+        <h1>Luyện toàn bộ câu trong bài</h1>
+        <p>${items.length} ý/câu luyện. Có thể chọn tuần tự hoặc random. Nếu cùng một nghĩa có nhiều cách nói, chỉ cần nhập đúng một cách.</p>
+      </section>
+      <section id="lessonPracticeStandalone" class="book-section compact-subpage">${quizHTML('lesson')}</section>`;
+    bindGenericRoutes();
+    bindQuiz($('#lessonPracticeStandalone'));
   }
 
   function lessonHTML(){
