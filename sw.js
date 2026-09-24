@@ -1,8 +1,8 @@
-const CACHE='language-studio-v4-content-architecture';
+const CACHE='language-studio-v4-pattern-002';
 const ASSETS=[
   './','./index.html','./styles.css',
   './data/content-index.js','./data/content-loader.js',
-  './data/english/patterns/001.js','./data/japanese/daily-life/001.js',
+  './data/english/patterns/001.js','./data/english/patterns/002.js','./data/japanese/daily-life/001.js',
   './platform-data.js','./catalog.js','./app.js',
   './manifest.webmanifest','./icons/icon.svg'
 ];
