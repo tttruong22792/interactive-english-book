@@ -86,8 +86,9 @@ Read `CONTENT-SCHEMA.md` before adding learning content.
 - Pattern 02: `data/english/patterns/002.js`
 - Pattern 03: `data/english/patterns/003.js`
 - Pattern 04: `data/english/patterns/004.js`
+- Pattern 05: `data/english/patterns/005.js`
 
-Patterns 02, 03 and 04 demonstrate the reusable `sectioned-pattern` layout.
+Patterns 02, 03, 04 and 05 demonstrate the reusable `sectioned-pattern` layout.
 
 
 ## AI Voice architecture
