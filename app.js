@@ -446,7 +446,7 @@
         <div class="sentence-list">${(L.questions||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div>${q.answerIntro?`<p>${esc(q.answerIntro)}</p>`:''}
         <div class="green-box">${(q.answers||[]).map(x=>sentenceRow(x[0],x[1])).join('')}</div></section>
 
-      <section class="book-section" id="lessonPractice"><h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}</section>
+      <section class="book-section" id="lessonPractice"><h2>10. Luyện toàn bộ câu trong bài</h2><p>Không còn giới hạn 10 câu. Bạn có thể luyện tuần tự hoặc random.</p>${quizHTML('lesson')}</section>
 
       <section class="book-section"><div class="eyebrow">${esc(d.eyebrow||'CÁCH HỌC HÔM NAY')}</div><h2>Luyện toàn bộ bài, không giới hạn 5 câu</h2>
         <p>Danh sách nghe ở mục 4 và phần luyện Việt → Anh đều dùng toàn bộ câu có trong bài học.</p>
@@ -477,10 +477,13 @@
   function renderLessonSection(section,sectionIndex){
     const id=escAttr(section.id||`section-${sectionIndex+1}`);
     const hasLearnable=(section.blocks||[]).some(block=>block?.type==='sentences'&&block.learnable);
+    const hasQuiz=(section.blocks||[]).some(block=>block?.type==='quiz');
     const numberPrefix=(section.title||'').match(/^\s*(\d+\.)/)?.[1]||'';
     const title=hasLearnable
       ? `${numberPrefix?numberPrefix+' ':''}Tất cả câu trong bài (${collectLessonSentences(L).length} câu)`
-      : (section.title||'');
+      : hasQuiz
+        ? `${numberPrefix?numberPrefix+' ':''}Luyện toàn bộ câu trong bài`
+        : (section.title||'');
     return `<section class="book-section" id="${id}">
       <h2>${esc(title)}</h2>
       ${hasLearnable?'<p>Danh sách này tự gom toàn bộ câu xuất hiện trong bài học và bỏ các câu trùng hệt nhau.</p>':''}
@@ -667,59 +670,137 @@
     else if($('#lessonPractice')) bindQuiz($('#lessonPractice'));
   }
 
+  function answerFeedbackHTML(item,primaryAnswer=''){
+    const answers=item?.answers||[];
+    const primary=primaryAnswer || answers[0] || '';
+    const others=answers.filter(answer=>normalizeText(answer)!==normalizeText(primary));
+    return `<div class="answer-primary"><b>${esc(primary)}</b> <button class="mini-button" data-answer-speak="${escAttr(primary)}">🔊 Nghe</button></div>
+      ${others.length?`<div class="answer-alternatives"><strong>Cách khác cùng nghĩa:</strong><ul>${others.map(answer=>`<li>${esc(answer)} <button class="mini-button" data-answer-speak="${escAttr(answer)}">🔊</button></li>`).join('')}</ul></div>`:''}`;
+  }
+
   function quizHTML(context){
-    const items=L.practice||[];
-    if(!items.length) return '<div class="empty-state">Bài này chưa có quiz.</div>';
+    const items=quiz.items||[];
+    if(!items.length) return '<div class="empty-state">Chưa có câu phù hợp để luyện.</div>';
     if(quiz.index>=items.length) quiz.index=0;
     const item=items[quiz.index];
     const total=items.length;
-    return `<div class="quiz-card" data-quiz="${context}"><div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/${total}</span><span>Điểm lượt này: <b id="quizScore">${quiz.correct}</b>/${total}</span></div><div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item[0])}</div><input id="quizInput" class="quiz-input" autocomplete="off" placeholder="Nhập câu tiếng Anh..."/><div class="quiz-actions"><button id="quizCheck" class="primary-button">Kiểm tra</button><button id="quizMic" class="secondary-button">🎤 Nói</button><button id="quizShow" class="secondary-button">Xem đáp án</button><button id="quizNext" class="secondary-button hidden">Câu tiếp theo →</button></div><div id="quizFeedback" class="quiz-feedback"></div></div><details style="margin-top:12px"><summary style="cursor:pointer;color:var(--navy);font-weight:700">Xem toàn bộ đáp án</summary><ol class="answer-list">${items.map(x=>`<li>${esc(x[1])}</li>`).join('')}</ol></details>`;
+    return `<div class="quiz-config">
+        <div><strong>Luyện toàn bộ nội dung</strong><span>${total} ý/câu luyện · chấp nhận mọi cách diễn đạt có cùng nghĩa trong các bài đã chọn.</span></div>
+        <label>Thứ tự
+          <select id="quizOrderSelect">
+            <option value="sequential" ${quiz.mode==='sequential'?'selected':''}>Tuần tự</option>
+            <option value="random" ${quiz.mode==='random'?'selected':''}>Random</option>
+          </select>
+        </label>
+      </div>
+      <div class="quiz-card" data-quiz="${context}">
+        <div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/${total}</span><span>Điểm lượt này: <b id="quizScore">${quiz.correct}</b>/${total}</span></div>
+        <div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item.prompt)}</div>
+        <input id="quizInput" class="quiz-input" autocomplete="off" autocapitalize="sentences" placeholder="Nhập một cách nói đúng bằng tiếng Anh..."/>
+        <div class="quiz-actions"><button id="quizCheck" class="primary-button">Kiểm tra</button><button id="quizMic" class="secondary-button">🎤 Nói</button><button id="quizShow" class="secondary-button">Xem đáp án</button><button id="quizNext" class="secondary-button hidden">Câu tiếp theo →</button></div>
+        <div id="quizFeedback" class="quiz-feedback"></div>
+      </div>
+      <details class="all-answer-details" style="margin-top:12px"><summary style="cursor:pointer;color:var(--navy);font-weight:700">Xem toàn bộ đáp án</summary>
+        <ol class="answer-list">${items.map(x=>`<li><span data-vi-only>${esc(x.prompt)}</span><br><b>${x.answers.map(esc).join(' / ')}</b></li>`).join('')}</ol>
+      </details>`;
   }
+
+  function bindAnswerSpeakers(root){
+    $$('[data-answer-speak]',root).forEach(btn=>btn.onclick=()=>speak(btn.dataset.answerSpeak));
+  }
+
   function bindQuiz(root){
     const q=$('[data-quiz]',root); if(!q) return;
-    const input=$('#quizInput',q), check=$('#quizCheck',q), show=$('#quizShow',q), next=$('#quizNext',q), mic=$('#quizMic',q), feedback=$('#quizFeedback',q);
-    const items=L.practice||[];
+    const items=quiz.items||[];
     if(!items.length) return;
-    const answer=items[quiz.index][1];
-    const lessonId=currentLessonId();
-    const evaluate=()=>{
-      if(!input.value.trim()){feedback.className='quiz-feedback bad';feedback.textContent='Hãy nhập hoặc nói câu trả lời trước.';return;}
-      const good=normalizeText(input.value)===normalizeText(answer);
-      if(good){
-        feedback.className='quiz-feedback good';feedback.textContent='✓ Chính xác. ' + answer;
-        if(!quiz.counted.has(quiz.index)){quiz.correct++;quiz.counted.add(quiz.index);$('#quizScore',q).textContent=quiz.correct;}
-      }else{feedback.className='quiz-feedback bad';feedback.textContent='Chưa đúng. Bạn có thể thử lại hoặc xem đáp án.';}
-      next.classList.remove('hidden');
+    const item=items[quiz.index];
+    const input=$('#quizInput',q),check=$('#quizCheck',q),show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q);
+    const order=$('#quizOrderSelect',root);
+
+    if(order) order.onchange=()=>{
+      quiz=makeQuizSession(quiz.baseItems,order.value,quiz.scopeId,quiz.context);
+      rerenderQuiz(root);
     };
-    check.onclick=evaluate; input.addEventListener('keydown',e=>{if(e.key==='Enter') evaluate();});
-    show.onclick=()=>{feedback.className='quiz-feedback';feedback.innerHTML=`Đáp án: <b>${esc(answer)}</b> <button class="mini-button" id="quizAnswerSpeak">🔊 Nghe</button>`;$('#quizAnswerSpeak',feedback).onclick=()=>speak(answer);next.classList.remove('hidden');};
-    next.onclick=()=>{
-      if(quiz.index<items.length-1){quiz.index++;rerenderQuiz(root);}
-      else{
-        state.quizRunsByLesson[lessonId]=(state.quizRunsByLesson[lessonId]||0)+1;
-        state.quizBestByLesson[lessonId]=Math.max(quizBestFor(lessonId),quiz.correct);
-        if(lessonId===CORE_LESSON_ID){state.quizRuns=state.quizRunsByLesson[lessonId];state.quizBest=state.quizBestByLesson[lessonId];}
-        saveState();
+
+    const evaluate=()=>{
+      const typed=input.value.trim();
+      if(!typed){feedback.className='quiz-feedback bad';feedback.textContent='Hãy nhập hoặc nói câu trả lời trước.';return;}
+      const matched=item.answers.find(answer=>normalizeText(answer)===normalizeText(typed));
+      if(matched){
         feedback.className='quiz-feedback good';
-        feedback.innerHTML=`Hoàn thành: <b>${quiz.correct}/${items.length}</b>. Điểm tốt nhất: <b>${quizBestFor(lessonId)}/${items.length}</b>.`;
-        next.textContent='Làm lại';
+        feedback.innerHTML='<strong>✓ Chính xác.</strong>'+answerFeedbackHTML(item,matched);
+        bindAnswerSpeakers(feedback);
+        if(!quiz.counted.has(quiz.index)){
+          quiz.correct++;
+          quiz.counted.add(quiz.index);
+          $('#quizScore',q).textContent=quiz.correct;
+        }
         next.classList.remove('hidden');
-        next.onclick=()=>{quiz={index:0,correct:0,counted:new Set(),revealed:false};rerenderQuiz(root);};
+      }else{
+        feedback.className='quiz-feedback bad';
+        feedback.innerHTML='Chưa đúng. Bạn có thể thử lại hoặc bấm <b>Xem đáp án</b>.';
       }
     };
+
+    check.onclick=evaluate;
+    input.addEventListener('keydown',e=>{if(e.key==='Enter')evaluate();});
+    show.onclick=()=>{
+      feedback.className='quiz-feedback';
+      feedback.innerHTML='<strong>Đáp án gợi ý:</strong>'+answerFeedbackHTML(item);
+      bindAnswerSpeakers(feedback);
+      next.classList.remove('hidden');
+    };
+
+    next.onclick=()=>{
+      if(quiz.index<items.length-1){
+        quiz.index++;
+        rerenderQuiz(root);
+        return;
+      }
+
+      if(quiz.scopeId && quiz.scopeId.startsWith('en-pattern-')){
+        state.quizRunsByLesson[quiz.scopeId]=(state.quizRunsByLesson[quiz.scopeId]||0)+1;
+        state.quizBestByLesson[quiz.scopeId]=Math.max(quizBestFor(quiz.scopeId),quiz.correct);
+        if(quiz.scopeId===CORE_LESSON_ID){
+          state.quizRuns=state.quizRunsByLesson[quiz.scopeId];
+          state.quizBest=state.quizBestByLesson[quiz.scopeId];
+        }
+        saveState();
+      }
+
+      feedback.className='quiz-feedback good';
+      feedback.innerHTML=`Hoàn thành: <b>${quiz.correct}/${items.length}</b>.`;
+      next.textContent='Làm lại';
+      next.classList.remove('hidden');
+      next.onclick=()=>{
+        quiz=makeQuizSession(quiz.baseItems,quiz.mode,quiz.scopeId,quiz.context);
+        rerenderQuiz(root);
+      };
+    };
+
     mic.onclick=()=>startRecognition(input);
   }
+
   function rerenderQuiz(root){
     if(root.matches('[data-lesson-quiz-wrap]')){
       root.innerHTML=quizHTML('lesson');
-      hydrateSentences(root);
       bindQuiz(root);
       return;
     }
-    const holder=root.matches('.book-section')?root:$('#practiceQuizWrap',root);
-    if(holder?.matches('.book-section')){const z=L?.ui?.quiz||{};holder.innerHTML=`<h2>${esc(z.title||'Bài luyện hôm nay')}</h2><p>${esc(z.intro||'')}</p>${quizHTML('lesson')}`;hydrateSentences(holder);bindQuiz(holder);}
-    else if(holder){holder.innerHTML=quizHTML('hub');bindQuiz(holder);}
+
+    if(root.matches('.book-section')){
+      root.innerHTML=`<h2>Luyện toàn bộ câu trong bài</h2><p>Không còn giới hạn 10 câu. Có thể chọn tuần tự hoặc random.</p>${quizHTML('lesson')}`;
+      bindQuiz(root);
+      return;
+    }
+
+    const holder=root.id==='practiceQuizWrap'?root:$('#practiceQuizWrap',root);
+    if(holder){
+      holder.innerHTML=quizHTML('hub');
+      bindQuiz(holder);
+    }
   }
+
   function startRecognition(input){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR){toast('Trình duyệt này chưa hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome hoặc Edge.');return;}
