@@ -322,6 +322,8 @@ window.CONTENT_REGISTRY["en-pattern-003"] = {
 
   dictionary: {
     "i": ["/aɪ/", "tôi", "I want to eat."],
+    "i'd": ["/aɪd/", "I would (dạng rút gọn trong I’d like to)", "I’d like to buy it."],
+    "i'm": ["/aɪm/", "I am (dạng rút gọn)", "I’m going to buy it."],
     "want": ["/wɑːnt/", "muốn", "I want to go home."],
     "to": ["/tə/", "đến; để; trước động từ nguyên mẫu", "I want to eat."],
     "wanna": ["/ˈwɑːnə/", "cách nói thân mật của want to", "I wanna go home."],
@@ -418,6 +420,8 @@ window.CONTENT_REGISTRY["en-pattern-003"] = {
   },
 
   phrases: {
+    "i'd like to": ["/aɪd laɪk tə/", "tôi muốn… (lịch sự hơn)", "I’d like to buy it."],
+    "i'm going to": ["/aɪm ˈɡoʊɪŋ tə/", "tôi sẽ / tôi định…", "I’m going to buy it."],
     "i want to": ["/aɪ wɑːnt tə/", "tôi muốn…", "I want to learn English."],
     "want to": ["/wɑːnt tə/", "muốn làm gì đó", "I want to go home."],
     "i wanna": ["/aɪ ˈwɑːnə/", "cách nói thân mật của I want to", "I wanna eat."],
