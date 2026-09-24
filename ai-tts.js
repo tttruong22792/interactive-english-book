@@ -1,1 +1,125 @@
-(function () {\n  "use strict";\n  var cache = new Map();\n  var statusCache = null;\n  var statusAt = 0;\n  var activeAudio = null;\n  var activeObjectUrl = null;\n  var activeTimer = null;\n  var STATUS_TTL = 30000;\n\n  function endpoint() { return window.LANGUAGE_STUDIO_TTS_ENDPOINT || "/api/tts"; }\n  function statusEndpoint() { return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT || (endpoint() + "/status"); }\n  function detectLanguage(text) { return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text || "")) ? "ja-JP" : "en-US"; }\n  function voiceFor(language) { return /^ja/i.test(language || "") ? "cedar" : "marin"; }\n  function paceName(rate) { var r = Number(rate) || 0.88; return r <= 0.72 ? "slow" : (r >= 0.98 ? "natural" : "medium"); }\n\n  function clearHighlight(el) {\n    if (!el) return;\n    Array.prototype.forEach.call(el.querySelectorAll(".word-token"), function (node) { node.classList.remove("speaking"); });\n  }\n\n  function updateHighlight(el, text, currentTime, duration) {\n    if (!el || !duration || !isFinite(duration)) return;\n    var tokens = Array.prototype.slice.call(el.querySelectorAll(".word-token"));\n    if (!tokens.length) return;\n    var ratio = Math.max(0, Math.min(0.999, currentTime / duration));\n    var charIndex = Math.floor(ratio * Math.max(1, String(text).length));\n    var active = null;\n    for (var i = 0; i < tokens.length; i++) {\n      var start = Number(tokens[i].dataset.start || 0);\n      var end = Number(tokens[i].dataset.end || (start + tokens[i].textContent.length));\n      if (charIndex >= start && charIndex < end) { active = tokens[i]; break; }\n    }\n    if (!active) active = tokens[Math.min(tokens.length - 1, Math.floor(ratio * tokens.length))];\n    tokens.forEach(function (token) { token.classList.toggle("speaking", token === active); });\n  }\n\n  function cleanupAudio() {\n    if (activeTimer) { clearInterval(activeTimer); activeTimer = null; }\n    if (activeAudio) { try { activeAudio.pause(); activeAudio.src = ""; } catch (e) {} activeAudio = null; }\n    if (activeObjectUrl) { URL.revokeObjectURL(activeObjectUrl); activeObjectUrl = null; }\n  }\n\n  async function status(force) {\n    var now = Date.now();\n    if (!force && statusCache && (now - statusAt) < STATUS_TTL) return statusCache;\n    try {\n      var response = await fetch(statusEndpoint(), { method:"GET", headers:{"Accept":"application/json"}, cache:"no-store" });\n      if (!response.ok) throw new Error("AI TTS status unavailable");\n      statusCache = await response.json();\n    } catch (e) {\n      statusCache = { enabled:false, provider:"browser", reason:"endpoint-unavailable" };\n    }\n    statusAt = now;\n    return statusCache;\n  }\n\n  async function getAudioBlob(text, options) {\n    options = options || {};\n    var language = options.language || detectLanguage(text);\n    var voice = options.voice || voiceFor(language);\n    var pace = paceName(options.rate);\n    var key = JSON.stringify([text, language, voice, pace]);\n    if (cache.has(key)) return cache.get(key);\n    var response = await fetch(endpoint(), {\n      method:"POST",\n      headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},\n      body:JSON.stringify({ input:String(text), language:language, voice:voice, pace:pace })\n    });\n    if (!response.ok) {\n      var message = "AI voice request failed";\n      try { var data = await response.json(); if (data && data.error) message = data.error; } catch (e) {}\n      throw new Error(message);\n    }\n    var blob = await response.blob();\n    if (!blob.size) throw new Error("AI voice returned empty audio");\n    if (cache.size > 120) cache.clear();\n    cache.set(key, blob);\n    return blob;\n  }\n\n  async function speak(text, options) {\n    options = options || {};\n    cleanupAudio();\n    var blob = await getAudioBlob(text, options);\n    var url = URL.createObjectURL(blob);\n    activeObjectUrl = url;\n    var audio = new Audio(url);\n    activeAudio = audio;\n    var highlightEl = options.highlightEl || null;\n    return new Promise(function (resolve, reject) {\n      function finish() {\n        clearHighlight(highlightEl);\n        if (activeTimer) { clearInterval(activeTimer); activeTimer = null; }\n        if (activeAudio === audio) activeAudio = null;\n        if (activeObjectUrl === url) { URL.revokeObjectURL(url); activeObjectUrl = null; }\n        resolve();\n      }\n      audio.addEventListener("loadedmetadata", function () {\n        if (highlightEl && isFinite(audio.duration) && audio.duration > 0) {\n          activeTimer = setInterval(function () {\n            if (activeAudio === audio) updateHighlight(highlightEl, text, audio.currentTime, audio.duration);\n          }, 70);\n        }\n      }, { once:true });\n      audio.addEventListener("ended", finish, { once:true });\n      audio.addEventListener("error", function () { clearHighlight(highlightEl); reject(new Error("Could not play AI audio")); }, { once:true });\n      audio.play().catch(reject);\n    });\n  }\n\n  function stop() {\n    cleanupAudio();\n    Array.prototype.forEach.call(document.querySelectorAll(".word-token.speaking"), function (el) { el.classList.remove("speaking"); });\n  }\n\n  window.AITTS = {\n    status:status,\n    speak:speak,\n    stop:stop,\n    detectLanguage:detectLanguage,\n    voiceFor:voiceFor,\n    clearStatusCache:function () { statusCache = null; statusAt = 0; }\n  };\n}());\n
+(function () {
+  "use strict";
+  var cache = new Map();
+  var statusCache = null;
+  var statusAt = 0;
+  var activeAudio = null;
+  var activeObjectUrl = null;
+  var activeTimer = null;
+  var STATUS_TTL = 30000;
+
+  function endpoint() { return window.LANGUAGE_STUDIO_TTS_ENDPOINT || "/api/tts"; }
+  function statusEndpoint() { return window.LANGUAGE_STUDIO_TTS_STATUS_ENDPOINT || (endpoint() + "/status"); }
+  function detectLanguage(text) { return /[\u3040-\u30ff\u3400-\u9fff]/.test(String(text || "")) ? "ja-JP" : "en-US"; }
+  function voiceFor(language) { return /^ja/i.test(language || "") ? "cedar" : "marin"; }
+  function paceName(rate) { var r = Number(rate) || 0.88; return r <= 0.72 ? "slow" : (r >= 0.98 ? "natural" : "medium"); }
+
+  function clearHighlight(el) {
+    if (!el) return;
+    Array.prototype.forEach.call(el.querySelectorAll(".word-token"), function (node) { node.classList.remove("speaking"); });
+  }
+
+  function updateHighlight(el, text, currentTime, duration) {
+    if (!el || !duration || !isFinite(duration)) return;
+    var tokens = Array.prototype.slice.call(el.querySelectorAll(".word-token"));
+    if (!tokens.length) return;
+    var ratio = Math.max(0, Math.min(0.999, currentTime / duration));
+    var charIndex = Math.floor(ratio * Math.max(1, String(text).length));
+    var active = null;
+    for (var i = 0; i < tokens.length; i++) {
+      var start = Number(tokens[i].dataset.start || 0);
+      var end = Number(tokens[i].dataset.end || (start + tokens[i].textContent.length));
+      if (charIndex >= start && charIndex < end) { active = tokens[i]; break; }
+    }
+    if (!active) active = tokens[Math.min(tokens.length - 1, Math.floor(ratio * tokens.length))];
+    tokens.forEach(function (token) { token.classList.toggle("speaking", token === active); });
+  }
+
+  function cleanupAudio() {
+    if (activeTimer) { clearInterval(activeTimer); activeTimer = null; }
+    if (activeAudio) { try { activeAudio.pause(); activeAudio.src = ""; } catch (e) {} activeAudio = null; }
+    if (activeObjectUrl) { URL.revokeObjectURL(activeObjectUrl); activeObjectUrl = null; }
+  }
+
+  async function status(force) {
+    var now = Date.now();
+    if (!force && statusCache && (now - statusAt) < STATUS_TTL) return statusCache;
+    try {
+      var response = await fetch(statusEndpoint(), { method:"GET", headers:{"Accept":"application/json"}, cache:"no-store" });
+      if (!response.ok) throw new Error("AI TTS status unavailable");
+      statusCache = await response.json();
+    } catch (e) {
+      statusCache = { enabled:false, provider:"browser", reason:"endpoint-unavailable" };
+    }
+    statusAt = now;
+    return statusCache;
+  }
+
+  async function getAudioBlob(text, options) {
+    options = options || {};
+    var language = options.language || detectLanguage(text);
+    var voice = options.voice || voiceFor(language);
+    var pace = paceName(options.rate);
+    var key = JSON.stringify([text, language, voice, pace]);
+    if (cache.has(key)) return cache.get(key);
+    var response = await fetch(endpoint(), {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
+      body:JSON.stringify({ input:String(text), language:language, voice:voice, pace:pace })
+    });
+    if (!response.ok) {
+      var message = "AI voice request failed";
+      try { var data = await response.json(); if (data && data.error) message = data.error; } catch (e) {}
+      throw new Error(message);
+    }
+    var blob = await response.blob();
+    if (!blob.size) throw new Error("AI voice returned empty audio");
+    if (cache.size > 120) cache.clear();
+    cache.set(key, blob);
+    return blob;
+  }
+
+  async function speak(text, options) {
+    options = options || {};
+    cleanupAudio();
+    var blob = await getAudioBlob(text, options);
+    var url = URL.createObjectURL(blob);
+    activeObjectUrl = url;
+    var audio = new Audio(url);
+    activeAudio = audio;
+    var highlightEl = options.highlightEl || null;
+    return new Promise(function (resolve, reject) {
+      function finish() {
+        clearHighlight(highlightEl);
+        if (activeTimer) { clearInterval(activeTimer); activeTimer = null; }
+        if (activeAudio === audio) activeAudio = null;
+        if (activeObjectUrl === url) { URL.revokeObjectURL(url); activeObjectUrl = null; }
+        resolve();
+      }
+      audio.addEventListener("loadedmetadata", function () {
+        if (highlightEl && isFinite(audio.duration) && audio.duration > 0) {
+          activeTimer = setInterval(function () {
+            if (activeAudio === audio) updateHighlight(highlightEl, text, audio.currentTime, audio.duration);
+          }, 70);
+        }
+      }, { once:true });
+      audio.addEventListener("ended", finish, { once:true });
+      audio.addEventListener("error", function () { clearHighlight(highlightEl); reject(new Error("Could not play AI audio")); }, { once:true });
+      audio.play().catch(reject);
+    });
+  }
+
+  function stop() {
+    cleanupAudio();
+    Array.prototype.forEach.call(document.querySelectorAll(".word-token.speaking"), function (el) { el.classList.remove("speaking"); });
+  }
+
+  window.AITTS = {
+    status:status,
+    speak:speak,
+    stop:stop,
+    detectLanguage:detectLanguage,
+    voiceFor:voiceFor,
+    clearStatusCache:function () { statusCache = null; statusAt = 0; }
+  };
+}());
