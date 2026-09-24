@@ -452,3 +452,31 @@ body{background:var(--bg);color:var(--ink)}
   .subpage-hero h1{font-size:31px}
   .meaning-edit-button{width:28px;height:28px}
 }
+
+
+/* ===== PROMINENT LESSON ACTIONS v10 ===== */
+.lesson-action-panel-top{
+  margin:18px 0 20px;
+  padding:18px;
+  border:2px solid #9d8bf3;
+  background:linear-gradient(135deg,#f3efff 0%,#fffdf8 58%,#ecfbf3 100%);
+}
+.lesson-action-panel-top .lesson-action-copy h2{
+  margin:0;
+  font-size:22px;
+  font-family:Arial,sans-serif;
+  font-weight:900;
+  letter-spacing:.035em;
+  color:#211c37;
+}
+.lesson-action-panel-top .lesson-action-buttons{margin-top:12px}
+@media(max-width:700px){
+  .lesson-action-panel-top{
+    margin:14px 0 16px;
+    padding:14px 12px;
+  }
+  .lesson-action-panel-top .lesson-action-copy h2{
+    font-size:18px;
+    line-height:1.3;
+  }
+}
