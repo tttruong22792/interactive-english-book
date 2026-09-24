@@ -1,4 +1,4 @@
-const CACHE='language-studio-v10-actions-top';
+const CACHE='language-studio-v11-pattern004';
 const ASSETS=[
   './',
   './index.html',
