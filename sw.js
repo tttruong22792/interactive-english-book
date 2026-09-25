@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v17-tenses';
+const APP_CACHE='language-studio-v18-tenses-final';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 
