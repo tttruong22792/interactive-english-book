@@ -51,6 +51,7 @@ function Get-RuntimeIndexBytes {
     @{ Tag = '<script src="data/content-index.js?v=' + $version + '"></script>'; Path = 'data\content-index.js' },
     @{ Tag = '<script src="data/content-loader.js?v=' + $version + '"></script>'; Path = 'data\content-loader.js' },
     @{ Tag = '<script src="data/english/core-dictionary.js?v=' + $version + '"></script>'; Path = 'data\english\core-dictionary.js' },
+    @{ Tag = '<script src="data/english/tenses.js?v=' + $version + '"></script>'; Path = 'data\english\tenses.js' },
     @{ Tag = '<script src="platform-data.js?v=' + $version + '"></script>'; Path = 'platform-data.js' },
     @{ Tag = '<script src="catalog.js?v=' + $version + '"></script>'; Path = 'catalog.js' },
     @{ Tag = '<script src="ai-tts.js?v=' + $version + '"></script>'; Path = 'ai-tts.js' }
@@ -391,6 +392,7 @@ try {
           'data\content-index.js',
           'data\content-loader.js',
           'data\english\core-dictionary.js',
+          'data\english\tenses.js',
           'platform-data.js',
           'catalog.js',
           'ai-tts.js',
@@ -444,6 +446,7 @@ try {
           'data\content-index.js',
           'data\content-loader.js',
           'data\english\core-dictionary.js',
+          'data\english\tenses.js',
           'platform-data.js',
           'catalog.js',
           'ai-tts.js',
