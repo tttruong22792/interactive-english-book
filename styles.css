@@ -805,3 +805,244 @@ body{background:var(--bg);color:var(--ink)}
   .tense-practice-item summary em{grid-column:2}
   .tense-answer-meta{margin-left:0;align-items:flex-start;flex-direction:column;gap:3px}
 }
+
+
+/* ===== SHADOWING PRACTICE ===== */
+.shadowing-entry{
+  background:linear-gradient(135deg,#eaf9f2,#fffdf8 62%,#eef3ff);
+  border-color:#b9dfcc;
+}
+.shadowing-hero{
+  background:linear-gradient(135deg,#fffdf8 0%,#eaf9f2 56%,#eee9ff 100%);
+}
+.shadow-method-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0;
+}
+.shadow-method-grid>div{
+  border:1px solid var(--line);
+  background:#fff;
+  padding:16px;
+  min-height:160px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.shadow-method-grid b{
+  width:30px;height:30px;border-radius:50%;
+  display:grid;place-items:center;background:#1c1a1f;color:#fff;
+}
+.shadow-method-grid strong{font-size:16px}
+.shadow-method-grid span{font-size:13px;line-height:1.6;color:var(--muted)}
+
+.shadow-lesson-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.shadow-lesson-card{
+  display:grid;
+  grid-template-columns:auto 42px 1fr;
+  gap:10px;
+  align-items:center;
+  border:1px solid var(--line);
+  background:#fff;
+  padding:12px;
+  cursor:pointer;
+}
+.shadow-lesson-card:has(input:checked){
+  border-color:#9c8cf6;
+  background:#f6f3ff;
+}
+.shadow-lesson-card input{width:17px;height:17px;accent-color:#7e6dec}
+.shadow-lesson-number{
+  width:36px;height:36px;
+  display:grid;place-items:center;
+  background:#1c1a1f;color:#fff;font-weight:900;font-size:11px;
+}
+.shadow-lesson-card strong{display:block;font-size:14px}
+.shadow-lesson-card small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+
+.shadow-settings-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:9px;
+}
+.shadow-settings-grid label{
+  display:flex;flex-direction:column;gap:6px;
+  font-size:11px;font-weight:800;color:#665f69;
+}
+.shadow-settings-grid select{
+  border:1px solid var(--line);
+  background:#fff;
+  padding:10px;
+  min-height:42px;
+  font-size:12px;
+}
+.shadow-setup-summary{
+  margin:12px 0;
+  color:var(--muted);
+  font-size:12px;
+}
+.shadow-start-button{min-width:240px}
+
+.shadow-workspace{
+  margin:18px 0;
+  border:1px solid var(--line);
+  background:#fffdf8;
+  padding:18px;
+}
+.shadow-workspace-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+}
+.shadow-workspace-head h2{margin:4px 0 0}
+.shadow-session-progress{
+  display:flex;flex-direction:column;align-items:flex-end;
+}
+.shadow-session-progress strong{font-size:22px}
+.shadow-session-progress span{font-size:11px;color:var(--muted);text-align:right}
+.shadow-progress-track{
+  height:8px;background:#ece8e1;margin:12px 0 16px;overflow:hidden;
+}
+.shadow-progress-track i{
+  display:block;height:100%;width:0;background:linear-gradient(90deg,#8f7cf7,#46c690);
+  transition:width .2s ease;
+}
+
+.shadow-stage{
+  border:1px solid #cfc7ff;
+  background:linear-gradient(180deg,#faf8ff,#fff);
+  padding:20px;
+}
+.shadow-stage-top{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin-bottom:18px
+}
+.shadow-mode-badge{
+  display:inline-flex;padding:5px 8px;
+  background:#eee9ff;color:#6556c7;
+  font-size:10px;font-weight:900;letter-spacing:.05em;
+}
+#shadowPassText{font-size:11px;color:var(--muted);font-weight:800}
+
+.shadow-current-card{
+  border:1px solid var(--line);
+  background:#fff;
+  padding:24px 20px;
+  min-height:170px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.shadow-english-wrap{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+}
+.shadow-english-text{
+  font-size:28px;
+  line-height:1.5;
+  font-weight:800;
+  color:#1b1a1d;
+}
+.shadow-vi{
+  margin:16px 0 0 42px;
+  color:#6d6770;
+  font-size:15px;
+  line-height:1.6;
+}
+.shadow-stage.hide-shadow-en .shadow-english-text{
+  visibility:hidden;
+  position:relative;
+}
+.shadow-stage.hide-shadow-en .shadow-english-wrap{
+  position:relative;
+  min-height:70px;
+}
+.shadow-stage.hide-shadow-en .shadow-english-wrap:after{
+  content:"Tiếng Anh đang ẩn — hãy nghe và nói theo";
+  position:absolute;
+  left:42px;right:0;top:8px;
+  color:#8a8490;font-size:15px;font-weight:700;
+}
+.shadow-stage.hide-shadow-vi .shadow-vi{display:none}
+
+.shadow-cue{
+  margin:12px 0;
+  font-size:12px;
+  color:#5f5962;
+  background:#edf8f3;
+  border-left:4px solid #46c690;
+  padding:10px 12px;
+}
+.shadow-controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.shadow-visibility{
+  display:flex;
+  gap:18px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.shadow-visibility label{
+  font-size:12px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
+.shadow-visibility input{accent-color:#7b68e8}
+
+.shadow-queue-wrap{margin-top:16px}
+.shadow-queue{display:grid;gap:7px}
+.shadow-queue-item{
+  width:100%;
+  display:grid;
+  grid-template-columns:32px 1fr auto;
+  gap:10px;
+  align-items:center;
+  text-align:left;
+  border:1px solid var(--line);
+  background:#fff;
+  padding:10px;
+}
+.shadow-queue-item>span{
+  width:27px;height:27px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#f0edf4;
+  color:#5f5964;
+  font-size:10px;font-weight:900;
+}
+.shadow-queue-item b{display:block;font-size:12px;line-height:1.4}
+.shadow-queue-item small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.shadow-queue-item em{font-style:normal;color:#23885e;font-weight:900}
+.shadow-queue-item.active{border-color:#8f7cf7;background:#f6f3ff}
+.shadow-queue-item.done>span{background:#e5f8ef;color:#237251}
+
+@media(max-width:900px){
+  .shadow-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shadow-method-grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .shadow-lesson-grid{grid-template-columns:1fr}
+  .shadow-settings-grid{grid-template-columns:1fr 1fr}
+  .shadow-workspace{padding:12px}
+  .shadow-workspace-head{align-items:flex-start;flex-direction:column}
+  .shadow-session-progress{align-items:flex-start}
+  .shadow-stage{padding:14px}
+  .shadow-current-card{padding:20px 14px;min-height:155px}
+  .shadow-english-text{font-size:22px}
+  .shadow-vi{margin-left:0;font-size:14px}
+  .shadow-controls{display:grid;grid-template-columns:1fr 1fr}
+  .shadow-controls button{width:100%}
+  .shadow-start-button{width:100%;min-width:0}
+}
+@media(max-width:430px){
+  .shadow-settings-grid{grid-template-columns:1fr}
+  .shadow-english-text{font-size:20px}
+}
