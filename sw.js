@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v22-shadowing';
+const APP_CACHE='language-studio-v23-shadowing-fix';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 
@@ -7,7 +7,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20260925-shadowing-v1.js',
+  './runtime-20260925-shadowing-v2.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
