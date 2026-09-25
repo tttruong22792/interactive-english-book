@@ -149,6 +149,7 @@ const runtimeFiles = [
   "data/content-index.js",
   "data/content-loader.js",
   "data/english/core-dictionary.js",
+  "data/english/tenses.js",
   "platform-data.js",
   "catalog.js",
   "ai-tts.js",
@@ -173,6 +174,10 @@ await writeFile(join(dist, "runtime.js"), runtimeParts.join("\n"), "utf8");
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
 const context = vm.createContext({ window: { CONTENT_REGISTRY: {} } });
+{
+  const tensesSource = await readFile(join(root, "data/english/tenses.js"), "utf8");
+  vm.runInContext(tensesSource, context, { filename: "data/english/tenses.js" });
+}
 for (const relative of sourceMatches.filter((p) => p.startsWith("data/english/patterns/"))) {
   const source = await readFile(join(root, relative), "utf8");
   vm.runInContext(source, context, { filename: relative });
@@ -204,6 +209,41 @@ for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
       kinds: [item.kind]
     };
   }
+}
+
+
+const guide = context.window.TENSES_GUIDE;
+if (guide) {
+  const addGuideAudio = (text, kind = "tense-guide") => {
+    if (typeof text !== "string" || !text.trim()) return;
+    const clean = text.trim();
+    const language = detectLanguage(clean);
+    const voice = voiceFor(language);
+    const hash = ttsHash(clean, language, voice);
+    const existing = entries[hash];
+    if (existing) {
+      if (!existing.lessonIds.includes("english-tenses-guide")) existing.lessonIds.push("english-tenses-guide");
+      if (!existing.kinds.includes(kind)) existing.kinds.push(kind);
+      return;
+    }
+    entries[hash] = {
+      text: clean,
+      language,
+      voice,
+      lessonIds: ["english-tenses-guide"],
+      kinds: [kind]
+    };
+  };
+
+  (guide.tenses || []).forEach((tense) => {
+    (tense.examples || []).forEach((item) => Array.isArray(item) && addGuideAudio(item[0], "tense-example"));
+  });
+
+  (guide.keyContrasts || []).forEach((group) => {
+    (group.examples || []).forEach((item) => Array.isArray(item) && addGuideAudio(item[0], "tense-contrast"));
+  });
+
+  (guide.practice || []).forEach((item) => addGuideAudio(item.answer, "tense-practice"));
 }
 
 const ttsManifest = {
