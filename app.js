@@ -11,7 +11,8 @@
 
   const CORE_LESSON_ID = 'en-pattern-001';
   const defaults = {
-    hideVi:false, rate:0.88, learned:{}, saved:{}, meaningOverrides:{},
+    hideVi:false, rate:0.88, learned:{}, saved:{}, meaningOverrides:{}, shadowed:{},
+    shadowingSettings:{mode:'shadow',order:'sequential',size:'10',repeat:2,rate:0.88,showEn:true,showVi:false},
     quizBest:0, quizRuns:0,
     quizBestByLesson:{}, quizRunsByLesson:{},
     lessonVisits:0, lessonVisitsByLesson:{}
@@ -24,6 +25,8 @@
   let installPrompt = null;
   let sequenceRun = 0;
   let practiceLessons = [];
+  let shadowLessons = [];
+  let shadowSession = {items:[],index:0,playing:false,settings:null};
 
   function loadState(){
     try {
@@ -34,6 +37,8 @@
         learned:{...(raw.learned||{})},
         saved:{...(raw.saved||{})},
         meaningOverrides:{...(raw.meaningOverrides||{})},
+        shadowed:{...(raw.shadowed||{})},
+        shadowingSettings:{...defaults.shadowingSettings,...(raw.shadowingSettings||{})},
         quizBestByLesson:{...(raw.quizBestByLesson||{})},
         quizRunsByLesson:{...(raw.quizRunsByLesson||{})},
         lessonVisitsByLesson:{...(raw.lessonVisitsByLesson||{})}
@@ -249,6 +254,7 @@
       else if (r.name === 'lesson') await renderLesson(r.id,r.view);
       else if (r.name === 'vocab') renderVocab();
       else if (r.name === 'practice') await renderPracticeHub();
+      else if (r.name === 'shadowing') await renderShadowing();
       else if (r.name === 'progress') await renderProgress();
       else if (r.name === 'settings') renderSettings();
       else renderHome();
