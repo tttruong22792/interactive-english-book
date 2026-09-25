@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v15-phraseaudio-dict';
+const APP_CACHE='language-studio-v16-pattern006';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 
