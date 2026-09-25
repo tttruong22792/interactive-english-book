@@ -166,7 +166,7 @@ const badSingleSelectorCalls = [...appSourceForGuard.matchAll(/(?<!\$)\$\([^\n;]
   .map((match) => match[0]);
 if (badSingleSelectorCalls.length) {
   throw new Error(
-    "Invalid single-element selector used with collection method. Use $() instead:\n" +
+    "Invalid single-element selector used with a collection method. Use the collection selector helper instead:\n" +
     badSingleSelectorCalls.join("\n")
   );
 }
