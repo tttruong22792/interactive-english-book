@@ -1835,6 +1835,96 @@ window.CORE_DICTIONARY = {
     "/jes/",
     "vâng / có / đúng",
     "Yes, I can."
+  ],
+  "add": [
+    "/æd/",
+    "thêm / cộng",
+    "Would you like to add anything else?"
+  ],
+  "along": [
+    "/əˈlɔːŋ/",
+    "cùng theo / cùng đi; trong come along = đi cùng",
+    "Would you like to come along?"
+  ],
+  "at": [
+    "/æt/",
+    "ở / tại / vào; dùng trong nhiều cụm",
+    "take a look at this"
+  ],
+  "care": [
+    "/ker/",
+    "chăm sóc / quan tâm; trong take care of = xử lý / lo liệu",
+    "take care of it"
+  ],
+  "different": [
+    "/ˈdɪfrənt/",
+    "khác / khác biệt",
+    "do something different"
+  ],
+  "else": [
+    "/els/",
+    "khác / nữa",
+    "anything else"
+  ],
+  "follow": [
+    "/ˈfɑːloʊ/",
+    "theo / đi theo; trong follow-up = tiếp theo",
+    "follow-up meeting"
+  ],
+  "give": [
+    "/ɡɪv/",
+    "đưa / cho; trong give it a try = thử",
+    "give it another try"
+  ],
+  "good": [
+    "/ɡʊd/",
+    "tốt / ổn",
+    "Sounds good."
+  ],
+  "great": [
+    "/ɡreɪt/",
+    "tuyệt / rất tốt",
+    "That sounds great."
+  ],
+  "join": [
+    "/dʒɔɪn/",
+    "tham gia / gia nhập",
+    "join the meeting"
+  ],
+  "making": [
+    "/ˈmeɪkɪŋ/",
+    "việc làm / đang tạo ra",
+    "before making a decision"
+  ],
+  "maybe": [
+    "/ˈmeɪbi/",
+    "có lẽ",
+    "Maybe another time."
+  ],
+  "sounds": [
+    "/saʊndz/",
+    "nghe có vẻ",
+    "Sounds good."
+  ],
+  "thanks": [
+    "/θæŋks/",
+    "cảm ơn",
+    "Thanks, but I’ll pass."
+  ],
+  "think": [
+    "/θɪŋk/",
+    "nghĩ / suy nghĩ",
+    "think it over"
+  ],
+  "together": [
+    "/təˈɡeðər/",
+    "cùng nhau",
+    "go over the results together"
+  ],
+  "why": [
+    "/waɪ/",
+    "tại sao",
+    "Why not?"
   ]
 };
 
