@@ -77,6 +77,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-006",
+    language: "en",
+    category: "patterns",
+    order: 6,
+    title: "Would you like to…?",
+    meaning: "Bạn có muốn… không? / Bạn có muốn… chứ?",
+    description: "Dùng để mời, đề nghị hoặc hỏi mong muốn của người khác một cách lịch sự.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/006.js",
+    route: "lesson/6",
+    accent: "yellow",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
