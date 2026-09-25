@@ -12,7 +12,7 @@
   const CORE_LESSON_ID = 'en-pattern-001';
   const defaults = {
     hideVi:false, rate:0.88, learned:{}, saved:{}, meaningOverrides:{}, shadowed:{},
-    shadowingSettings:{mode:'shadow',order:'sequential',size:'10',repeat:2,rate:0.88,showEn:true,showVi:false},
+    shadowingSettings:{mode:'shadow',order:'sequential',size:'10',repeat:2,rate:0.88,showEn:true,showVi:false,selectedLessonIds:[]},
     quizBest:0, quizRuns:0,
     quizBestByLesson:{}, quizRunsByLesson:{},
     lessonVisits:0, lessonVisitsByLesson:{}
