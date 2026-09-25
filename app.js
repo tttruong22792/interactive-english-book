@@ -377,6 +377,10 @@
     setHeader('English','English Learning');
     $('#mainView').innerHTML = `
       <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>80 mẫu câu chỉ là một track đầu tiên. Sau này khu vực English có thể mở rộng sang vocabulary, listening, speaking, reading và tình huống công việc.</p></section>
+      <section class="english-grammar-entry">
+        <div><span class="eyebrow">ENGLISH GRAMMAR</span><h2>Các thì trong tiếng Anh</h2><p>Hiểu bằng bản đồ 3 mốc thời gian × 4 cách nhìn, có công thức, ví dụ nghe được, lỗi hay gặp, cách phân biệt và bài luyện chọn thì.</p></div>
+        <button class="primary-button" data-go="tenses">Mở trang các thì →</button>
+      </section>
       <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
       <section id="patternsGrid" class="card-grid"></section>`;
     let filter='all';
