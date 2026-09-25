@@ -1925,6 +1925,426 @@ window.CORE_DICTIONARY = {
     "/waɪ/",
     "tại sao",
     "Why not?"
+  ],
+  "ago": [
+    "/əˈɡoʊ/",
+    "trước đây / cách đây",
+    "two years ago"
+  ],
+  "all": [
+    "/ɔːl/",
+    "tất cả / suốt",
+    "all morning"
+  ],
+  "already": [
+    "/ɔːlˈredi/",
+    "đã rồi",
+    "The meeting had already started."
+  ],
+  "arrive": [
+    "/əˈraɪv/",
+    "đến nơi",
+    "before you arrive"
+  ],
+  "arrived": [
+    "/əˈraɪvd/",
+    "đã đến nơi",
+    "when I arrived"
+  ],
+  "because": [
+    "/bɪˈkɔːz/",
+    "bởi vì",
+    "He was tired because he had been working."
+  ],
+  "been": [
+    "/bɪn/",
+    "V3 của be; đã từng / đã ở",
+    "I've been to Osaka."
+  ],
+  "bus": [
+    "/bʌs/",
+    "xe buýt",
+    "the bus arrived"
+  ],
+  "called": [
+    "/kɔːld/",
+    "đã gọi",
+    "when you called"
+  ],
+  "checked": [
+    "/tʃekt/",
+    "đã kiểm tra",
+    "I checked the logs."
+  ],
+  "cleaned": [
+    "/kliːnd/",
+    "đã dọn / làm sạch",
+    "I've cleaned the kitchen."
+  ],
+  "cleaning": [
+    "/ˈkliːnɪŋ/",
+    "đang dọn / việc dọn dẹp",
+    "I've been cleaning the kitchen."
+  ],
+  "client": [
+    "/ˈklaɪənt/",
+    "khách hàng",
+    "meet the client"
+  ],
+  "closed": [
+    "/kloʊzd/",
+    "đã đóng / đóng cửa",
+    "the store had closed"
+  ],
+  "cooking": [
+    "/ˈkʊkɪŋ/",
+    "đang nấu ăn",
+    "While I was cooking..."
+  ],
+  "doing": [
+    "/ˈduːɪŋ/",
+    "đang làm / việc làm",
+    "the kids were doing their homework"
+  ],
+  "drinking": [
+    "/ˈdrɪŋkɪŋ/",
+    "đang uống",
+    "I'm drinking coffee now."
+  ],
+  "driving": [
+    "/ˈdraɪvɪŋ/",
+    "đang lái xe",
+    "I was driving home."
+  ],
+  "finished": [
+    "/ˈfɪnɪʃt/",
+    "đã hoàn thành",
+    "I've finished the report."
+  ],
+  "five": [
+    "/faɪv/",
+    "năm (số 5)",
+    "five years"
+  ],
+  "fixed": [
+    "/fɪkst/",
+    "đã sửa / được cố định",
+    "We haven't fixed the issue yet."
+  ],
+  "flying": [
+    "/ˈflaɪɪŋ/",
+    "đang bay",
+    "I'll be flying to Vietnam."
+  ],
+  "found": [
+    "/faʊnd/",
+    "đã tìm thấy / đã phát hiện",
+    "I found the problem."
+  ],
+  "four": [
+    "/fɔːr/",
+    "bốn",
+    "four years"
+  ],
+  "got": [
+    "/ɡɑːt/",
+    "đã có / đã đến / đã nhận; quá khứ của get",
+    "By the time we got there..."
+  ],
+  "had": [
+    "/hæd/",
+    "đã có; trợ động từ của Past Perfect",
+    "The meeting had started."
+  ],
+  "haven't": [
+    "/ˈhævənt/",
+    "viết tắt của have not",
+    "We haven't fixed it yet."
+  ],
+  "he": [
+    "/hiː/",
+    "anh ấy / ông ấy",
+    "He was tired."
+  ],
+  "here": [
+    "/hɪr/",
+    "ở đây",
+    "We moved here two years ago."
+  ],
+  "homework": [
+    "/ˈhoʊmwɜːrk/",
+    "bài tập về nhà",
+    "do homework"
+  ],
+  "hour": [
+    "/ˈaʊər/",
+    "một giờ",
+    "for an hour"
+  ],
+  "hours": [
+    "/ˈaʊərz/",
+    "nhiều giờ",
+    "for six hours"
+  ],
+  "i've": [
+    "/aɪv/",
+    "viết tắt của I have",
+    "I've finished the report."
+  ],
+  "it's": [
+    "/ɪts/",
+    "viết tắt của it is / it has",
+    "It's been raining."
+  ],
+  "joined": [
+    "/dʒɔɪnd/",
+    "đã tham gia / gia nhập",
+    "before I joined the team"
+  ],
+  "june": [
+    "/dʒuːn/",
+    "tháng Sáu",
+    "By June"
+  ],
+  "key": [
+    "/kiː/",
+    "chìa khóa",
+    "I've lost my key."
+  ],
+  "laptop": [
+    "/ˈlæptɑːp/",
+    "máy tính xách tay",
+    "buy a new laptop"
+  ],
+  "last": [
+    "/læst/",
+    "trước / cuối cùng / kéo dài",
+    "last night"
+  ],
+  "leaves": [
+    "/liːvz/",
+    "rời đi / khởi hành (ngôi số ít)",
+    "The train leaves at seven."
+  ],
+  "left": [
+    "/left/",
+    "đã rời đi; bên trái",
+    "She'll have left."
+  ],
+  "lived": [
+    "/lɪvd/",
+    "đã sống / đã ở",
+    "we'll have lived here"
+  ],
+  "lost": [
+    "/lɔːst/",
+    "đã làm mất / bị lạc",
+    "I've lost my key."
+  ],
+  "meeting": [
+    "/ˈmiːtɪŋ/",
+    "cuộc họp; đang gặp",
+    "the meeting had started"
+  ],
+  "morning": [
+    "/ˈmɔːrnɪŋ/",
+    "buổi sáng",
+    "tomorrow morning"
+  ],
+  "moved": [
+    "/muːvd/",
+    "đã chuyển / di chuyển",
+    "We moved here."
+  ],
+  "never": [
+    "/ˈnevər/",
+    "không bao giờ / chưa từng",
+    "I had never used it before."
+  ],
+  "night": [
+    "/naɪt/",
+    "đêm / tối",
+    "all night"
+  ],
+  "nine": [
+    "/naɪn/",
+    "chín (số 9)",
+    "since nine"
+  ],
+  "noon": [
+    "/nuːn/",
+    "buổi trưa / 12 giờ trưa",
+    "By noon"
+  ],
+  "osaka": [
+    "/oʊˈsɑːkə/",
+    "Osaka",
+    "I've been to Osaka several times."
+  ],
+  "rain": [
+    "/reɪn/",
+    "mưa",
+    "It will rain tonight."
+  ],
+  "raining": [
+    "/ˈreɪnɪŋ/",
+    "đang mưa",
+    "It's been raining all morning."
+  ],
+  "report": [
+    "/rɪˈpɔːrt/",
+    "báo cáo",
+    "finish the report"
+  ],
+  "right": [
+    "/raɪt/",
+    "đúng / bên phải / ngay",
+    "right now"
+  ],
+  "seven": [
+    "/ˈsevən/",
+    "bảy (số 7)",
+    "at seven"
+  ],
+  "several": [
+    "/ˈsevrəl/",
+    "vài / một số",
+    "several times"
+  ],
+  "she": [
+    "/ʃiː/",
+    "cô ấy / bà ấy",
+    "She works from home."
+  ],
+  "she'll": [
+    "/ʃiːl/",
+    "viết tắt của she will",
+    "She'll have left."
+  ],
+  "since": [
+    "/sɪns/",
+    "từ một mốc thời gian; kể từ",
+    "since nine"
+  ],
+  "six": [
+    "/sɪks/",
+    "sáu",
+    "six hours"
+  ],
+  "sleeping": [
+    "/ˈsliːpɪŋ/",
+    "đang ngủ",
+    "The kids are sleeping."
+  ],
+  "started": [
+    "/ˈstɑːrtɪd/",
+    "đã bắt đầu",
+    "The meeting had started."
+  ],
+  "still": [
+    "/stɪl/",
+    "vẫn / vẫn còn",
+    "I was still working."
+  ],
+  "store": [
+    "/stɔːr/",
+    "cửa hàng",
+    "the store had closed"
+  ],
+  "ten": [
+    "/ten/",
+    "mười",
+    "at ten last night"
+  ],
+  "their": [
+    "/ðer/",
+    "của họ",
+    "their homework"
+  ],
+  "they": [
+    "/ðeɪ/",
+    "họ",
+    "They had been waiting."
+  ],
+  "thirty": [
+    "/ˈθɜːrti/",
+    "ba mươi",
+    "thirty minutes"
+  ],
+  "times": [
+    "/taɪmz/",
+    "lần",
+    "several times"
+  ],
+  "tired": [
+    "/ˈtaɪərd/",
+    "mệt",
+    "He was tired."
+  ],
+  "took": [
+    "/tʊk/",
+    "đã lấy / đã mất thời gian; quá khứ của take",
+    "before I took a break"
+  ],
+  "train": [
+    "/treɪn/",
+    "tàu hỏa",
+    "The train leaves at seven."
+  ],
+  "twice": [
+    "/twaɪs/",
+    "hai lần",
+    "twice a week"
+  ],
+  "using": [
+    "/ˈjuːzɪŋ/",
+    "đang dùng / việc sử dụng",
+    "Will you be using the car?"
+  ],
+  "usually": [
+    "/ˈjuːʒuəli/",
+    "thường xuyên / thường",
+    "I usually wake up early."
+  ],
+  "waiting": [
+    "/ˈweɪtɪŋ/",
+    "đang chờ",
+    "They had been waiting."
+  ],
+  "wake": [
+    "/weɪk/",
+    "thức dậy / đánh thức",
+    "wake up at six thirty"
+  ],
+  "we'll": [
+    "/wiːl/",
+    "viết tắt của we will",
+    "We'll have lived here for five years."
+  ],
+  "we're": [
+    "/wɪr/",
+    "viết tắt của we are",
+    "We're meeting the client tomorrow."
+  ],
+  "were": [
+    "/wɜːr/",
+    "đã là / đã ở; dạng quá khứ của are",
+    "They were waiting."
+  ],
+  "while": [
+    "/waɪl/",
+    "trong khi",
+    "While I was cooking..."
+  ],
+  "worry": [
+    "/ˈwɜːri/",
+    "lo lắng",
+    "Don't worry."
+  ],
+  "yesterday": [
+    "/ˈjestərdeɪ/",
+    "hôm qua",
+    "I called him yesterday."
   ]
 };
 
