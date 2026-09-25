@@ -160,7 +160,7 @@ const runtimeFiles = [
 const uniqueFiles = [...new Set(runtimeFiles)];
 
 // Guard against a recurring class of UI bugs:
-// $() returns one Element; collection methods must use $().
+// $() returns one Element; collection methods must use the collection selector helper.
 const appSourceForGuard = await readFile(join(root, "app.js"), "utf8");
 const badSingleSelectorCalls = [...appSourceForGuard.matchAll(/(?<!\$)\$\([^\n;]+\)\.(forEach|map|filter|some|every)\s*\(/g)]
   .map((match) => match[0]);
@@ -182,7 +182,7 @@ for (const relative of uniqueFiles) {
 }
 
 await writeFile(join(dist, "runtime.js"), runtimeParts.join("\n"), "utf8");
-await writeFile(join(dist, "runtime-20260925-shadowing-v2.js"), runtimeParts.join("\n"), "utf8");
+await writeFile(join(dist, "runtime-20260925-pattern007-v1.js"), runtimeParts.join("\n"), "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
