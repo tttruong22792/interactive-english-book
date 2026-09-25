@@ -425,7 +425,7 @@
     L=null;
     const G=window.TENSES_GUIDE;
     if(!G) throw new Error('Tenses guide is not available.');
-    setHeader('English › Grammar','Các thì trong tiếng Anh');
+    setHeader('English › Grammar','Các thì trong tiếng Anh',true);
   
     const aspectCards=(G.coreIdea?.aspect||[]).map((x,index)=>`
       <article class="aspect-card aspect-${index+1}">
