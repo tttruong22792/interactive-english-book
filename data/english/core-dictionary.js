@@ -2345,6 +2345,131 @@ window.CORE_DICTIONARY = {
     "/ˈjestərdeɪ/",
     "hôm qua",
     "I called him yesterday."
+  ],
+  "could": [
+    "/kʊd/",
+    "có thể / có lẽ; dạng lịch sự hoặc quá khứ của can",
+    "Maybe we could take the kids somewhere."
+  ],
+  "decision": [
+    "/dɪˈsɪʒən/",
+    "quyết định",
+    "make a decision"
+  ],
+  "getting": [
+    "/ˈɡetɪŋ/",
+    "đang trở nên / đang nhận",
+    "I’m getting hungry."
+  ],
+  "grab": [
+    "/ɡræb/",
+    "lấy nhanh; trong grab something to eat = đi kiếm gì đó ăn",
+    "grab something to eat"
+  ],
+  "hang": [
+    "/hæŋ/",
+    "treo; trong hang out = đi chơi / dành thời gian cùng nhau",
+    "hang out this weekend"
+  ],
+  "happened": [
+    "/ˈhæpənd/",
+    "đã xảy ra",
+    "what happened"
+  ],
+  "happening": [
+    "/ˈhæpənɪŋ/",
+    "đang xảy ra",
+    "The problem is still happening."
+  ],
+  "idea": [
+    "/aɪˈdiːə/",
+    "ý tưởng / ý kiến",
+    "That’s probably a good idea."
+  ],
+  "is": [
+    "/ɪz/",
+    "là / thì / ở (với he/she/it)",
+    "The problem is still happening."
+  ],
+  "no": [
+    "/noʊ/",
+    "không",
+    "No, thanks."
+  ],
+  "open": [
+    "/ˈoʊpən/",
+    "mở / còn để ngỏ",
+    "leave your options open"
+  ],
+  "or": [
+    "/ɔːr/",
+    "hoặc / hay",
+    "now or later"
+  ],
+  "pass": [
+    "/pæs/",
+    "đi qua; trong I’ll pass = tôi xin thôi",
+    "I think I’ll pass."
+  ],
+  "plans": [
+    "/plænz/",
+    "các kế hoạch",
+    "make plans for next weekend"
+  ],
+  "please": [
+    "/pliːz/",
+    "làm ơn / vui lòng",
+    "Please check the logs first."
+  ],
+  "process": [
+    "/ˈprɑːses/",
+    "quy trình / quá trình",
+    "walk me through the process"
+  ],
+  "rather": [
+    "/ˈræðər/",
+    "hơn / thích hơn; trong would rather = muốn... hơn",
+    "I’d rather stay home."
+  ],
+  "so": [
+    "/soʊ/",
+    "vì vậy; như vậy; quá",
+    "I don’t think so."
+  ],
+  "stop": [
+    "/stɑːp/",
+    "dừng / ngừng",
+    "stop here"
+  ],
+  "that's": [
+    "/ðæts/",
+    "viết tắt của that is",
+    "That’s probably a good idea."
+  ],
+  "until": [
+    "/ənˈtɪl/",
+    "cho đến khi / đến",
+    "wait until tomorrow"
+  ],
+  "walk": [
+    "/wɔːk/",
+    "đi bộ; trong walk someone through = hướng dẫn từng bước",
+    "walk me through the process"
+  ],
+  "which": [
+    "/wɪtʃ/",
+    "cái nào / điều nào",
+    "which one to choose"
+  ],
+  "window": [
+    "/ˈwɪndoʊ/",
+    "cửa sổ",
+    "open the window"
+  ],
+  "your": [
+    "/jʊr/",
+    "của bạn",
+    "leave your options open"
   ]
 };
 
