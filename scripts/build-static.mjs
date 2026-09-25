@@ -159,6 +159,18 @@ const runtimeFiles = [
 
 const uniqueFiles = [...new Set(runtimeFiles)];
 
+// Guard against a recurring class of UI bugs:
+// $() returns one Element; collection methods must use $().
+const appSourceForGuard = await readFile(join(root, "app.js"), "utf8");
+const badSingleSelectorCalls = [...appSourceForGuard.matchAll(/(?<!\$)\$\([^\n;]+\)\.(forEach|map|filter|some|every)\s*\(/g)]
+  .map((match) => match[0]);
+if (badSingleSelectorCalls.length) {
+  throw new Error(
+    "Invalid single-element selector used with collection method. Use $() instead:\n" +
+    badSingleSelectorCalls.join("\n")
+  );
+}
+
 const runtimeParts = [
   "window.__LS_RUNTIME_STARTED = true;",
   "window.LS_AUDIO_CACHE = new Set([]);"
