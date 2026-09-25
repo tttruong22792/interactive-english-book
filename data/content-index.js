@@ -92,6 +92,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-007",
+    language: "en",
+    category: "patterns",
+    order: 7,
+    title: "Do you want to…?",
+    meaning: "Bạn có muốn… không?",
+    description: "Mẫu rất phổ biến để rủ, hỏi ý định hoặc đưa ra lựa chọn theo cách trực tiếp và thân mật.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/007.js",
+    route: "lesson/7",
+    accent: "green",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
