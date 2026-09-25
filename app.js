@@ -387,6 +387,10 @@
         <div><span class="eyebrow">ENGLISH GRAMMAR</span><h2>Các thì trong tiếng Anh</h2><p>Hiểu bằng bản đồ 3 mốc thời gian × 4 cách nhìn, có công thức, ví dụ nghe được, lỗi hay gặp, cách phân biệt và bài luyện chọn thì.</p></div>
         <button class="primary-button" data-go="tenses">Mở trang các thì →</button>
       </section>
+      <section class="english-grammar-entry shadowing-entry">
+        <div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn Mẫu 01–06, lấy trực tiếp câu đã học và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
+        <button class="primary-button" data-go="shadowing">Mở Shadowing →</button>
+      </section>
       <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
       <section id="patternsGrid" class="card-grid"></section>`;
     let filter='all';
