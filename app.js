@@ -1494,7 +1494,7 @@
         <span>${absolute+1}</span><div><b>${esc(x.en)}</b><small>${esc(x.vi||'')}</small></div>${done?'<em>✓</em>':''}
       </button>`;
     }).join('');
-    $('[data-shadow-index]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-shadow-index]').forEach(btn=>btn.onclick=()=>{
       stopShadowing();
       shadowSession.index=Number(btn.dataset.shadowIndex)||0;
       updateShadowPlayer();
@@ -1678,7 +1678,7 @@
       $('#shadowSetupSummary').textContent=`${lessons.length} bài · ${total} câu có sẵn · buổi này ${n} câu`;
     };
   
-    $('[data-shadow-lesson],#shadowSize').forEach(el=>el.onchange=refreshSummary);
+    $$('[data-shadow-lesson],#shadowSize').forEach(el=>el.onchange=refreshSummary);
     refreshSummary();
   
     $('#startShadowing').onclick=()=>{
