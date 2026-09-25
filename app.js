@@ -244,6 +244,7 @@
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
+      else if (r.name === 'tenses') renderTenses();
       else if (r.name === 'japanese') await renderJapanese();
       else if (r.name === 'lesson') await renderLesson(r.id,r.view);
       else if (r.name === 'vocab') renderVocab();
@@ -395,6 +396,204 @@
     const status=p.status==='available'?'Đã có bài':p.status==='next'?'Bài tiếp theo':'Đang chuẩn bị';
     const cls=p.status==='available'?'available':p.status==='next'?'next':'locked';
     return `<article class="pattern-card ${cls}"><span class="pattern-number">MẪU ${String(p.id).padStart(2,'0')}</span><span class="status-chip ${cls}">${status}</span><h3>${esc(p.title)}</h3><p>${esc(p.meaning)}</p><div class="card-action">${p.status==='available'?`<button class="primary-button" data-go="lesson/${p.id}">Mở bài học</button>`:`<button class="secondary-button" data-disabled="1" data-status="${p.status}">Chưa có nội dung</button>`}</div></article>`;
+  }
+
+  function guideSentenceRow(en,vi=''){
+    return `<div class="sentence-card tense-example-card" data-sentence-card="1" data-en-card="${escAttr(en)}">
+      <div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div>
+      <div class="vi" data-vi-only>${esc(vi)}</div>
+    </div>`;
+  }
+
+  function tenseTimelineHTML(time='present',aspect='simple'){
+    const labels={past:'QUÁ KHỨ',present:'HIỆN TẠI',future:'TƯƠNG LAI'};
+    const dots=['past','present','future'].map(key=>`<span class="tense-time-dot ${key===time?'active':''}"><i></i><b>${labels[key]}</b></span>`).join('');
+    const aspectLabel={
+      simple:'nhìn cả sự việc',
+      continuous:'đang ở giữa quá trình',
+      perfect:'nhìn ngược về việc xảy ra trước mốc',
+      'perfect-continuous':'nhấn quá trình + thời lượng đến mốc'
+    }[aspect]||'';
+    return `<div class="tense-mini-timeline"><div class="tense-time-line">${dots}</div><small>${esc(aspectLabel)}</small></div>`;
+  }
+
+  function renderTenses(){
+    L=null;
+    const G=window.TENSES_GUIDE;
+    if(!G) throw new Error('Tenses guide is not available.');
+    setHeader('English › Grammar','Các thì trong tiếng Anh');
+  
+    const aspectCards=(G.coreIdea?.aspect||[]).map((x,index)=>`
+      <article class="aspect-card aspect-${index+1}">
+        <span class="aspect-number">0${index+1}</span>
+        <h3>${esc(x.name)}</h3>
+        <p>${esc(x.vi)}</p>
+        <strong>${esc(x.question)}</strong>
+      </article>`).join('');
+  
+    const priorities=(G.priorities||[]).map(x=>`
+      <div class="tense-priority-row">
+        <strong>${esc(x.level)}</strong>
+        <div><b>${esc((x.tenses||[]).join(' · '))}</b><span>${esc(x.note||'')}</span></div>
+      </div>`).join('');
+  
+    const matrixRows=(G.matrix||[]).map((row,rowIndex)=>{
+      const time=['Present','Past','Future'][rowIndex]||'';
+      return `<div class="tense-matrix-row">
+        <div class="tense-matrix-time">${time}</div>
+        ${(row||[]).map(name=>{
+          const t=(G.tenses||[]).find(item=>item.name===name);
+          return t?`<button class="tense-matrix-cell" data-tense-target="${escAttr(t.id)}"><b>${esc(t.vi)}</b><span>${esc(t.name)}</span></button>`:'<div></div>';
+        }).join('')}
+      </div>`;
+    }).join('');
+  
+    const tenseDetails=(G.tenses||[]).map((t,index)=>`
+      <details class="tense-detail" id="tense-${escAttr(t.id)}" ${index<2?'open':''}>
+        <summary>
+          <div><span class="tense-index">${String(index+1).padStart(2,'0')}</span><span><b>${esc(t.vi)}</b><small>${esc(t.name)}</small></span></div>
+          <em>${esc(t.priority||'')}</em>
+        </summary>
+        <div class="tense-detail-body">
+          ${tenseTimelineHTML(t.time,t.aspect)}
+          <div class="tense-mental"><span>HÌNH DUNG</span><p>${esc(t.mental||'')}</p></div>
+          <div class="tense-form-grid">
+            <div><small>KHẲNG ĐỊNH</small><strong>${esc(t.formula||'')}</strong></div>
+            <div><small>PHỦ ĐỊNH</small><strong>${esc(t.negative||'')}</strong></div>
+            <div><small>CÂU HỎI</small><strong>${esc(t.question||'')}</strong></div>
+          </div>
+          <div class="tense-two-col">
+            <div><h4>Khi nào dùng?</h4><ul>${(t.uses||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+            <div><h4>Dấu hiệu thường gặp</h4><p class="tense-markers">${esc(t.markers||'')}</p></div>
+          </div>
+          <div class="sentence-list tense-example-list">${(t.examples||[]).map(x=>guideSentenceRow(x[0],x[1])).join('')}</div>
+          <div class="tense-note-grid">
+            <div class="tense-warning"><b>⚠ Lỗi hay gặp</b><span>${esc(t.mistake||'')}</span></div>
+            <div class="tense-contrast-note"><b>↔ Cách phân biệt</b><span>${esc(t.contrast||'')}</span></div>
+          </div>
+        </div>
+      </details>`).join('');
+  
+    const contrastCards=(G.keyContrasts||[]).map(x=>`
+      <article class="tense-contrast-card">
+        <div class="tense-contrast-head"><h3>${esc(x.title)}</h3><span>${esc(x.idea)}</span></div>
+        <div class="sentence-list">${(x.examples||[]).map(y=>guideSentenceRow(y[0],y[1])).join('')}</div>
+      </article>`).join('');
+  
+    const decision=(G.decision||[]).map((x,index)=>`
+      <div class="tense-decision-step"><span>${index+1}</span><div><strong>${esc(x.q)}</strong><p>${esc(x.a)}</p></div></div>`).join('');
+  
+    const practice=(G.practice||[]).map((x,index)=>`
+      <details class="tense-practice-item">
+        <summary><span>${index+1}</span><strong>${esc(x.prompt)}</strong><em>Chạm để xem đáp án</em></summary>
+        <div class="tense-practice-answer">
+          <div class="tense-answer-meta"><b>${esc(x.tense)}</b><span>Vì: ${esc(x.why)}</span></div>
+          ${guideSentenceRow(x.answer,'')}
+        </div>
+      </details>`).join('');
+  
+    $('#mainView').innerHTML=`
+      <section class="tenses-hero">
+        <div>
+          <span class="landing-kicker">ENGLISH GRAMMAR · TENSES</span>
+          <h1>${esc(G.title)}</h1>
+          <p>${esc(G.subtitle)}</p>
+          <div class="hero-actions">
+            <button class="primary-button" data-tense-jump="tense-map">Xem bản đồ 12 thì</button>
+            <button class="secondary-button" data-tense-jump="tense-core">Học cách chọn thì</button>
+          </div>
+        </div>
+        <div class="tenses-hero-visual">
+          <div class="time-axis">
+            <span><i></i><b>PAST</b><small>trước bây giờ</small></span>
+            <span class="now"><i></i><b>NOW</b><small>điểm nhìn</small></span>
+            <span><i></i><b>FUTURE</b><small>sau bây giờ</small></span>
+          </div>
+          <div class="aspect-stack"><span>Simple</span><span>Continuous</span><span>Perfect</span><span>Perfect Continuous</span></div>
+        </div>
+      </section>
+  
+      <section class="book-section tenses-intro" id="tense-core">
+        <div class="eyebrow">ĐỪNG HỌC 12 CÔNG THỨC RỜI RẠC</div>
+        <h2>Chỉ cần hiểu: 3 mốc thời gian × 4 cách nhìn hành động</h2>
+        <p>${esc(G.intro||'')}</p>
+        <div class="tense-core-equation">
+          <div><strong>3</strong><span>mốc thời gian<br>Past · Present · Future</span></div>
+          <b>×</b>
+          <div><strong>4</strong><span>cách nhìn<br>Simple · Continuous · Perfect · Perfect Continuous</span></div>
+          <b>=</b>
+          <div><strong>12</strong><span>ô để hiểu<br>không phải 12 thứ để học thuộc riêng lẻ</span></div>
+        </div>
+        <div class="aspect-grid">${aspectCards}</div>
+      </section>
+  
+      <section class="book-section">
+        <div class="eyebrow">HỌC THEO THỨ TỰ</div>
+        <h2>Không cần học 12 thì ngang nhau</h2>
+        <p>Với người mới, mục tiêu là dùng chắc những thì xuất hiện nhiều trong giao tiếp trước, sau đó mở rộng. Như vậy bạn có thể nói được sớm mà vẫn hiểu toàn bộ hệ thống.</p>
+        <div class="tense-priority-list">${priorities}</div>
+      </section>
+  
+      <section class="book-section" id="tense-map">
+        <div class="eyebrow">BẢN ĐỒ 12 THÌ</div>
+        <h2>Nhìn một lần để biết mỗi thì nằm ở đâu</h2>
+        <div class="tense-matrix-head"><span></span><b>Simple</b><b>Continuous</b><b>Perfect</b><b>Perfect Continuous</b></div>
+        <div class="tense-matrix">${matrixRows}</div>
+        <p class="muted">Chạm vào một ô để nhảy tới phần giải thích chi tiết.</p>
+      </section>
+  
+      <section class="book-section">
+        <div class="eyebrow">QUY TẮC CHỌN THÌ</div>
+        <h2>4 câu hỏi giúp bạn chọn thì nhanh</h2>
+        <div class="tense-decision">${decision}</div>
+        <div class="green-box"><b>Điểm quan trọng:</b> đừng chọn thì chỉ vì nhìn thấy một từ như <i>for</i>, <i>since</i>, <i>yesterday</i>. Trước tiên hãy hiểu người nói đang nhìn hành động ở mốc nào và theo góc nhìn nào.</div>
+      </section>
+  
+      <section class="tenses-detail-section">
+        <div class="section-title-row"><div><span class="landing-kicker">12 TENSES — DETAILED</span><h2>Giải thích từng thì</h2></div><p>Mở từng mục. Học theo thứ tự ưu tiên thay vì cố thuộc hết trong một ngày.</p></div>
+        ${tenseDetails}
+      </section>
+  
+      <section class="book-section">
+        <div class="eyebrow">NHỮNG CẶP DỄ NHẦM NHẤT</div>
+        <h2>Hiểu bằng đối chiếu, không học bằng dịch từng chữ</h2>
+        <div class="tense-contrast-grid">${contrastCards}</div>
+      </section>
+  
+      <section class="book-section">
+        <div class="eyebrow">NHỚ BẰNG HÌNH ẢNH</div>
+        <h2>5 câu chốt để không bị rối</h2>
+        <div class="tense-memory-grid">${(G.memoryRules||[]).map((x,index)=>`<div><b>${index+1}</b><span>${esc(x)}</span></div>`).join('')}</div>
+      </section>
+  
+      <section class="book-section">
+        <div class="eyebrow">ỨNG DỤNG NGAY</div>
+        <h2>10 câu luyện chọn thì</h2>
+        <p>Đọc câu tiếng Việt, tự nói tiếng Anh và tự trả lời: <b>mốc thời gian nào?</b> + <b>cách nhìn nào?</b> Sau đó mới mở đáp án.</p>
+        <div class="tense-practice-list">${practice}</div>
+      </section>
+  
+      <section class="book-section tenses-finish">
+        <h2>Cách học trang này hiệu quả nhất</h2>
+        <p>Ngày đầu chỉ học 4 ý: Simple, Continuous, Perfect, Perfect Continuous. Sau đó học 6 thì ưu tiên. Mỗi thì hãy tự tạo 3 câu thật về cuộc sống của bạn. Khi đã dùng được 6 thì chính, quay lại học các thì còn lại.</p>
+        <div class="hero-actions"><button class="primary-button" data-go="patterns">Quay lại các mẫu câu</button><button class="secondary-button" data-tense-jump="tense-core">Xem lại cách chọn thì</button></div>
+      </section>
+    `;
+  
+    bindGenericRoutes();
+    hydrateSentences($('#mainView'));
+  
+    $('[data-tense-jump]').forEach(btn=>btn.onclick=()=>{
+      const target=document.getElementById(btn.dataset.tenseJump);
+      target?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    $('[data-tense-target]').forEach(btn=>btn.onclick=()=>{
+      const detail=document.getElementById('tense-'+btn.dataset.tenseTarget);
+      if(detail){
+        detail.open=true;
+        setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'start'}),30);
+      }
+    });
   }
 
   async function renderLesson(id,view='overview'){
