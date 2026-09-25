@@ -587,11 +587,11 @@
     bindGenericRoutes();
     hydrateSentences($('#mainView'));
   
-    $('[data-tense-jump]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-tense-jump]').forEach(btn=>btn.onclick=()=>{
       const target=document.getElementById(btn.dataset.tenseJump);
       target?.scrollIntoView({behavior:'smooth',block:'start'});
     });
-    $('[data-tense-target]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-tense-target]').forEach(btn=>btn.onclick=()=>{
       const detail=document.getElementById('tense-'+btn.dataset.tenseTarget);
       if(detail){
         detail.open=true;
