@@ -6,6 +6,7 @@ window.PLATFORM_DATA = {
     { code:"▶", route:"practice", title:"Practice", subtitle:"Listen · Speak · Review", description:"Nghe câu, lặp lại, nói bằng micro, làm bài Việt → Anh và theo dõi tiến độ.", accent:"orange" }
   ],
   utilityModules: [
+    { lang:"English", tag:"Speaking", title:"Shadowing theo bài học", desc:"Chọn bài, luyện theo 3 cấp độ và dùng lại chính audio của các câu đã học.", route:"shadowing", accent:"green" },
     { lang:"English", tag:"Grammar", title:"Các thì trong tiếng Anh", desc:"Bản đồ 12 thì, cách chọn thì, ví dụ thực tế, lỗi hay gặp và luyện phản xạ.", route:"tenses", accent:"purple" },
     { lang:"Practice", tag:"Có sẵn", title:"Speaking & Review", desc:"Quiz, audio, flashcard và luyện nói.", route:"practice", accent:"orange" }
   ]
