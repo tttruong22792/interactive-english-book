@@ -1670,7 +1670,7 @@
     `;
   
     const refreshSummary=()=>{
-      const ids=$('[data-shadow-lesson]:checked').map(x=>x.dataset.shadowLesson);
+      const ids=$$('[data-shadow-lesson]:checked').map(x=>x.dataset.shadowLesson);
       const lessons=shadowLessons.filter(x=>ids.includes(x.id));
       const total=shadowItemsFromLessons(lessons).length;
       const size=$('#shadowSize').value;
@@ -1682,7 +1682,7 @@
     refreshSummary();
   
     $('#startShadowing').onclick=()=>{
-      const selectedIds=$('[data-shadow-lesson]:checked').map(x=>x.dataset.shadowLesson);
+      const selectedIds=$$('[data-shadow-lesson]:checked').map(x=>x.dataset.shadowLesson);
       if(!selectedIds.length){toast('Hãy chọn ít nhất một bài.');return;}
       const lessons=shadowLessons.filter(x=>selectedIds.includes(x.id));
       let items=shadowItemsFromLessons(lessons);
