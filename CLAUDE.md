@@ -70,6 +70,7 @@ Use:
 - `data/content-index.js` for lesson metadata
 - `data/content-loader.js` for lazy loading
 - `data/english/core-dictionary.js` for shared English word/phrase fallback
+- `data/english/tenses.js` for the dedicated English tenses guide
 - `data/english/patterns/*.js` for English pattern content
 - `data/japanese/**` for Japanese content
 - `data/templates/` when creating new lessons
@@ -112,3 +113,15 @@ SECURITY RULE:
 Never place `OPENAI_API_KEY` in frontend code, committed files, screenshots, logs, or documentation. The local key belongs only in the ignored `.env.local` file or a secure server environment variable.
 
 For a future hosted/mobile-anywhere version, keep the same frontend contract and point `window.LANGUAGE_STUDIO_TTS_ENDPOINT` at a secure server-side/edge endpoint.
+
+
+## English tenses guide
+
+Route: `#tenses`
+
+Keep the tenses page beginner-first:
+- teach the mental model before formulas;
+- organize as 3 time references × 4 aspect views;
+- prioritize high-frequency tenses before rare forms;
+- examples should be practical, listenable, and dictionary-covered;
+- do not turn tense examples into pattern-lesson quiz items.
