@@ -1373,6 +1373,350 @@
     flashIndex=0; const draw=()=>{const x=items[flashIndex%items.length];$('#vocabArea').innerHTML=`<div class="flashcard"><div><div class="front">${esc(x.term)}</div><div class="ipa">${esc(x.ipa||'')}</div><div id="flashBack" class="back hidden"><strong>${esc(x.meaning||'')}</strong>${x.example?`<p>${esc(x.example)}</p>`:''}</div><div class="quiz-actions" style="justify-content:center;margin-top:22px"><button id="flashSpeak" class="secondary-button">🔊 Nghe</button><button id="flashReveal" class="primary-button">Hiện nghĩa</button><button id="flashNext" class="secondary-button">Từ tiếp theo →</button></div></div></div>`;$('#flashSpeak').onclick=()=>speak(x.term);$('#flashReveal').onclick=()=>$('#flashBack').classList.toggle('hidden');$('#flashNext').onclick=()=>{flashIndex=(flashIndex+1)%items.length;draw();};};draw();
   }
 
+  function shadowItemsFromLessons(lessons){
+    const out=[];
+    const seen=new Set();
+    (lessons||[]).forEach(lesson=>{
+      collectLessonSentences(lesson).forEach((item,index)=>{
+        const vi=(item.vi||'').trim();
+        if(/^(đọc|ipa|nói chậm|nói tự nhiên)/i.test(vi)) return;
+        const key=normalizeText(item.en);
+        if(!key||seen.has(key)) return;
+        seen.add(key);
+        out.push({
+          en:item.en,
+          vi:item.vi||'',
+          lessonId:lesson.id,
+          lessonTitle:lesson.title||'',
+          lessonOrder:Number(lesson.order||0),
+          source:item.source||'',
+          index
+        });
+      });
+    });
+    return out;
+  }
+
+  function shadowKey(item){
+    return `${item.lessonId}:${normalizeText(item.en)}`;
+  }
+
+  function shadowPauseMs(item){
+    const words=(String(item?.en||'').match(/[A-Za-z]+(?:[’'][A-Za-z]+)?/g)||[]).length;
+    return Math.max(1800,Math.min(7000,700+words*420));
+  }
+
+  function shadowModeHelp(mode){
+    if(mode==='repeat') return 'Nghe hết câu → chờ → bạn nói lại. Phù hợp khi mới bắt đầu.';
+    if(mode==='blind') return 'Không nhìn câu tiếng Anh. Nghe và shadow theo âm thanh để ép tai + miệng làm việc.';
+    return 'Nói gần như đồng thời với audio. Đừng chờ câu kết thúc mới nói.';
+  }
+
+  function shadowPlayerHTML(){
+    return `<section id="shadowWorkspace" class="shadow-workspace hidden">
+      <div class="shadow-workspace-head">
+        <div><span class="eyebrow">SHADOWING SESSION</span><h2 id="shadowSessionTitle">Buổi luyện</h2></div>
+        <div class="shadow-session-progress"><strong id="shadowCounter">0/0</strong><span id="shadowLessonLabel"></span></div>
+      </div>
+      <div class="shadow-progress-track"><i id="shadowProgressBar"></i></div>
+  
+      <div id="shadowStage" class="shadow-stage">
+        <div class="shadow-stage-top">
+          <span id="shadowModeBadge" class="shadow-mode-badge">Shadowing</span>
+          <span id="shadowPassText">Sẵn sàng</span>
+        </div>
+        <div id="shadowCurrentCard" class="shadow-current-card"></div>
+        <div id="shadowCue" class="shadow-cue"></div>
+        <div class="shadow-controls">
+          <button id="shadowPrev" class="secondary-button">← Câu trước</button>
+          <button id="shadowPlay" class="primary-button">▶ Bắt đầu</button>
+          <button id="shadowOnce" class="secondary-button">🔊 Nghe câu này</button>
+          <button id="shadowNext" class="secondary-button">Câu sau →</button>
+        </div>
+        <div class="shadow-visibility">
+          <label><input id="shadowShowEn" type="checkbox"> Hiện tiếng Anh</label>
+          <label><input id="shadowShowVi" type="checkbox"> Hiện tiếng Việt</label>
+        </div>
+      </div>
+  
+      <div class="shadow-queue-wrap">
+        <div class="section-title-row"><div><h3>Các câu tiếp theo</h3><p>Chạm vào một câu để nhảy tới câu đó.</p></div></div>
+        <div id="shadowQueue" class="shadow-queue"></div>
+      </div>
+    </section>`;
+  }
+
+  function applyShadowVisibility(){
+    const stage=$('#shadowStage');
+    if(!stage||!shadowSession.settings) return;
+    stage.classList.toggle('hide-shadow-en',!shadowSession.settings.showEn);
+    stage.classList.toggle('hide-shadow-vi',!shadowSession.settings.showVi);
+    if($('#shadowShowEn')) $('#shadowShowEn').checked=!!shadowSession.settings.showEn;
+    if($('#shadowShowVi')) $('#shadowShowVi').checked=!!shadowSession.settings.showVi;
+  }
+
+  function updateShadowPlayer(){
+    if(!shadowSession.items.length) return;
+    const item=shadowSession.items[shadowSession.index];
+    const total=shadowSession.items.length;
+    const pct=Math.round(((shadowSession.index+1)/total)*100);
+    $('#shadowCounter').textContent=`${shadowSession.index+1}/${total}`;
+    $('#shadowLessonLabel').textContent=`Mẫu ${String(item.lessonOrder||'').padStart(2,'0')} · ${item.lessonTitle}`;
+    $('#shadowProgressBar').style.width=pct+'%';
+    $('#shadowModeBadge').textContent=shadowSession.settings.mode==='repeat'?'Nghe & nhại':shadowSession.settings.mode==='blind'?'Blind shadowing':'Shadowing có chữ';
+    $('#shadowCue').textContent=shadowModeHelp(shadowSession.settings.mode);
+  
+    const holder=$('#shadowCurrentCard');
+    holder.innerHTML=`
+      <div class="shadow-english-wrap">
+        <button id="shadowCardPlay" class="speaker" aria-label="Nghe câu">🔊</button>
+        <div class="english-text shadow-english-text" data-en="${escAttr(item.en)}"></div>
+      </div>
+      <div class="shadow-vi" data-vi-only>${esc(item.vi||'')}</div>
+    `;
+    hydrateSentences(holder);
+    $('#shadowCardPlay').onclick=()=>playShadowCurrentOnce();
+  
+    $('#shadowPrev').disabled=shadowSession.index<=0;
+    $('#shadowNext').disabled=shadowSession.index>=total-1;
+    $('#shadowPlay').textContent=shadowSession.playing?'■ Dừng':'▶ Bắt đầu';
+    $('#shadowPassText').textContent=shadowSession.playing?'Đang luyện':'Sẵn sàng';
+  
+    const queue=shadowSession.items.slice(Math.max(0,shadowSession.index-1),Math.min(total,shadowSession.index+5));
+    $('#shadowQueue').innerHTML=queue.map(x=>{
+      const absolute=shadowSession.items.indexOf(x);
+      const done=!!state.shadowed[shadowKey(x)];
+      return `<button class="shadow-queue-item ${absolute===shadowSession.index?'active':''} ${done?'done':''}" data-shadow-index="${absolute}">
+        <span>${absolute+1}</span><div><b>${esc(x.en)}</b><small>${esc(x.vi||'')}</small></div>${done?'<em>✓</em>':''}
+      </button>`;
+    }).join('');
+    $('[data-shadow-index]').forEach(btn=>btn.onclick=()=>{
+      stopShadowing();
+      shadowSession.index=Number(btn.dataset.shadowIndex)||0;
+      updateShadowPlayer();
+    });
+  
+    applyShadowVisibility();
+  }
+
+  function markShadowed(item){
+    const key=shadowKey(item);
+    if(state.shadowed[key]) return;
+    state.shadowed[key]=true;
+    saveState();
+  }
+
+  function stopShadowing(){
+    stopSpeech(true);
+    shadowSession.playing=false;
+    if($('#shadowPlay')) $('#shadowPlay').textContent='▶ Bắt đầu';
+    if($('#shadowPassText')) $('#shadowPassText').textContent='Đã dừng';
+  }
+
+  async function playShadowCurrentOnce(){
+    if(!shadowSession.items.length) return;
+    stopShadowing();
+    const item=shadowSession.items[shadowSession.index];
+    const token=++sequenceRun;
+    stopSpeech(false);
+    const el=$('.shadow-english-text');
+    await speak(item.en,el,Number(shadowSession.settings.rate)||0.88,token);
+    if(token===sequenceRun) markShadowed(item);
+    updateShadowPlayer();
+  }
+
+  async function playShadowSequence(){
+    if(!shadowSession.items.length) return;
+    if(shadowSession.playing){ stopShadowing(); return; }
+  
+    const token=++sequenceRun;
+    stopSpeech(false);
+    shadowSession.playing=true;
+    updateShadowPlayer();
+  
+    while(shadowSession.index<shadowSession.items.length && token===sequenceRun){
+      const item=shadowSession.items[shadowSession.index];
+      updateShadowPlayer();
+      const repeat=Math.max(1,Number(shadowSession.settings.repeat)||1);
+  
+      for(let round=0;round<repeat;round++){
+        if(token!==sequenceRun) return;
+        $('#shadowPassText').textContent=`Lần ${round+1}/${repeat}`;
+        const el=$('.shadow-english-text');
+        await speak(item.en,el,Number(shadowSession.settings.rate)||0.88,token);
+        if(token!==sequenceRun) return;
+        markShadowed(item);
+  
+        if(shadowSession.settings.mode==='repeat'){
+          $('#shadowPassText').textContent='Đến lượt bạn nói';
+          await wait(shadowPauseMs(item));
+        }else{
+          await wait(420);
+        }
+      }
+  
+      if(token!==sequenceRun) return;
+      if(shadowSession.index>=shadowSession.items.length-1) break;
+      shadowSession.index++;
+      updateShadowPlayer();
+      await wait(350);
+    }
+  
+    if(token===sequenceRun){
+      shadowSession.playing=false;
+      updateShadowPlayer();
+      toast('Hoàn thành buổi shadowing.');
+    }
+  }
+
+  async function renderShadowing(){
+    L=null;
+    setHeader('English › Shadowing','Shadowing');
+  
+    const metas=(STORE?.list({language:'en',category:'patterns'})||[])
+      .filter(item=>item.status==='available'&&item.source)
+      .sort((a,b)=>(a.order||0)-(b.order||0));
+    shadowLessons=await Promise.all(metas.map(item=>ensureContent(item.id)));
+  
+    const savedIds=new Set(state.shadowingSettings?.selectedLessonIds||[]);
+    if(!savedIds.size){
+      const visited=shadowLessons.filter(lesson=>Number(state.lessonVisitsByLesson?.[lesson.id]||0)>0);
+      const fallback=(visited.length?visited[visited.length-1]:shadowLessons[0]);
+      if(fallback) savedIds.add(fallback.id);
+    }
+  
+    const lessonCards=shadowLessons.map(lesson=>{
+      const items=shadowItemsFromLessons([lesson]);
+      const done=items.filter(item=>state.shadowed[shadowKey(item)]).length;
+      return `<label class="shadow-lesson-card">
+        <input type="checkbox" data-shadow-lesson="${escAttr(lesson.id)}" ${savedIds.has(lesson.id)?'checked':''}>
+        <span class="shadow-lesson-number">${String(lesson.order||'').padStart(2,'0')}</span>
+        <span><strong>${esc(lesson.title||'')}</strong><small>${items.length} câu · đã shadow ${done}</small></span>
+      </label>`;
+    }).join('');
+  
+    const s=state.shadowingSettings||defaults.shadowingSettings;
+  
+    $('#mainView').innerHTML=`
+      <section class="page-hero shadowing-hero">
+        <div class="eyebrow">LISTEN · SPEAK · MATCH THE RHYTHM</div>
+        <h1>Shadowing theo chính bài bạn đang học</h1>
+        <p>Không cần thêm nội dung mới. Shadowing lấy trực tiếp câu trong từng mẫu câu, dùng lại audio đã có trên Supabase và cache trên điện thoại.</p>
+      </section>
+  
+      <section class="book-section shadow-method">
+        <div class="section-title-row"><div><h2>Cách luyện tôi khuyên dùng</h2><p>Người mới không nên nhảy thẳng vào shadowing không chữ.</p></div></div>
+        <div class="shadow-method-grid">
+          <div><b>1</b><strong>Nghe & nhại</strong><span>Nghe hết câu, chờ một nhịp rồi nói lại. Dùng khi câu còn mới.</span></div>
+          <div><b>2</b><strong>Shadow có chữ</strong><span>Nói gần như đồng thời với audio, nhìn tiếng Anh để bắt nhịp và nối âm.</span></div>
+          <div><b>3</b><strong>Shadow không chữ</strong><span>Ẩn tiếng Anh + tiếng Việt, chỉ nghe và nói theo. Đây là vòng kiểm tra thật.</span></div>
+        </div>
+        <div class="green-box"><b>Khuyến nghị:</b> mỗi buổi chỉ 10–20 câu, lặp 2 lần/câu. Cùng một bài nên shadow nhiều ngày thay vì cố chạy hết hàng chục câu một lần.</div>
+      </section>
+  
+      <section class="book-section">
+        <div class="section-title-row"><div><h2>1. Chọn bài</h2><p>Có thể chọn một bài để học sâu hoặc chọn nhiều bài để trộn.</p></div></div>
+        <div class="shadow-lesson-grid">${lessonCards}</div>
+      </section>
+  
+      <section class="book-section">
+        <div class="section-title-row"><div><h2>2. Thiết lập buổi luyện</h2><p>Mặc định được tối ưu cho người mới.</p></div></div>
+        <div class="shadow-settings-grid">
+          <label>Chế độ
+            <select id="shadowMode">
+              <option value="repeat" ${s.mode==='repeat'?'selected':''}>Nghe & nhại</option>
+              <option value="shadow" ${s.mode==='shadow'?'selected':''}>Shadowing có chữ</option>
+              <option value="blind" ${s.mode==='blind'?'selected':''}>Shadowing không chữ</option>
+            </select>
+          </label>
+          <label>Số câu
+            <select id="shadowSize">
+              <option value="10" ${s.size==='10'?'selected':''}>10 câu</option>
+              <option value="20" ${s.size==='20'?'selected':''}>20 câu</option>
+              <option value="all" ${s.size==='all'?'selected':''}>Toàn bộ</option>
+            </select>
+          </label>
+          <label>Thứ tự
+            <select id="shadowOrder">
+              <option value="sequential" ${s.order==='sequential'?'selected':''}>Theo bài</option>
+              <option value="untrained" ${s.order==='untrained'?'selected':''}>Câu chưa luyện trước</option>
+              <option value="random" ${s.order==='random'?'selected':''}>Random</option>
+            </select>
+          </label>
+          <label>Lặp mỗi câu
+            <select id="shadowRepeat">
+              <option value="1" ${Number(s.repeat)===1?'selected':''}>1 lần</option>
+              <option value="2" ${Number(s.repeat)===2?'selected':''}>2 lần</option>
+              <option value="3" ${Number(s.repeat)===3?'selected':''}>3 lần</option>
+            </select>
+          </label>
+          <label>Tốc độ
+            <select id="shadowRate">
+              <option value="0.68" ${Number(s.rate)===0.68?'selected':''}>Chậm</option>
+              <option value="0.88" ${Number(s.rate)===0.88?'selected':''}>Vừa</option>
+              <option value="1" ${Number(s.rate)===1?'selected':''}>Tự nhiên</option>
+            </select>
+          </label>
+        </div>
+        <div id="shadowSetupSummary" class="shadow-setup-summary"></div>
+        <button id="startShadowing" class="primary-button shadow-start-button">Bắt đầu buổi shadowing →</button>
+      </section>
+  
+      ${shadowPlayerHTML()}
+    `;
+  
+    const refreshSummary=()=>{
+      const ids=$('[data-shadow-lesson]:checked').map(x=>x.dataset.shadowLesson);
+      const lessons=shadowLessons.filter(x=>ids.includes(x.id));
+      const total=shadowItemsFromLessons(lessons).length;
+      const size=$('#shadowSize').value;
+      const n=size==='all'?total:Math.min(total,Number(size)||10);
+      $('#shadowSetupSummary').textContent=`${lessons.length} bài · ${total} câu có sẵn · buổi này ${n} câu`;
+    };
+  
+    $('[data-shadow-lesson],#shadowSize').forEach(el=>el.onchange=refreshSummary);
+    refreshSummary();
+  
+    $('#startShadowing').onclick=()=>{
+      const selectedIds=$('[data-shadow-lesson]:checked').map(x=>x.dataset.shadowLesson);
+      if(!selectedIds.length){toast('Hãy chọn ít nhất một bài.');return;}
+      const lessons=shadowLessons.filter(x=>selectedIds.includes(x.id));
+      let items=shadowItemsFromLessons(lessons);
+  
+      const settings={
+        mode:$('#shadowMode').value,
+        order:$('#shadowOrder').value,
+        size:$('#shadowSize').value,
+        repeat:Number($('#shadowRepeat').value)||2,
+        rate:Number($('#shadowRate').value)||0.88,
+        showEn:$('#shadowMode').value!=='blind',
+        showVi:$('#shadowMode').value==='repeat',
+        selectedLessonIds:selectedIds
+      };
+  
+      if(settings.order==='random') items=shuffled(items);
+      else if(settings.order==='untrained'){
+        items=[...items].sort((a,b)=>Number(!!state.shadowed[shadowKey(a)])-Number(!!state.shadowed[shadowKey(b)]));
+      }
+      if(settings.size!=='all') items=items.slice(0,Number(settings.size)||10);
+  
+      state.shadowingSettings=settings;
+      saveState();
+      shadowSession={items,index:0,playing:false,settings};
+      $('#shadowWorkspace').classList.remove('hidden');
+      $('#shadowSessionTitle').textContent=`${items.length} câu · ${settings.mode==='repeat'?'Nghe & nhại':settings.mode==='blind'?'Blind shadowing':'Shadowing có chữ'}`;
+      updateShadowPlayer();
+      $('#shadowWorkspace').scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  
+    $('#shadowPlay').onclick=playShadowSequence;
+    $('#shadowOnce').onclick=playShadowCurrentOnce;
+    $('#shadowPrev').onclick=()=>{stopShadowing();shadowSession.index=Math.max(0,shadowSession.index-1);updateShadowPlayer();};
+    $('#shadowNext').onclick=()=>{stopShadowing();shadowSession.index=Math.min(shadowSession.items.length-1,shadowSession.index+1);updateShadowPlayer();};
+    $('#shadowShowEn').onchange=e=>{if(!shadowSession.settings)return;shadowSession.settings.showEn=e.target.checked;state.shadowingSettings.showEn=e.target.checked;saveState();applyShadowVisibility();};
+    $('#shadowShowVi').onchange=e=>{if(!shadowSession.settings)return;shadowSession.settings.showVi=e.target.checked;state.shadowingSettings.showVi=e.target.checked;saveState();applyShadowVisibility();};
+  }
+
   async function renderPracticeHub(){
     L=null;
     setHeader('Practice','Practice Center');
