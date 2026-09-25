@@ -141,3 +141,20 @@ data/english/core-dictionary.js
 ```
 
 Phrase/collocation chips have their own listen button. They are available to cloud TTS but are intentionally not added to the lesson's **Toàn bộ câu trong bài** or quiz list.
+
+
+## English tenses guide
+
+A dedicated grammar page is available at:
+
+```text
+#tenses
+```
+
+Content is stored in:
+
+```text
+data/english/tenses.js
+```
+
+The page teaches the common 12-tense framework as **3 time references × 4 aspect views**, prioritizes the tenses needed first for everyday communication, includes listenable examples, common mistakes, contrasts, and immediate practice.
