@@ -75,7 +75,7 @@
   ];
 
   function cloudSlotKey(slotId){
-    return String(L.id||'tv1-lesson').replace(/-v\\d+$/,'')+':'+slotId;
+    return String(L.id||'tv1-lesson').replace(/-v\d+$/,'')+':'+slotId;
   }
 
   function ownerStorageKey(slotId){
