@@ -1826,8 +1826,8 @@
       return {key:'p:'+normalized,term,ipa:'',meaning:'Cụm này chưa có nghĩa cố định trong từ điển, nhưng bạn có thể xem nghĩa từng từ bên dưới.',example:'',type:'phrase',breakdown:words};
     }
     const w=(L.dictionary&&L.dictionary[normalized]) || (window.CORE_DICTIONARY&&window.CORE_DICTIONARY[normalized]);
-    if(!w) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ này chưa có trong từ điển chung.',example:'',type:'word'};
-    return {key:'w:'+normalized,term,ipa:w[0],meaning:w[1],example:w[2],type:'word'};
+    if(!w) return {key:'w:'+normalized,term,speechText:normalized,ipa:'',meaning:'Từ này chưa có trong từ điển chung.',example:'',type:'word'};
+    return {key:'w:'+normalized,term,speechText:normalized,ipa:w[0],meaning:w[1],example:w[2],type:'word'};
   }
   function openLookup(term,type='word'){
     currentLookup=lookupData(term,type); const p=currentLookup;
@@ -1857,7 +1857,7 @@
   document.addEventListener('mouseup',()=>setTimeout(detectSelection,20));
   document.addEventListener('touchend',()=>setTimeout(detectSelection,120));
   $('#menuBtn').onclick=openSidebar;$('#drawerShade').onclick=closeSidebar;
-  $('#closePopoverBtn').onclick=closePopover;$('#speakWordBtn').onclick=()=>currentLookup&&speak(currentLookup.term);$('#saveWordBtn').onclick=saveCurrentLookup;
+  $('#closePopoverBtn').onclick=closePopover;$('#speakWordBtn').onclick=()=>currentLookup&&speak(currentLookup.speechText||currentLookup.term);$('#saveWordBtn').onclick=saveCurrentLookup;
   $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{if(!L)await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
   $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz=makeQuizSession([], 'sequential', null, 'lesson');render();toast('Đã xóa dữ liệu học.');}};
