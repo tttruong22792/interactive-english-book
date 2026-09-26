@@ -134,6 +134,8 @@ let cameraTarget=new THREE.Vector3();
 let activeStageForCamera=0;
 let scratchUntil=0;
 let voiceIdleTimer=null;
+let dewRaf=null;
+let activeFinalIndex=null;
 let recorder=null,recordChunks=[],recordStream=null,recordingGate=null;
 let dragGhost=null,dragSource=null;
 
@@ -454,7 +456,7 @@ function openStage(index=state.current){
   renderStage(index);
   els.overlay.classList.remove('hidden');
 }
-function closeStage(){clearVoiceIdle();stopRecordingIfNeeded();els.overlay.classList.add('hidden');}
+function closeStage(){clearVoiceIdle();if(dewRaf){cancelAnimationFrame(dewRaf);dewRaf=null;}activeFinalIndex=null;stopRecordingIfNeeded();els.overlay.classList.add('hidden');}
 function footer(canComplete,label='Qua màn',note='Chỉ qua màn khi bé đã tự giải và tự đọc.'){
   els.challengeFooter.innerHTML='<small>'+esc(note)+'</small><button id="completeStageBtn" class="primary" '+(canComplete?'':'disabled')+'>'+esc(label)+'</button>';
   const b=$('#completeStageBtn');if(b)b.onclick=()=>completeStage(state.current);
@@ -577,18 +579,20 @@ function dewMarkup(done){
   (done?'<div class="blend-result">💧 Giọt sương đã vào bình nước.</div>':voiceGateMarkup({id:'stage3dew',target:'sớm',compact:true,segments:'<span class="seg-onset">s</span><span class="seg-rime">ơm</span><span class="seg-tone">sắc</span>',steps:['s + ơm → sơm','sơm + sắc → sớm'],spell:'sờ ... ơm ... sắc'}));
 }
 function bindDewChallenge(){
-  let start=performance.now(),raf;
+  if(dewRaf){cancelAnimationFrame(dewRaf);dewRaf=null;}
+  let start=performance.now();
   const drop=$('#dewDrop'),timer=$('#dewTimer');
   const tick=()=>{
-    if(state.voicePassed.stage3dew)return;
+    if(state.voicePassed.stage3dew){dewRaf=null;return;}
     const elapsed=(performance.now()-start)/1000;
     const remain=Math.max(0,10-elapsed);
     if(timer)timer.textContent=remain.toFixed(1)+' s';
     if(drop)drop.style.top=(20+Math.min(1,elapsed/10)*105)+'px';
     if(remain<=0){start=performance.now();if(drop)drop.style.top='20px';toast('Giọt sương bay lên lại. Thử thêm lần nữa nhé!');}
-    raf=requestAnimationFrame(tick);
-  };raf=requestAnimationFrame(tick);
-  bindVoiceGate({id:'stage3dew',target:'sớm',onPass:()=>{cancelAnimationFrame(raf);addCollection(['sớm']);save();renderStage3();}});
+    dewRaf=requestAnimationFrame(tick);
+  };
+  dewRaf=requestAnimationFrame(tick);
+  bindVoiceGate({id:'stage3dew',target:'sớm',onPass:()=>{if(dewRaf){cancelAnimationFrame(dewRaf);dewRaf=null;}addCollection(['sớm']);save();renderStage3();}});
 }
 
 function renderStage4(){
@@ -635,29 +639,32 @@ function bindWand(key,words){
 function renderFinal(){
   const doneCount=FINAL_SENTENCES.filter((_,i)=>state.finalRead[i]).length;
   if(doneCount===FINAL_SENTENCES.length){
+    activeFinalIndex=null;
     renderSummary();return;
   }
   els.challengeBody.innerHTML=
     '<div class="step-title"><span>🏆</span><div><h3>Đọc trọn câu chuyện</h3><small>Mỗi câu là một cánh hoa. Không có giọng đọc mẫu.</small></div></div>'+
     '<div class="final-reading">'+FINAL_SENTENCES.map((s,i)=>
-      '<section class="final-sentence '+(state.finalRead[i]?'done':'')+'"><div class="final-sentence-head"><b>Câu '+(i+1)+'</b><small>'+(state.finalRead[i]?'✅ Đã tự đọc':'Chưa mở')+'</small></div><p>'+esc(s)+'</p>'+(state.finalRead[i]?'':'<button class="secondary final-open" data-final="'+i+'">🎙️ Đọc câu này</button>')+'</section>'
+      '<section class="final-sentence '+(state.finalRead[i]?'done':'')+'"><div class="final-sentence-head"><b>Câu '+(i+1)+'</b><small>'+(state.finalRead[i]?'✅ Đã tự đọc':'Chưa đọc')+'</small></div><p>'+esc(s)+'</p>'+(state.finalRead[i]?'':'<button class="secondary final-open" data-final="'+i+'">🎙️ Đọc câu này</button>')+'</section>'
     ).join('')+'</div>'+
-    '<div id="finalVoiceArea"></div>';
-  $$('[data-final]').forEach(b=>b.onclick=()=>openFinalVoice(Number(b.dataset.final)));
+    '<div id="finalVoiceArea">'+(activeFinalIndex!==null?finalVoiceMarkup(activeFinalIndex):'')+'</div>';
+  $$('[data-final]').forEach(b=>b.onclick=()=>{activeFinalIndex=Number(b.dataset.final);renderFinal();setTimeout(()=>$('#finalVoiceArea')?.scrollIntoView({behavior:'smooth',block:'center'}),30);});
+  if(activeFinalIndex!==null)bindFinalVoice(activeFinalIndex);
   footer(false,'🏆 Hoàn thành','Phải tự đọc đủ 5 câu. Cây chỉ nở hoa khi toàn bài đã được đọc.');
 }
-function openFinalVoice(i){
-  const area=$('#finalVoiceArea');
-  area.innerHTML=voiceGateMarkup({
+function finalVoiceMarkup(i){
+  return voiceGateMarkup({
     id:'final'+i,
     target:FINAL_SENTENCES[i],
     segments:'<span class="seg-word">'+esc(FINAL_SENTENCES[i])+'</span>',
     steps:['Nếu vấp, tìm đúng tiếng khó trong câu rồi tách âm đầu + vần + thanh.','Đọc lại cả câu sau khi xử lý tiếng khó.'],
     spell:finalSpellAid(i)
   });
-  area.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function bindFinalVoice(i){
   bindVoiceGate({id:'final'+i,target:FINAL_SENTENCES[i],onPass:()=>{
-    state.finalRead[i]=true;save();chime();if(Object.values(state.finalRead).filter(Boolean).length>=5){renderSummary();}else renderFinal();
+    state.finalRead[i]=true;activeFinalIndex=null;save();chime();
+    if(Object.values(state.finalRead).filter(Boolean).length>=5){renderSummary();}else renderFinal();
   }});
 }
 function finalSpellAid(i){
