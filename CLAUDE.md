@@ -97,8 +97,9 @@ When adding a new English lesson:
 - Pattern 06: `data/english/patterns/006.js`
 - Pattern 07: `data/english/patterns/007.js`
 - Pattern 08: `data/english/patterns/008.js`
+- Pattern 09: `data/english/patterns/009.js`
 
-Patterns 02–08 demonstrate the reusable `sectioned-pattern` layout.
+Patterns 02–09 demonstrate the reusable `sectioned-pattern` layout.
 
 
 ## AI Voice architecture
@@ -127,3 +128,12 @@ Keep the tenses page beginner-first:
 - prioritize high-frequency tenses before rare forms;
 - examples should be practical, listenable, and dictionary-covered;
 - do not turn tense examples into pattern-lesson quiz items.
+
+
+## Product copy rule
+
+Treat Language Studio as a product for many learners, not a website personalized to one individual.
+
+Do not add hard-coded personal names, family details, employers, locations, vehicles, private projects, or account-specific life context to product copy or lesson examples unless the lesson source explicitly requires a broadly reusable example.
+
+Home/marketing copy should describe learner outcomes and product capabilities, not the history of how the site was built.
