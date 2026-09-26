@@ -709,19 +709,166 @@ function renderRimeMission(){
   setMissionFooter({canComplete:Object.keys(d.rimeDone).length>=2,note:'Chỉ cần luyện đúng những nhà vần con còn yếu.'});
 }
 
-function renderQuickMission(){
-  const d=state.missionData;
-  els.missionBody.innerHTML=`<div class="quiz-stack">${L.quickGame.map((q,i)=>`<section class="quiz-item" data-i="${i}"><b>${i+1}. ${esc(q.prompt)}</b><div class="quiz-choices">${q.choices.map(c=>{const ch=d.quickAnswers[i];const cls=ch===c?(c===q.answer?'correct':'wrong'):'';return `<button class="quiz-choice ${cls}" data-c="${encodeURIComponent(c)}">${esc(c)}</button>`}).join('')}</div></section>`).join('')}</div>`;
-  $$('.quiz-item').forEach(card=>{
-    const i=Number(card.dataset.i),q=L.quickGame[i];
-    $$('.quiz-choice',card).forEach(b=>b.onclick=()=>{
-      const c=decodeURIComponent(b.dataset.c);d.quickAnswers[i]=c;
-      if(c===q.answer){chime();state.stars+=d.quickAnswers['star'+i]?0:1;d.quickAnswers['star'+i]=true;}else chime('bad');
-      saveState();renderQuickMission();
+
+const ASSEMBLY_PUZZLES=[
+  {id:'hat',word:'hạt',context:'Nhặt hạt giống',parts:{onset:'h',rime:'at',tone:'nặng'},options:{onset:['h','nh','t'],rime:['at','ăt','an'],tone:['nặng','sắc','hỏi']}},
+  {id:'nho',word:'nhỏ',context:'Tìm bông hoa nhỏ',parts:{onset:'nh',rime:'o',tone:'hỏi'},options:{onset:['n','nh','ng'],rime:['o','ô','ơ'],tone:['hỏi','sắc','ngã']}},
+  {id:'duoc',word:'được',context:'Mở cổng vào vườn',parts:{onset:'đ',rime:'ươc',tone:'nặng'},options:{onset:['d','đ','t'],rime:['ươc','ương','uông'],tone:['nặng','huyền','sắc']}},
+  {id:'suong',word:'sương',context:'Gom giọt sương',parts:{onset:'s',rime:'ương',tone:'ngang'},options:{onset:['s','x','r'],rime:['ương','uông','ươn'],tone:['ngang','sắc','huyền']}}
+];
+
+const VOICE_GATES=[
+  {id:'gate2',label:'Mở cầu đá',target:'Bé nhặt được',note:'Câu 2 · đọc nối 3 tiếng'},
+  {id:'dew',label:'Giữ giọt sương',target:'sương sớm',note:'Câu 3 · phân biệt s/x'},
+  {id:'line4',label:'Làm lá rung',target:'Lá non khẽ rung rung',note:'Câu 4 · tự đọc cả câu'},
+  {id:'line5',label:'Làm cây nở hoa',target:'Dường như lá muốn cảm ơn bé',note:'Câu 5 · tự đọc cả câu'}
+];
+
+function normalizeSpeech(s){
+  return String(s||'').toLowerCase().normalize('NFC').replace(/[.,;:!?“”"()…]/g,' ').replace(/\s+/g,' ').trim();
+}
+function foldVietnamese(s){
+  return normalizeSpeech(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
+}
+function speechMatches(transcript,target){
+  const a=normalizeSpeech(transcript),b=normalizeSpeech(target);
+  if(a===b||a.includes(b))return true;
+  const af=foldVietnamese(a),bf=foldVietnamese(b);
+  return af===bf||af.includes(bf);
+}
+function speechSupported(){
+  return !!(window.SpeechRecognition||window.webkitSpeechRecognition);
+}
+function startSpeechCheck(target,onResult,onFail){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){onFail(new Error('Trình duyệt này chưa hỗ trợ nhận diện giọng nói.'));return;}
+  const rec=new SR();
+  rec.lang='vi-VN';rec.interimResults=false;rec.maxAlternatives=5;rec.continuous=false;
+  let finished=false;
+  rec.onresult=e=>{
+    finished=true;
+    const alts=[];
+    for(let i=0;i<e.results[0].length;i++)alts.push(e.results[0][i].transcript||'');
+    const ok=alts.some(t=>speechMatches(t,target));
+    onResult({ok,transcript:alts[0]||'',alternatives:alts});
+  };
+  rec.onerror=e=>{if(!finished)onFail(new Error(e.error||'Không nhận được giọng nói.'));};
+  rec.onend=()=>{if(!finished)onFail(new Error('Chưa nghe rõ. Hãy thử lại.'));};
+  try{rec.start();}catch(e){onFail(e);}
+}
+
+function assemblyCard(p){
+  const d=state.missionData,sel=d.assembly[p.id]?.selected||{},done=!!d.assembly[p.id]?.done;
+  const slot=(key,label)=>`<div class="build-slot ${sel[key]?'filled':''}" data-drop-group="${key}"><small>${label}</small><strong>${esc(sel[key]||'...')}</strong></div>`;
+  const choiceGroup=(key,label)=>`<div class="stone-group"><small>${label}</small><div>${p.options[key].map(v=>`<button class="stone-piece" draggable="true" data-piece-group="${key}" data-piece-value="${encodeURIComponent(v)}">${esc(v)}</button>`).join('')}</div></div>`;
+  return `<section class="assembly-card ${done?'done':''}" data-puzzle="${p.id}">
+    <div class="assembly-head"><div><span>🪨 ${esc(p.context)}</span><h3>${done?'✅ '+esc(p.word):'Tự ghép tiếng để hành động'}</h3></div><b class="assembly-target">${done?esc(p.word):'?'}</b></div>
+    <div class="build-equation">${slot('onset','Âm đầu')}<b>+</b>${slot('rime','Vần')}<b>+</b>${slot('tone','Thanh')}</div>
+    <div class="stone-bank">${choiceGroup('onset','Chọn âm đầu')}${choiceGroup('rime','Chọn vần')}${choiceGroup('tone','Chọn thanh')}</div>
+    <div class="assembly-feedback">${done?'Con đã tự ghép đúng. Game chỉ xác nhận sau khi con hoàn thành.':'Kéo hòn đá vào ô, hoặc chạm hòn đá rồi chạm ô.'}</div>
+  </section>`;
+}
+
+function checkAssembly(p){
+  const d=state.missionData,entry=d.assembly[p.id]||{selected:{}},s=entry.selected||{};
+  const complete=['onset','rime','tone'].every(k=>s[k]);
+  if(!complete)return false;
+  const ok=s.onset===p.parts.onset&&s.rime===p.parts.rime&&s.tone===p.parts.tone;
+  if(ok&&!entry.done){
+    entry.done=true;state.stars++;chime();confetti();toast('Tự ghép đúng: '+p.word+'!');
+  }
+  entry.wrong=!ok;d.assembly[p.id]=entry;saveState();return ok;
+}
+
+function setAssemblyPiece(puzzleId,group,value){
+  const d=state.missionData,p=ASSEMBLY_PUZZLES.find(x=>x.id===puzzleId);
+  const entry=d.assembly[puzzleId]||{selected:{},done:false};entry.selected=entry.selected||{};
+  entry.selected[group]=value;entry.wrong=false;d.assembly[puzzleId]=entry;saveState();
+  checkAssembly(p);renderQuickMission();
+}
+
+function bindAssembly(){
+  let tapped=null;
+  $$('.assembly-card').forEach(card=>{
+    const puzzleId=card.dataset.puzzle;
+    $$('.stone-piece',card).forEach(btn=>{
+      btn.addEventListener('dragstart',e=>{
+        e.dataTransfer.setData('text/plain',JSON.stringify({puzzleId,group:btn.dataset.pieceGroup,value:decodeURIComponent(btn.dataset.pieceValue)}));
+      });
+      btn.onclick=()=>{tapped={puzzleId,group:btn.dataset.pieceGroup,value:decodeURIComponent(btn.dataset.pieceValue)};$$('.stone-piece').forEach(x=>x.classList.remove('picked'));btn.classList.add('picked');};
+    });
+    $$('.build-slot',card).forEach(slot=>{
+      slot.addEventListener('dragover',e=>e.preventDefault());
+      slot.addEventListener('drop',e=>{
+        e.preventDefault();try{const data=JSON.parse(e.dataTransfer.getData('text/plain'));if(data.puzzleId===puzzleId&&data.group===slot.dataset.dropGroup)setAssemblyPiece(data.puzzleId,data.group,data.value);}catch(err){}
+      });
+      slot.onclick=()=>{if(tapped&&tapped.puzzleId===puzzleId&&tapped.group===slot.dataset.dropGroup)setAssemblyPiece(tapped.puzzleId,tapped.group,tapped.value);};
     });
   });
-  const correct=L.quickGame.filter((q,i)=>d.quickAnswers[i]===q.answer).length;
-  setMissionFooter({canComplete:correct>=3,note:`Đúng ${correct}/4. Mục tiêu là nhận quy luật, không phải bấm thật nhanh.`});
+}
+
+function voiceGateCard(g){
+  const d=state.missionData,done=!!d.voiceGates[g.id],attempts=Number(d.voiceAttempts[g.id]||0);
+  return `<section class="voice-gate ${done?'done':''}" data-gate="${g.id}">
+    <div class="voice-gate-icon">${done?'✅':'🎙️'}</div>
+    <div class="voice-gate-copy"><small>${esc(g.note)}</small><h3>${esc(g.target)}</h3><p>${done?'Cổng đã mở. Con đã tự đọc trước khi nhận xác nhận.':'Game không đọc mẫu. Con nhìn chữ rồi tự đọc to vào micro.'}</p></div>
+    <div class="voice-gate-actions">
+      ${done?'<span class="voice-success">Đã mở khóa</span>':`<button class="voice-start" type="button">🎙️ Giữ cổng & đọc</button>${(!speechSupported()||attempts>=3)?'<button class="parent-confirm" type="button">👨‍👩‍👧 Bố/mẹ xác nhận đọc đúng</button>':''}`}
+    </div>
+    <div class="voice-feedback" data-feedback="${g.id}">${attempts&&!done?'Đã thử '+attempts+' lần. Nếu máy nhận sai nhiều lần, bố/mẹ có thể xác nhận.':''}</div>
+  </section>`;
+}
+
+function bindVoiceGates(rerender){
+  $$('.voice-gate').forEach(card=>{
+    const id=card.dataset.gate,g=VOICE_GATES.find(x=>x.id===id),d=state.missionData;
+    const start=$('.voice-start',card);
+    if(start)start.onclick=()=>{
+      const feedback=$('[data-feedback="'+id+'"]',card);
+      start.disabled=true;start.textContent='🎙️ Đang nghe...';feedback.textContent='Con tự nhìn chữ và đọc ngay bây giờ.';
+      startSpeechCheck(g.target,res=>{
+        d.voiceAttempts[id]=Number(d.voiceAttempts[id]||0)+1;
+        if(res.ok){
+          d.voiceGates[id]=true;state.stars++;saveState();chime('complete');confetti();toast('Cổng mở! Con tự đọc được rồi.');rerender();
+        }else{
+          saveState();chime('bad');feedback.textContent='Máy nghe thành: “'+(res.transcript||'...')+'”. Không sao, thử lại. Game chưa đọc đáp án.';start.disabled=false;start.textContent='🎙️ Thử đọc lại';
+          if(d.voiceAttempts[id]>=3)rerender();
+        }
+      },err=>{
+        d.voiceAttempts[id]=Number(d.voiceAttempts[id]||0)+1;saveState();feedback.textContent=err.message;start.disabled=false;start.textContent='🎙️ Thử lại';
+        if(d.voiceAttempts[id]>=3||!speechSupported())rerender();
+      });
+    };
+    const confirm=$('.parent-confirm',card);
+    if(confirm)confirm.onclick=()=>{d.voiceGates[id]=true;state.stars++;saveState();chime();toast('Bố/mẹ đã xác nhận con tự đọc đúng.');rerender();};
+  });
+}
+
+function wandSentence(index){
+  const d=state.missionData,words=uniqueWords(L.story.sentences[index].text),progress=Number(d.pointerProgress[index]||0);
+  return `<section class="wand-sentence" data-line="${index}"><div class="wand-head"><span>✨ Cây gậy phép · Câu ${index+1}</span><b>${progress>=words.length?'Đã chỉ hết chữ':'Chỉ từ trái sang phải'}</b></div>
+    <div class="wand-words">${words.map((w,i)=>`<button class="wand-word ${i<progress?'lit':''} ${i===progress?'next':''}" data-word-index="${i}" type="button">${esc(w)}</button>`).join('')}</div>
+    <small>Chạm từng chữ theo đúng thứ tự và <b>tự đọc chữ đó</b>. Game không phát âm mẫu.</small></section>`;
+}
+
+function bindWand(){
+  $$('.wand-sentence').forEach(card=>{
+    const idx=Number(card.dataset.line),d=state.missionData,words=uniqueWords(L.story.sentences[idx].text);
+    $$('.wand-word',card).forEach(btn=>btn.onclick=()=>{
+      const wi=Number(btn.dataset.wordIndex),expected=Number(d.pointerProgress[idx]||0);
+      if(wi!==expected){toast('Hãy chỉ từ trái sang phải.');return;}
+      d.pointerProgress[idx]=Math.min(words.length,expected+1);saveState();chime();renderFullMission();
+    });
+  });
+}
+
+function renderQuickMission(){
+  const d=state.missionData;
+  els.missionBody.innerHTML=`<div class="parent-note"><b>Không có giọng đọc mẫu.</b> Muốn nhân vật tiếp tục, con phải tự ghép đúng âm đầu + vần + thanh. Sau khi ghép đúng game mới xác nhận bằng hiệu ứng.</div>
+    <div class="assembly-grid" style="margin-top:12px">${ASSEMBLY_PUZZLES.map(assemblyCard).join('')}</div>`;
+  bindAssembly();
+  const done=ASSEMBLY_PUZZLES.filter(p=>d.assembly[p.id]?.done).length;
+  setMissionFooter({canComplete:done===ASSEMBLY_PUZZLES.length,note:`Đã tự ghép ${done}/${ASSEMBLY_PUZZLES.length} tiếng. Không thể qua cầu bằng cách nghe rồi lặp lại.`});
 }
 
 function tokenize(text){
@@ -757,33 +904,26 @@ function sentenceBlock(item,index){
 
 function renderSentenceMission(){
   const d=state.missionData;
-  els.missionBody.innerHTML=`<div class="parent-note"><b>Thứ tự ưu tiên:</b> đúng → liền mạch → tự nhiên → nhanh. Khi con vấp, không đọc hộ ngay.</div><div class="sentence-stack" style="margin-top:12px">${L.story.sentences.map(sentenceBlock).join('')}</div>`;
-  $$('.sentence-mission').forEach(card=>{
-    const i=Number(card.dataset.i);
-    $$('[data-status]',card).forEach(b=>b.onclick=()=>{d.sentenceStatus[i]=b.dataset.status;if(b.dataset.status!=='help')d.activeSentenceHint='';saveState();renderSentenceMission();});
-    $$('[data-watch]',card).forEach(b=>b.onclick=()=>{
-      const w=b.dataset.watch,key=i+'::'+w;
-      if(d.activeSentenceHint!==key){d.activeSentenceHint=key;d.sentenceHints[key]=1;}else{
-        const item=L.keyWords.find(k=>k.word===w),h=item?item.hints:genericHints(w);d.sentenceHints[key]=Math.min(h.length,Number(d.sentenceHints[key]||1)+1);
-      }
-      d.sentenceStatus[i]='help';saveState();renderSentenceMission();
-    });
-    const hn=$('.hint-next',card);if(hn)hn.onclick=()=>{const p=hn.closest('.hint-box'),key=p.dataset.key,w=key.split('::').slice(1).join('::'),item=L.keyWords.find(k=>k.word===w),h=item?item.hints:genericHints(w);d.sentenceHints[key]=Math.min(h.length,Number(d.sentenceHints[key]||1)+1);saveState();renderSentenceMission();};
-    const hs=$('.hint-solved',card);if(hs)hs.onclick=()=>{const p=hs.closest('.hint-box'),key=p.dataset.key,w=key.split('::').slice(1).join('::');d.activeSentenceHint='';state.stars++;saveState();chime();toast('Tốt! Bây giờ đọc lại cả cụm có “'+w+'”.');renderSentenceMission();};
-    const ra=$('.reveal-answer',card);if(ra)ra.onclick=()=>$('.answer',card).classList.remove('hidden');
-  });
-  const done=Object.values(d.sentenceStatus).filter(x=>x==='ok'||x==='help').length;
-  setMissionFooter({canComplete:done>=4,note:`Đã đọc ${done}/5 câu. Nếu con mệt, dừng chất lượng hơn là ép hết.`});
+  els.missionBody.innerHTML=`<div class="parent-note"><b>Voice Gate:</b> game giữ im lặng. Con phải nhìn chữ và tự đọc to. Nhận diện giọng nói chỉ dùng để kiểm tra từ/cụm đã đọc, không phát mẫu trước.</div>
+    <div class="voice-gate-list" style="margin-top:12px">${VOICE_GATES.map(voiceGateCard).join('')}</div>
+    <div class="speech-note">💡 Nhận diện giọng trẻ em có thể sai dù con đọc đúng. Sau 3 lần máy nghe sai, nút <b>Bố/mẹ xác nhận</b> sẽ xuất hiện để tránh làm con nản.</div>`;
+  bindVoiceGates(renderSentenceMission);
+  const done=VOICE_GATES.filter(g=>d.voiceGates[g.id]).length;
+  setMissionFooter({canComplete:done===VOICE_GATES.length,note:`Đã mở ${done}/${VOICE_GATES.length} cổng bằng giọng đọc. Không có điểm thưởng cho đọc nhanh.`});
 }
 
 function renderFullMission(){
   const d=state.missionData;
-  els.missionBody.innerHTML=`<div class="reading-card"><h3>${esc(L.story.title)}</h3>${imageBox('fullStoryImage')}<div class="reading-text">${L.fullText.map(s=>`<p>${esc(s)}</p>`).join('')}</div>
+  const w4=uniqueWords(L.story.sentences[3].text).length,w5=uniqueWords(L.story.sentences[4].text).length;
+  els.missionBody.innerHTML=`<div class="reading-card"><h3>${esc(L.story.title)}</h3>${imageBox('fullStoryImage')}
+    <div class="wand-zone"><h4>✨ Đỉnh điểm: Cây gậy phép</h4><p>Hai câu cuối không còn gợi ý. Con chỉ từng chữ từ trái sang phải và tự đọc. Chỉ tới đâu, chữ sáng tới đó.</p>${wandSentence(3)}${wandSentence(4)}</div>
+    <div class="reading-text">${L.fullText.map(s=>`<p>${esc(s)}</p>`).join('')}</div>
     <div class="reading-passes"><button id="fullPass1" class="reading-pass ${d.fullPass1?'done':''}"><b>1. Lượt 1: Đọc đúng</b><small>Tự giải mã khi gặp tiếng lạ.</small></button><button id="fullPass2" class="reading-pass ${d.fullPass2?'done':''}"><b>2. Lượt 2: Đọc liền mạch</b><small>Chỉ làm nếu con vẫn còn tập trung.</small></button></div></div>`;
-  hydrateMissionImage('fullStoryImage');
+  hydrateMissionImage('fullStoryImage');bindWand();
   $('#fullPass1').onclick=()=>{d.fullPass1=true;saveState();chime();renderFullMission();};
   $('#fullPass2').onclick=()=>{d.fullPass2=true;saveState();chime();renderFullMission();};
-  setMissionFooter({canComplete:d.fullPass1,note:'Chỉ cần lượt 1 nếu con đã mệt. Không bắt đọc lại nguyên bài nhiều lần.'});
+  const wandDone=Number(d.pointerProgress[3]||0)>=w4&&Number(d.pointerProgress[4]||0)>=w5;
+  setMissionFooter({canComplete:d.fullPass1&&wandDone,note:wandDone?'Hai câu cuối đã được chỉ và tự đọc. Lượt 1 toàn bài là đủ để qua màn.':'Hãy dùng Cây gậy phép chỉ hết hai câu cuối trước.'});
 }
 
 function renderComprehensionMission(){
