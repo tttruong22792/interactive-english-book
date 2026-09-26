@@ -226,7 +226,7 @@
       $$('[data-sort-answer]',card).forEach(function(b){b.onclick=function(){
         var item=L.sortItems.find(function(x){return x.id===card.dataset.sortId;});
         if(item.rime===b.dataset.sortAnswer){
-          state.sortDone[item.id]=true;state.stars+=state.sortDone[item.id+'_star']?0:1;state.sortDone[item.id+'_star']=true;
+          var firstSort=!state.sortDone[item.id];state.sortDone[item.id]=true;if(firstSort)state.stars++;
           card.classList.add('solved');$('.sort-word',card).classList.remove('hidden');b.classList.add('correct');save();speak(item.audio);
           var done=L.sortItems.filter(function(x){return state.sortDone[x.id];}).length;
           $('#sortStatus').textContent=done+' / '+L.sortItems.length+' tiếng đã làm đúng.';
@@ -245,7 +245,7 @@
     $$('.comp-choice').forEach(function(b){b.onclick=function(){
       var box=b.closest('.comp-q'),i=Number(box.dataset.q),q=L.reading.questions[i],choice=decodeURIComponent(b.dataset.choice);
       if(choice===q.answer){
-        state.readingAnswers[i]=choice;state.stars+=state.readingAnswers['star'+i]?0:2;state.readingAnswers['star'+i]=true;save();b.classList.add('correct');speak(L.audio.correct);
+        var firstAnswer=!state.readingAnswers[i];state.readingAnswers[i]=choice;if(firstAnswer)state.stars+=2;save();b.classList.add('correct');speak(L.audio.correct);
         if(L.reading.questions.every(function(_,idx){return !!state.readingAnswers[idx];})){award('reading',3);toast('Con đã hiểu bài đọc!');}
         showStep('reading');
       }else{b.classList.add('wrong');speak(L.audio.retry);setTimeout(function(){b.classList.remove('wrong');},650);}
