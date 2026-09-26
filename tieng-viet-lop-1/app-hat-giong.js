@@ -65,7 +65,14 @@
 
   var IMAGE_API='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/vietnamese-lesson-images';
   var IMAGE_OWNER_PREFIX='vuiHocTiengViet:imageOwner:';
-  var imageEditMode=false;
+  var IMAGE_SLOTS=[
+    {
+      id:'warmup-main',
+      label:'Tranh khởi động',
+      defaultSrc:'./assets/hat-giong-nho.jpg?v=20260926',
+      alt:'Bạn nhỏ tưới mầm cây trong khu vườn xanh'
+    }
+  ];
 
   function cloudSlotKey(slotId){
     return String(L.id||'tv1-lesson').replace(/-v\\d+$/,'')+':'+slotId;
@@ -75,43 +82,54 @@
     return IMAGE_OWNER_PREFIX+cloudSlotKey(slotId);
   }
 
+  function slotDef(slotId){
+    return IMAGE_SLOTS.find(function(x){return x.id===slotId;})||null;
+  }
+
   function imageSlot(slotId,defaultSrc,alt,label){
-    return '<div class="editable-image-slot" data-image-slot="'+esc(slotId)+'" data-default-src="'+esc(defaultSrc)+'">'
+    return '<div class="editable-image-slot" data-image-slot="'+esc(slotId)+'" data-default-src="'+esc(defaultSrc)+'" data-label="'+esc(label||'Ảnh minh họa')+'">'
       +'<div class="image-slot-frame"><img class="image-slot-preview" src="'+esc(defaultSrc)+'" alt="'+esc(alt)+'"></div>'
-      +'<div class="image-slot-controls"><div><b>🖼️ '+esc(label||'Ảnh minh họa')+'</b><small>Upload một lần, ảnh sẽ tự đồng bộ sang máy và điện thoại khác.</small></div>'
-      +'<label class="image-upload-btn">📷 Chọn / thay ảnh<input class="image-file-input" type="file" accept="image/jpeg,image/png,image/webp"></label>'
-      +'<button class="image-reset-btn" type="button">↩ Ảnh mặc định</button></div>'
-      +'<div class="image-local-note">Ảnh được lưu trên cloud. Giao diện chỉnh ảnh chỉ hiện khi bật ⚙️.</div>'
       +'</div>';
   }
 
-  async function fetchCloudImage(slot){
-    var slotId=slot.dataset.imageSlot;
+  async function getCloudImage(slotId){
     var key=cloudSlotKey(slotId);
-    var preview=$('.image-slot-preview',slot);
+    var res=await fetch(IMAGE_API+'?slot='+encodeURIComponent(key)+'&_='+Date.now(),{
+      method:'GET',
+      cache:'no-store',
+      headers:{'Accept':'application/json'}
+    });
+    if(res.status===404)return null;
+    var data={};
+    try{data=await res.json();}catch(e){}
+    if(!res.ok)throw new Error(data.error||'Không tải được ảnh cloud.');
+    return data;
+  }
+
+  function applySlotImage(slotId,url){
+    var def=slotDef(slotId);
+    $$('[data-image-slot="'+slotId+'"]').forEach(function(slot){
+      var preview=$('.image-slot-preview',slot);
+      if(preview)preview.src=url||(def?def.defaultSrc:slot.dataset.defaultSrc);
+      slot.classList.toggle('has-custom-image',!!url);
+    });
+    var managerPreview=$('[data-manager-preview="'+slotId+'"]');
+    if(managerPreview)managerPreview.src=url||(def?def.defaultSrc:'');
+  }
+
+  async function fetchCloudImage(slotId){
+    var def=slotDef(slotId);
     try{
-      var res=await fetch(IMAGE_API+'?slot='+encodeURIComponent(key),{
-        method:'GET',
-        cache:'no-store'
-      });
-      if(res.status===404){
-        preview.src=slot.dataset.defaultSrc;
-        slot.classList.remove('has-custom-image');
-        return;
-      }
-      if(!res.ok)throw new Error('Không tải được ảnh cloud');
-      var data=await res.json();
-      if(data&&data.url){
-        preview.src=data.url;
-        slot.classList.add('has-custom-image');
-      }
+      var data=await getCloudImage(slotId);
+      applySlotImage(slotId,data&&data.url?data.url:null);
+      return data;
     }catch(e){
-      preview.src=slot.dataset.defaultSrc;
+      if(def)applySlotImage(slotId,null);
+      return null;
     }
   }
 
-  async function uploadCloudImage(slot,file){
-    var slotId=slot.dataset.imageSlot;
+  async function uploadCloudImage(slotId,file){
     var key=cloudSlotKey(slotId);
     var token=localStorage.getItem(ownerStorageKey(slotId))||'';
     var form=new FormData();
@@ -124,107 +142,132 @@
     var res=await fetch(IMAGE_API,{
       method:'POST',
       headers:headers,
-      body:form
+      body:form,
+      cache:'no-store'
     });
 
     var data={};
     try{data=await res.json();}catch(e){}
 
-    if(res.status===403){
-      throw new Error('Ảnh này đang được quản lý từ thiết bị đã upload lần đầu.');
-    }
-    if(!res.ok){
-      throw new Error(data.error||'Upload ảnh thất bại.');
-    }
+    if(res.status===403)throw new Error('Ảnh này đã được tạo từ một trình duyệt khác. Thiết bị đó đang giữ quyền thay ảnh.');
+    if(!res.ok)throw new Error(data.error||'Upload ảnh thất bại.');
 
-    if(data.ownerToken){
-      localStorage.setItem(ownerStorageKey(slotId),data.ownerToken);
-    }
+    if(data.ownerToken)localStorage.setItem(ownerStorageKey(slotId),data.ownerToken);
     return data;
   }
 
-  async function resetCloudImage(slot){
-    var slotId=slot.dataset.imageSlot;
+  async function resetCloudImage(slotId){
     var key=cloudSlotKey(slotId);
     var token=localStorage.getItem(ownerStorageKey(slotId))||'';
-    if(!token){
-      throw new Error('Chỉ thiết bị đã upload ảnh mới có thể trả về ảnh mặc định.');
-    }
+    if(!token)throw new Error('Chỉ thiết bị đã upload ảnh mới có thể xóa ảnh cloud.');
 
     var res=await fetch(IMAGE_API+'?slot='+encodeURIComponent(key),{
       method:'DELETE',
-      headers:{'x-owner-token':token}
+      headers:{'x-owner-token':token,'Accept':'application/json'},
+      cache:'no-store'
     });
     var data={};
     try{data=await res.json();}catch(e){}
     if(!res.ok)throw new Error(data.error||'Không thể xóa ảnh cloud.');
-
     localStorage.removeItem(ownerStorageKey(slotId));
     return data;
   }
 
   function bindImageSlots(){
     $$('.editable-image-slot').forEach(function(slot){
-      fetchCloudImage(slot);
-      var input=$('.image-file-input',slot);
-      var reset=$('.image-reset-btn',slot);
-      var preview=$('.image-slot-preview',slot);
-
-      input.onchange=async function(){
-        var file=input.files&&input.files[0];
-        if(!file)return;
-        if(['image/jpeg','image/png','image/webp'].indexOf(file.type)<0){
-          toast('Hãy chọn ảnh JPG, PNG hoặc WebP.');
-          input.value='';
-          return;
-        }
-        if(file.size>10*1024*1024){
-          toast('Ảnh quá lớn. Hãy chọn ảnh dưới 10 MB.');
-          input.value='';
-          return;
-        }
-
-        slot.classList.add('is-uploading');
-        try{
-          var data=await uploadCloudImage(slot,file);
-          if(data&&data.url){
-            preview.src=data.url;
-            slot.classList.add('has-custom-image');
-          }
-          toast('Đã thay ảnh và đồng bộ lên cloud.');
-        }catch(e){
-          toast(e&&e.message?e.message:'Không upload được ảnh.');
-        }finally{
-          slot.classList.remove('is-uploading');
-          input.value='';
-        }
-      };
-
-      reset.onclick=async function(){
-        slot.classList.add('is-uploading');
-        try{
-          await resetCloudImage(slot);
-          preview.src=slot.dataset.defaultSrc;
-          slot.classList.remove('has-custom-image');
-          toast('Đã trả về ảnh mặc định trên tất cả thiết bị.');
-        }catch(e){
-          toast(e&&e.message?e.message:'Không thể đổi về ảnh mặc định.');
-        }finally{
-          slot.classList.remove('is-uploading');
-        }
-      };
+      fetchCloudImage(slot.dataset.imageSlot);
     });
   }
 
-  function setImageEditMode(enabled){
-    imageEditMode=!!enabled;
-    document.body.classList.toggle('image-edit-mode',imageEditMode);
-    var btn=$('#imageEditBtn');
-    if(btn){
-      btn.classList.toggle('active',imageEditMode);
-      btn.setAttribute('aria-pressed',imageEditMode?'true':'false');
-      btn.title=imageEditMode?'Ẩn chỉnh ảnh':'Chỉnh ảnh minh họa';
+  function imageManagerCard(def){
+    return '<section class="image-manager-card" data-manager-slot="'+esc(def.id)+'">'
+      +'<div class="image-manager-preview-wrap"><img data-manager-preview="'+esc(def.id)+'" src="'+esc(def.defaultSrc)+'" alt="'+esc(def.alt)+'"></div>'
+      +'<div class="image-manager-copy"><b>'+esc(def.label)+'</b><small>Ảnh lưu trên cloud và hiển thị giống nhau trên PC, điện thoại và iPad.</small><div class="image-manager-status" data-manager-status="'+esc(def.id)+'">Đang kiểm tra ảnh...</div></div>'
+      +'<div class="image-manager-actions"><label class="image-upload-btn">📷 Chọn / thay ảnh<input class="image-file-input" data-manager-input="'+esc(def.id)+'" type="file" accept="image/jpeg,image/png,image/webp"></label>'
+      +'<button class="image-reset-btn" data-manager-reset="'+esc(def.id)+'" type="button">↩ Ảnh mặc định</button></div>'
+      +'</section>';
+  }
+
+  async function refreshManagerStatus(def){
+    var status=$('[data-manager-status="'+def.id+'"]');
+    try{
+      var data=await getCloudImage(def.id);
+      if(data&&data.url){
+        applySlotImage(def.id,data.url);
+        if(status)status.textContent='✓ Đang dùng ảnh cloud'+(data.originalName?' · '+data.originalName:'');
+      }else{
+        applySlotImage(def.id,null);
+        if(status)status.textContent='Đang dùng ảnh mặc định.';
+      }
+    }catch(e){
+      if(status)status.textContent='Không kết nối được cloud. Hãy thử tải lại trang.';
     }
+  }
+
+  function bindImageManager(){
+    IMAGE_SLOTS.forEach(function(def){
+      var input=$('[data-manager-input="'+def.id+'"]');
+      var reset=$('[data-manager-reset="'+def.id+'"]');
+      if(input){
+        input.onchange=async function(){
+          var file=input.files&&input.files[0];
+          if(!file)return;
+          var status=$('[data-manager-status="'+def.id+'"]');
+          if(['image/jpeg','image/png','image/webp'].indexOf(file.type)<0){
+            if(status)status.textContent='Chỉ nhận JPG, PNG hoặc WebP.';
+            input.value='';
+            return;
+          }
+          if(file.size>10*1024*1024){
+            if(status)status.textContent='Ảnh lớn hơn 10 MB. Hãy chọn ảnh nhỏ hơn.';
+            input.value='';
+            return;
+          }
+          if(status)status.textContent='Đang upload lên cloud...';
+          try{
+            var data=await uploadCloudImage(def.id,file);
+            applySlotImage(def.id,data.url||null);
+            if(status)status.textContent='✓ Upload xong. Ảnh đã đồng bộ lên cloud.';
+            toast('Đã thay ảnh trên tất cả thiết bị.');
+          }catch(e){
+            if(status)status.textContent='Không upload được: '+(e&&e.message?e.message:'Lỗi không xác định');
+          }finally{
+            input.value='';
+          }
+        };
+      }
+      if(reset){
+        reset.onclick=async function(){
+          var status=$('[data-manager-status="'+def.id+'"]');
+          if(status)status.textContent='Đang trả về ảnh mặc định...';
+          try{
+            await resetCloudImage(def.id);
+            applySlotImage(def.id,null);
+            if(status)status.textContent='✓ Đã dùng lại ảnh mặc định.';
+          }catch(e){
+            if(status)status.textContent='Không thể đổi ảnh: '+(e&&e.message?e.message:'Lỗi không xác định');
+          }
+        };
+      }
+      refreshManagerStatus(def);
+    });
+  }
+
+  function openImageManager(){
+    var modal=$('#imageManagerModal');
+    var list=$('#imageManagerList');
+    if(!modal||!list)return;
+    list.innerHTML=IMAGE_SLOTS.map(imageManagerCard).join('');
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden','false');
+    bindImageManager();
+  }
+
+  function closeImageManager(){
+    var modal=$('#imageManagerModal');
+    if(!modal)return;
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden','true');
   }
 
   function esc(s){
@@ -560,7 +603,13 @@
 
   $('#homeBtn').onclick=function(){go('warmup');};
   var imageEditBtn=$('#imageEditBtn');
-  if(imageEditBtn)imageEditBtn.onclick=function(){setImageEditMode(!imageEditMode);};
+  if(imageEditBtn)imageEditBtn.onclick=openImageManager;
+  var imageManagerClose=$('#imageManagerClose');
+  if(imageManagerClose)imageManagerClose.onclick=closeImageManager;
+  var imageManagerModal=$('#imageManagerModal');
+  if(imageManagerModal)imageManagerModal.addEventListener('click',function(e){
+    if(e.target===imageManagerModal)closeImageManager();
+  });
   $('#resetBtn').onclick=function(){
     if(confirm('Xóa toàn bộ tiến độ của bài Hạt giống nhỏ trên thiết bị này?')){
       localStorage.removeItem(KEY);state=defaults();render();
