@@ -347,7 +347,7 @@ if (await exists(vietnameseDir)) {
     vm.runInContext(source, lessonContext, { filename: "tieng-viet-lop-1/" + filename });
 
     const lesson = lessonContext.window.TV1_LESSON;
-    if (!lesson) continue;
+    if (!lesson || lesson.ttsDisabled === true) continue;
 
     const texts = new Set();
     const add = (value) => {
