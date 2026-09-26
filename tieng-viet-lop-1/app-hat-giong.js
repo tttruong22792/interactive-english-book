@@ -561,7 +561,7 @@
       +actionBar('Ghép thành toàn bài →',true));
 
     $$('.sentence-card').forEach(function(card,i){
-      $('[data-sentence-status]',card).forEach(function(b){b.onclick=function(){
+      $$('[data-sentence-status]',card).forEach(function(b){b.onclick=function(){
         state.sentenceStatus[i]=b.dataset.sentenceStatus;
         if(b.dataset.sentenceStatus==='help' && String(state.activeSentenceHint||'').indexOf(i+'::')!==0){
           state.activeSentenceHint='';
@@ -572,7 +572,7 @@
       var show=$('.show-answer',card);
       if(show)show.onclick=function(){$('.answer',card).classList.remove('hidden');};
 
-      $('[data-watch]',card).forEach(function(b){b.onclick=function(){
+      $$('[data-watch]',card).forEach(function(b){b.onclick=function(){
         var w=b.dataset.watch;
         var hintKey=i+'::'+w;
         if(state.activeSentenceHint!==hintKey){
