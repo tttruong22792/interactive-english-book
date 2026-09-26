@@ -104,7 +104,7 @@
     app.innerHTML=''
       +'<section class="hero-card lesson41-hero"><div class="hero-copy"><span class="eyebrow">TIẾNG VIỆT LỚP 1 · BÀI 41</span>'
       +'<h1><span class="rime-em">em</span> · <span class="rime-ep">ep</span></h1><p>'+esc(L.goal)+'</p>'
-      +'<div class="hero-actions"><button id="startLesson" class="primary big">▶ Bắt đầu bài 41</button>'+audioBtn(L.audio.welcome,'Cô giáo nói')+'<a class="secondary lesson-link" href="./index.html">Bài 1</a></div></div>'
+      +'<div class="hero-actions"><button id="startLesson" class="primary big">▶ Bắt đầu bài 41</button>'+audioBtn(L.audio.welcome,'Cô giáo nói')+'<a class="secondary lesson-link" href="./index.html">Bài 1</a><a class="secondary lesson-link" href="./hat-giong-nho.html">Hạt giống nhỏ →</a></div></div>'
       +'<div class="hero-mascot lesson41-mascot"><div class="mascot-bubble">Nghe phần cuối của tiếng<br><b>em khác ep thế nào?</b></div><div class="rime-orbit"><span>em</span><span>ep</span></div></div></section>'
       +'<section class="method-card"><div><span>🧠</span><strong>Không học vẹt</strong><p>Nghe → phân biệt → đọc trong từ → hiểu câu → tự nhớ lại.</p></div><div class="method-tags">'+L.principles.map(function(x){return '<span>'+esc(x)+'</span>';}).join('')+'</div></section>'
       +'<section class="lesson-grid"><div class="stage-list card"><h2>Lộ trình Bài 41</h2>'
