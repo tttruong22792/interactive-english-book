@@ -339,7 +339,7 @@ if (guide) {
 const vietnameseDir = join(root, "tieng-viet-lop-1");
 if (await exists(vietnameseDir)) {
   const vietnameseLessonFiles = (await readdir(vietnameseDir))
-    .filter((name) => /^lesson\d+\.js$/i.test(name));
+    .filter((name) => /^lesson(?:\\d+|-[a-z0-9-]+)\\.js$/i.test(name));
 
   for (const filename of vietnameseLessonFiles) {
     const lessonContext = vm.createContext({ window: {} });
