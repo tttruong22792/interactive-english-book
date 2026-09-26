@@ -17,3 +17,18 @@
 .final-choices .choice-card{font-size:18px;min-height:58px;text-align:left;padding:12px 16px}
 @media(max-width:900px){.sort-grid{grid-template-columns:repeat(2,1fr)}.focus-grid{grid-template-columns:1fr}.reading-line{grid-template-columns:34px 1fr}.reading-actions{grid-column:2}.plant-card{display:none}}
 @media(max-width:560px){.three-houses,.rime-lab{grid-template-columns:1fr}.sort-grid{grid-template-columns:1fr 1fr}.match-board{grid-template-columns:1fr}.rime-listen{min-height:140px}.rime-listen strong{font-size:52px}.reading-line p{font-size:18px}.trace-word{font-size:95px}.focus-top{align-items:flex-start;flex-direction:column}.focus-top>strong{font-size:34px}}
+
+/* Parent-led curriculum v2 — no AI voice */
+.teacher-plan{margin:18px 0;display:grid;grid-template-columns:.8fr 1.6fr;gap:18px;align-items:center}
+.teacher-plan h2{margin:4px 0 6px}.teacher-plan p{margin:0;color:#66746d}
+.plan-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.plan-grid>div{background:#f7fbf8;border:1px solid #e2ece5;border-radius:14px;padding:10px}.plan-grid b,.plan-grid strong,.plan-grid small{display:block}.plan-grid b{font-size:11px;color:#39886c}.plan-grid strong{font-size:12px;margin:3px 0}.plan-grid small{font-size:10px;color:#78857e}
+.teacher-box{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;background:#eef6ff;border:1px solid #cfe1f2;border-radius:18px;padding:15px 17px;margin:16px 0}.teacher-box>span{font-size:28px}.teacher-box strong{color:#315b7a}.teacher-box p{margin:4px 0 0;color:#526875}
+.rime-parts{display:flex;gap:4px;align-items:center;justify-content:center;font-size:21px}.rime-parts span{background:#f2f5f7;padding:4px 8px;border-radius:9px}.rime-parts b{background:#fff5ce;padding:4px 8px;border-radius:9px;color:#765d11}
+.mastery-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.mastery-btn{border:2px solid #dfe8e2;background:#fff;border-radius:14px;padding:12px;font-weight:900}.mastery-btn.done{background:#e8f8ef;border-color:#62b886;color:#24734d}
+.meaning-chip{background:#f2f6f3;color:#5e6d65;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:800}
+.decode-steps{padding-left:20px;color:#58675f}.decode-steps li{margin:6px 0}
+.lego-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lego-line>b{color:#8a9790}.lego{padding:9px 12px;border-radius:12px;font-size:20px;font-weight:900;border:2px solid transparent}.lego.onset{background:#eaf3ff;border-color:#aac9ef}.lego.rime{background:#eaf8f0;border-color:#9dd4b3}.lego.blend{background:#f7f3ff;border-color:#cbbbea}.lego.tone{background:#fff4d5;border-color:#efd58a}.lego.result{background:#fff0ee;border-color:#efb1aa}
+.house-legend{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.house-legend span{background:#f8fbf9;border:1px solid #dfe8e2;border-radius:12px;padding:8px 11px;font-weight:850}
+.story-copy{min-width:0}.chunk-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.chunk-row span{background:#f3f7f4;border:1px solid #e0e9e3;border-radius:10px;padding:5px 8px;font-size:12px;color:#5f6e66}.practice-word{font-size:54px;font-weight:950;text-align:center;padding:20px 0}
+@media(max-width:900px){.teacher-plan{grid-template-columns:1fr}.plan-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.plan-grid{grid-template-columns:1fr 1fr}.mastery-row{grid-template-columns:1fr}.lego-line{gap:5px}.lego{font-size:17px;padding:8px 10px}.teacher-box{grid-template-columns:34px 1fr}.teacher-box>span{font-size:24px}.practice-word{font-size:44px}}
