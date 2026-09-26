@@ -60,6 +60,23 @@
   function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); updateGlobalUI(); }
   function esc(s=''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function escAttr(s=''){ return esc(s); }
+  function uiIcon(name,extraClass=''){
+    const icons={
+      'book-open':'<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/>',
+      'clipboard-check':'<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+      'arrow-right':'<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+      'arrow-left':'<path d="m19 12H5"/><path d="m11 18-6-6 6-6"/>',
+      'check-circle':'<path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/>',
+      'mic':'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>',
+      'lightbulb':'<path d="M9 18h6"/><path d="M10 22h4"/><path d="M8.6 15.4A7 7 0 1 1 15.4 15.4c-.9.7-1.4 1.5-1.4 2.6h-4c0-1.1-.5-1.9-1.4-2.6Z"/>',
+      'volume-2':'<path d="M11 5 6 9H2v6h4l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>',
+      'play':'<path d="m6 3 14 9-14 9Z"/>',
+      'headphones':'<path d="M4 14a8 8 0 0 1 16 0"/><path d="M18 19v-5a2 2 0 0 1 2-2h1v7a2 2 0 0 1-2 2h-1Z"/><path d="M6 19v-5a2 2 0 0 0-2-2H3v7a2 2 0 0 0 2 2h1Z"/>',
+      'bookmark':'<path d="M6 3a2 2 0 0 0-2 2v16l8-5 8 5V5a2 2 0 0 0-2-2Z"/>'
+    };
+    const body=icons[name]||icons['arrow-right'];
+    return '<svg class="ui-icon '+escAttr(extraClass)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+  }
   function normalizeText(s=''){ return String(s).toLowerCase().replace(/[’]/g,"'").replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim(); }
   function keyFor(s=''){ return normalizeText(s).replace(/\s+/g,'-'); }
   function currentLessonId(){ return L?.id || CORE_LESSON_ID; }
@@ -415,7 +432,7 @@
 
   function guideSentenceRow(en,vi=''){
     return `<div class="sentence-card tense-example-card" data-sentence-card="1" data-en-card="${escAttr(en)}">
-      <div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div>
+      <div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">${uiIcon('volume-2')}</button><div class="english-text" data-en="${escAttr(en)}"></div></div>
       <div class="vi" data-vi-only>${esc(vi)}</div>
     </div>`;
   }
@@ -643,18 +660,20 @@
     const quizCount=quizItemsFromLessons([L]).length;
     return `<div class="lesson-action-panel lesson-action-panel-top">
       <div class="lesson-action-copy">
-        <h2>HỌC & LUYỆN TOÀN BỘ BÀI</h2>
+        <span class="lesson-action-kicker">LEARN · PRACTICE</span>
+        <h2>Học & luyện toàn bộ bài</h2>
+        <p>Chọn chế độ phù hợp: nghe và ôn toàn bộ câu, hoặc luyện phản xạ Việt → Anh.</p>
       </div>
       <div class="lesson-action-buttons">
-        <button class="lesson-action-card" data-go="lesson/${id}/sentences">
-          <span class="lesson-action-icon">📚</span>
-          <span><strong>Toàn bộ câu trong bài</strong><small>${all.length} câu · nghe từng câu hoặc nghe toàn bộ</small></span>
-          <b>→</b>
+        <button class="lesson-action-card learn" data-go="lesson/${id}/sentences">
+          <span class="lesson-action-icon">${uiIcon('book-open')}</span>
+          <span class="lesson-action-text"><strong>Toàn bộ câu trong bài</strong><small>${all.length} câu · nghe từng câu hoặc phát toàn bộ</small></span>
+          <span class="lesson-action-arrow">${uiIcon('arrow-right')}</span>
         </button>
         <button class="lesson-action-card practice" data-go="lesson/${id}/practice">
-          <span class="lesson-action-icon">✍️</span>
-          <span><strong>Luyện toàn bộ câu</strong><small>${quizCount} ý/câu luyện · tuần tự hoặc random</small></span>
-          <b>→</b>
+          <span class="lesson-action-icon">${uiIcon('clipboard-check')}</span>
+          <span class="lesson-action-text"><strong>Luyện toàn bộ câu</strong><small>${quizCount} ý/câu luyện · tuần tự hoặc ngẫu nhiên</small></span>
+          <span class="lesson-action-arrow">${uiIcon('arrow-right')}</span>
         </button>
       </div>
     </div>`;
@@ -670,7 +689,7 @@
         <h1>Toàn bộ câu trong bài</h1>
         <p>${items.length} câu không trùng hệt nhau. Bạn có thể sửa nghĩa tiếng Việt ngay trên từng câu.</p>
         <div class="study-toolbar">
-          <button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button>
+          <button id="playAllLesson" class="primary-button">${uiIcon('play')}<span>Nghe toàn bộ 1 lần</span></button>
           <span class="muted">Bấm một câu bất kỳ để dừng danh sách và nghe câu đó ngay.</span>
         </div>
       </section>
@@ -816,7 +835,7 @@
       if(block.learnable){
         const allItems=collectLessonSentences(L);
         L._learnableSentences=allItems.map(x=>[x.en,x.vi]);
-        const controls=`<div class="study-toolbar"><button id="playAllLesson" class="primary-button">▶ Nghe toàn bộ 1 lần</button><span class="muted">Bấm một câu khác để dừng danh sách và nghe câu đó ngay.</span></div>`;
+        const controls=`<div class="study-toolbar"><button id="playAllLesson" class="primary-button">${uiIcon('play')}<span>Nghe toàn bộ 1 lần</span></button><span class="muted">Bấm một câu khác để dừng danh sách và nghe câu đó ngay.</span></div>`;
         return `${controls}<div class="sentence-table" id="sectionLearnableSentences"><div class="sentence-table-head"><span>English</span><span>Nghĩa</span><span>Đã thuộc</span></div>${allItems.map(x=>sentenceRow(x.en,x.vi,sentenceLearnKey(x.en))).join('')}</div>`;
       }
       return `<div class="sentence-list">${sourceItems.map(x=>sentenceRow(x[0],x[1])).join('')}</div>`;
@@ -827,7 +846,7 @@
         const phrase=String(x[0]||'');
         return `<div class="meaning-chip">
           <div class="meaning-chip-main">
-            <button class="speaker chip-speaker" data-speak="${escAttr(phrase)}" aria-label="Nghe cụm từ" title="Nghe cụm từ">🔊</button>
+            <button class="speaker chip-speaker" data-speak="${escAttr(phrase)}" aria-label="Nghe cụm từ" title="Nghe cụm từ">${uiIcon('volume-2')}</button>
             <strong class="english-text chip-english" data-en="${escAttr(phrase)}"></strong>
           </div>
           <span data-vi-only>${esc(x[1]||'')}</span>
@@ -946,9 +965,9 @@
   function sentenceRow(en,vi,learnKey=''){
     const scoped=learnKey?scopedLearnKey(learnKey):'';
     const checked=scoped && state.learned[scoped] ? 'checked' : '';
-    return `<div class="sentence-card" data-sentence-card="1" data-en-card="${escAttr(en)}"><div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">🔊</button><div class="english-text" data-en="${escAttr(en)}"></div></div>${editableMeaningHTML(en,vi)}${scoped?`<label class="learn-toggle"><input type="checkbox" data-learn="${scoped}" ${checked}> Đã thuộc</label>`:''}</div>`;
+    return `<div class="sentence-card" data-sentence-card="1" data-en-card="${escAttr(en)}"><div class="en-wrap"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe câu">${uiIcon('volume-2')}</button><div class="english-text" data-en="${escAttr(en)}"></div></div>${editableMeaningHTML(en,vi)}${scoped?`<label class="learn-toggle"><input type="checkbox" data-learn="${scoped}" ${checked}> Đã thuộc</label>`:''}</div>`;
   }
-  function inlineSentence(en){ return `<span class="en-wrap" style="display:inline-flex"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe">🔊</button><span class="english-text" data-en="${escAttr(en)}"></span></span>`; }
+  function inlineSentence(en){ return `<span class="en-wrap" style="display:inline-flex"><button class="speaker" data-speak="${escAttr(en)}" aria-label="Nghe">${uiIcon('volume-2')}</button><span class="english-text" data-en="${escAttr(en)}"></span></span>`; }
   function dialogCard(d,di){ return `<div class="dialog-card"><div class="dialog-title"><span>${esc(d.place)}</span><button class="mini-button" data-dialog-play="${di}">▶ Nghe hội thoại</button></div>${d.rows.map(r=>`<div class="dialog-row"><span class="role">${esc(r[0])}</span><div class="english-text" data-en="${escAttr(r[1])}"></div>${editableMeaningHTML(r[1],r[2]||'','dialog-meaning')}</div>`).join('')}</div>`; }
 
   function hydrateSentences(root){
@@ -1083,8 +1102,8 @@
     const answers=item?.answers||[];
     const primary=primaryAnswer || answers[0] || '';
     const others=answers.filter(answer=>normalizeText(answer)!==normalizeText(primary));
-    return `<div class="answer-primary"><b>${esc(primary)}</b> <button class="mini-button" data-answer-speak="${escAttr(primary)}">🔊 Nghe</button></div>
-      ${others.length?`<div class="answer-alternatives"><strong>Cách khác cùng nghĩa:</strong><ul>${others.map(answer=>`<li>${esc(answer)} <button class="mini-button" data-answer-speak="${escAttr(answer)}">🔊</button></li>`).join('')}</ul></div>`:''}`;
+    return `<div class="answer-primary"><b>${esc(primary)}</b> <button class="mini-button" data-answer-speak="${escAttr(primary)}">${uiIcon('volume-2')}<span>Nghe</span></button></div>
+      ${others.length?`<div class="answer-alternatives"><strong>Cách khác cùng nghĩa:</strong><ul>${others.map(answer=>`<li>${esc(answer)} <button class="mini-button" data-answer-speak="${escAttr(answer)}">${uiIcon('volume-2')}</button></li>`).join('')}</ul></div>`:''}`;
   }
 
   function quizHTML(context){
@@ -1094,22 +1113,28 @@
     const item=items[quiz.index];
     const total=items.length;
     return `<div class="quiz-config">
-        <div><strong>Luyện toàn bộ nội dung</strong><span>${total} ý/câu luyện · chấp nhận mọi cách diễn đạt có cùng nghĩa trong các bài đã chọn.</span></div>
-        <label>Thứ tự
+        <div class="quiz-config-copy"><span class="quiz-kicker">PRACTICE SESSION</span><strong>Luyện toàn bộ nội dung</strong><span>${total} ý/câu luyện · chấp nhận các cách diễn đạt đúng có cùng nghĩa.</span></div>
+        <label><span>Thứ tự</span>
           <select id="quizOrderSelect">
             <option value="sequential" ${quiz.mode==='sequential'?'selected':''}>Tuần tự</option>
-            <option value="random" ${quiz.mode==='random'?'selected':''}>Random</option>
+            <option value="random" ${quiz.mode==='random'?'selected':''}>Ngẫu nhiên</option>
           </select>
         </label>
       </div>
       <div class="quiz-card" data-quiz="${context}">
-        <div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/${total}</span><span>Điểm lượt này: <b id="quizScore">${quiz.correct}</b>/${total}</span></div>
+        <div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/${total}</span><span>Điểm lượt này <b id="quizScore">${quiz.correct}</b>/${total}</span></div>
         <div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item.prompt)}</div>
+        <label class="quiz-input-label" for="quizInput">Câu trả lời bằng tiếng Anh</label>
         <input id="quizInput" class="quiz-input" autocomplete="off" autocapitalize="sentences" placeholder="Nhập một cách nói đúng bằng tiếng Anh..."/>
-        <div class="quiz-actions"><button id="quizCheck" class="primary-button">Kiểm tra</button><button id="quizMic" class="secondary-button">🎤 Nói</button><button id="quizShow" class="secondary-button">Xem đáp án</button><button id="quizNext" class="secondary-button hidden">Câu tiếp theo →</button></div>
+        <div class="quiz-actions">
+          <button id="quizCheck" class="primary-button quiz-action quiz-action-primary">${uiIcon('check-circle')}<span>Kiểm tra</span></button>
+          <button id="quizMic" class="secondary-button quiz-action">${uiIcon('mic')}<span>Nói</span></button>
+          <button id="quizShow" class="secondary-button quiz-action quiz-action-soft">${uiIcon('lightbulb')}<span>Xem đáp án</span></button>
+          <button id="quizNext" class="secondary-button quiz-action hidden"><span>Câu tiếp theo</span>${uiIcon('arrow-right')}</button>
+        </div>
         <div id="quizFeedback" class="quiz-feedback"></div>
       </div>
-      <details class="all-answer-details" style="margin-top:12px"><summary style="cursor:pointer;color:var(--navy);font-weight:700">Xem toàn bộ đáp án</summary>
+      <details class="all-answer-details"><summary>${uiIcon('book-open')}<span>Xem toàn bộ đáp án</span></summary>
         <ol class="answer-list">${items.map(x=>`<li><span data-vi-only>${esc(x.prompt)}</span><br><b>${x.answers.map(esc).join(' / ')}</b></li>`).join('')}</ol>
       </details>`;
   }
@@ -1226,7 +1251,7 @@
     $('#mainView').innerHTML=`
       <section class="page-hero japanese-hero"><div class="eyebrow">JAPANESE · 日本語</div><h1>Tiếng Nhật cho cuộc sống tại Nhật</h1><p>Nội dung Japanese bây giờ được tách thành file riêng theo từng nhóm. Thêm lesson mới không cần nhét dữ liệu vào app.js.</p></section>
       <section class="jp-intro-grid">${modules.map((item,i)=>`<article class="jp-plan accent-${esc(item.accent||['green','purple','yellow'][i%3])}"><span>${String(item.order||i+1).padStart(2,'0')}</span><h3>${esc(item.title)}</h3><p>${esc(item.meaning||item.description||'')}</p><small>${esc(item.category||'')}</small></article>`).join('')}<article class="jp-plan accent-purple"><span>+</span><h3>Work / Service / School…</h3><p>Chỉ cần thêm file lesson + một dòng metadata vào content-index.</p></article></section>
-      <section class="book-section"><div class="section-title-row"><div><h2>${esc(lesson.title||'Japanese starter')}</h2><p>Bấm loa để nghe bằng giọng ja-JP của thiết bị.</p></div></div><div class="jp-list">${phrases.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[0])}">🔊</button><div><strong class="jp-text">${esc(x[0])}</strong><span>${esc(x[1])}</span><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div><div class="green-box">Dữ liệu đến từ <code>data/japanese/daily-life/001.js</code>.</div></section>
+      <section class="book-section"><div class="section-title-row"><div><h2>${esc(lesson.title||'Japanese starter')}</h2><p>Bấm loa để nghe bằng giọng ja-JP của thiết bị.</p></div></div><div class="jp-list">${phrases.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[0])}">${uiIcon('volume-2')}</button><div><strong class="jp-text">${esc(x[0])}</strong><span>${esc(x[1])}</span><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div><div class="green-box">Dữ liệu đến từ <code>data/japanese/daily-life/001.js</code>.</div></section>
     `;
     hydrateSentences($('#mainView'));
   }
@@ -1372,10 +1397,10 @@
     $$('[data-vocab-remove]').forEach(b=>b.onclick=()=>{delete state.saved[b.dataset.vocabRemove];saveState();renderVocab();});
     if($('#startFlashcards')) $('#startFlashcards').onclick=()=>renderFlashcards(items);
   }
-  function vocabCards(items){ return `<div class="vocab-list">${items.map(x=>`<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3><span class="ipa">${esc(x.ipa||'')}</span></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">🔊</button></div><p>${esc(x.meaning||'')}</p>${x.example?`<small>${esc(x.example)}</small>`:''}<div style="margin-top:10px"><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa khỏi danh sách</button></div></article>`).join('')}</div>`; }
+  function vocabCards(items){ return `<div class="vocab-list">${items.map(x=>`<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3><span class="ipa">${esc(x.ipa||'')}</span></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">${uiIcon('volume-2')}</button></div><p>${esc(x.meaning||'')}</p>${x.example?`<small>${esc(x.example)}</small>`:''}<div style="margin-top:10px"><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa khỏi danh sách</button></div></article>`).join('')}</div>`; }
   function emptyVocab(){ return `<div class="empty-state"><strong>Chưa có từ nào được lưu</strong>Vào Mẫu 01, chạm một từ tiếng Anh và bấm ☆ Lưu.<br><button class="primary-button" style="margin-top:14px" data-go="lesson/1">Mở Mẫu 01</button></div>`; }
   function renderFlashcards(items){
-    flashIndex=0; const draw=()=>{const x=items[flashIndex%items.length];$('#vocabArea').innerHTML=`<div class="flashcard"><div><div class="front">${esc(x.term)}</div><div class="ipa">${esc(x.ipa||'')}</div><div id="flashBack" class="back hidden"><strong>${esc(x.meaning||'')}</strong>${x.example?`<p>${esc(x.example)}</p>`:''}</div><div class="quiz-actions" style="justify-content:center;margin-top:22px"><button id="flashSpeak" class="secondary-button">🔊 Nghe</button><button id="flashReveal" class="primary-button">Hiện nghĩa</button><button id="flashNext" class="secondary-button">Từ tiếp theo →</button></div></div></div>`;$('#flashSpeak').onclick=()=>speak(x.term);$('#flashReveal').onclick=()=>$('#flashBack').classList.toggle('hidden');$('#flashNext').onclick=()=>{flashIndex=(flashIndex+1)%items.length;draw();};};draw();
+    flashIndex=0; const draw=()=>{const x=items[flashIndex%items.length];$('#vocabArea').innerHTML=`<div class="flashcard"><div><div class="front">${esc(x.term)}</div><div class="ipa">${esc(x.ipa||'')}</div><div id="flashBack" class="back hidden"><strong>${esc(x.meaning||'')}</strong>${x.example?`<p>${esc(x.example)}</p>`:''}</div><div class="quiz-actions" style="justify-content:center;margin-top:22px"><button id="flashSpeak" class="secondary-button">${uiIcon('volume-2')}<span>Nghe</span></button><button id="flashReveal" class="primary-button">Hiện nghĩa</button><button id="flashNext" class="secondary-button">Từ tiếp theo →</button></div></div></div>`;$('#flashSpeak').onclick=()=>speak(x.term);$('#flashReveal').onclick=()=>$('#flashBack').classList.toggle('hidden');$('#flashNext').onclick=()=>{flashIndex=(flashIndex+1)%items.length;draw();};};draw();
   }
 
   function shadowItemsFromLessons(lessons){
@@ -1474,7 +1499,7 @@
     const holder=$('#shadowCurrentCard');
     holder.innerHTML=`
       <div class="shadow-english-wrap">
-        <button id="shadowCardPlay" class="speaker" aria-label="Nghe câu">🔊</button>
+        <button id="shadowCardPlay" class="speaker" aria-label="Nghe câu">${uiIcon('volume-2')}</button>
         <div class="english-text shadow-english-text" data-en="${escAttr(item.en)}"></div>
       </div>
       <div class="shadow-vi" data-vi-only>${esc(item.vi||'')}</div>
