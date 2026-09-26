@@ -31,6 +31,8 @@
       rimeDone:{},
       gameAnswered:{},
       sentenceStatus:{},
+      sentenceHintLevel:{},
+      activeSentenceHint:'',
       fullPass1:false,
       fullPass2:false,
       comprehension:{},
@@ -51,6 +53,8 @@
         rimeDone:Object.assign({},d.rimeDone,raw.rimeDone||{}),
         gameAnswered:Object.assign({},d.gameAnswered,raw.gameAnswered||{}),
         sentenceStatus:Object.assign({},d.sentenceStatus,raw.sentenceStatus||{}),
+        sentenceHintLevel:Object.assign({},d.sentenceHintLevel,raw.sentenceHintLevel||{}),
+        activeSentenceHint:raw.activeSentenceHint||'',
         comprehension:Object.assign({},d.comprehension,raw.comprehension||{}),
         matching:Object.assign({},d.matching,raw.matching||{}),
         finalStatus:Object.assign({},d.finalStatus,raw.finalStatus||{})
@@ -468,42 +472,131 @@
     bindActionBar();
   }
 
+  function wordTokens(text){
+    return String(text||'')
+      .toLowerCase()
+      .normalize('NFC')
+      .split(/[\\s,.;:!?“”"()…]+/)
+      .map(function(x){return x.trim();})
+      .filter(Boolean);
+  }
+
   function watchWords(text){
+    var tokens=wordTokens(text);
     var found=[];
-    L.keyWords.forEach(function(k){if(text.toLowerCase().indexOf(k.word.toLowerCase())>=0)found.push(k.word);});
-    L.difficulty.attention.forEach(function(w){if(text.toLowerCase().indexOf(w.toLowerCase())>=0 && found.indexOf(w)<0)found.push(w);});
+    L.keyWords.forEach(function(k){
+      if(tokens.indexOf(k.word.toLowerCase())>=0 && found.indexOf(k.word)<0)found.push(k.word);
+    });
+    L.difficulty.attention.forEach(function(w){
+      if(tokens.indexOf(w.toLowerCase())>=0 && found.indexOf(w)<0)found.push(w);
+    });
     return found;
+  }
+
+  function genericHints(word){
+    return [
+      'Cho con 5 giây tự đọc tiếng “'+word+'”.',
+      'Hỏi: “Con nhìn thấy phần vần nào trong tiếng này?”',
+      'Tách tiếng thành phụ âm đầu + vần.',
+      'Xác định thanh rồi ghép lại từ đầu.',
+      'Sau khi đọc ra, cho con đọc lại cả cụm chứa tiếng “'+word+'”.'
+    ];
+  }
+
+  function sentenceHintPanel(sentenceIndex,word){
+    var hintKey=sentenceIndex+'::'+word;
+    if(state.activeSentenceHint!==hintKey)return '';
+    var key=L.keyWords.find(function(k){return k.word===word;});
+    var hints=key?key.hints:genericHints(word);
+    var level=Math.max(1,Number(state.sentenceHintLevel[hintKey]||1));
+    var shown=hints.slice(0,Math.min(level,hints.length));
+    var phrase=key?key.phrase:'';
+    var sentence=key?key.sentence:'';
+
+    return '<div class="sentence-hint-panel" data-hint-key="'+esc(hintKey)+'">'
+      +'<div class="sentence-hint-title"><span>🔐</span><div><small>ĐANG PHÁ KHÓA</small><strong>'+esc(word)+'</strong></div></div>'
+      +'<div class="sentence-hint-steps">'+shown.map(function(h,i){return '<div><span>B'+(i+1)+'</span><b>'+esc(h)+'</b></div>';}).join('')+'</div>'
+      +(phrase?'<div class="hint-return"><small>Sau khi đọc ra:</small><span>'+esc(phrase)+'</span><span>'+esc(sentence)+'</span></div>':'')
+      +'<div class="sentence-hint-actions">'
+      +(level<hints.length?'<button class="secondary sentence-next-hint" type="button">Gợi ý tiếp theo →</button>':'<span class="hint-complete">Đã mở hết gợi ý.</span>')
+      +'<button class="primary sentence-solved-hint" type="button">✅ Con tự đọc ra rồi</button>'
+      +'</div></div>';
   }
 
   function sentenceCard(item,index){
     var status=state.sentenceStatus[index]||'';
     var watches=watchWords(item.text);
-    return '<article class="sentence-card '+status+'"><div class="sentence-head"><span>Câu '+(index+1)+'</span><div class="sentence-status">'+esc(status==='ok'?'✅ Đọc được':status==='help'?'⚠️ Có vấp':'Chưa đọc')+'</div></div>'
+    return '<article class="sentence-card '+status+'" data-sentence-index="'+index+'"><div class="sentence-head"><span>Câu '+(index+1)+'</span><div class="sentence-status">'+esc(status==='ok'?'✅ Đọc được':status==='help'?'⚠️ Có vấp':'Chưa đọc')+'</div></div>'
       +'<div class="chunk-line">'+item.chunks.map(function(c){return '<span>'+esc(c)+'</span>';}).join('<b>/</b>')+'</div>'
-      +(watches.length?'<div class="watch-row"><small>Canh các tiếng:</small>'+watches.map(function(w){return '<button class="watch-word" data-watch="'+esc(w)+'">'+esc(w)+'</button>';}).join('')+'</div>':'')
+      +(watches.length?'<div class="watch-row"><small>🔴 Tiếng có thể làm con vấp:</small>'+watches.map(function(w){return '<button class="watch-word" data-watch="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join('')+'</div>':'')
+      +watches.map(function(w){return sentenceHintPanel(index,w);}).join('')
       +'<div class="sentence-actions"><button data-sentence-status="ok">✅ Con đọc được câu</button><button data-sentence-status="help">⚠️ Con bị vấp</button></div>'
       +(status?'<div class="micro-understand"><b>'+esc(item.check)+'</b><button class="show-answer secondary">Xem câu trả lời sau khi con nói</button><p class="answer hidden">'+esc(item.answer)+'</p></div>':'')
       +'</article>';
   }
 
   function renderSentences(){
-    shell('<div class="mission-head"><span class="mission-kicker">⑦ ĐỌC TỪNG CÂU · 5–7 PHÚT</span><h2>Đúng → liền mạch → tự nhiên</h2><p>Nếu con vấp, <b>không đọc hộ</b>. Quay lại đúng tiếng đó: tìm vần → tách → ghép → rồi đọc lại cả cụm.</p></div>'
+    shell('<div class="mission-head"><span class="mission-kicker">⑦ ĐỌC TỪNG CÂU · 5–7 PHÚT</span><h2>Đúng → liền mạch → tự nhiên</h2><p>Nếu con vấp, <b>không đọc hộ</b>. Bấm đúng tiếng màu đỏ để mở gợi ý <b>từng bước</b>: vần → tách → ghép → đọc lại cả cụm.</p></div>'
       +'<div class="sentence-list">'+L.story.sentences.map(sentenceCard).join('')+'</div>'
       +actionBar('Ghép thành toàn bài →',true));
+
     $$('.sentence-card').forEach(function(card,i){
       $$('[data-sentence-status]',card).forEach(function(b){b.onclick=function(){
         state.sentenceStatus[i]=b.dataset.sentenceStatus;save();renderSentences();
       };});
-      var show=$('.show-answer',card);if(show)show.onclick=function(){$('.answer',card).classList.remove('hidden');};
+
+      var show=$('.show-answer',card);
+      if(show)show.onclick=function(){$('.answer',card).classList.remove('hidden');};
+
       $$('.watch-word',card).forEach(function(b){b.onclick=function(){
         var w=b.dataset.watch;
-        var key=L.keyWords.find(function(k){return k.word===w;});
-        if(key){
-          toast(key.hints[Math.min(Number(state.hintLevel[w]||0),key.hints.length-1)]||('Tìm vần trong “'+w+'” trước.'));
+        var hintKey=i+'::'+w;
+        if(state.activeSentenceHint!==hintKey){
+          state.activeSentenceHint=hintKey;
+          state.sentenceHintLevel[hintKey]=1;
         }else{
-          toast('Cho con tìm vần trong “'+w+'” trước, rồi mới ghép lại.');
+          var key=L.keyWords.find(function(k){return k.word===w;});
+          var hints=key?key.hints:genericHints(w);
+          state.sentenceHintLevel[hintKey]=Math.min(hints.length,Number(state.sentenceHintLevel[hintKey]||1)+1);
         }
+        state.sentenceStatus[i]='help';
+        save();
+        renderSentences();
+        setTimeout(function(){
+          var panel=$('[data-hint-key="'+hintKey+'"]');
+          if(panel)panel.scrollIntoView({behavior:'smooth',block:'center'});
+        },20);
       };});
+
+      var nextHint=$('.sentence-next-hint',card);
+      if(nextHint)nextHint.onclick=function(){
+        var panel=nextHint.closest('.sentence-hint-panel');
+        var hintKey=panel.dataset.hintKey;
+        var parts=hintKey.split('::');
+        var w=parts.slice(1).join('::');
+        var key=L.keyWords.find(function(k){return k.word===w;});
+        var hints=key?key.hints:genericHints(w);
+        state.sentenceHintLevel[hintKey]=Math.min(hints.length,Number(state.sentenceHintLevel[hintKey]||1)+1);
+        save();renderSentences();
+        setTimeout(function(){
+          var newPanel=$('[data-hint-key="'+hintKey+'"]');
+          if(newPanel)newPanel.scrollIntoView({behavior:'smooth',block:'center'});
+        },20);
+      };
+
+      var solvedHint=$('.sentence-solved-hint',card);
+      if(solvedHint)solvedHint.onclick=function(){
+        var panel=solvedHint.closest('.sentence-hint-panel');
+        var hintKey=panel.dataset.hintKey;
+        var parts=hintKey.split('::');
+        var w=parts.slice(1).join('::');
+        var old=state.wordStatus[w];
+        state.wordStatus[w]='self';
+        if(old!=='self')state.selfWins++;
+        state.activeSentenceHint='';
+        save();renderSentences();
+        toast('Tốt! Bây giờ đọc lại cả cụm có tiếng “'+w+'”.');
+      };
     });
     bindActionBar();
   }
