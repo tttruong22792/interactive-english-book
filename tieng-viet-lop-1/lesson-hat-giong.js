@@ -1,46 +1,143 @@
 window.TV1_LESSON = {
-  id: 'tv1-hat-giong-nho',
+  id: 'tv1-hat-giong-nho-v3',
   title: 'Hạt giống nhỏ',
-  subtitle: 'uông · ương · ươc',
-  goal: 'Nhận chắc ba vần uông, ương, ươc; tự đánh vần tiếng mới theo công thức âm đầu + vần + thanh; đọc hiểu bài Hạt giống nhỏ mà không học thuộc lòng.',
-  principles: [
-    'Nhìn cấu tạo trước khi đọc cả tiếng',
-    'Tự đánh vần trước, người lớn chỉ sửa sau',
-    'Đọc theo cụm nghĩa thay vì kéo từng chữ',
-    'Che chữ và nhớ lại để chuyển sang trí nhớ lâu dài'
+  ttsDisabled: true,
+  duration: '20–25 phút',
+  goal: [
+    'Tự đọc được toàn bộ bài “Hạt giống nhỏ” theo từng câu.',
+    'Khi bí một tiếng, biết tìm vần → tách âm đầu + vần + thanh → tự ghép lại.',
+    'Phân biệt và vận dụng các cấu trúc uông / ương / ươn / ươc trong tiếng mới.',
+    'Hiểu được diễn biến chính của câu chuyện, không chỉ đọc thành tiếng.'
   ],
-  teacherPlan: {
-    totalMinutes: 15,
-    rule: 'Mỗi lần chỉ sửa một lỗi. Nếu con bí quá 5 giây, gợi ý vần trước rồi để con tự ghép tiếp.',
-    phases: [
-      {minutes:2, title:'Nhận 3 vần', note:'Chỉ – đọc – che – hỏi lại.'},
-      {minutes:4, title:'Đánh vần 4 từ', note:'Vần trước → âm đầu → thanh.'},
-      {minutes:3, title:'Phân loại từ', note:'Cho con tự tìm “nhà vần”.'},
-      {minutes:4, title:'Đọc đoạn ngắn', note:'Mỗi lần 1 câu, hiểu rồi mới sang câu sau.'},
-      {minutes:2, title:'Nhớ lại', note:'Che chữ, hỏi nhanh, dừng khi con còn hứng thú.'}
+  difficulty: {
+    easy: ['một','hạt','nhỏ','nằm','bên','bé','đem','về','thả','góc','chỉ','ít','hôm','mầm','non','đã','lên','lá','rung','như','cảm','ơn'],
+    attention: ['giống','lặng','lẽ','nhặt','giọt','khẽ','muốn'],
+    key: ['đường','được','xuống','vườn','vươn','uống','những','sương']
+  },
+  warmup: {
+    prompts: [
+      'Con thấy bạn nhỏ đang làm gì?',
+      'Con đoán cây non này mọc lên từ đâu?',
+      'Theo con, hạt giống có “cảm ơn” bạn nhỏ được không?'
     ]
   },
-  rimes: [
-    {id:'uong', text:'uông', body:'uô', ending:'ng', cue:'uô + ng', color:'blue'},
-    {id:'uong2', text:'ương', body:'ươ', ending:'ng', cue:'ươ + ng', color:'green'},
-    {id:'uoc', text:'ươc', body:'ươ', ending:'c', cue:'ươ + c', color:'orange'}
+  keyWords: [
+    {
+      word:'đường',
+      family:'ương / ường',
+      hints:[
+        'Tìm vần: ương.',
+        'Thêm thanh huyền: ương → ường.',
+        'Ghép âm đầu: đ + ường.',
+        'Ghép lại: đ + ường → đường.'
+      ],
+      phrase:'bên đường',
+      sentence:'Hạt giống nằm bên đường.',
+      transfer:['sương','dường','giường']
+    },
+    {
+      word:'được',
+      family:'ươc / ược',
+      hints:[
+        'Tìm vần: ươc.',
+        'Thêm thanh nặng: ươc → ược.',
+        'Ghép âm đầu: đ + ược.',
+        'Ghép lại: đ + ược → được.'
+      ],
+      phrase:'nhặt được',
+      sentence:'Bé nhặt được hạt giống.',
+      transfer:['ước','thước','nước']
+    },
+    {
+      word:'xuống',
+      family:'uông / uống',
+      hints:[
+        'Tìm vần: uông.',
+        'Thêm thanh sắc: uông → uống.',
+        'Ghép âm đầu: x + uống.',
+        'Ghép lại: x + uống → xuống.'
+      ],
+      phrase:'thả xuống',
+      sentence:'Bé thả hạt xuống đất.',
+      transfer:['uống','chuông']
+    },
+    {
+      word:'vườn',
+      family:'ươn / ườn',
+      hints:[
+        'Tìm vần: ươn.',
+        'Thêm thanh huyền: ươn → ườn.',
+        'Ghép âm đầu: v + ườn.',
+        'Ghép lại: v + ườn → vườn.'
+      ],
+      phrase:'góc vườn',
+      sentence:'Bé đem hạt về vườn.',
+      transfer:['vươn','lươn']
+    },
+    {
+      word:'vươn',
+      family:'ươn',
+      hints:[
+        'Tìm vần: ươn.',
+        'Tiếng này không có thanh dấu.',
+        'Ghép âm đầu: v + ươn.',
+        'Ghép lại: v + ươn → vươn.'
+      ],
+      phrase:'vươn lên',
+      sentence:'Mầm non vươn lên.',
+      transfer:['vườn','lươn']
+    },
+    {
+      word:'uống',
+      family:'uông / uống',
+      hints:[
+        'Tìm vần: uông.',
+        'Thêm thanh sắc: uông → uống.',
+        'Không có phụ âm đầu.',
+        'Ghép lại: uông + sắc → uống.'
+      ],
+      phrase:'uống những giọt sương',
+      sentence:'Cây non uống nước.',
+      transfer:['xuống','chuông']
+    },
+    {
+      word:'những',
+      family:'ưng / ững',
+      hints:[
+        'Tìm vần: ưng.',
+        'Thêm thanh ngã: ưng → ững.',
+        'Ghép âm đầu: nh + ững.',
+        'Ghép lại: nh + ững → những.'
+      ],
+      phrase:'những giọt sương',
+      sentence:'Những giọt sương long lanh.',
+      transfer:['chững','vững']
+    },
+    {
+      word:'sương',
+      family:'ương',
+      hints:[
+        'Tìm vần: ương.',
+        'Tiếng này không có thanh dấu.',
+        'Ghép âm đầu: s + ương.',
+        'Ghép lại: s + ương → sương.'
+      ],
+      phrase:'giọt sương',
+      sentence:'Sáng sớm có sương.',
+      transfer:['đường','dường','giường']
+    }
   ],
-  focusWords: [
-    {id:'uong-word', word:'uống', onset:'', rime:'uông', tone:'sắc', build:['uông','sắc','uống'], meaning:'uống nước'},
-    {id:'giuong', word:'giường', onset:'gi', rime:'ương', tone:'huyền', build:['gi','ương','giương','huyền','giường'], meaning:'cái giường'},
-    {id:'uoc-word', word:'ước', onset:'', rime:'ươc', tone:'sắc', build:['ươc','sắc','ước'], meaning:'mong ước'},
-    {id:'thuoc', word:'thước', onset:'th', rime:'ươc', tone:'sắc', build:['th','ươc','thươc','sắc','thước'], meaning:'cái thước'}
+  rimeDrills: [
+    {title:'Nhà ương / ường', pattern:'ương', words:['sương','đường','dường','giường']},
+    {title:'Nhà ươn / ườn', pattern:'ươn', words:['vươn','vườn','lươn']},
+    {title:'Nhà uông / uống', pattern:'uông', words:['uống','xuống','chuông']},
+    {title:'Nhà ươc', pattern:'ươc', words:['được','ước','thước','nước']}
   ],
-  sortWords: [
-    {word:'uống', rime:'uông'},
-    {word:'xuống', rime:'uông'},
-    {word:'chuông', rime:'uông'},
-    {word:'đường', rime:'ương'},
-    {word:'sương', rime:'ương'},
-    {word:'giường', rime:'ương'},
-    {word:'ước', rime:'ươc'},
-    {word:'thước', rime:'ươc'},
-    {word:'nước', rime:'ươc'}
+  quickGame: [
+    {prompt:'Từ nào cùng họ vần với “đường”?', choices:['sương','xuống','được'], answer:'sương'},
+    {prompt:'Từ nào cùng họ vần với “vươn”?', choices:['vườn','đường','uống'], answer:'vườn'},
+    {prompt:'Từ nào có vần uông?', choices:['chuông','thước','sương'], answer:'chuông'},
+    {prompt:'Từ nào có vần ươc?', choices:['nước','vườn','đường'], answer:'nước'}
   ],
   story: {
     title:'Hạt giống nhỏ',
@@ -48,56 +145,95 @@ window.TV1_LESSON = {
       {
         text:'Một hạt giống nhỏ nằm lặng lẽ bên đường.',
         chunks:['Một hạt giống nhỏ','nằm lặng lẽ','bên đường.'],
-        hard:['đường']
+        check:'Hạt giống nhỏ nằm ở đâu?',
+        answer:'Bên đường.'
       },
       {
         text:'Bé nhặt được, đem về thả xuống góc vườn.',
         chunks:['Bé nhặt được,','đem về','thả xuống góc vườn.'],
-        hard:['xuống','vườn']
+        check:'Bé làm gì với hạt giống?',
+        answer:'Bé nhặt được, đem về thả xuống góc vườn.'
       },
       {
         text:'Chỉ ít hôm, mầm non đã vươn lên, uống những giọt sương sớm.',
         chunks:['Chỉ ít hôm,','mầm non đã vươn lên,','uống những giọt sương sớm.'],
-        hard:['vươn','uống','sương']
+        check:'Mầm non làm gì?',
+        answer:'Mầm non vươn lên và uống những giọt sương sớm.'
       },
       {
         text:'Lá non khẽ rung rung.',
         chunks:['Lá non','khẽ rung rung.'],
-        hard:[]
+        check:'Lá non thế nào?',
+        answer:'Lá non khẽ rung rung.'
       },
       {
         text:'Dường như lá muốn cảm ơn bé.',
         chunks:['Dường như','lá muốn cảm ơn bé.'],
-        hard:['Dường']
-      }
-    ],
-    questions:[
-      {
-        prompt:'Bé làm gì khi nhặt được hạt giống?',
-        choices:['Đem về thả xuống góc vườn.','Để lại bên đường.'],
-        answer:'Đem về thả xuống góc vườn.'
-      },
-      {
-        prompt:'Sau ít hôm, mầm non thế nào?',
-        choices:['Đã vươn lên.','Vẫn nằm im.'],
-        answer:'Đã vươn lên.'
-      },
-      {
-        prompt:'Lá non làm gì?',
-        choices:['Khẽ rung rung.','Rơi xuống đất.'],
-        answer:'Khẽ rung rung.'
-      },
-      {
-        prompt:'Vì sao dường như lá muốn cảm ơn bé?',
-        choices:['Vì bé đã nhặt và chăm hạt giống.','Vì bé hái lá.'],
-        answer:'Vì bé đã nhặt và chăm hạt giống.'
+        check:'Lá dường như muốn làm gì?',
+        answer:'Lá muốn cảm ơn bé.'
       }
     ]
   },
-  matching:[
-    {left:'Mầm non', right:'đã vươn lên.'},
-    {left:'Lá non', right:'khẽ rung rung.'}
+  comprehension: [
+    {
+      prompt:'Hạt giống lúc đầu ở đâu?',
+      choices:['Bên đường.','Trong chậu.','Trong nhà.'],
+      answer:'Bên đường.'
+    },
+    {
+      prompt:'Bé đã làm gì với hạt giống?',
+      choices:['Nhặt và đem về góc vườn.','Bỏ đi.','Đem cho bạn.'],
+      answer:'Nhặt và đem về góc vườn.'
+    },
+    {
+      prompt:'Sau ít hôm, mầm non thế nào?',
+      choices:['Đã vươn lên.','Vẫn nằm im.','Bị khô.'],
+      answer:'Đã vươn lên.'
+    },
+    {
+      prompt:'Vì sao dường như lá muốn cảm ơn bé?',
+      choices:['Vì bé đã giúp hạt giống có chỗ mọc lên.','Vì bé hái lá.','Vì bé làm lá rung.'],
+      answer:'Vì bé đã giúp hạt giống có chỗ mọc lên.'
+    }
   ],
-  writeTargets:['uống','giường','ước','thước'],
-  reviewIntervalsHours:[24,72,168]
+  matching: [
+    {left:'Mầm non',right:'đã vươn lên.'},
+    {left:'Lá non',right:'khẽ rung rung.'}
+  ],
+  fullText:[
+    'Một hạt giống nhỏ nằm lặng lẽ bên đường.',
+    'Bé nhặt được, đem về thả xuống góc vườn.',
+    'Chỉ ít hôm, mầm non đã vươn lên, uống những giọt sương sớm.',
+    'Lá non khẽ rung rung.',
+    'Dường như lá muốn cảm ơn bé.'
+  ],
+  finalChallenge: [
+    'Em ngủ trên giường.',
+    'Chuông reo rất to.',
+    'Bé dùng thước kẻ.',
+    'Mầm cây vươn cao.',
+    'Em được mẹ khen.'
+  ],
+  review: {
+    end:['đường','được','xuống','vườn','vươn','uống','những','sương'],
+    day1:[
+      'Con đường rất dài.',
+      'Bé uống nước.',
+      'Cây non vươn lên.',
+      'Em được quà.'
+    ],
+    day3:[
+      'Em ngủ trên giường.',
+      'Chuông trường reo.',
+      'Bé dùng thước kẻ.',
+      'Sáng sớm có sương.'
+    ],
+    day7:[
+      'Em đi trên đường.',
+      'Cây vươn cao trong vườn.',
+      'Em uống nước rồi dùng thước kẻ.',
+      'Những giọt sương còn trên lá.'
+    ]
+  },
+  writing:['uống','giường','ước','thước']
 };
