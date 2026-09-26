@@ -107,6 +107,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-008",
+    language: "en",
+    category: "patterns",
+    order: 8,
+    title: "I’d rather…",
+    meaning: "Tôi thà… hơn / Tôi thích… hơn / Tôi muốn… hơn",
+    description: "Dùng khi có nhiều lựa chọn và bạn muốn nói mình nghiêng về lựa chọn nào hơn.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/008.js",
+    route: "lesson/8",
+    accent: "orange",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
