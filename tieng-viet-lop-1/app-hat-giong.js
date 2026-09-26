@@ -476,7 +476,8 @@
     return String(text||'')
       .toLowerCase()
       .normalize('NFC')
-      .split(/[\\s,.;:!?“”"()…]+/)
+      .replace(/[.,;:!?“”"()…]/g,' ')
+      .split(/\s+/)
       .map(function(x){return x.trim();})
       .filter(Boolean);
   }
@@ -493,7 +494,17 @@
     return found;
   }
 
+  function uniqueWords(text){
+    var seen={};
+    return wordTokens(text).filter(function(w){
+      if(seen[w])return false;
+      seen[w]=true;
+      return true;
+    });
+  }
+
   function genericHints(word){
+
     return [
       'Cho con 5 giây tự đọc tiếng “'+word+'”.',
       'Hỏi: “Con nhìn thấy phần vần nào trong tiếng này?”',
@@ -526,29 +537,42 @@
   function sentenceCard(item,index){
     var status=state.sentenceStatus[index]||'';
     var watches=watchWords(item.text);
-    return '<article class="sentence-card '+status+'" data-sentence-index="'+index+'"><div class="sentence-head"><span>Câu '+(index+1)+'</span><div class="sentence-status">'+esc(status==='ok'?'✅ Đọc được':status==='help'?'⚠️ Có vấp':'Chưa đọc')+'</div></div>'
+    var allWords=uniqueWords(item.text);
+    var activeKey=String(state.activeSentenceHint||'');
+    var activeWord='';
+    if(activeKey.indexOf(index+'::')===0)activeWord=activeKey.slice((index+'::').length);
+
+    return '<article class="sentence-card '+status+'" data-sentence-index="'+index+'">'
+      +'<div class="sentence-head"><span>Câu '+(index+1)+'</span><div class="sentence-status">'+esc(status==='ok'?'✅ Đọc được':status==='help'?'⚠️ Có vấp':'Chưa đọc')+'</div></div>'
       +'<div class="chunk-line">'+item.chunks.map(function(c){return '<span>'+esc(c)+'</span>';}).join('<b>/</b>')+'</div>'
-      +(watches.length?'<div class="watch-row"><small>🔴 Tiếng có thể làm con vấp:</small>'+watches.map(function(w){return '<button class="watch-word" data-watch="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join('')+'</div>':'')
-      +watches.map(function(w){return sentenceHintPanel(index,w);}).join('')
+      +(watches.length?'<div class="watch-row"><small>🔴 Tiếng có thể làm con vấp:</small>'+watches.map(function(w){return '<button class="watch-word '+(activeWord===w?'active':'')+'" data-watch="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join('')+'</div>':'')
+      +(status==='help'
+        ?'<div class="stumble-picker"><div><b>Con vấp ở tiếng nào?</b><small>Chạm đúng tiếng để mở gợi ý từng bước.</small></div><div class="stumble-word-list">'+allWords.map(function(w){var predicted=watches.indexOf(w)>=0;return '<button class="stumble-word '+(predicted?'predicted ':'')+(activeWord===w?'active':'')+'" data-watch="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join('')+'</div></div>'
+        :'')
+      +allWords.map(function(w){return sentenceHintPanel(index,w);}).join('')
       +'<div class="sentence-actions"><button data-sentence-status="ok">✅ Con đọc được câu</button><button data-sentence-status="help">⚠️ Con bị vấp</button></div>'
       +(status?'<div class="micro-understand"><b>'+esc(item.check)+'</b><button class="show-answer secondary">Xem câu trả lời sau khi con nói</button><p class="answer hidden">'+esc(item.answer)+'</p></div>':'')
       +'</article>';
   }
 
   function renderSentences(){
-    shell('<div class="mission-head"><span class="mission-kicker">⑦ ĐỌC TỪNG CÂU · 5–7 PHÚT</span><h2>Đúng → liền mạch → tự nhiên</h2><p>Nếu con vấp, <b>không đọc hộ</b>. Bấm đúng tiếng màu đỏ để mở gợi ý <b>từng bước</b>: vần → tách → ghép → đọc lại cả cụm.</p></div>'
+    shell('<div class="mission-head"><span class="mission-kicker">⑦ ĐỌC TỪNG CÂU · 5–7 PHÚT</span><h2>Đúng → liền mạch → tự nhiên</h2><p>Nếu con vấp, <b>không đọc hộ</b>. Có thể bấm ngay tiếng đỏ, hoặc bấm <b>“Con bị vấp”</b> rồi chọn đúng tiếng con đang mắc. Web sẽ gợi ý từng bước: vần → tách → ghép → đọc lại cả cụm.</p></div>'
       +'<div class="sentence-list">'+L.story.sentences.map(sentenceCard).join('')+'</div>'
       +actionBar('Ghép thành toàn bài →',true));
 
     $$('.sentence-card').forEach(function(card,i){
-      $$('[data-sentence-status]',card).forEach(function(b){b.onclick=function(){
-        state.sentenceStatus[i]=b.dataset.sentenceStatus;save();renderSentences();
+      $('[data-sentence-status]',card).forEach(function(b){b.onclick=function(){
+        state.sentenceStatus[i]=b.dataset.sentenceStatus;
+        if(b.dataset.sentenceStatus==='help' && String(state.activeSentenceHint||'').indexOf(i+'::')!==0){
+          state.activeSentenceHint='';
+        }
+        save();renderSentences();
       };});
 
       var show=$('.show-answer',card);
       if(show)show.onclick=function(){$('.answer',card).classList.remove('hidden');};
 
-      $$('.watch-word',card).forEach(function(b){b.onclick=function(){
+      $('[data-watch]',card).forEach(function(b){b.onclick=function(){
         var w=b.dataset.watch;
         var hintKey=i+'::'+w;
         if(state.activeSentenceHint!==hintKey){
