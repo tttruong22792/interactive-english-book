@@ -101,7 +101,7 @@
     app.innerHTML=''
       +'<section class="hero-card">'
       +'<div class="hero-copy"><span class="eyebrow">TIẾNG VIỆT LỚP 1</span><h1>Bài 1 <span>a</span> · <span>c</span></h1><p>'+esc(L.goal)+'</p>'
-      +'<div class="hero-actions"><button class="primary big" id="startLesson">▶ Bắt đầu học</button>'+audioButton(L.audio.welcome,'Cô giáo nói')+'</div></div>'
+      +'<div class="hero-actions"><button class="primary big" id="startLesson">▶ Bắt đầu học</button>'+audioButton(L.audio.welcome,'Cô giáo nói')+'<a class="secondary lesson-link" href="./bai41.html">Mở Bài 41 →</a></div></div>'
       +'<div class="hero-mascot"><div class="mascot-bubble">Mỗi lần chỉ học<br><b>một điều nhỏ</b> nhé!</div><div class="mascot">🐿️</div></div>'
       +'</section>'
       +'<section class="method-card"><div><span>🧠</span><strong>Học để hiểu, không học vẹt</strong><p>Nghe → tự đoán → thao tác → nói lại → ôn cách quãng.</p></div><div class="method-tags">'+L.principles.map(function(x){return '<span>'+esc(x)+'</span>';}).join('')+'</div></section>'
