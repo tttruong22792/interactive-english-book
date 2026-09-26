@@ -63,127 +63,168 @@
     updateHeader();
   }
 
-  var IMAGE_DB='vuiHocTiengVietImages';
-  var IMAGE_DB_VERSION=1;
-  var IMAGE_STORE='lessonImages';
-  var imageObjectUrls={};
+  var IMAGE_API='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/vietnamese-lesson-images';
+  var IMAGE_OWNER_PREFIX='vuiHocTiengViet:imageOwner:';
+  var imageEditMode=false;
 
-  function openImageDb(){
-    return new Promise(function(resolve,reject){
-      if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return;}
-      var request=indexedDB.open(IMAGE_DB,IMAGE_DB_VERSION);
-      request.onupgradeneeded=function(){
-        var db=request.result;
-        if(!db.objectStoreNames.contains(IMAGE_STORE))db.createObjectStore(IMAGE_STORE);
-      };
-      request.onsuccess=function(){resolve(request.result);};
-      request.onerror=function(){reject(request.error||new Error('Cannot open image database'));};
-    });
+  function cloudSlotKey(slotId){
+    return String(L.id||'tv1-lesson').replace(/-v\\d+$/,'')+':'+slotId;
   }
 
-  function imageKey(slotId){
-    return L.id+':'+slotId;
-  }
-
-  async function saveSlotImage(slotId,file){
-    var db=await openImageDb();
-    await new Promise(function(resolve,reject){
-      var tx=db.transaction(IMAGE_STORE,'readwrite');
-      tx.objectStore(IMAGE_STORE).put({
-        blob:file,
-        name:file.name||'image',
-        type:file.type||'image/jpeg',
-        updatedAt:Date.now()
-      },imageKey(slotId));
-      tx.oncomplete=resolve;
-      tx.onerror=function(){reject(tx.error||new Error('Cannot save image'));};
-    });
-    db.close();
-  }
-
-  async function getSlotImage(slotId){
-    var db=await openImageDb();
-    var value=await new Promise(function(resolve,reject){
-      var tx=db.transaction(IMAGE_STORE,'readonly');
-      var req=tx.objectStore(IMAGE_STORE).get(imageKey(slotId));
-      req.onsuccess=function(){resolve(req.result||null);};
-      req.onerror=function(){reject(req.error||new Error('Cannot read image'));};
-    });
-    db.close();
-    return value;
-  }
-
-  async function deleteSlotImage(slotId){
-    var db=await openImageDb();
-    await new Promise(function(resolve,reject){
-      var tx=db.transaction(IMAGE_STORE,'readwrite');
-      tx.objectStore(IMAGE_STORE).delete(imageKey(slotId));
-      tx.oncomplete=resolve;
-      tx.onerror=function(){reject(tx.error||new Error('Cannot delete image'));};
-    });
-    db.close();
+  function ownerStorageKey(slotId){
+    return IMAGE_OWNER_PREFIX+cloudSlotKey(slotId);
   }
 
   function imageSlot(slotId,defaultSrc,alt,label){
     return '<div class="editable-image-slot" data-image-slot="'+esc(slotId)+'" data-default-src="'+esc(defaultSrc)+'">'
       +'<div class="image-slot-frame"><img class="image-slot-preview" src="'+esc(defaultSrc)+'" alt="'+esc(alt)+'"></div>'
-      +'<div class="image-slot-controls"><div><b>🖼️ '+esc(label||'Ảnh minh họa')+'</b><small>Ảnh bạn chọn được giữ nguyên chất lượng, không nén.</small></div>'
-      +'<label class="image-upload-btn">📷 Chọn / thay ảnh<input class="image-file-input" type="file" accept="image/*"></label>'
+      +'<div class="image-slot-controls"><div><b>🖼️ '+esc(label||'Ảnh minh họa')+'</b><small>Upload một lần, ảnh sẽ tự đồng bộ sang máy và điện thoại khác.</small></div>'
+      +'<label class="image-upload-btn">📷 Chọn / thay ảnh<input class="image-file-input" type="file" accept="image/jpeg,image/png,image/webp"></label>'
       +'<button class="image-reset-btn" type="button">↩ Ảnh mặc định</button></div>'
-      +'<div class="image-local-note">Lưu trên trình duyệt của thiết bị này.</div>'
+      +'<div class="image-local-note">Ảnh được lưu trên cloud. Giao diện chỉnh ảnh chỉ hiện khi bật ⚙️.</div>'
       +'</div>';
   }
 
-  async function hydrateImageSlot(slot){
+  async function fetchCloudImage(slot){
     var slotId=slot.dataset.imageSlot;
+    var key=cloudSlotKey(slotId);
     var preview=$('.image-slot-preview',slot);
     try{
-      var saved=await getSlotImage(slotId);
-      if(saved&&saved.blob){
-        if(imageObjectUrls[slotId])URL.revokeObjectURL(imageObjectUrls[slotId]);
-        imageObjectUrls[slotId]=URL.createObjectURL(saved.blob);
-        preview.src=imageObjectUrls[slotId];
+      var res=await fetch(IMAGE_API+'?slot='+encodeURIComponent(key),{
+        method:'GET',
+        cache:'no-store'
+      });
+      if(res.status===404){
+        preview.src=slot.dataset.defaultSrc;
+        slot.classList.remove('has-custom-image');
+        return;
+      }
+      if(!res.ok)throw new Error('Không tải được ảnh cloud');
+      var data=await res.json();
+      if(data&&data.url){
+        preview.src=data.url;
         slot.classList.add('has-custom-image');
       }
     }catch(e){
-      slot.classList.add('image-storage-fallback');
+      preview.src=slot.dataset.defaultSrc;
     }
   }
 
+  async function uploadCloudImage(slot,file){
+    var slotId=slot.dataset.imageSlot;
+    var key=cloudSlotKey(slotId);
+    var token=localStorage.getItem(ownerStorageKey(slotId))||'';
+    var form=new FormData();
+    form.append('slot',key);
+    form.append('file',file,file.name||'image');
+
+    var headers={};
+    if(token)headers['x-owner-token']=token;
+
+    var res=await fetch(IMAGE_API,{
+      method:'POST',
+      headers:headers,
+      body:form
+    });
+
+    var data={};
+    try{data=await res.json();}catch(e){}
+
+    if(res.status===403){
+      throw new Error('Ảnh này đang được quản lý từ thiết bị đã upload lần đầu.');
+    }
+    if(!res.ok){
+      throw new Error(data.error||'Upload ảnh thất bại.');
+    }
+
+    if(data.ownerToken){
+      localStorage.setItem(ownerStorageKey(slotId),data.ownerToken);
+    }
+    return data;
+  }
+
+  async function resetCloudImage(slot){
+    var slotId=slot.dataset.imageSlot;
+    var key=cloudSlotKey(slotId);
+    var token=localStorage.getItem(ownerStorageKey(slotId))||'';
+    if(!token){
+      throw new Error('Chỉ thiết bị đã upload ảnh mới có thể trả về ảnh mặc định.');
+    }
+
+    var res=await fetch(IMAGE_API+'?slot='+encodeURIComponent(key),{
+      method:'DELETE',
+      headers:{'x-owner-token':token}
+    });
+    var data={};
+    try{data=await res.json();}catch(e){}
+    if(!res.ok)throw new Error(data.error||'Không thể xóa ảnh cloud.');
+
+    localStorage.removeItem(ownerStorageKey(slotId));
+    return data;
+  }
+
   function bindImageSlots(){
-    $('.editable-image-slot').forEach(function(slot){
-      hydrateImageSlot(slot);
+    $$('.editable-image-slot').forEach(function(slot){
+      fetchCloudImage(slot);
       var input=$('.image-file-input',slot);
       var reset=$('.image-reset-btn',slot);
       var preview=$('.image-slot-preview',slot);
+
       input.onchange=async function(){
         var file=input.files&&input.files[0];
         if(!file)return;
-        if(!file.type||file.type.indexOf('image/')!==0){toast('Hãy chọn một file ảnh.');input.value='';return;}
-        if(file.size>25*1024*1024){toast('Ảnh quá lớn. Hãy chọn ảnh dưới 25 MB.');input.value='';return;}
+        if(['image/jpeg','image/png','image/webp'].indexOf(file.type)<0){
+          toast('Hãy chọn ảnh JPG, PNG hoặc WebP.');
+          input.value='';
+          return;
+        }
+        if(file.size>10*1024*1024){
+          toast('Ảnh quá lớn. Hãy chọn ảnh dưới 10 MB.');
+          input.value='';
+          return;
+        }
+
+        slot.classList.add('is-uploading');
         try{
-          await saveSlotImage(slot.dataset.imageSlot,file);
-          if(imageObjectUrls[slot.dataset.imageSlot])URL.revokeObjectURL(imageObjectUrls[slot.dataset.imageSlot]);
-          imageObjectUrls[slot.dataset.imageSlot]=URL.createObjectURL(file);
-          preview.src=imageObjectUrls[slot.dataset.imageSlot];
-          slot.classList.add('has-custom-image');
-          toast('Đã thay ảnh. Ảnh sẽ còn sau khi tải lại trang.');
+          var data=await uploadCloudImage(slot,file);
+          if(data&&data.url){
+            preview.src=data.url;
+            slot.classList.add('has-custom-image');
+          }
+          toast('Đã thay ảnh và đồng bộ lên cloud.');
         }catch(e){
-          toast('Không lưu được ảnh trên trình duyệt này.');
+          toast(e&&e.message?e.message:'Không upload được ảnh.');
+        }finally{
+          slot.classList.remove('is-uploading');
+          input.value='';
         }
-        input.value='';
       };
+
       reset.onclick=async function(){
-        try{await deleteSlotImage(slot.dataset.imageSlot);}catch(e){}
-        if(imageObjectUrls[slot.dataset.imageSlot]){
-          URL.revokeObjectURL(imageObjectUrls[slot.dataset.imageSlot]);
-          delete imageObjectUrls[slot.dataset.imageSlot];
+        slot.classList.add('is-uploading');
+        try{
+          await resetCloudImage(slot);
+          preview.src=slot.dataset.defaultSrc;
+          slot.classList.remove('has-custom-image');
+          toast('Đã trả về ảnh mặc định trên tất cả thiết bị.');
+        }catch(e){
+          toast(e&&e.message?e.message:'Không thể đổi về ảnh mặc định.');
+        }finally{
+          slot.classList.remove('is-uploading');
         }
-        preview.src=slot.dataset.defaultSrc;
-        slot.classList.remove('has-custom-image');
-        toast('Đã dùng lại ảnh mặc định.');
       };
     });
+  }
+
+  function setImageEditMode(enabled){
+    imageEditMode=!!enabled;
+    document.body.classList.toggle('image-edit-mode',imageEditMode);
+    var btn=$('#imageEditBtn');
+    if(btn){
+      btn.classList.toggle('active',imageEditMode);
+      btn.setAttribute('aria-pressed',imageEditMode?'true':'false');
+      btn.title=imageEditMode?'Ẩn chỉnh ảnh':'Chỉnh ảnh minh họa';
+    }
   }
 
   function esc(s){
@@ -518,6 +559,8 @@
   }
 
   $('#homeBtn').onclick=function(){go('warmup');};
+  var imageEditBtn=$('#imageEditBtn');
+  if(imageEditBtn)imageEditBtn.onclick=function(){setImageEditMode(!imageEditMode);};
   $('#resetBtn').onclick=function(){
     if(confirm('Xóa toàn bộ tiến độ của bài Hạt giống nhỏ trên thiết bị này?')){
       localStorage.removeItem(KEY);state=defaults();render();
