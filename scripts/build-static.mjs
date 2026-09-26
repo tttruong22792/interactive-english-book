@@ -141,6 +141,10 @@ if (await exists(join(root, "icons"))) {
   await cp(join(root, "icons"), join(dist, "icons"), { recursive: true });
 }
 
+if (await exists(join(root, "tieng-viet-lop-1"))) {
+  await cp(join(root, "tieng-viet-lop-1"), join(dist, "tieng-viet-lop-1"), { recursive: true });
+}
+
 const indexSource = await readFile(join(root, "data/content-index.js"), "utf8");
 const sourceMatches = [...indexSource.matchAll(/source:\s*"([^"]+\.js)"/g)]
   .map((match) => match[1].replace(/^\.\//, ""));
@@ -263,6 +267,33 @@ for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
 }
 
 
+
+const vietnameseAudioSource = join(root, "tieng-viet-lop-1/audio-phrases.json");
+if (await exists(vietnameseAudioSource)) {
+  const viData = JSON.parse(await readFile(vietnameseAudioSource, "utf8"));
+  const language = String(viData.language || "vi-VN");
+  const voice = String(viData.voice || "coral");
+  const lessonId = String(viData.lessonId || "tv1-bai-001");
+
+  for (const rawText of viData.items || []) {
+    const clean = String(rawText || "").trim();
+    if (!clean) continue;
+    const hash = ttsHash(clean, language, voice);
+    const existing = entries[hash];
+    if (existing) {
+      if (!existing.lessonIds.includes(lessonId)) existing.lessonIds.push(lessonId);
+      if (!existing.kinds.includes("vietnamese-grade1")) existing.kinds.push("vietnamese-grade1");
+      continue;
+    }
+    entries[hash] = {
+      text: clean,
+      language,
+      voice,
+      lessonIds: [lessonId],
+      kinds: ["vietnamese-grade1"]
+    };
+  }
+}
 
 const guide = context.window.TENSES_GUIDE;
 if (guide) {
