@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v28-dashboard-v2';
+const APP_CACHE='language-studio-v29-vietnamese-fresh';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -97,6 +97,15 @@ async function serveAudio(request,file){
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
+
+  const requestUrl=new URL(event.request.url);
+  if(requestUrl.pathname.includes('/tieng-viet-lop-1/')){
+    event.respondWith(
+      fetch(new Request(event.request,{cache:'no-store'}))
+        .catch(()=>caches.match(event.request).then(hit=>hit||Response.error()))
+    );
+    return;
+  }
 
   const audioFile=audioFileFromRequest(event.request);
   if(audioFile){
