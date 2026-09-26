@@ -2625,6 +2625,136 @@ window.CORE_DICTIONARY = {
     "/ˈwɜːrkəraʊnd/",
     "giải pháp tạm / cách lách để xử lý nhanh",
     "a quick workaround"
+  ],
+  "away": [
+    "/əˈweɪ/",
+    "cách xa / còn cách",
+    "two weeks away"
+  ],
+  "brings": [
+    "/brɪŋz/",
+    "mang đến (ngôi số ít)",
+    "what the future brings"
+  ],
+  "building": [
+    "/ˈbɪldɪŋ/",
+    "đang xây dựng / việc xây dựng",
+    "building a good working relationship"
+  ],
+  "catching": [
+    "/ˈkætʃɪŋ/",
+    "đang bắt / trong catching up = gặp lại và trò chuyện",
+    "catching up with you"
+  ],
+  "conversation": [
+    "/ˌkɑːnvərˈseɪʃən/",
+    "cuộc trò chuyện",
+    "having that conversation"
+  ],
+  "document": [
+    "/ˈdɑːkjəmənt/",
+    "tài liệu",
+    "review the document"
+  ],
+  "grow": [
+    "/ɡroʊ/",
+    "lớn lên / phát triển",
+    "watching the kids grow up"
+  ],
+  "having": [
+    "/ˈhævɪŋ/",
+    "đang có / việc có",
+    "having dinner together"
+  ],
+  "hearing": [
+    "/ˈhɪrɪŋ/",
+    "việc nghe / nhận tin",
+    "hearing from you"
+  ],
+  "joining": [
+    "/ˈdʒɔɪnɪŋ/",
+    "việc tham gia / gia nhập",
+    "joining the team"
+  ],
+  "learned": [
+    "/lɜːrnd/",
+    "đã học",
+    "what I’ve learned"
+  ],
+  "learning": [
+    "/ˈlɜːrnɪŋ/",
+    "việc học / đang học",
+    "learning new skills"
+  ],
+  "looking": [
+    "/ˈlʊkɪŋ/",
+    "đang nhìn; trong looking forward to = đang mong chờ",
+    "looking forward to it"
+  ],
+  "noun": [
+    "/naʊn/",
+    "danh từ",
+    "I look forward to + noun"
+  ],
+  "only": [
+    "/ˈoʊnli/",
+    "chỉ / duy nhất",
+    "only two weeks away"
+  ],
+  "our": [
+    "/aʊər/",
+    "của chúng tôi / chúng ta",
+    "our team"
+  ],
+  "putting": [
+    "/ˈpʊtɪŋ/",
+    "đang đặt / đang áp dụng",
+    "putting what I’ve learned into practice"
+  ],
+  "results": [
+    "/rɪˈzʌlts/",
+    "kết quả",
+    "seeing the results"
+  ],
+  "review": [
+    "/rɪˈvjuː/",
+    "xem lại / đánh giá",
+    "review the document"
+  ],
+  "spending": [
+    "/ˈspendɪŋ/",
+    "việc dành / tiêu",
+    "spending time with my family"
+  ],
+  "steps": [
+    "/steps/",
+    "các bước",
+    "the next steps"
+  ],
+  "taking": [
+    "/ˈteɪkɪŋ/",
+    "việc nhận / đảm nhận",
+    "taking on responsibility"
+  ],
+  "thank": [
+    "/θæŋk/",
+    "cảm ơn",
+    "Thank you for your time."
+  ],
+  "turn": [
+    "/tɜːrn/",
+    "xoay / trở thành; trong turn out = cuối cùng diễn ra",
+    "see how things turn out"
+  ],
+  "weeks": [
+    "/wiːks/",
+    "các tuần",
+    "two weeks away"
+  ],
+  "you'll": [
+    "/juːl/",
+    "viết tắt của you will",
+    "You’ll be joining our team next month."
   ]
 };
 
