@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#3d9664" />
   <meta name="description" content="Bài đọc Tiếng Việt lớp 1 – Hạt giống nhỏ. Luyện tự giải mã, đọc từng câu, đọc hiểu và ôn cách quãng." />
   <title>Hạt giống nhỏ – Tiếng Việt lớp 1</title>
-  <link rel="stylesheet" href="styles.css?v=20260926-reading-v5" />
-  <link rel="stylesheet" href="lesson-hat-giong.css?v=20260926-reading-v5" />
+  <link rel="stylesheet" href="styles.css?v=20260926-reading-v6" />
+  <link rel="stylesheet" href="lesson-hat-giong.css?v=20260926-reading-v6" />
 </head>
 <body class="seed-page">
   <header class="seed-topbar">
@@ -30,10 +30,24 @@
 
   <main id="app" class="seed-main" tabindex="-1"></main>
 
+  <div id="imageManagerModal" class="image-manager-modal hidden" aria-hidden="true">
+    <div class="image-manager-dialog" role="dialog" aria-modal="true" aria-labelledby="imageManagerTitle">
+      <div class="image-manager-head">
+        <div>
+          <span class="eyebrow">QUẢN LÝ ẢNH BÀI HỌC</span>
+          <h2 id="imageManagerTitle">Ảnh minh họa</h2>
+          <p>Chỉ mở phần này khi cần thay ảnh. Giao diện học của trẻ sẽ không hiển thị các nút upload.</p>
+        </div>
+        <button id="imageManagerClose" class="image-manager-close" type="button" aria-label="Đóng">×</button>
+      </div>
+      <div id="imageManagerList" class="image-manager-list"></div>
+    </div>
+  </div>
+
   <div id="toast" class="toast hidden" aria-live="polite"></div>
   <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
 
-  <script src="lesson-hat-giong.js?v=20260926-reading-v5"></script>
-  <script src="app-hat-giong.js?v=20260926-reading-v5"></script>
+  <script src="lesson-hat-giong.js?v=20260926-reading-v6"></script>
+  <script src="app-hat-giong.js?v=20260926-reading-v6"></script>
 </body>
 </html>
