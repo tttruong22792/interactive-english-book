@@ -282,6 +282,7 @@
     L=null;
     setHeader('Trang chủ','Language Studio');
     const pct=lessonPercent();
+    const availableEnglish=(STORE?.index||[]).filter(item=>item.language==='en'&&item.category==='patterns'&&item.status==='available').length;
     const tracks=(PLATFORM.tracks||[]).map(trackCard).join('');
     const indexedModules=(STORE?.index||[]).filter(item=>item.featured).map(item=>({
       lang:item.language==='en'?'English':item.language==='ja'?'Japanese':item.language,
@@ -292,45 +293,45 @@
     $('#mainView').innerHTML = `
       <section class="landing-hero">
         <div class="hero-copy-new">
-          <div class="landing-kicker">ENGLISH · JAPANESE · VOCABULARY · SPEAKING</div>
-          <h1 class="display-title">Một <span class="marker marker-purple">hệ thống</span> học ngôn ngữ<br>cho <span class="marker marker-green">cuộc sống thật</span>.</h1>
-          <p class="hero-lead">Không còn là một website chỉ dành cho 80 mẫu câu. Đây là nền tảng để bạn học English, Japanese, từ vựng, nghe, nói và luyện phản xạ — tất cả trong cùng một nơi.</p>
+          <div class="landing-kicker">ENGLISH · GRAMMAR · VOCABULARY · SHADOWING</div>
+          <h1 class="display-title">Học tiếng Anh theo <span class="marker marker-purple">hệ thống</span>,<br>dùng được trong <span class="marker marker-green">đời sống thật</span>.</h1>
+          <p class="hero-lead">Language Studio kết hợp mẫu câu thực tế, ngữ pháp trực quan, từ vựng có ngữ cảnh, audio tự nhiên và shadowing trong một trải nghiệm học thống nhất.</p>
           <div class="hero-actions">
-            <button class="primary-button" data-go="lesson/1">Tiếp tục bài đang học →</button>
-            <button class="secondary-button" data-go="patterns">Khám phá English</button>
+            <button class="primary-button" data-go="patterns">Bắt đầu học English →</button>
+            <button class="secondary-button" data-go="shadowing">Luyện Shadowing</button>
           </div>
           <div class="hero-mini-stats">
-            <div><strong>${pct}%</strong><span>Pattern 01</span></div>
-            <div><strong>${savedCount()}</strong><span>Từ đã lưu</span></div>
-            <div><strong>${quizBestFor()}/10</strong><span>Quiz tốt nhất</span></div>
+            <div><strong>${availableEnglish}</strong><span>Bài mẫu câu</span></div>
+            <div><strong>12</strong><span>Thì tiếng Anh</span></div>
+            <div><strong>3</strong><span>Cấp độ Shadowing</span></div>
           </div>
         </div>
         <div class="hero-showcase">
           <div class="showcase-window">
-            <div class="window-top"><span></span><span></span><span></span><b>Today · English</b></div>
+            <div class="window-top"><span></span><span></span><span></span><b>Interactive English Lesson</b></div>
             <div class="showcase-body">
               <div class="showcase-side"><div class="tiny-logo">LS</div><span class="active"></span><span></span><span></span><span></span></div>
               <div class="showcase-main">
-                <div class="tiny-label">CURRENT LESSON</div><h3>I’d like to…</h3><p>Tôi muốn… / Tôi muốn được…</p>
-                <div class="mini-sentence">${sentenceRow("I'd like to go home.","Tôi muốn về nhà.")}</div>
-                <div class="showcase-progress"><i style="width:${pct}%"></i></div>
+                <div class="tiny-label">PATTERN LESSON</div><h3>I look forward to…</h3><p>Tôi mong chờ… / Tôi rất mong…</p>
+                <div class="mini-sentence">${sentenceRow("I look forward to working with you.","Tôi mong được làm việc cùng bạn.")}</div>
+                <div class="showcase-progress"><i style="width:72%"></i></div>
                 <div class="showcase-tags"><span>Listen</span><span>Words</span><span>Speak</span><span>Review</span></div>
               </div>
             </div>
           </div>
           <div class="float-shape shape-a"></div><div class="float-shape shape-b"></div>
-          <div class="float-note">日<br><small>Japanese<br>next</small></div>
+          <div class="float-note">AI<br><small>Audio<br>Practice</small></div>
         </div>
       </section>
 
       <section class="big-statement">
-        <h2>Bạn không cần thêm nhiều app học rời rạc.<br>Bạn cần <span class="marker marker-purple">một nơi</span> để học và <span class="marker marker-yellow">tiếp tục tiến bộ</span>.</h2>
-        <p>Mỗi phần học dùng chung một hệ thống: nghe → hiểu → nói → lưu → ôn lại. Nội dung có thể mở rộng mà không phải làm lại website từ đầu.</p>
+        <h2>Từ hiểu câu đến <span class="marker marker-purple">nói được câu</span>.<br>Mỗi kỹ năng nằm trong <span class="marker marker-yellow">cùng một lộ trình</span>.</h2>
+        <p>Người học đi theo một vòng lặp rõ ràng: hiểu → nghe → tra từ → nói theo → tự nhớ lại → ôn tập. Mỗi module dùng chung nội dung và tiến độ học.</p>
         <div class="scribble" aria-hidden="true">⌁⌁⌁  ↗  ⌁⌁⌁</div>
       </section>
 
       <section class="landing-section">
-        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING TRACKS</span><h2>Một hệ thống, nhiều hướng học</h2></div><p>English hôm nay, Japanese ngày mai — dữ liệu và trải nghiệm học vẫn nằm trong cùng một nền tảng.</p></div>
+        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING TRACKS</span><h2>Một nền tảng, nhiều kỹ năng</h2></div><p>Mẫu câu, ngữ pháp, từ vựng, luyện nghe nói và shadowing được tổ chức thành các module có thể mở rộng theo lộ trình.</p></div>
         <div class="track-grid-new">${tracks}</div>
       </section>
 
@@ -345,22 +346,22 @@
       </section>
 
       <section class="landing-section">
-        <div class="landing-section-head"><div><span class="landing-kicker">YOUR LIBRARY</span><h2>Nội dung đang phát triển</h2></div><p>Không khóa cấu trúc vào một khóa học duy nhất. Mỗi module là một khối có thể mở rộng.</p></div>
+        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING LIBRARY</span><h2>Thư viện bài học & công cụ</h2></div><p>Các bài học và công cụ luyện tập được tổ chức độc lập để dễ mở rộng thành nhiều khóa học và cấp độ.</p></div>
         <div class="module-grid-new">${modules}</div>
       </section>
 
       <section class="split-promo">
-        <div class="promo-copy"><span class="landing-kicker">CURRENT LESSON</span><h2>I’d like to…</h2><p>Giữ nguyên bài học tương tác nhưng chuyển danh sách toàn bộ câu và phần luyện sang hai chế độ riêng để trang bài học gọn hơn.</p><button class="primary-button" data-go="lesson/1">Mở bài đầy đủ</button></div>
+        <div class="promo-copy"><span class="landing-kicker">REAL-LIFE PATTERNS</span><h2>Học câu dùng được ngay</h2><p>Mỗi bài đi từ ý nghĩa, cách đọc và ví dụ thực tế đến luyện toàn bài và shadowing. Nội dung được thiết kế để tái sử dụng trong nhiều tình huống.</p><button class="primary-button" data-go="patterns">Xem các mẫu câu</button></div>
         <div class="promo-preview"><div class="preview-label">Tap to listen</div>
-          ${sentenceRow("I'd like to buy this.","Tôi muốn mua cái này.")}
-          ${sentenceRow("I'd like to ask you something.","Tôi muốn hỏi bạn một việc.")}
-          ${sentenceRow("I'd like to check something.","Tôi muốn kiểm tra một việc.")}
+          ${sentenceRow("I look forward to hearing from you.","Tôi mong nhận được phản hồi từ bạn.")}
+          ${sentenceRow("I'd rather wait until tomorrow.","Tôi muốn đợi đến ngày mai hơn.")}
+          ${sentenceRow("Do you want to give it another try?","Bạn có muốn thử lại không?")}
         </div>
       </section>
 
       <section class="device-banner">
-        <div><span class="landing-kicker">PHONE + PC</span><h2>Học trên nhiều thiết bị</h2><p>Tiến độ hiện được lưu riêng trên từng thiết bị. Bạn có thể xuất file dữ liệu học và nhập lại trên điện thoại hoặc máy khác. Khi site được đưa lên HTTPS, nút cài app cũng sẽ sẵn sàng.</p></div>
-        <button class="primary-button" data-go="settings">Thiết bị & dữ liệu →</button>
+        <div><span class="landing-kicker">PHONE + PC</span><h2>Học linh hoạt trên nhiều thiết bị</h2><p>Giao diện được tối ưu cho điện thoại và máy tính. Dữ liệu học có thể sao lưu và khôi phục khi chuyển thiết bị.</p></div>
+        <button class="primary-button" data-go="settings">Dữ liệu học →</button>
       </section>
     `;
     bindGenericRoutes();
@@ -382,13 +383,13 @@
     L=null;
     setHeader('English','English Learning');
     $('#mainView').innerHTML = `
-      <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>80 mẫu câu chỉ là một track đầu tiên. Sau này khu vực English có thể mở rộng sang vocabulary, listening, speaking, reading và tình huống công việc.</p></section>
+      <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>Học theo các mẫu câu tần suất cao, sau đó củng cố bằng ngữ pháp, từ vựng, luyện Việt → Anh và shadowing. Nội dung được tổ chức theo module để phù hợp với nhiều người học.</p></section>
       <section class="english-grammar-entry">
         <div><span class="eyebrow">ENGLISH GRAMMAR</span><h2>Các thì trong tiếng Anh</h2><p>Hiểu bằng bản đồ 3 mốc thời gian × 4 cách nhìn, có công thức, ví dụ nghe được, lỗi hay gặp, cách phân biệt và bài luyện chọn thì.</p></div>
         <button class="primary-button" data-go="tenses">Mở trang các thì →</button>
       </section>
       <section class="english-grammar-entry shadowing-entry">
-        <div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn Mẫu 01–06, lấy trực tiếp câu đã học và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
+        <div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn một hoặc nhiều bài đã có, lấy trực tiếp câu trong bài và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
         <button class="primary-button" data-go="shadowing">Mở Shadowing →</button>
       </section>
       <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
