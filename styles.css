@@ -1627,3 +1627,12 @@ button{touch-action:manipulation}
   .lesson-action-arrow{width:30px;height:30px}
   .lesson-action-arrow .ui-icon{width:15px;height:15px}
 }
+
+
+/* Static shell vector icon sizing */
+.nav-svg{width:18px;height:18px;display:block;flex:0 0 auto}
+.icon-button .nav-svg{width:20px;height:20px}
+.primary-button .nav-svg,.secondary-button .nav-svg{width:18px;height:18px}
+.bottom-nav button>span{width:24px;height:24px;display:grid;place-items:center}
+.bottom-nav .nav-svg{width:19px;height:19px}
+.selection-bar .nav-svg{width:17px;height:17px}
