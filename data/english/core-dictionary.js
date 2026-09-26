@@ -2470,6 +2470,161 @@ window.CORE_DICTIONARY = {
     "/jʊr/",
     "của bạn",
     "leave your options open"
+  ],
+  "anyone": [
+    "/ˈeniwʌn/",
+    "bất kỳ ai / ai đó",
+    "I’d rather you didn’t tell anyone."
+  ],
+  "big": [
+    "/bɪɡ/",
+    "lớn / to",
+    "make a big deal out of it"
+  ],
+  "cheaper": [
+    "/ˈtʃiːpər/",
+    "rẻ hơn",
+    "This one is cheaper."
+  ],
+  "data": [
+    "/ˈdeɪtə/",
+    "dữ liệu",
+    "double-check the data"
+  ],
+  "didn't": [
+    "/ˈdɪdənt/",
+    "viết tắt của did not",
+    "I’d rather you didn’t tell anyone."
+  ],
+  "drive": [
+    "/draɪv/",
+    "lái xe",
+    "I’d rather drive than take the bus."
+  ],
+  "face": [
+    "/feɪs/",
+    "mặt; trong face-to-face = trực tiếp",
+    "discuss this face-to-face"
+  ],
+  "fix": [
+    "/fɪks/",
+    "sửa / khắc phục",
+    "fix the root cause"
+  ],
+  "gets": [
+    "/ɡets/",
+    "trở nên / nhận được / đi đến (ngôi he/she/it)",
+    "when the weather gets better"
+  ],
+  "if": [
+    "/ɪf/",
+    "nếu",
+    "if that’s okay"
+  ],
+  "important": [
+    "/ɪmˈpɔːrtənt/",
+    "quan trọng",
+    "something more important"
+  ],
+  "information": [
+    "/ˌɪnfərˈmeɪʃən/",
+    "thông tin",
+    "wait for more information"
+  ],
+  "lasts": [
+    "/læsts/",
+    "kéo dài / dùng được lâu",
+    "something that lasts longer"
+  ],
+  "message": [
+    "/ˈmesɪdʒ/",
+    "tin nhắn",
+    "send a long message"
+  ],
+  "need": [
+    "/niːd/",
+    "cần",
+    "something I don’t need"
+  ],
+  "okay": [
+    "/ˌoʊˈkeɪ/",
+    "được / ổn",
+    "if that’s okay"
+  ],
+  "options": [
+    "/ˈɑːpʃənz/",
+    "các lựa chọn",
+    "compare a few options"
+  ],
+  "person": [
+    "/ˈpɜːrsən/",
+    "người; trong in person = trực tiếp",
+    "talk about it in person"
+  ],
+  "pretty": [
+    "/ˈprɪti/",
+    "khá / khá là",
+    "I’m pretty tired."
+  ],
+  "progress": [
+    "/ˈprɑːɡres/",
+    "sự tiến bộ",
+    "make progress"
+  ],
+  "quick": [
+    "/kwɪk/",
+    "nhanh / nhanh chóng",
+    "a quick workaround"
+  ],
+  "sending": [
+    "/ˈsendɪŋ/",
+    "đang gửi / việc gửi",
+    "before sending the report"
+  ],
+  "should": [
+    "/ʃʊd/",
+    "nên",
+    "Should we drive or take the train?"
+  ],
+  "solve": [
+    "/sɑːlv/",
+    "giải quyết",
+    "solve the issue properly"
+  ],
+  "taxi": [
+    "/ˈtæksi/",
+    "taxi",
+    "take a taxi"
+  ],
+  "tell": [
+    "/tel/",
+    "nói / kể cho ai",
+    "tell anyone"
+  ],
+  "terrible": [
+    "/ˈterəbəl/",
+    "rất tệ / khủng khiếp",
+    "Traffic is usually terrible."
+  ],
+  "them": [
+    "/ðem/",
+    "họ / chúng (tân ngữ)",
+    "be afraid of making them"
+  ],
+  "told": [
+    "/toʊld/",
+    "đã nói / đã kể; quá khứ của tell",
+    "I’d rather you told me the truth."
+  ],
+  "waited": [
+    "/ˈweɪtɪd/",
+    "đã chờ; quá khứ của wait",
+    "I’d rather you waited here."
+  ],
+  "workaround": [
+    "/ˈwɜːrkəraʊnd/",
+    "giải pháp tạm / cách lách để xử lý nhanh",
+    "a quick workaround"
   ]
 };
 
