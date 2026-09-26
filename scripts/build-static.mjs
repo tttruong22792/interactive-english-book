@@ -188,6 +188,9 @@ await writeFile(join(dist, "runtime-20260926-pattern009-commercial-v1.js"), runt
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
 const context = vm.createContext({ window: { CONTENT_REGISTRY: {} } });
 {
+  const dictionarySource = await readFile(join(root, "data/english/core-dictionary.js"), "utf8");
+  vm.runInContext(dictionarySource, context, { filename: "data/english/core-dictionary.js" });
+
   const tensesSource = await readFile(join(root, "data/english/tenses.js"), "utf8");
   vm.runInContext(tensesSource, context, { filename: "data/english/tenses.js" });
 }
@@ -223,6 +226,42 @@ for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
     };
   }
 }
+
+function addManifestAudio(text, kind, lessonId) {
+  if (typeof text !== "string" || !text.trim()) return;
+  const clean = text.trim();
+  const language = detectLanguage(clean);
+  const voice = voiceFor(language);
+  const hash = ttsHash(clean, language, voice);
+  const existing = entries[hash];
+  if (existing) {
+    if (lessonId && !existing.lessonIds.includes(lessonId)) existing.lessonIds.push(lessonId);
+    if (!existing.kinds.includes(kind)) existing.kinds.push(kind);
+    return;
+  }
+  entries[hash] = {
+    text: clean,
+    language,
+    voice,
+    lessonIds: lessonId ? [lessonId] : [],
+    kinds: [kind]
+  };
+}
+
+// Individual dictionary words are allowed for on-demand mobile pronunciation.
+// They are generated only when the learner taps the speaker; the manifest itself
+// does not pre-generate audio.
+Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
+  addManifestAudio(normalizeText(word), "word", "core-dictionary");
+});
+
+for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
+  if (!lesson || lesson.language !== "en" || lesson.category !== "patterns") continue;
+  Object.keys(lesson.dictionary || {}).forEach((word) => {
+    addManifestAudio(normalizeText(word), "word", lesson.id);
+  });
+}
+
 
 
 const guide = context.window.TENSES_GUIDE;
@@ -274,5 +313,5 @@ await writeFile(join(dist, ".nojekyll"), "", "utf8");
 
 console.log("Built static site:", dist);
 console.log("Runtime files:", uniqueFiles.length);
-console.log("Cloud TTS allow-list sentences + phrases:", ttsManifest.count);
+console.log("Cloud TTS allow-list sentences + phrases + words:", ttsManifest.count);
 console.log("Audio delivery: Supabase Storage + per-device Cache Storage");
