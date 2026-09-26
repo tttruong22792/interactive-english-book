@@ -150,10 +150,6 @@ if (await exists(join(root, "tieng-viet-lop-1"))) {
   );
 }
 
-if (await exists(join(root, "tieng-viet-lop-1"))) {
-  await cp(join(root, "tieng-viet-lop-1"), join(dist, "tieng-viet-lop-1"), { recursive: true });
-}
-
 const indexSource = await readFile(join(root, "data/content-index.js"), "utf8");
 const sourceMatches = [...indexSource.matchAll(/source:\s*"([^"]+\.js)"/g)]
   .map((match) => match[1].replace(/^\.\//, ""));
