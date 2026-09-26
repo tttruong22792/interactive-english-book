@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#55b884" />
+  <meta name="description" content="Vui Học Tiếng Việt lớp 1 – Hạt giống nhỏ: uông, ương, ươc; đánh vần, đọc hiểu, tập viết và ôn nhớ." />
+  <title>Vui Học Tiếng Việt – Hạt giống nhỏ</title>
+  <link rel="stylesheet" href="styles.css?v=20260926-seed-v1" />
+  <link rel="stylesheet" href="lesson-hat-giong.css?v=20260926-seed-v1" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button id="homeBtn" class="brand" aria-label="Trang bài học">
+        <span class="brand-mascot" aria-hidden="true">🌱</span>
+        <span><strong>Vui Học Tiếng Việt</strong><small>Lớp 1 · Hạt giống nhỏ</small></span>
+      </button>
+      <div class="top-progress" aria-label="Tiến độ bài học">
+        <span id="progressText">0%</span>
+        <div class="progress-track"><div id="progressBar"></div></div>
+        <span id="starCount" class="star-pill">⭐ 0</span>
+      </div>
+    </header>
+
+    <main id="app" class="main" tabindex="-1"></main>
+
+    <nav class="bottom-nav" aria-label="Điều hướng bài học">
+      <button data-view="learn" class="active"><span>📖</span><small>Học</small></button>
+      <button data-view="practice"><span>🎯</span><small>Luyện</small></button>
+      <button data-view="write"><span>✍️</span><small>Viết</small></button>
+      <button data-view="review"><span>🧠</span><small>Ôn</small></button>
+      <button data-view="parent"><span>📊</span><small>Tiến độ</small></button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast hidden" aria-live="polite"></div>
+  <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
+
+  <script src="lesson-hat-giong.js?v=20260926-seed-v1"></script>
+  <script src="audio.js?v=20260926-seed-v1"></script>
+  <script src="app-hat-giong.js?v=20260926-seed-v1"></script>
+</body>
+</html>
