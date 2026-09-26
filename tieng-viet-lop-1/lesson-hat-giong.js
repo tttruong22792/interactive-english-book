@@ -11,7 +11,7 @@ window.TV1_LESSON = {
   ],
   difficulty: {
     easy: ['một','hạt','nhỏ','nằm','bên','bé','đem','về','thả','góc','chỉ','ít','hôm','mầm','non','đã','lên','lá','rung','như','cảm','ơn'],
-    attention: ['giống','lặng','lẽ','nhặt','giọt','khẽ','muốn'],
+    attention: ['giống','lặng','lẽ','nhặt','giọt','khẽ','muốn','dường'],
     key: ['đường','được','xuống','vườn','vươn','uống','những','sương']
   },
   warmup: {
