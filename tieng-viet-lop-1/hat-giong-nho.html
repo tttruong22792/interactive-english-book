@@ -3,117 +3,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#6fbe8d" />
-  <meta name="description" content="Hạt giống nhỏ – game 3D học đọc Tiếng Việt lớp 1. Hoàn thành hành trình đồng nghĩa hoàn thành bài học." />
-  <title>Hạt giống nhỏ – Hành trình 3D</title>
-  <link rel="stylesheet" href="game-hat-giong.css?v=20260926-game3d-v2" />
+  <meta name="theme-color" content="#73c392" />
+  <meta name="description" content="Game 3D Tiếng Việt lớp 1: tự ghép chữ, tự đánh vần, tự đọc vào micro để hoàn thành bài Hạt giống nhỏ." />
+  <title>Hạt giống nhỏ – Game tự đánh vần & tự đọc</title>
+  <link rel="stylesheet" href="game-hat-giong.css?v=20260926-spellread-v1" />
 </head>
 <body>
-  <div class="game-shell">
-    <canvas id="game3d" aria-label="Khu vườn học đọc 3D"></canvas>
-    <div class="game-vignette" aria-hidden="true"></div>
+  <main class="game">
+    <canvas id="world" aria-label="Khu vườn Hạt giống nhỏ 3D"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
 
-    <div id="loadingScreen" class="loading-screen">
-      <div class="loader-card">
-        <div class="loader-seed">🌱</div>
-        <b>Đang mở Khu Vườn Chữ...</b>
-        <div class="loader-bar"><div></div></div>
-      </div>
+    <div id="loading" class="loading">
+      <div class="loader"><div>🌱</div><b>Đang mở khu vườn...</b></div>
     </div>
 
-    <header class="hud-top">
-      <div class="game-brand">
-        <span class="game-brand-mark">🌱</span>
-        <span><strong>Hạt giống nhỏ</strong><small>Hành trình tự đọc · 20–25 phút</small></span>
+    <header class="top-hud">
+      <div class="brand">
+        <span class="brand-mark">🌱</span>
+        <span><b>Hạt giống nhỏ</b><small>Tự ghép chữ · tự đọc · không học vẹt</small></span>
       </div>
 
-      <div class="hud-progress">
-        <div class="hud-progress-row">
-          <span>Hạt mầm đang lớn</span>
-          <b id="gameProgressText">0%</b>
-          <span id="gameStarText">⭐ 0</span>
-        </div>
-        <div class="hud-progress-track"><div id="gameProgressBar"></div></div>
-      </div>
+      <nav id="stageStrip" class="stage-strip" aria-label="Các màn chơi"></nav>
 
       <div class="hud-tools">
-        <button id="soundBtn" class="hud-icon" type="button" title="Âm thanh">🔊</button>
-        <button id="settingsBtn" class="hud-icon" type="button" title="Dành cho phụ huynh">⚙️</button>
+        <button id="soundBtn" class="hud-btn" type="button" title="Âm thanh">🔊</button>
+        <button id="parentBtn" class="hud-btn" type="button" title="Khu vực phụ huynh">⚙️</button>
       </div>
     </header>
 
-    <aside class="quest-card">
-      <div class="quest-kicker">NHIỆM VỤ TIẾP THEO</div>
-      <div id="questTitle" class="quest-title">Cổng tò mò</div>
-      <div id="questDesc" class="quest-desc">Nhìn tranh và đoán câu chuyện</div>
-      <div class="quest-meta">
-        <span id="questMeta" class="quest-distance">Sẵn sàng bắt đầu</span>
-        <button id="questGo" class="quest-go" type="button">Đi tới nhiệm vụ</button>
+    <div class="progress-hud">
+      <span>Hạt mầm</span>
+      <div class="progress-track"><div id="progressBar"></div></div>
+      <b id="progressText">0%</b>
+    </div>
+
+    <aside class="story-card">
+      <span id="storyKicker" class="eyebrow">MÀN 1 / 6</span>
+      <h2 id="storyTitle">🌱 Hạt giống bên đường</h2>
+      <p id="storyDesc">Ghép chữ để nhặt hạt</p>
+      <div class="row">
+        <small>Muốn hành động trong thế giới 3D, bé phải tự giải chữ trước.</small>
+        <button id="openStage" class="primary" type="button">Bắt đầu màn</button>
       </div>
     </aside>
 
-    <div id="interactPrompt" class="interact-prompt"><kbd>E</kbd> Mở nhiệm vụ</div>
+    <aside class="collection">
+      <div class="collection-head">
+        <b>📚 Từ con đã tự đọc được</b>
+        <span id="collectionCount">0 từ</span>
+      </div>
+      <div id="collectionWords" class="collection-words"></div>
+    </aside>
 
-    <div class="mobile-controls" aria-label="Điều khiển trên điện thoại">
-      <div id="joystickZone" class="joystick-zone"><div id="joystickKnob" class="joystick-knob"></div></div>
-      <button id="mobileAction" class="mobile-action" type="button" disabled>HỌC</button>
-    </div>
-
-    <div id="introModal" class="intro-modal">
-      <section class="intro-card">
-        <div class="intro-mark">🌱</div>
-        <span class="quest-kicker">CHƯƠNG 1 · HẠT GIỐNG NHỎ</span>
-        <h1>Khu Vườn Chữ</h1>
-        <p>Một hạt giống đang ngủ giữa khu vườn. Muốn đánh thức nó, con phải tìm đủ 10 mảnh ánh sáng. Mỗi mảnh là một nhiệm vụ đọc. <b>Chơi xong hành trình cũng chính là học xong bài.</b></p>
-        <div class="intro-story">
-          <div><span>🔐</span><b>Phá khóa</b><small>Không biết → tách → ghép</small></div>
-          <div><span>🌳</span><b>Làm cây lớn</b><small>Mỗi nhiệm vụ làm khu vườn thay đổi</small></div>
-          <div><span>🏆</span><b>Chinh phục</b><small>Đọc được trong câu mới, không học vẹt</small></div>
+    <div id="introOverlay" class="overlay">
+      <section class="intro">
+        <div class="intro-icon">🌱</div>
+        <span class="eyebrow">HÀNH TRÌNH HẠT GIỐNG NHỎ</span>
+        <h1>Đánh thức khu vườn</h1>
+        <p>
+          Hạt giống đang ngủ. Mỗi hành động trong game chỉ xảy ra sau khi con
+          <b>tự ghép chữ hoặc tự đọc to</b>. Game không đọc đáp án trước.
+        </p>
+        <div class="intro-rules">
+          <div><span>🧩</span><b>Tự ghép</b><small>Kéo âm + vần + thanh để tạo tiếng.</small></div>
+          <div><span>🎙️</span><b>Tự đọc</b><small>Nhìn chữ, đọc vào micro rồi AI mới mở khóa.</small></div>
+          <div><span>🌳</span><b>Thế giới thay đổi</b><small>Đọc được tới đâu, cây lớn và nở hoa tới đó.</small></div>
         </div>
-        <button id="startGame" class="start-game" type="button">Bắt đầu hành trình</button>
-        <p class="intro-tip">Máy tính: WASD / phím mũi tên · Điện thoại: joystick · Có thể bấm “Đi tới nhiệm vụ” để nhân vật tự đi.</p>
+        <button id="startGame" class="primary" type="button">Bắt đầu hành trình</button>
+        <p class="privacy-note">Giọng nói chỉ được dùng để kiểm tra lần đọc hiện tại; game không lưu file ghi âm.</p>
       </section>
     </div>
 
-    <div id="missionModal" class="mission-modal hidden">
-      <section id="missionSheet" class="mission-sheet" role="dialog" aria-modal="true" aria-labelledby="missionTitle">
-        <div class="mission-head">
+    <div id="challengeOverlay" class="overlay hidden">
+      <section class="challenge" role="dialog" aria-modal="true" aria-labelledby="challengeTitle">
+        <div class="challenge-head">
           <div>
-            <span id="missionEyebrow" class="mission-eyebrow">NHIỆM VỤ</span>
-            <h2 id="missionTitle">Nhiệm vụ</h2>
-            <p id="missionDesc"></p>
+            <span class="eyebrow">NHIỆM VỤ HỌC ĐỌC</span>
+            <h2 id="challengeTitle"></h2>
+            <p id="challengeSub"></p>
           </div>
-          <button id="missionClose" class="modal-close" type="button" aria-label="Đóng">×</button>
+          <button id="closeChallenge" class="close" type="button" aria-label="Đóng">×</button>
         </div>
-        <div id="missionBody" class="mission-body"></div>
-        <div id="missionFooter" class="mission-footer"></div>
+        <div id="challengeBody" class="challenge-body"></div>
+        <div id="challengeFooter" class="challenge-footer"></div>
       </section>
     </div>
 
-    <div id="parentModal" class="parent-modal hidden">
-      <section class="parent-sheet" role="dialog" aria-modal="true" aria-labelledby="parentTitle">
+    <div id="parentOverlay" class="overlay hidden">
+      <section class="parent-panel" role="dialog" aria-modal="true" aria-labelledby="parentTitle">
         <div class="parent-head">
           <div>
-            <span class="quest-kicker">KHU VỰC PHỤ HUYNH</span>
-            <h2 id="parentTitle">Cài đặt & quản lý bài học</h2>
-            <p>Không có AI đọc. Bố/mẹ vẫn trực tiếp hướng dẫn con, game chỉ tổ chức giáo trình và tạo động lực.</p>
+            <span class="eyebrow">KHU VỰC PHỤ HUYNH</span>
+            <h2 id="parentTitle">Cài đặt bài học</h2>
           </div>
-          <button id="parentClose" class="modal-close" type="button" aria-label="Đóng">×</button>
+          <button id="parentClose" class="close" type="button" aria-label="Đóng">×</button>
         </div>
         <div id="parentBody"></div>
       </section>
     </div>
 
-    <div id="gameToast" class="interact-prompt" style="bottom:auto;top:110px"></div>
+    <div id="toast" class="toast" aria-live="polite"></div>
 
     <noscript>
-      <div style="position:fixed;inset:0;z-index:200;background:white;padding:30px">
-        Trình duyệt cần bật JavaScript để chạy game 3D.
+      <div style="position:fixed;inset:0;z-index:999;background:white;padding:30px">
+        Game cần JavaScript để hoạt động.
       </div>
     </noscript>
-  </div>
+  </main>
 
-  <script src="lesson-hat-giong.js?v=20260926-game3d-v2"></script>
-  <script type="module" src="game-hat-giong.js?v=20260926-game3d-v2"></script>
+  <script src="lesson-hat-giong.js?v=20260926-spellread-v1"></script>
+  <script type="module" src="game-hat-giong.js?v=20260926-spellread-v1"></script>
 </body>
 </html>
