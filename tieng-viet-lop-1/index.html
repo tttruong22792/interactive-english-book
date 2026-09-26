@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#55b884" />
+  <meta name="description" content="Vui Học Tiếng Việt lớp 1 – học âm, ghép tiếng, đọc hiểu và ôn nhớ bằng tương tác." />
+  <title>Vui Học Tiếng Việt – Bài 1: a, c</title>
+  <link rel="stylesheet" href="styles.css?v=20260926-lesson01-v1" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button id="homeBtn" class="brand" aria-label="Trang chủ">
+        <span class="brand-mascot" aria-hidden="true">🐿️</span>
+        <span><strong>Vui Học Tiếng Việt</strong><small>Lớp 1 · Học hiểu, nhớ lâu</small></span>
+      </button>
+      <div class="top-progress" aria-label="Tiến độ bài học">
+        <span id="progressText">0%</span>
+        <div class="progress-track"><div id="progressBar"></div></div>
+        <span id="starCount" class="star-pill">⭐ 0</span>
+      </div>
+    </header>
+
+    <main id="app" class="main" tabindex="-1"></main>
+
+    <nav class="bottom-nav" aria-label="Điều hướng bài học">
+      <button data-view="learn" class="active"><span>📖</span><small>Học</small></button>
+      <button data-view="practice"><span>🎯</span><small>Luyện</small></button>
+      <button data-view="write"><span>✍️</span><small>Viết</small></button>
+      <button data-view="review"><span>🧠</span><small>Ôn</small></button>
+      <button data-view="parent"><span>📊</span><small>Tiến độ</small></button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast hidden" aria-live="polite"></div>
+  <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
+
+  <script src="lesson01.js?v=20260926-lesson01-v1"></script>
+  <script src="audio.js?v=20260926-lesson01-v1"></script>
+  <script src="app.js?v=20260926-lesson01-v1"></script>
+</body>
+</html>
