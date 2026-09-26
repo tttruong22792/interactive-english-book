@@ -2,23 +2,34 @@ window.TV1_LESSON = {
   id: 'tv1-hat-giong-nho',
   title: 'Hạt giống nhỏ',
   subtitle: 'uông · ương · ươc',
-  goal: 'Nghe và phân biệt được uông, ương, ươc; đánh vần 4 từ trọng tâm; đọc hiểu bài Hạt giống nhỏ và nhớ lại sau khi che chữ.',
+  goal: 'Nhận chắc ba vần uông, ương, ươc; tự đánh vần tiếng mới theo công thức âm đầu + vần + thanh; đọc hiểu bài Hạt giống nhỏ mà không học thuộc lòng.',
   principles: [
-    'Học theo cụm vần thay vì đọc rời từng chữ',
-    'Nghe trước – tự đoán – rồi mới xem đáp án',
-    'Đọc câu theo cụm nghĩa, không kéo từng tiếng',
-    'Nhớ lại sau khi che chữ để chống học vẹt'
+    'Nhìn cấu tạo trước khi đọc cả tiếng',
+    'Tự đánh vần trước, người lớn chỉ sửa sau',
+    'Đọc theo cụm nghĩa thay vì kéo từng chữ',
+    'Che chữ và nhớ lại để chuyển sang trí nhớ lâu dài'
   ],
+  teacherPlan: {
+    totalMinutes: 15,
+    rule: 'Mỗi lần chỉ sửa một lỗi. Nếu con bí quá 5 giây, gợi ý vần trước rồi để con tự ghép tiếp.',
+    phases: [
+      {minutes:2, title:'Nhận 3 vần', note:'Chỉ – đọc – che – hỏi lại.'},
+      {minutes:4, title:'Đánh vần 4 từ', note:'Vần trước → âm đầu → thanh.'},
+      {minutes:3, title:'Phân loại từ', note:'Cho con tự tìm “nhà vần”.'},
+      {minutes:4, title:'Đọc đoạn ngắn', note:'Mỗi lần 1 câu, hiểu rồi mới sang câu sau.'},
+      {minutes:2, title:'Nhớ lại', note:'Che chữ, hỏi nhanh, dừng khi con còn hứng thú.'}
+    ]
+  },
   rimes: [
-    {id:'uong', text:'uông', ending:'ng', cue:'u + ô + ng', color:'blue'},
-    {id:'uong2', text:'ương', ending:'ng', cue:'ư + ơ + ng', color:'green'},
-    {id:'uoc', text:'ươc', ending:'c', cue:'ư + ơ + c', color:'orange'}
+    {id:'uong', text:'uông', body:'uô', ending:'ng', cue:'uô + ng', color:'blue'},
+    {id:'uong2', text:'ương', body:'ươ', ending:'ng', cue:'ươ + ng', color:'green'},
+    {id:'uoc', text:'ươc', body:'ươ', ending:'c', cue:'ươ + c', color:'orange'}
   ],
   focusWords: [
-    {id:'uong-word', word:'uống', onset:'', rime:'uông', tone:'sắc', build:'uông + sắc → uống', meaning:'uống nước'},
-    {id:'giuong', word:'giường', onset:'gi', rime:'ương', tone:'huyền', build:'gi + ương → giương; thêm huyền → giường', meaning:'cái giường'},
-    {id:'uoc-word', word:'ước', onset:'', rime:'ươc', tone:'sắc', build:'ươc + sắc → ước', meaning:'mong ước'},
-    {id:'thuoc', word:'thước', onset:'th', rime:'ươc', tone:'sắc', build:'th + ươc → thươc; thêm sắc → thước', meaning:'cái thước'}
+    {id:'uong-word', word:'uống', onset:'', rime:'uông', tone:'sắc', build:['uông','sắc','uống'], meaning:'uống nước'},
+    {id:'giuong', word:'giường', onset:'gi', rime:'ương', tone:'huyền', build:['gi','ương','giương','huyền','giường'], meaning:'cái giường'},
+    {id:'uoc-word', word:'ước', onset:'', rime:'ươc', tone:'sắc', build:['ươc','sắc','ước'], meaning:'mong ước'},
+    {id:'thuoc', word:'thước', onset:'th', rime:'ươc', tone:'sắc', build:['th','ươc','thươc','sắc','thước'], meaning:'cái thước'}
   ],
   sortWords: [
     {word:'uống', rime:'uông'},
@@ -34,11 +45,31 @@ window.TV1_LESSON = {
   story: {
     title:'Hạt giống nhỏ',
     sentences:[
-      'Một hạt giống nhỏ nằm lặng lẽ bên đường.',
-      'Bé nhặt được, đem về thả xuống góc vườn.',
-      'Chỉ ít hôm, mầm non đã vươn lên, uống những giọt sương sớm.',
-      'Lá non khẽ rung rung.',
-      'Dường như lá muốn cảm ơn bé.'
+      {
+        text:'Một hạt giống nhỏ nằm lặng lẽ bên đường.',
+        chunks:['Một hạt giống nhỏ','nằm lặng lẽ','bên đường.'],
+        hard:['đường']
+      },
+      {
+        text:'Bé nhặt được, đem về thả xuống góc vườn.',
+        chunks:['Bé nhặt được,','đem về','thả xuống góc vườn.'],
+        hard:['xuống','vườn']
+      },
+      {
+        text:'Chỉ ít hôm, mầm non đã vươn lên, uống những giọt sương sớm.',
+        chunks:['Chỉ ít hôm,','mầm non đã vươn lên,','uống những giọt sương sớm.'],
+        hard:['vươn','uống','sương']
+      },
+      {
+        text:'Lá non khẽ rung rung.',
+        chunks:['Lá non','khẽ rung rung.'],
+        hard:[]
+      },
+      {
+        text:'Dường như lá muốn cảm ơn bé.',
+        chunks:['Dường như','lá muốn cảm ơn bé.'],
+        hard:['Dường']
+      }
     ],
     questions:[
       {
@@ -68,32 +99,5 @@ window.TV1_LESSON = {
     {left:'Lá non', right:'khẽ rung rung.'}
   ],
   writeTargets:['uống','giường','ước','thước'],
-  audio:{
-    welcome:'Chào con! Hôm nay mình sẽ học ba vần uông, ương và ươc. Mình nghe thật kỹ, ghép theo cụm, rồi đọc câu chuyện Hạt giống nhỏ nhé.',
-    uong:'uông',
-    uong2:'ương',
-    uoc:'ươc',
-    compare:'uông, ương, ươc',
-    correct:'Đúng rồi! Con tự tìm ra đáp án rất tốt.',
-    retry:'Chưa đúng. Con nghe lại phần cuối của tiếng rồi thử một lần nữa nhé.',
-    storyIntro:'Con tự đọc câu trước. Khi đọc xong mới bấm nghe cô đọc để kiểm tra.',
-    final:'Tuyệt vời! Con đã hoàn thành bài Hạt giống nhỏ.'
-  },
-  reviewIntervalsHours:[24,72,168],
-  ttsTexts:[
-    'uông','ương','ươc','uống','giường','ước','thước','xuống','chuông','đường','sương','nước',
-    'Một hạt giống nhỏ nằm lặng lẽ bên đường.',
-    'Bé nhặt được, đem về thả xuống góc vườn.',
-    'Chỉ ít hôm, mầm non đã vươn lên, uống những giọt sương sớm.',
-    'Lá non khẽ rung rung.',
-    'Dường như lá muốn cảm ơn bé.',
-    'Mầm non','đã vươn lên.','Lá non','khẽ rung rung.',
-    'Đem về thả xuống góc vườn.','Để lại bên đường.','Đã vươn lên.','Vẫn nằm im.',
-    'Khẽ rung rung.','Rơi xuống đất.','Vì bé đã nhặt và chăm hạt giống.','Vì bé hái lá.',
-    'Chào con! Hôm nay mình sẽ học ba vần uông, ương và ươc. Mình nghe thật kỹ, ghép theo cụm, rồi đọc câu chuyện Hạt giống nhỏ nhé.',
-    'Đúng rồi! Con tự tìm ra đáp án rất tốt.',
-    'Chưa đúng. Con nghe lại phần cuối của tiếng rồi thử một lần nữa nhé.',
-    'Con tự đọc câu trước. Khi đọc xong mới bấm nghe cô đọc để kiểm tra.',
-    'Tuyệt vời! Con đã hoàn thành bài Hạt giống nhỏ.'
-  ]
+  reviewIntervalsHours:[24,72,168]
 };
