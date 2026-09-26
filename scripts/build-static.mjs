@@ -141,6 +141,15 @@ if (await exists(join(root, "icons"))) {
   await cp(join(root, "icons"), join(dist, "icons"), { recursive: true });
 }
 
+// Publish the Vietnamese Grade 1 mini-app as part of the same GitHub Pages artifact.
+if (await exists(join(root, "tieng-viet-lop-1"))) {
+  await cp(
+    join(root, "tieng-viet-lop-1"),
+    join(dist, "tieng-viet-lop-1"),
+    { recursive: true }
+  );
+}
+
 if (await exists(join(root, "tieng-viet-lop-1"))) {
   await cp(join(root, "tieng-viet-lop-1"), join(dist, "tieng-viet-lop-1"), { recursive: true });
 }
@@ -327,6 +336,60 @@ if (guide) {
   });
 
   (guide.practice || []).forEach((item) => addGuideAudio(item.answer, "tense-practice"));
+}
+
+// Vietnamese Grade 1 lessons use the same central TTS/cache architecture.
+// Their lesson files expose exact text that is safe to synthesize on demand.
+const vietnameseDir = join(root, "tieng-viet-lop-1");
+if (await exists(vietnameseDir)) {
+  const vietnameseLessonFiles = (await readdir(vietnameseDir))
+    .filter((name) => /^lesson\d+\.js$/i.test(name));
+
+  for (const filename of vietnameseLessonFiles) {
+    const lessonContext = vm.createContext({ window: {} });
+    const source = await readFile(join(vietnameseDir, filename), "utf8");
+    vm.runInContext(source, lessonContext, { filename: "tieng-viet-lop-1/" + filename });
+
+    const lesson = lessonContext.window.TV1_LESSON;
+    if (!lesson) continue;
+
+    const texts = new Set();
+    const add = (value) => {
+      if (typeof value === "string" && value.trim()) texts.add(value.trim());
+    };
+
+    Object.values(lesson.audio || {}).forEach(add);
+    (lesson.ttsTexts || []).forEach(add);
+    (lesson.modelWords || []).forEach((item) => add(item?.word));
+    (lesson.soundAItems || []).forEach((item) => add(item?.audio));
+    (lesson.soundCItems || []).forEach((item) => add(item?.audio));
+    (lesson.sortItems || []).forEach((item) => add(item?.audio));
+    (lesson.reading?.sentences || []).forEach(add);
+    (lesson.reading?.questions || []).forEach((question) => {
+      (question?.choices || []).forEach(add);
+      add(question?.answer);
+    });
+    (lesson.writeTargets || []).forEach(add);
+
+    for (const text of texts) {
+      const language = "vi-VN";
+      const voice = "coral";
+      const hash = ttsHash(text, language, voice);
+      const existing = entries[hash];
+      if (existing) {
+        if (!existing.lessonIds.includes(lesson.id)) existing.lessonIds.push(lesson.id);
+        if (!existing.kinds.includes("vietnamese-grade1")) existing.kinds.push("vietnamese-grade1");
+        continue;
+      }
+      entries[hash] = {
+        text,
+        language,
+        voice,
+        lessonIds: [lesson.id],
+        kinds: ["vietnamese-grade1"]
+      };
+    }
+  }
 }
 
 const ttsManifest = {
