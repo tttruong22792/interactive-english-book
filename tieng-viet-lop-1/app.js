@@ -12,7 +12,8 @@
   function defaultState(){
     return {
       stars:0,
-      completed:{intro:false,a:false,c:false,blend:false,huntA:false,huntC:false,final:false},
+      completed:{a:false,c:false,blend:false,huntA:false,huntC:false,write:false,final:false},
+      writeDone:{a:false,c:false},
       attempts:{},
       bestFinal:0,
       lessonFinishedAt:null,
@@ -22,8 +23,15 @@
   }
 
   function loadState(){
-    try{return Object.assign(defaultState(),JSON.parse(localStorage.getItem(STORE_KEY)||'{}'));}
-    catch(e){return defaultState();}
+    try{
+      var raw=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
+      var base=defaultState();
+      var next=Object.assign(base,raw);
+      next.completed=Object.assign(defaultState().completed,raw.completed||{});
+      next.writeDone=Object.assign({a:false,c:false},raw.writeDone||{});
+      delete next.completed.intro;
+      return next;
+    }catch(e){return defaultState();}
   }
 
   function save(){
@@ -104,13 +112,13 @@
       +stageRow(3,'Ghép tiếng ca','Tự ghép c + a rồi mới nghe đáp án','blend')
       +stageRow(4,'Săn âm a','Nghe tiếng và tự tìm tiếng có âm a','huntA')
       +stageRow(5,'Săn chữ c','Nhận ra tiếng có âm c','huntC')
-      +stageRow(6,'Viết bằng tay','Luyện nét bằng ngón tay hoặc chuột','intro')
+      +stageRow(6,'Viết bằng tay','Luyện nét bằng ngón tay hoặc chuột','write')
       +stageRow(7,'Thử thách cuối','Nhớ lại không nhìn gợi ý','final')
       +'</div>'
       +'<div class="card lesson-panel" id="lessonPanel">'+renderIntroStep()+'</div>'
       +'</section>';
     bindCommon();
-    $('#startLesson').onclick=function(){award('intro',1); showStep('a'); speak(L.audio.welcome,this);};
+    $('#startLesson').onclick=function(){showStep('a'); speak(L.audio.welcome,this);};
     bindLessonPanel();
   }
 
@@ -280,7 +288,29 @@
       canvas._done=function(){return strokes>0;};
     });
     $$('.clear-canvas').forEach(function(btn){btn.onclick=function(){var c=$('#canvas-'+btn.dataset.canvas);c._clear();};});
-    $$('.done-write').forEach(function(btn){btn.onclick=function(){var c=$('#canvas-'+btn.dataset.canvas);if(!c._done()){toast('Con hãy viết thử trước nhé.');return;}btn.textContent='Đã luyện ✓';btn.disabled=true;state.stars+=1;save();celebrate();};});
+    $('.done-write').forEach(function(btn){btn.onclick=function(){
+      var id=btn.dataset.canvas;
+      var c=$('#canvas-'+id);
+      if(!c._done()){toast('Con hãy viết thử trước nhé.');return;}
+      state.writeDone=state.writeDone||{a:false,c:false};
+      if(!state.writeDone[id]){
+        state.writeDone[id]=true;
+        state.stars+=1;
+      }
+      btn.textContent='Đã luyện ✓';
+      btn.disabled=true;
+      save();
+      celebrate();
+      if(state.writeDone.a&&state.writeDone.c){
+        award('write',2);
+        toast('Xong phần viết! Sang thử thách cuối nhé.');
+        setTimeout(function(){
+          currentView='learn';
+          render();
+          setTimeout(function(){showStep('final');},80);
+        },900);
+      }
+    };});
   }
 
   var finalSession=null;
