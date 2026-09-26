@@ -160,7 +160,7 @@
 
   function renderWarmup(){
     shell('<div class="mission-head"><span class="mission-kicker">⑤ KHỞI ĐỘNG · 2 PHÚT</span><h2>Nhìn tranh trước, chưa đọc bài</h2><p>Mục tiêu là làm con tò mò về câu chuyện trước khi nhìn vào đoạn chữ.</p></div>'
-      +'<div class="warmup-grid"><div class="warmup-scene">'+sceneSvg()+'</div><div class="warmup-questions">'
+      +'<div class="warmup-grid"><div class="warmup-scene"><img src="./assets/hat-giong-nho.jpg?v=20260926" alt="Bạn nhỏ tưới mầm cây trong khu vườn xanh"></div><div class="warmup-questions">'
       +L.warmup.prompts.map(function(q,i){return '<div><span>'+(i+1)+'</span><b>'+esc(q)+'</b></div>';}).join('')
       +'</div></div>'
       +'<div class="parent-coach"><b>👨‍👩‍👧 Bố/mẹ làm gì?</b><p>Chỉ hỏi, không sửa câu trả lời. Sau 2–3 câu, nói: <b>“Mình đọc xem chuyện thật sự xảy ra thế nào nhé.”</b></p></div>'
