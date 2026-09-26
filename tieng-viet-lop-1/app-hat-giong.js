@@ -631,10 +631,15 @@
 
   function renderFull(){
     shell('<div class="mission-head"><span class="mission-kicker">⑧ ĐỌC TOÀN BÀI · 1–2 LƯỢT</span><h2>Chinh phục bài đọc</h2><p>Không cần đọc 5–10 lần. Mỗi lượt có một mục đích rõ ràng.</p></div>'
+      +'<section class="story-reading-card">'
+      +'<h3 class="story-reading-title">'+esc(L.story.title)+'</h3>'
+      +'<div class="story-reading-image">'+imageSlot('warmup-main','./assets/hat-giong-nho.jpg?v=20260926','Bạn nhỏ tưới mầm cây trong khu vườn xanh','Tranh bài đọc')+'</div>'
       +'<div class="full-reading">'+fullText()+'</div>'
+      +'</section>'
       +'<div class="purpose-grid"><button id="pass1" class="'+(state.fullPass1?'done':'')+'"><span>1</span><b>Lượt 1: Đọc đúng</b><small>Tự giải mã khi gặp tiếng lạ.</small></button><button id="pass2" class="'+(state.fullPass2?'done':'')+'"><span>2</span><b>Lượt 2: Đọc liền mạch</b><small>Chỉ làm nếu con vẫn còn tập trung.</small></button></div>'
       +'<div class="stop-note">Nếu con mệt sau lượt 1: <b>dừng tại đây vẫn hoàn toàn ổn.</b></div>'
       +actionBar('Kiểm tra con hiểu gì →',true));
+    bindImageSlots();
     $('#pass1').onclick=function(){state.fullPass1=true;save();renderFull();};
     $('#pass2').onclick=function(){state.fullPass2=true;save();renderFull();};
     bindActionBar();
