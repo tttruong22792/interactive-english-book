@@ -122,6 +122,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-009",
+    language: "en",
+    category: "patterns",
+    order: 9,
+    title: "I look forward to…",
+    meaning: "Tôi mong chờ… / Tôi rất mong…",
+    description: "Mẫu quan trọng trong email, công việc, kế hoạch, gặp gỡ, du lịch và các sự kiện trong tương lai.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/009.js",
+    route: "lesson/9",
+    accent: "purple",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "daily-life",
