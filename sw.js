@@ -1,6 +1,7 @@
 const APP_CACHE='language-studio-v26-pattern009-commercial';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
+const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
 
 const ASSETS=[
   './',
@@ -37,6 +38,21 @@ function audioFileFromRequest(request){
   return /^[a-f0-9]{64}\.mp3$/i.test(file) ? file.toLowerCase() : null;
 }
 
+async function requestCloudAudioGeneration(hash){
+  try{
+    const response=await fetch(CLOUD_TTS_ENDPOINT,{
+      method:'POST',
+      mode:'cors',
+      cache:'no-store',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({hash})
+    });
+    return response.ok;
+  }catch(error){
+    return false;
+  }
+}
+
 async function serveAudio(request,file){
   const cache=await caches.open(AUDIO_CACHE);
   const scopeUrl=new URL('./audio-cloud/'+file,self.registration.scope).toString();
@@ -45,14 +61,29 @@ async function serveAudio(request,file){
   if(cached) return cached;
 
   try{
-    // Fetch the complete MP3 instead of forwarding Range headers.
-    // This gives Cache Storage one reusable full object for later playback.
-    const response=await fetch(CLOUD_AUDIO_PUBLIC_BASE+file,{
+    // Keep the original media play request alive on mobile. If the MP3 does not
+    // exist yet, generate it through the allow-listed TTS endpoint and then
+    // return the new file to the same request. This avoids iOS autoplay blocking
+    // a second play() call after an asynchronous generation step.
+    let response=await fetch(CLOUD_AUDIO_PUBLIC_BASE+file,{
       method:'GET',
       mode:'cors',
       cache:'no-store',
       headers:{'Accept':'audio/mpeg'}
     });
+
+    if(!response.ok && response.status===404){
+      const hash=file.replace(/\.mp3$/i,'');
+      const generated=await requestCloudAudioGeneration(hash);
+      if(generated){
+        response=await fetch(CLOUD_AUDIO_PUBLIC_BASE+file+'?ready='+Date.now(),{
+          method:'GET',
+          mode:'cors',
+          cache:'no-store',
+          headers:{'Accept':'audio/mpeg'}
+        });
+      }
+    }
 
     if(!response.ok) return response;
 
