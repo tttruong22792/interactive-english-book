@@ -87,8 +87,9 @@ See `CONTENT-SCHEMA.md`.
 - Pattern 06 — **Would you like to…?**
 - Pattern 07 — **Do you want to…?**
 - Pattern 08 — **I’d rather…**
+- Pattern 09 — **I look forward to…**
 
-Patterns 02–08 use the reusable `sectioned-pattern` renderer.
+Patterns 02–09 use the reusable `sectioned-pattern` renderer.
 
 
 ## AI Voice and central audio
@@ -160,3 +161,17 @@ data/english/tenses.js
 ```
 
 The page teaches the common 12-tense framework as **3 time references × 4 aspect views**, prioritizes the tenses needed first for everyday communication, includes listenable examples, common mistakes, contrasts, and immediate practice.
+
+
+## Commercial-ready product direction
+
+Language Studio is presented as a general learning product rather than a personal study site.
+
+Product-facing copy should:
+- address a broad Vietnamese-speaking learner audience;
+- avoid hard-coded personal context, names, jobs, family details, or private project references;
+- describe reusable learning modules rather than implementation history;
+- keep per-device progress and saved vocabulary as learner features, not as personalized editorial content;
+- use lesson examples that are broadly useful in daily life, study, work, travel, and communication.
+
+The current product modules include pattern lessons, grammar, vocabulary review, mixed practice, and lesson-based shadowing.
