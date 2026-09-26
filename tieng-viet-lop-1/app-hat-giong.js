@@ -63,6 +63,129 @@
     updateHeader();
   }
 
+  var IMAGE_DB='vuiHocTiengVietImages';
+  var IMAGE_DB_VERSION=1;
+  var IMAGE_STORE='lessonImages';
+  var imageObjectUrls={};
+
+  function openImageDb(){
+    return new Promise(function(resolve,reject){
+      if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return;}
+      var request=indexedDB.open(IMAGE_DB,IMAGE_DB_VERSION);
+      request.onupgradeneeded=function(){
+        var db=request.result;
+        if(!db.objectStoreNames.contains(IMAGE_STORE))db.createObjectStore(IMAGE_STORE);
+      };
+      request.onsuccess=function(){resolve(request.result);};
+      request.onerror=function(){reject(request.error||new Error('Cannot open image database'));};
+    });
+  }
+
+  function imageKey(slotId){
+    return L.id+':'+slotId;
+  }
+
+  async function saveSlotImage(slotId,file){
+    var db=await openImageDb();
+    await new Promise(function(resolve,reject){
+      var tx=db.transaction(IMAGE_STORE,'readwrite');
+      tx.objectStore(IMAGE_STORE).put({
+        blob:file,
+        name:file.name||'image',
+        type:file.type||'image/jpeg',
+        updatedAt:Date.now()
+      },imageKey(slotId));
+      tx.oncomplete=resolve;
+      tx.onerror=function(){reject(tx.error||new Error('Cannot save image'));};
+    });
+    db.close();
+  }
+
+  async function getSlotImage(slotId){
+    var db=await openImageDb();
+    var value=await new Promise(function(resolve,reject){
+      var tx=db.transaction(IMAGE_STORE,'readonly');
+      var req=tx.objectStore(IMAGE_STORE).get(imageKey(slotId));
+      req.onsuccess=function(){resolve(req.result||null);};
+      req.onerror=function(){reject(req.error||new Error('Cannot read image'));};
+    });
+    db.close();
+    return value;
+  }
+
+  async function deleteSlotImage(slotId){
+    var db=await openImageDb();
+    await new Promise(function(resolve,reject){
+      var tx=db.transaction(IMAGE_STORE,'readwrite');
+      tx.objectStore(IMAGE_STORE).delete(imageKey(slotId));
+      tx.oncomplete=resolve;
+      tx.onerror=function(){reject(tx.error||new Error('Cannot delete image'));};
+    });
+    db.close();
+  }
+
+  function imageSlot(slotId,defaultSrc,alt,label){
+    return '<div class="editable-image-slot" data-image-slot="'+esc(slotId)+'" data-default-src="'+esc(defaultSrc)+'">'
+      +'<div class="image-slot-frame"><img class="image-slot-preview" src="'+esc(defaultSrc)+'" alt="'+esc(alt)+'"></div>'
+      +'<div class="image-slot-controls"><div><b>🖼️ '+esc(label||'Ảnh minh họa')+'</b><small>Ảnh bạn chọn được giữ nguyên chất lượng, không nén.</small></div>'
+      +'<label class="image-upload-btn">📷 Chọn / thay ảnh<input class="image-file-input" type="file" accept="image/*"></label>'
+      +'<button class="image-reset-btn" type="button">↩ Ảnh mặc định</button></div>'
+      +'<div class="image-local-note">Lưu trên trình duyệt của thiết bị này.</div>'
+      +'</div>';
+  }
+
+  async function hydrateImageSlot(slot){
+    var slotId=slot.dataset.imageSlot;
+    var preview=$('.image-slot-preview',slot);
+    try{
+      var saved=await getSlotImage(slotId);
+      if(saved&&saved.blob){
+        if(imageObjectUrls[slotId])URL.revokeObjectURL(imageObjectUrls[slotId]);
+        imageObjectUrls[slotId]=URL.createObjectURL(saved.blob);
+        preview.src=imageObjectUrls[slotId];
+        slot.classList.add('has-custom-image');
+      }
+    }catch(e){
+      slot.classList.add('image-storage-fallback');
+    }
+  }
+
+  function bindImageSlots(){
+    $('.editable-image-slot').forEach(function(slot){
+      hydrateImageSlot(slot);
+      var input=$('.image-file-input',slot);
+      var reset=$('.image-reset-btn',slot);
+      var preview=$('.image-slot-preview',slot);
+      input.onchange=async function(){
+        var file=input.files&&input.files[0];
+        if(!file)return;
+        if(!file.type||file.type.indexOf('image/')!==0){toast('Hãy chọn một file ảnh.');input.value='';return;}
+        if(file.size>25*1024*1024){toast('Ảnh quá lớn. Hãy chọn ảnh dưới 25 MB.');input.value='';return;}
+        try{
+          await saveSlotImage(slot.dataset.imageSlot,file);
+          if(imageObjectUrls[slot.dataset.imageSlot])URL.revokeObjectURL(imageObjectUrls[slot.dataset.imageSlot]);
+          imageObjectUrls[slot.dataset.imageSlot]=URL.createObjectURL(file);
+          preview.src=imageObjectUrls[slot.dataset.imageSlot];
+          slot.classList.add('has-custom-image');
+          toast('Đã thay ảnh. Ảnh sẽ còn sau khi tải lại trang.');
+        }catch(e){
+          toast('Không lưu được ảnh trên trình duyệt này.');
+        }
+        input.value='';
+      };
+      reset.onclick=async function(){
+        try{await deleteSlotImage(slot.dataset.imageSlot);}catch(e){}
+        if(imageObjectUrls[slot.dataset.imageSlot]){
+          URL.revokeObjectURL(imageObjectUrls[slot.dataset.imageSlot]);
+          delete imageObjectUrls[slot.dataset.imageSlot];
+        }
+        preview.src=slot.dataset.defaultSrc;
+        slot.classList.remove('has-custom-image');
+        toast('Đã dùng lại ảnh mặc định.');
+      };
+    });
+  }
+
   function esc(s){
     return String(s).replace(/[&<>"']/g,function(c){
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);
@@ -160,11 +283,12 @@
 
   function renderWarmup(){
     shell('<div class="mission-head"><span class="mission-kicker">⑤ KHỞI ĐỘNG · 2 PHÚT</span><h2>Nhìn tranh trước, chưa đọc bài</h2><p>Mục tiêu là làm con tò mò về câu chuyện trước khi nhìn vào đoạn chữ.</p></div>'
-      +'<div class="warmup-grid"><div class="warmup-scene"><img src="./assets/hat-giong-nho.jpg?v=20260926" alt="Bạn nhỏ tưới mầm cây trong khu vườn xanh"></div><div class="warmup-questions">'
+      +'<div class="warmup-grid"><div class="warmup-scene">'+imageSlot('warmup-main','./assets/hat-giong-nho.jpg?v=20260926','Bạn nhỏ tưới mầm cây trong khu vườn xanh','Tranh khởi động')+'</div><div class="warmup-questions">'
       +L.warmup.prompts.map(function(q,i){return '<div><span>'+(i+1)+'</span><b>'+esc(q)+'</b></div>';}).join('')
       +'</div></div>'
       +'<div class="parent-coach"><b>👨‍👩‍👧 Bố/mẹ làm gì?</b><p>Chỉ hỏi, không sửa câu trả lời. Sau 2–3 câu, nói: <b>“Mình đọc xem chuyện thật sự xảy ra thế nào nhé.”</b></p></div>'
       +actionBar('Xem bản đồ độ khó →',true));
+    bindImageSlots();
     bindActionBar();
   }
 
