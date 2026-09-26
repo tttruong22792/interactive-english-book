@@ -10,6 +10,21 @@
   var CLOUD_TTS_ENDPOINT = 'https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
   var activeAudio = null;
 
+  function cloudDirectAudioUrl(hash){
+    return CLOUD_AUDIO_PUBLIC_BASE+hash+'.mp3';
+  }
+
+  function cloudVirtualAudioUrl(hash){
+    return new URL('../audio-cloud/'+hash+'.mp3',document.baseURI).toString();
+  }
+
+  function cloudAudioUrl(hash){
+    if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+      return cloudVirtualAudioUrl(hash);
+    }
+    return cloudDirectAudioUrl(hash);
+  }
+
   function bytesToHex(buffer){
     return Array.from(new Uint8Array(buffer)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
   }
@@ -78,13 +93,14 @@
     var rate=options.rate||.92;
     try{
       var hash=await hashFor(text);
-      var direct=CLOUD_AUDIO_PUBLIC_BASE+hash+'.mp3';
+      var source=cloudAudioUrl(hash);
       try{
-        await playUrl(direct,rate);
+        await playUrl(source,rate);
         return;
       }catch(first){}
       await ensureCloud(hash);
-      await playUrl(direct+'?ready='+Date.now(),rate);
+      source=cloudAudioUrl(hash);
+      await playUrl(source+(source.includes('?')?'&':'?')+'ready='+Date.now(),rate);
     }catch(error){
       await browserFallback(text,rate);
     }
