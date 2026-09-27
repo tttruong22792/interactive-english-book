@@ -13,6 +13,7 @@
   const defaults = {
     hideVi:false, rate:0.88, learned:{}, saved:{}, meaningOverrides:{}, shadowed:{},
     shadowingSettings:{mode:'shadow',order:'sequential',size:'10',repeat:2,rate:0.88,showEn:true,showVi:false,selectedLessonIds:[]},
+    quizInputMode:'speech',
     quizBest:0, quizRuns:0,
     quizBestByLesson:{}, quizRunsByLesson:{},
     lessonVisits:0, lessonVisitsByLesson:{}
@@ -72,7 +73,8 @@
       'volume-2':'<path d="M11 5 6 9H2v6h4l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>',
       'play':'<path d="m6 3 14 9-14 9Z"/>',
       'headphones':'<path d="M4 14a8 8 0 0 1 16 0"/><path d="M18 19v-5a2 2 0 0 1 2-2h1v7a2 2 0 0 1-2 2h-1Z"/><path d="M6 19v-5a2 2 0 0 0-2-2H3v7a2 2 0 0 0 2 2h1Z"/>',
-      'bookmark':'<path d="M6 3a2 2 0 0 0-2 2v16l8-5 8 5V5a2 2 0 0 0-2-2Z"/>'
+      'bookmark':'<path d="M6 3a2 2 0 0 0-2 2v16l8-5 8 5V5a2 2 0 0 0-2-2Z"/>',
+      'keyboard':'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M19 10h.01M8 14h8"/>'
     };
     const body=icons[name]||icons['arrow-right'];
     return '<svg class="ui-icon '+escAttr(extraClass)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
@@ -1197,6 +1199,7 @@
     if(quiz.index>=items.length) quiz.index=0;
     const item=items[quiz.index];
     const total=items.length;
+    const inputMode=state.quizInputMode==='type'?'type':'speech';
     return `<div class="quiz-config">
         <div class="quiz-config-copy"><span class="quiz-kicker">PRACTICE SESSION</span><strong>Luyện toàn bộ nội dung</strong><span>${total} ý/câu luyện · chấp nhận các cách diễn đạt đúng có cùng nghĩa.</span></div>
         <label><span>Thứ tự</span>
@@ -1209,11 +1212,23 @@
       <div class="quiz-card" data-quiz="${context}">
         <div class="quiz-meta"><span id="quizProgress">Câu ${quiz.index+1}/${total}</span><span>Điểm lượt này <b id="quizScore">${quiz.correct}</b>/${total}</span></div>
         <div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item.prompt)}</div>
-        <label class="quiz-input-label" for="quizInput">Câu trả lời bằng tiếng Anh</label>
-        <input id="quizInput" class="quiz-input" autocomplete="off" autocapitalize="sentences" placeholder="Nhập một cách nói đúng bằng tiếng Anh..."/>
+
+        <div class="quiz-answer-mode" role="group" aria-label="Chọn cách trả lời">
+          <button type="button" class="quiz-mode-button ${inputMode==='speech'?'active':''}" data-quiz-mode="speech">${uiIcon('mic')}<span>Nói trực tiếp</span></button>
+          <button type="button" class="quiz-mode-button ${inputMode==='type'?'active':''}" data-quiz-mode="type">${uiIcon('keyboard')}<span>Nhập chữ</span></button>
+        </div>
+
+        <div class="quiz-type-area ${inputMode==='type'?'':'hidden'}" data-quiz-type-area>
+          <label class="quiz-input-label" for="quizInput">Câu trả lời bằng tiếng Anh</label>
+          <input id="quizInput" class="quiz-input" autocomplete="off" autocapitalize="sentences" placeholder="Nhập câu tiếng Anh rồi nhấn Enter..."/>
+          <div class="quiz-type-hint">Nhấn <b>Enter</b> để chấm câu trả lời.</div>
+        </div>
+
+        <input id="quizSpeechValue" class="hidden" aria-hidden="true" tabindex="-1"/>
         <div id="quizWordDiff" class="quiz-word-diff" aria-live="polite"></div>
+
         <div class="quiz-actions">
-          <button id="quizMic" class="primary-button quiz-action quiz-action-primary">${uiIcon('mic')}<span>Nói</span></button>
+          <button id="quizMic" class="primary-button quiz-action quiz-action-primary ${inputMode==='speech'?'':'hidden'}">${uiIcon('mic')}<span>Nói</span></button>
           <button id="quizShow" class="secondary-button quiz-action quiz-action-soft">${uiIcon('lightbulb')}<span>Xem đáp án</span></button>
           <button id="quizNext" class="secondary-button quiz-action hidden"><span>Câu tiếp theo</span>${uiIcon('arrow-right')}</button>
         </div>
@@ -1233,21 +1248,50 @@
     const items=quiz.items||[];
     if(!items.length) return;
     const item=items[quiz.index];
-    const input=$('#quizInput',q),show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q),wordDiff=$('#quizWordDiff',q);
+    const input=$('#quizInput',q);
+    const speechValue=$('#quizSpeechValue',q);
+    const show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q),wordDiff=$('#quizWordDiff',q);
     const order=$('#quizOrderSelect',root);
+    const modeButtons=$$('[data-quiz-mode]',q);
+
+    const currentAnswerValue=()=>{
+      return state.quizInputMode==='type' ? (input?.value||'') : (speechValue?.value||'');
+    };
+
+    const clearAnswerState=()=>{
+      if(input){
+        input.value='';
+        input.classList.remove('answer-correct','answer-wrong');
+      }
+      if(speechValue) speechValue.value='';
+      if(wordDiff) wordDiff.innerHTML='';
+      feedback.className='quiz-feedback';
+      feedback.innerHTML='';
+      next.classList.add('hidden');
+    };
 
     if(order) order.onchange=()=>{
       quiz=makeQuizSession(quiz.baseItems,order.value,quiz.scopeId,quiz.context);
       rerenderQuiz(root);
     };
 
+    modeButtons.forEach(btn=>btn.onclick=()=>{
+      const mode=btn.dataset.quizMode==='type'?'type':'speech';
+      if(mode===state.quizInputMode) return;
+      state.quizInputMode=mode;
+      saveState();
+      rerenderQuiz(root);
+    });
+
     const evaluate=()=>{
-      const typed=input.value.trim();
+      const typed=currentAnswerValue().trim();
       if(!typed){
-        input.classList.remove('answer-correct','answer-wrong');
+        if(input) input.classList.remove('answer-correct','answer-wrong');
         if(wordDiff) wordDiff.innerHTML='';
         feedback.className='quiz-feedback bad';
-        feedback.textContent='Hãy nhập hoặc nói câu trả lời trước.';
+        feedback.textContent=state.quizInputMode==='speech'
+          ? 'Hãy bấm Nói và đọc câu tiếng Anh.'
+          : 'Hãy nhập câu tiếng Anh rồi nhấn Enter.';
         return;
       }
 
@@ -1255,8 +1299,10 @@
       const best=bestQuizAnswerDiff(typed,item.answers);
 
       if(matched){
-        input.classList.remove('answer-wrong');
-        input.classList.add('answer-correct');
+        if(input && state.quizInputMode==='type'){
+          input.classList.remove('answer-wrong');
+          input.classList.add('answer-correct');
+        }
         if(wordDiff){
           const exact=alignQuizWords(typed,matched);
           wordDiff.innerHTML=quizWordDiffHTML(exact.parts,true);
@@ -1271,25 +1317,30 @@
         }
         next.classList.remove('hidden');
       }else{
-        input.classList.remove('answer-correct');
-        input.classList.add('answer-wrong');
+        if(input && state.quizInputMode==='type'){
+          input.classList.remove('answer-correct');
+          input.classList.add('answer-wrong');
+        }
         if(wordDiff) wordDiff.innerHTML=quizWordDiffHTML(best.result.parts,false);
         feedback.className='quiz-feedback bad';
         feedback.innerHTML='Chưa đúng. <b>Màu đỏ</b> là từ cần sửa; nếu có ô màu vàng thì câu đang thiếu từ.';
       }
     };
 
-    input.addEventListener('input',()=>{
-      input.classList.remove('answer-correct','answer-wrong');
-      if(wordDiff) wordDiff.innerHTML='';
-      if(feedback.classList.contains('good')||feedback.classList.contains('bad')){
-        feedback.className='quiz-feedback';
-        feedback.innerHTML='';
-      }
-    });
-    input.addEventListener('keydown',e=>{if(e.key==='Enter')evaluate();});
+    if(input){
+      input.addEventListener('input',()=>{
+        input.classList.remove('answer-correct','answer-wrong');
+        if(wordDiff) wordDiff.innerHTML='';
+        if(feedback.classList.contains('good')||feedback.classList.contains('bad')){
+          feedback.className='quiz-feedback';
+          feedback.innerHTML='';
+        }
+      });
+      input.addEventListener('keydown',e=>{if(e.key==='Enter')evaluate();});
+    }
+
     show.onclick=()=>{
-      input.classList.remove('answer-correct','answer-wrong');
+      if(input) input.classList.remove('answer-correct','answer-wrong');
       if(wordDiff) wordDiff.innerHTML='';
       feedback.className='quiz-feedback';
       feedback.innerHTML='<strong>Đáp án gợi ý:</strong>'+answerFeedbackHTML(item);
@@ -1324,7 +1375,12 @@
       };
     };
 
-    mic.onclick=()=>startRecognition(input,evaluate);
+    if(mic){
+      mic.onclick=()=>{
+        clearAnswerState();
+        startRecognition(speechValue,evaluate);
+      };
+    }
   }
 
   function rerenderQuiz(root){
@@ -1357,7 +1413,7 @@
     toast('Đang nghe... hãy nói câu tiếng Anh.');
     r.onresult=e=>{
       input.value=e.results[0][0].transcript;
-      input.dispatchEvent(new Event('input',{bubbles:true}));
+      if(!input.classList.contains('hidden')) input.dispatchEvent(new Event('input',{bubbles:true}));
       toast('Đã nhận giọng nói. Đang kiểm tra...');
       if(typeof onComplete==='function') setTimeout(()=>onComplete(),80);
     };
