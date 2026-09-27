@@ -78,6 +78,91 @@
     return '<svg class="ui-icon '+escAttr(extraClass)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
   }
   function normalizeText(s=''){ return String(s).toLowerCase().replace(/[’]/g,"'").replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim(); }
+  function tokenizeQuizText(text=''){
+    const cleaned=String(text)
+      .replace(/[’]/g,"'")
+      .replace(/[“”]/g,'"')
+      .replace(/[^A-Za-z0-9' ]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+    if(!cleaned) return [];
+    return cleaned.split(' ').map(raw=>({raw,norm:raw.toLowerCase()}));
+  }
+
+  function alignQuizWords(userText,answerText){
+    const user=tokenizeQuizText(userText);
+    const expected=tokenizeQuizText(answerText);
+    const rows=user.length+1, cols=expected.length+1;
+    const dp=Array.from({length:rows},()=>Array(cols).fill(0));
+    const op=Array.from({length:rows},()=>Array(cols).fill(''));
+
+    for(let i=1;i<rows;i++){ dp[i][0]=i; op[i][0]='extra'; }
+    for(let j=1;j<cols;j++){ dp[0][j]=j; op[0][j]='missing'; }
+
+    for(let i=1;i<rows;i++){
+      for(let j=1;j<cols;j++){
+        if(user[i-1].norm===expected[j-1].norm){
+          dp[i][j]=dp[i-1][j-1];
+          op[i][j]='correct';
+          continue;
+        }
+        const replace=dp[i-1][j-1]+1;
+        const extra=dp[i-1][j]+1;
+        const missing=dp[i][j-1]+1;
+        const best=Math.min(replace,extra,missing);
+        dp[i][j]=best;
+        // Prefer substitution, then missing, then extra for more natural language feedback.
+        op[i][j]=replace===best?'wrong':missing===best?'missing':'extra';
+      }
+    }
+
+    const parts=[];
+    let i=user.length,j=expected.length;
+    while(i>0||j>0){
+      const action=op[i][j];
+      if(action==='correct'){
+        parts.push({type:'correct',user:user[i-1].raw,expected:expected[j-1].raw});
+        i--;j--;
+      }else if(action==='wrong'){
+        parts.push({type:'wrong',user:user[i-1].raw,expected:expected[j-1].raw});
+        i--;j--;
+      }else if(action==='extra'){
+        parts.push({type:'extra',user:user[i-1].raw,expected:''});
+        i--;
+      }else{
+        parts.push({type:'missing',user:'',expected:expected[j-1]?.raw||''});
+        j--;
+      }
+    }
+    parts.reverse();
+    return {distance:dp[user.length][expected.length],parts};
+  }
+
+  function bestQuizAnswerDiff(userText,answers=[]){
+    let best=null;
+    (answers||[]).forEach(answer=>{
+      const result=alignQuizWords(userText,answer);
+      const lengthPenalty=Math.abs(tokenizeQuizText(userText).length-tokenizeQuizText(answer).length)*0.01;
+      const score=result.distance+lengthPenalty;
+      if(!best||score<best.score) best={answer,result,score};
+    });
+    return best||{answer:'',result:{distance:0,parts:[]},score:0};
+  }
+
+  function quizWordDiffHTML(parts=[],allCorrect=false){
+    if(allCorrect){
+      const words=parts.filter(part=>part.user).map(part=>`<span class="quiz-diff-word correct">${esc(part.user)}</span>`).join('');
+      return `<div class="quiz-diff-label">Câu của bạn</div><div class="quiz-diff-line is-correct">${words}</div>`;
+    }
+    const words=parts.map(part=>{
+      if(part.type==='correct') return `<span class="quiz-diff-word correct">${esc(part.user)}</span>`;
+      if(part.type==='wrong') return `<span class="quiz-diff-word wrong" title="Nên là: ${escAttr(part.expected)}">${esc(part.user)}</span>`;
+      if(part.type==='extra') return `<span class="quiz-diff-word wrong extra" title="Từ thừa">${esc(part.user)}</span>`;
+      return `<span class="quiz-diff-word missing" title="Thiếu từ">+ ${esc(part.expected)}</span>`;
+    }).join('');
+    return `<div class="quiz-diff-label">Kiểm tra từng từ</div><div class="quiz-diff-line">${words}</div><div class="quiz-diff-legend"><span><i class="correct"></i> đúng</span><span><i class="wrong"></i> sai / thừa</span><span><i class="missing"></i> thiếu</span></div>`;
+  }
+
   function keyFor(s=''){ return normalizeText(s).replace(/\s+/g,'-'); }
   function currentLessonId(){ return L?.id || CORE_LESSON_ID; }
   function scopedLearnKey(localKey,id=currentLessonId()){ return `${id}:${localKey}`; }
@@ -1126,6 +1211,7 @@
         <div id="quizPrompt" class="quiz-prompt" data-vi-only>${esc(item.prompt)}</div>
         <label class="quiz-input-label" for="quizInput">Câu trả lời bằng tiếng Anh</label>
         <input id="quizInput" class="quiz-input" autocomplete="off" autocapitalize="sentences" placeholder="Nhập một cách nói đúng bằng tiếng Anh..."/>
+        <div id="quizWordDiff" class="quiz-word-diff" aria-live="polite"></div>
         <div class="quiz-actions">
           <button id="quizCheck" class="primary-button quiz-action quiz-action-primary">${uiIcon('check-circle')}<span>Kiểm tra</span></button>
           <button id="quizMic" class="secondary-button quiz-action">${uiIcon('mic')}<span>Nói</span></button>
@@ -1148,7 +1234,7 @@
     const items=quiz.items||[];
     if(!items.length) return;
     const item=items[quiz.index];
-    const input=$('#quizInput',q),check=$('#quizCheck',q),show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q);
+    const input=$('#quizInput',q),check=$('#quizCheck',q),show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q),wordDiff=$('#quizWordDiff',q);
     const order=$('#quizOrderSelect',root);
 
     if(order) order.onchange=()=>{
@@ -1158,9 +1244,24 @@
 
     const evaluate=()=>{
       const typed=input.value.trim();
-      if(!typed){feedback.className='quiz-feedback bad';feedback.textContent='Hãy nhập hoặc nói câu trả lời trước.';return;}
+      if(!typed){
+        input.classList.remove('answer-correct','answer-wrong');
+        if(wordDiff) wordDiff.innerHTML='';
+        feedback.className='quiz-feedback bad';
+        feedback.textContent='Hãy nhập hoặc nói câu trả lời trước.';
+        return;
+      }
+
       const matched=item.answers.find(answer=>normalizeText(answer)===normalizeText(typed));
+      const best=bestQuizAnswerDiff(typed,item.answers);
+
       if(matched){
+        input.classList.remove('answer-wrong');
+        input.classList.add('answer-correct');
+        if(wordDiff){
+          const exact=alignQuizWords(typed,matched);
+          wordDiff.innerHTML=quizWordDiffHTML(exact.parts,true);
+        }
         feedback.className='quiz-feedback good';
         feedback.innerHTML='<strong>✓ Chính xác.</strong>'+answerFeedbackHTML(item,matched);
         bindAnswerSpeakers(feedback);
@@ -1171,14 +1272,27 @@
         }
         next.classList.remove('hidden');
       }else{
+        input.classList.remove('answer-correct');
+        input.classList.add('answer-wrong');
+        if(wordDiff) wordDiff.innerHTML=quizWordDiffHTML(best.result.parts,false);
         feedback.className='quiz-feedback bad';
-        feedback.innerHTML='Chưa đúng. Bạn có thể thử lại hoặc bấm <b>Xem đáp án</b>.';
+        feedback.innerHTML='Chưa đúng. <b>Màu đỏ</b> là từ cần sửa; nếu có ô màu vàng thì câu đang thiếu từ.';
       }
     };
 
     check.onclick=evaluate;
+    input.addEventListener('input',()=>{
+      input.classList.remove('answer-correct','answer-wrong');
+      if(wordDiff) wordDiff.innerHTML='';
+      if(feedback.classList.contains('good')||feedback.classList.contains('bad')){
+        feedback.className='quiz-feedback';
+        feedback.innerHTML='';
+      }
+    });
     input.addEventListener('keydown',e=>{if(e.key==='Enter')evaluate();});
     show.onclick=()=>{
+      input.classList.remove('answer-correct','answer-wrong');
+      if(wordDiff) wordDiff.innerHTML='';
       feedback.className='quiz-feedback';
       feedback.innerHTML='<strong>Đáp án gợi ý:</strong>'+answerFeedbackHTML(item);
       bindAnswerSpeakers(feedback);
