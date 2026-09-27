@@ -1326,7 +1326,7 @@
       };
     };
 
-    mic.onclick=()=>startRecognition(input);
+    mic.onclick=()=>startRecognition(input,evaluate);
   }
 
   function rerenderQuiz(root){
@@ -1349,10 +1349,22 @@
     }
   }
 
-  function startRecognition(input){
+  function startRecognition(input,onComplete){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR){toast('Trình duyệt này chưa hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome hoặc Edge.');return;}
-    const r=new SR();r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;toast('Đang nghe... hãy nói câu tiếng Anh.');r.onresult=e=>{input.value=e.results[0][0].transcript;toast('Đã nhận giọng nói. Bấm Kiểm tra.');};r.onerror=()=>toast('Không nhận được giọng nói. Hãy thử lại.');r.start();
+    const r=new SR();
+    r.lang='en-US';
+    r.interimResults=false;
+    r.maxAlternatives=1;
+    toast('Đang nghe... hãy nói câu tiếng Anh.');
+    r.onresult=e=>{
+      input.value=e.results[0][0].transcript;
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      toast('Đã nhận giọng nói. Đang kiểm tra...');
+      if(typeof onComplete==='function') setTimeout(()=>onComplete(),80);
+    };
+    r.onerror=()=>toast('Không nhận được giọng nói. Hãy thử lại.');
+    r.start();
   }
 
   async function renderJapanese(){
