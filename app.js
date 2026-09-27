@@ -1213,8 +1213,7 @@
         <input id="quizInput" class="quiz-input" autocomplete="off" autocapitalize="sentences" placeholder="Nhập một cách nói đúng bằng tiếng Anh..."/>
         <div id="quizWordDiff" class="quiz-word-diff" aria-live="polite"></div>
         <div class="quiz-actions">
-          <button id="quizCheck" class="primary-button quiz-action quiz-action-primary">${uiIcon('check-circle')}<span>Kiểm tra</span></button>
-          <button id="quizMic" class="secondary-button quiz-action">${uiIcon('mic')}<span>Nói</span></button>
+          <button id="quizMic" class="primary-button quiz-action quiz-action-primary">${uiIcon('mic')}<span>Nói</span></button>
           <button id="quizShow" class="secondary-button quiz-action quiz-action-soft">${uiIcon('lightbulb')}<span>Xem đáp án</span></button>
           <button id="quizNext" class="secondary-button quiz-action hidden"><span>Câu tiếp theo</span>${uiIcon('arrow-right')}</button>
         </div>
@@ -1234,7 +1233,7 @@
     const items=quiz.items||[];
     if(!items.length) return;
     const item=items[quiz.index];
-    const input=$('#quizInput',q),check=$('#quizCheck',q),show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q),wordDiff=$('#quizWordDiff',q);
+    const input=$('#quizInput',q),show=$('#quizShow',q),next=$('#quizNext',q),mic=$('#quizMic',q),feedback=$('#quizFeedback',q),wordDiff=$('#quizWordDiff',q);
     const order=$('#quizOrderSelect',root);
 
     if(order) order.onchange=()=>{
@@ -1280,7 +1279,6 @@
       }
     };
 
-    check.onclick=evaluate;
     input.addEventListener('input',()=>{
       input.classList.remove('answer-correct','answer-wrong');
       if(wordDiff) wordDiff.innerHTML='';
