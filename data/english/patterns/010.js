@@ -530,67 +530,134 @@ window.CONTENT_REGISTRY["en-pattern-010"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "13. Những cụm đáng học trong bài",
-      "blocks": [
-        {
-          "type": "chips",
-          "items": [
-            [
-              "stick to the plan",
-              "bám sát kế hoạch"
-            ],
-            [
-              "follow through",
-              "làm đến cùng"
-            ],
-            [
-              "work on something",
-              "tập trung cải thiện một việc"
-            ],
-            [
-              "put something into practice",
-              "áp dụng vào thực tế"
-            ],
-            [
-              "build a solid foundation",
-              "xây nền tảng vững chắc"
-            ],
-            [
-              "root cause",
-              "nguyên nhân gốc"
-            ],
-            [
-              "take on responsibility",
-              "đảm nhận trách nhiệm"
-            ],
-            [
-              "raise an issue",
-              "nêu một vấn đề"
-            ],
-            [
-              "keep someone informed",
-              "cập nhật thông tin cho ai"
-            ],
-            [
-              "put money aside",
-              "để dành tiền"
-            ],
-            [
-              "keep my options open",
-              "để ngỏ các lựa chọn"
-            ],
-            [
-              "see something through",
-              "theo đuổi / làm việc gì đến cùng"
-            ],
-            [
-              "rush into something",
-              "vội vàng lao vào một quyết định"
-            ]
+          "id": "phrases",
+          "title": "13. Những cụm đáng học trong bài",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "stick to the plan",
+                                  "bám sát kế hoạch"
+                            ],
+                            [
+                                  "follow through",
+                                  "làm đến cùng"
+                            ],
+                            [
+                                  "work on something",
+                                  "tập trung cải thiện / xử lý"
+                            ],
+                            [
+                                  "put something into practice",
+                                  "áp dụng vào thực tế"
+                            ],
+                            [
+                                  "keep someone informed",
+                                  "cập nhật thông tin cho ai"
+                            ],
+                            [
+                                  "see something through",
+                                  "theo đuổi / làm đến cùng"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "build a solid foundation",
+                                  "xây nền tảng vững"
+                            ],
+                            [
+                                  "take on responsibility",
+                                  "đảm nhận trách nhiệm"
+                            ],
+                            [
+                                  "raise an issue",
+                                  "nêu một vấn đề"
+                            ],
+                            [
+                                  "keep my options open",
+                                  "để ngỏ các lựa chọn"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I intend to stick to the plan even if progress is slow.",
+                                  "Tôi định bám sát kế hoạch ngay cả khi tiến độ chậm."
+                            ],
+                            [
+                                  "I intend to follow through with what I started.",
+                                  "Tôi định làm đến cùng việc mình đã bắt đầu."
+                            ],
+                            [
+                                  "I intend to work on my communication skills this year.",
+                                  "Năm nay tôi định cải thiện kỹ năng giao tiếp."
+                            ],
+                            [
+                                  "I intend to put what I learn into practice as soon as possible.",
+                                  "Tôi định áp dụng những gì học được vào thực tế sớm nhất có thể."
+                            ],
+                            [
+                                  "I intend to keep everyone informed if anything changes.",
+                                  "Tôi định cập nhật cho mọi người nếu có gì thay đổi."
+                            ],
+                            [
+                                  "I intend to see this through instead of giving up halfway.",
+                                  "Tôi định làm việc này đến cùng thay vì bỏ cuộc giữa chừng."
+                            ],
+                            [
+                                  "I intend to build a solid foundation before moving on.",
+                                  "Tôi định xây nền tảng vững trước khi tiếp tục."
+                            ],
+                            [
+                                  "I intend to take on more responsibility as I gain experience.",
+                                  "Tôi định đảm nhận thêm trách nhiệm khi có nhiều kinh nghiệm hơn."
+                            ],
+                            [
+                                  "I don't intend to rush into a decision.",
+                                  "Tôi không có ý định vội vàng đưa ra quyết định."
+                            ],
+                            [
+                                  "I didn't intend to cause any trouble.",
+                                  "Tôi không cố ý gây rắc rối."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "natural-chunks",
