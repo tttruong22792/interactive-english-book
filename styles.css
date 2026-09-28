@@ -2462,3 +2462,44 @@ button{touch-action:manipulation}
   .shadow-v2-guide-toggle{white-space:nowrap}
   .shadow-v2-guide-body{padding:0 17px 17px}
 }
+
+
+/* ===== Shadowing sentence coach ===== */
+.shadow-v2-personal-box #shadowV2PersonalFeedback{display:grid;gap:10px;margin-top:12px}
+.shadow-v2-coach-card{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.shadow-v2-coach-card.local{border-color:rgba(49,188,142,.22)}
+.shadow-v2-coach-card.ai{border-color:rgba(118,92,255,.28);box-shadow:0 10px 30px rgba(63,49,150,.06)}
+.shadow-v2-coach-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--soft)}
+.shadow-v2-coach-card.ai .shadow-v2-coach-head{background:linear-gradient(135deg,rgba(118,92,255,.085),rgba(49,188,142,.055))}
+.shadow-v2-coach-head>div{display:grid;gap:2px}
+.shadow-v2-coach-head>div span{font-size:9px;letter-spacing:.08em;font-weight:900;color:var(--purple)}
+.shadow-v2-coach-head>div strong{font-size:15px;color:var(--navy)}
+.shadow-v2-coach-badge{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.shadow-v2-coach-badge.good{background:rgba(49,188,142,.12);color:#13754e}
+.shadow-v2-coach-badge.warn{background:rgba(235,169,47,.14);color:#8a5a05}
+.shadow-v2-coach-badge.bad{background:rgba(239,92,92,.1);color:#b83f3f}
+.shadow-v2-coach-section{padding:11px 14px;border-bottom:1px solid var(--line)}
+.shadow-v2-coach-section>b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px}
+.shadow-v2-coach-section p{margin:0;color:var(--navy);font-size:13px;line-height:1.5}
+.shadow-v2-coach-section ul{margin:0;padding-left:18px;color:var(--navy);font-size:13px;line-height:1.55}
+.shadow-v2-coach-tip{margin:11px 14px;padding:10px 11px;border-radius:12px;background:rgba(235,169,47,.09);color:#704b07;font-size:12px;line-height:1.5}
+.shadow-v2-coach-expansions{padding:11px 14px;display:grid;gap:7px;border-top:1px solid var(--line)}
+.shadow-v2-coach-expansions>strong{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.shadow-v2-coach-expansions>div,.shadow-v2-ai-expansion{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:flex-start;padding:9px 10px;border-radius:11px;background:var(--soft)}
+.shadow-v2-coach-expansions>div span,.shadow-v2-ai-expansion span{color:var(--purple);font-weight:900}
+.shadow-v2-coach-expansions>div b,.shadow-v2-ai-expansion b{font-size:13px;line-height:1.45;color:var(--navy)}
+.shadow-v2-coach-limit{display:block;padding:9px 14px 12px;color:var(--muted);font-size:10px;line-height:1.45}
+.shadow-v2-ai-correction{margin:11px 14px;padding:12px;border-radius:14px;background:rgba(49,188,142,.075);display:grid;gap:4px}
+.shadow-v2-ai-correction span{font-size:10px;font-weight:900;letter-spacing:.05em;color:#13754e;text-transform:uppercase}
+.shadow-v2-ai-correction strong{font-size:16px;line-height:1.5;color:var(--navy)}
+.shadow-v2-ai-explain{margin:0;padding:0 14px 11px;color:var(--muted);font-size:13px;line-height:1.55}
+.shadow-v2-ai-encourage{margin:0 14px 12px;padding:9px 11px;border-radius:12px;background:rgba(118,92,255,.065);color:var(--navy);font-size:12px;line-height:1.5}
+.shadow-v2-ai-button{appearance:none;border:1px solid rgba(118,92,255,.3);background:linear-gradient(135deg,#5b49cb,#745fdc);color:#fff;border-radius:13px;padding:11px 14px;font:inherit;font-size:12px;font-weight:900;cursor:pointer;justify-self:start;box-shadow:0 8px 20px rgba(91,73,203,.14)}
+.shadow-v2-ai-button:hover{transform:translateY(-1px)}
+.shadow-v2-ai-button:disabled{opacity:.62;cursor:wait;transform:none}
+.shadow-v2-ai-button.is-login{background:#fff;color:var(--purple);box-shadow:none}
+@media(max-width:620px){
+  .shadow-v2-coach-head{align-items:flex-start;flex-direction:column}
+  .shadow-v2-coach-badge{white-space:normal}
+  .shadow-v2-ai-button{width:100%;justify-self:stretch}
+}
