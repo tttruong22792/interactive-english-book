@@ -163,7 +163,10 @@
       autoplay:false,
       stats:{again:0,hard:0,good:0,easy:0},
       options:{...s},
-      reflexMessage:''
+      reflexMessage:'',
+      level3Phase:'learn',
+      level3Practice:{},
+      level3HintVisible:false
     };
   }
 
