@@ -67,13 +67,26 @@
           personalLocalAnalysis:null,
           personalAiAnalysis:null,
           personalAiRemaining:null,
+          personalIdeaId:'',
+          personalHintLevel:0,
+          personalSampleRevealed:false,
+          personalChallenge:null,
+          personalUpgradeText:'',
+          personalUpgradeAnalysis:null,
           mastered:false,
           firstDay:0,
           lastDay:0,
           lastAt:0
         };
       }
-      return s.progress[key];
+      var p=s.progress[key];
+      if(typeof p.personalIdeaId!=='string') p.personalIdeaId='';
+      if(!Number.isFinite(Number(p.personalHintLevel))) p.personalHintLevel=0;
+      if(typeof p.personalSampleRevealed!=='boolean') p.personalSampleRevealed=false;
+      if(!('personalChallenge' in p)) p.personalChallenge=null;
+      if(typeof p.personalUpgradeText!=='string') p.personalUpgradeText='';
+      if(!('personalUpgradeAnalysis' in p)) p.personalUpgradeAnalysis=null;
+      return p;
     }
 
     function recalcMastery(progress){
@@ -371,6 +384,10 @@
       }
 
       var ok=usesPattern && sentenceWords.length>stemWords.length && grammar.length===0;
+      var engine=window.PersonalizationEngine;
+      var original=engine?.originality ? engine.originality(sentence,pool||[],patternStem(lesson)) : null;
+      var challengeLevel=engine?.complexity ? engine.complexity(sentence,patternStem(lesson)) : null;
+      var nextChallenge=engine?.nextChallenge ? engine.nextChallenge(sentence,patternStem(lesson)) : null;
       return {
         ok:ok,
         usesPattern:usesPattern,
@@ -378,7 +395,10 @@
         grammarNotes:grammar,
         vocabularyNotes:vocabulary,
         tips:tips,
-        expansions:expansionSuggestions(sentence,lesson,pool)
+        expansions:expansionSuggestions(sentence,lesson,pool),
+        originality:original,
+        challengeLevel:challengeLevel,
+        nextChallenge:nextChallenge
       };
     }
 
@@ -403,8 +423,12 @@
         ? '<div class="shadow-v2-coach-expansions"><strong>Gợi ý mở rộng từ bài học</strong>'+analysis.expansions.map(function(x){return '<div><span>→</span><b>'+esc(x)+'</b></div>';}).join('')+'</div>'
         : '';
 
+      var originality=analysis.originality
+        ? '<div class="shadow-v2-personal-metrics"><div><span>Độ mới</span><b>'+analysis.originality.score+'%</b><small>'+esc(analysis.originality.label)+'</small></div><div><span>Mức thử thách</span><b>'+esc(analysis.challengeLevel?.label||'Basic')+'</b><small>'+(analysis.challengeLevel?.level==='stretch'?'Câu đã có mở rộng tốt.':analysis.challengeLevel?.level==='natural'?'Đã vượt câu tối giản.':'Nên nâng cấp thêm một bước.')+'</small></div></div>'
+        : '';
       return '<div class="shadow-v2-coach-card local">'+
         '<div class="shadow-v2-coach-head"><div><span>KIỂM TRA MIỄN PHÍ · TRÊN THIẾT BỊ</span><strong>Nhận xét nhanh</strong></div>'+verdict+'</div>'+
+        originality+
         '<div class="shadow-v2-coach-section"><b>Mẫu câu</b><p>'+(analysis.usesPattern?'✓ Bạn đang dùng đúng khung hôm nay.':'Hãy bắt đầu câu bằng đúng khung đang học.')+'</p></div>'+
         '<div class="shadow-v2-coach-section"><b>Ngữ pháp cơ bản</b>'+grammar+'</div>'+
         '<div class="shadow-v2-coach-section"><b>Từ vựng / cụm từ</b>'+vocab+'</div>'+
@@ -564,6 +588,103 @@
         '<div class="shadow-v2-action-row"><button id="shadowV2TransformNext" class="primary-button" type="button" '+(passed<2?'disabled':'')+'>Đã biến đổi được · sang Tự nói →</button></div>';
     }
 
+
+    function personalIdeas(progress){
+      var engine=window.PersonalizationEngine;
+      if(!engine?.ideas) return [];
+      var day=Number(store().dayByLesson[session.lesson.id]||1);
+      return engine.ideas(session.lesson,day*11+session.index*3);
+    }
+
+    function personalIdeaById(progress){
+      if(progress.personalIdeaId==='free') return {id:'free',domain:'Tự do',title:'Ý của chính tôi',prompt:'Tự nghĩ một điều thật bạn muốn nói. Không cần theo chủ đề gợi ý.'};
+      return personalIdeas(progress).find(function(x){return x.id===progress.personalIdeaId;})||null;
+    }
+
+    function personalIdeaCardsHTML(progress){
+      var ideas=personalIdeas(progress);
+      var cards=ideas.map(function(idea){
+        var active=progress.personalIdeaId===idea.id;
+        return '<button class="shadow-v2-idea-card '+(active?'active':'')+'" data-personal-idea="'+escAttr(idea.id)+'" type="button">'+
+          '<span>'+esc(idea.domain)+'</span><strong>'+esc(idea.title)+'</strong><p>'+esc(idea.prompt)+'</p>'+
+        '</button>';
+      }).join('');
+      cards+='<button class="shadow-v2-idea-card free '+(progress.personalIdeaId==='free'?'active':'')+'" data-personal-idea="free" type="button"><span>TỰ DO</span><strong>Tôi đã có ý riêng</strong><p>Không cần gợi ý chủ đề. Tôi muốn tự nghĩ hoàn toàn.</p></button>';
+      return '<div class="shadow-v2-idea-grid">'+cards+'</div>';
+    }
+
+    function personalHintHTML(progress){
+      var idea=personalIdeaById(progress);
+      if(!idea||idea.id==='free'||!progress.personalHintLevel) return '';
+      var hint=window.PersonalizationEngine?.hint?.(idea,Number(progress.personalHintLevel||0));
+      if(!hint) return '';
+      return '<div class="shadow-v2-hint '+(hint.sample?'sample':'')+'">'+
+        '<div><span>HỖ TRỢ '+hint.level+'/5</span><strong>'+esc(hint.title)+'</strong></div>'+
+        '<p>'+esc(hint.content)+'</p>'+
+        (hint.sample?'<small>Đây chỉ là câu tham khảo. Vì bạn đã xem đáp án mẫu, câu nâng cấp cuối cùng phải đủ khác thì mới được tính là chủ động.</small>':'')+
+      '</div>';
+    }
+
+    function challengeHTML(progress){
+      var analysis=progress.personalLocalAnalysis;
+      var challenge=progress.personalChallenge||analysis?.nextChallenge;
+      if(!analysis?.ok||!challenge) return '';
+      var upgrade=progress.personalUpgradeAnalysis;
+      var passed=!!(upgrade?.ok);
+      var feedback='';
+      if(upgrade){
+        feedback='<div class="shadow-v2-upgrade-result '+(passed?'good':'bad')+'">'+
+          '<strong>'+(passed?'Đạt thử thách':'Chưa đạt thử thách')+'</strong>'+
+          '<span>'+(passed?'Câu mới đã mở rộng được ý ban đầu và đủ khác với câu vừa học.':esc(upgrade.message||'Hãy làm rõ yêu cầu của thử thách và thử lại.'))+'</span>'+
+        '</div>';
+      }
+      return '<div class="shadow-v2-challenge">'+
+        '<div class="shadow-v2-challenge-head"><div><span>BƯỚC NÂNG CẤP</span><strong>'+esc(challenge.title)+'</strong></div><em>'+(passed?'ĐÃ VƯỢT QUA':'BẮT BUỘC')+'</em></div>'+
+        '<p>'+esc(challenge.prompt)+'</p>'+
+        '<div class="shadow-v2-challenge-cue">'+esc(challenge.cue)+'</div>'+
+        '<div class="shadow-v2-challenge-tools">'+(challenge.tools||[]).map(function(x){return '<span>'+esc(x)+'</span>';}).join('')+'</div>'+
+        '<div class="shadow-v2-answer-row"><input id="shadowV2UpgradeInput" type="text" value="'+escAttr(progress.personalUpgradeText||'')+'" placeholder="Nói lại câu của bạn ở phiên bản mạnh hơn..."><button id="shadowV2UpgradeMic" class="secondary-button" type="button">Nói</button><button id="shadowV2UpgradeCheck" class="primary-button" type="button">Kiểm tra nâng cấp</button></div>'+
+        feedback+
+      '</div>';
+    }
+
+    function personalizationHTML(progress){
+      var stem=patternStem(session.lesson);
+      var idea=personalIdeaById(progress);
+      var selected=!!idea;
+      var canHint=selected&&idea.id!=='free';
+      var hintLevel=Number(progress.personalHintLevel||0);
+      var analysis=progress.personalLocalAnalysis;
+      var currentAiText=String(progress.personalUpgradeText||progress.personalText||'').trim();
+      return '<div class="shadow-v2-personal-box">'+
+        '<div class="shadow-v2-personal-title"><span>MAKE IT YOURS · PERSONALIZATION</span><h3>Đừng tự nghĩ từ số 0. Chọn một hướng rồi biến nó thành câu của chính bạn.</h3><p>App chỉ giúp bạn nghĩ <b>nội dung</b>. Phần tiếng Anh vẫn phải do bạn tự tạo.</p></div>'+
+        '<div class="shadow-v2-personal-flow"><span class="'+(selected?'done':'active')+'"><b>1</b> Chọn ý</span><i></i><span class="'+(analysis?'done':selected?'active':'')+'"><b>2</b> Tự tạo</span><i></i><span class="'+(progress.personalDone?'done':analysis?.ok?'active':'')+'"><b>3</b> Nâng cấp</span><i></i><span class="'+(progress.personalAiAnalysis?'done':progress.personalDone?'active':'')+'"><b>4</b> AI Coach</span></div>'+
+        '<div class="shadow-v2-personal-section"><div class="shadow-v2-personal-section-head"><div><span>01 · Ý TƯỞNG</span><strong>Chọn một hướng gần với cuộc sống của bạn</strong></div></div>'+personalIdeaCardsHTML(progress)+'</div>'+
+        (selected?
+          '<div class="shadow-v2-personal-section">'+
+            '<div class="shadow-v2-personal-section-head"><div><span>02 · TỰ TẠO</span><strong>'+(idea.id==='free'?'Nói ý của bạn':'Bạn sẽ nói về: '+esc(idea.title))+'</strong></div>'+
+              (canHint?'<button id="shadowV2NeedIdea" class="shadow-v2-hint-button" type="button">'+(hintLevel?'Gợi ý thêm':'Tôi bí ý tưởng')+'</button>':'')+
+            '</div>'+
+            '<div class="shadow-v2-idea-prompt">'+esc(idea.prompt)+'</div>'+
+            personalHintHTML(progress)+
+            '<div class="shadow-v2-pattern-reminder"><span>Khung bắt buộc</span><strong>'+esc(stem)+'</strong></div>'+
+            '<div class="shadow-v2-answer-row"><input id="shadowV2PersonalInput" type="text" value="'+escAttr(progress.personalText||'')+'" placeholder="'+escAttr(stem)+' ..."><button id="shadowV2PersonalMic" class="secondary-button" type="button">Nói</button><button id="shadowV2PersonalCheck" class="primary-button" type="button">Phân tích câu của tôi</button></div>'+
+            '<div id="shadowV2PersonalFeedback">'+
+              localCoachHTML(progress.personalLocalAnalysis)+
+              challengeHTML(progress)+
+              aiCoachHTML(progress.personalAiAnalysis,progress.personalAiRemaining)+
+              (analysis?(
+                window.LanguageStudioAICoach?.status?.().signedIn
+                  ? '<button id="shadowV2AiCoach" class="shadow-v2-ai-button" type="button">'+(progress.personalAiAnalysis?'AI Coach · phân tích lại':'AI Coach · phân tích sâu câu '+(progress.personalUpgradeText?'nâng cấp':'này'))+'</button>'
+                  : '<button id="shadowV2AiLogin" class="shadow-v2-ai-button is-login" type="button">Đăng nhập để dùng AI Coach</button>'
+              ):'')+
+            '</div>'+
+          '</div>'
+        :'')+
+        (progress.personalDone?'<div class="shadow-v2-personal-complete"><b>PERSONALIZED ✓</b><span>Bạn đã tự tạo ý và nâng cấp nó thành một câu chủ động. Đây mới là mức “câu của mình”.</span></div>':'')+
+      '</div>';
+    }
+
     function recallBody(item,progress){
       var recallScore=Number(progress.recallScore||0);
       var stem=patternStem(session.lesson);
@@ -575,21 +696,7 @@
           '<div class="shadow-v2-answer-row"><input id="shadowV2RecallInput" type="text" value="'+escAttr(progress.recallText||'')+'" placeholder="Nói hoặc nhập câu bạn tự tạo..."><button id="shadowV2RecallMic" class="secondary-button" type="button">Nói</button><button id="shadowV2RecallCheck" class="primary-button" type="button">Kiểm tra</button></div>'+
           '<div id="shadowV2RecallFeedback">'+(recallScore?'<div class="shadow-v2-mini-result '+(recallScore>=75?'good':'bad')+'">'+recallScore+'% '+(progress.recallPassed?'· Đạt':'· Thử lại')+'</div>':'')+'</div>'+
         '</div>'+
-        '<div class="shadow-v2-personal-box">'+
-          '<span>MAKE IT YOURS · NÓI VỀ BẠN</span>'+
-          '<h3>Dùng <b>'+esc(stem)+'</b> để nói một điều thật về cuộc sống của bạn.</h3>'+
-          '<p>Tự nói trước. Sau đó web kiểm tra miễn phí ngay trên thiết bị; nếu đã đăng nhập, bạn có thể nhờ AI Coach phân tích sâu hơn về ngữ pháp, từ vựng và độ tự nhiên.</p>'+
-          '<div class="shadow-v2-answer-row"><input id="shadowV2PersonalInput" type="text" value="'+escAttr(progress.personalText||'')+'" placeholder="'+escAttr(stem)+' ..."><button id="shadowV2PersonalMic" class="secondary-button" type="button">Nói</button><button id="shadowV2PersonalCheck" class="primary-button" type="button">Phân tích câu của tôi</button></div>'+
-          '<div id="shadowV2PersonalFeedback">'+
-            localCoachHTML(progress.personalLocalAnalysis)+
-            aiCoachHTML(progress.personalAiAnalysis,progress.personalAiRemaining)+
-            (progress.personalLocalAnalysis?(
-              window.LanguageStudioAICoach?.status?.().signedIn
-                ? '<button id="shadowV2AiCoach" class="shadow-v2-ai-button" type="button">'+(progress.personalAiAnalysis?'Phân tích lại bằng AI':'AI Coach · phân tích sâu')+'</button>'
-                : '<button id="shadowV2AiLogin" class="shadow-v2-ai-button is-login" type="button">Đăng nhập để dùng AI Coach</button>'
-            ):'')+
-          '</div>'+
-        '</div>'+
+        personalizationHTML(progress)+
         '<div class="shadow-v2-action-row"><button id="shadowV2FinishSentence" class="primary-button" type="button" '+(!(progress.recallPassed&&progress.personalDone)?'disabled':'')+'>'+(session.index===session.items.length-1?'Hoàn thành câu 5 →':'Hoàn thành · sang câu tiếp theo →')+'</button></div>';
     }
 
@@ -698,53 +805,139 @@
       q('#shadowV2RecallMic').onclick=function(){speechInput(recallInput,function(){checkRecall();});};
       recallInput.onkeydown=function(e){if(e.key==='Enter') checkRecall();};
 
+      qa('[data-personal-idea]').forEach(function(btn){
+        btn.onclick=function(){
+          var nextId=btn.getAttribute('data-personal-idea')||'';
+          if(progress.personalIdeaId!==nextId){
+            progress.personalIdeaId=nextId;
+            progress.personalHintLevel=0;
+            progress.personalSampleRevealed=false;
+            progress.personalText='';
+            progress.personalLocalAnalysis=null;
+            progress.personalChallenge=null;
+            progress.personalUpgradeText='';
+            progress.personalUpgradeAnalysis=null;
+            progress.personalAiAnalysis=null;
+            progress.personalAiRemaining=null;
+            progress.personalDone=false;
+            markTouched(session.lesson,item,progress);
+          }
+          renderSession();
+        };
+      });
+
+      var needIdea=q('#shadowV2NeedIdea');
+      if(needIdea){
+        needIdea.onclick=function(){
+          progress.personalHintLevel=Math.min(5,Number(progress.personalHintLevel||0)+1);
+          if(progress.personalHintLevel>=5) progress.personalSampleRevealed=true;
+          markTouched(session.lesson,item,progress);
+          renderSession();
+        };
+      }
+
       var personalInput=q('#shadowV2PersonalInput');
-      var checkPersonal=function(){
-        var text=String(personalInput.value||'').trim();
-        if(!text){env.toast('Hãy nói hoặc nhập câu của bạn trước.');return;}
-        var analysis=localCoach(text,session.lesson,session.pool);
-        progress.personalText=text;
-        progress.personalLocalAnalysis=analysis;
-        progress.personalAiAnalysis=null;
-        progress.personalAiRemaining=null;
-        progress.personalDone=!!analysis.ok;
-        markTouched(session.lesson,item,progress);
-        setTimeout(renderSession,220);
-      };
-      q('#shadowV2PersonalCheck').onclick=checkPersonal;
-      q('#shadowV2PersonalMic').onclick=function(){speechInput(personalInput,function(){checkPersonal();});};
-      personalInput.onkeydown=function(e){if(e.key==='Enter') checkPersonal();};
-      personalInput.oninput=function(){
-        if(norm(personalInput.value)!==norm(progress.personalText||'')){
-          progress.personalDone=false;
-          progress.personalLocalAnalysis=null;
+      if(personalInput){
+        var checkPersonal=function(){
+          var text=String(personalInput.value||'').trim();
+          if(!text){env.toast('Hãy nói hoặc nhập câu của bạn trước.');return;}
+          var analysis=localCoach(text,session.lesson,session.pool);
+          progress.personalText=text;
+          progress.personalLocalAnalysis=analysis;
+          progress.personalChallenge=analysis.nextChallenge||null;
+          progress.personalUpgradeText='';
+          progress.personalUpgradeAnalysis=null;
           progress.personalAiAnalysis=null;
           progress.personalAiRemaining=null;
-          var finish=q('#shadowV2FinishSentence');
-          if(finish) finish.disabled=true;
-        }
-      };
+          progress.personalDone=false;
+          markTouched(session.lesson,item,progress);
+          setTimeout(renderSession,220);
+        };
+        q('#shadowV2PersonalCheck').onclick=checkPersonal;
+        q('#shadowV2PersonalMic').onclick=function(){speechInput(personalInput,function(){checkPersonal();});};
+        personalInput.onkeydown=function(e){if(e.key==='Enter') checkPersonal();};
+        personalInput.oninput=function(){
+          if(norm(personalInput.value)!==norm(progress.personalText||'')){
+            progress.personalDone=false;
+            progress.personalLocalAnalysis=null;
+            progress.personalChallenge=null;
+            progress.personalUpgradeText='';
+            progress.personalUpgradeAnalysis=null;
+            progress.personalAiAnalysis=null;
+            progress.personalAiRemaining=null;
+            var finish=q('#shadowV2FinishSentence');
+            if(finish) finish.disabled=true;
+          }
+        };
+      }
+
+      var upgradeInput=q('#shadowV2UpgradeInput');
+      if(upgradeInput){
+        var checkUpgrade=function(){
+          var text=String(upgradeInput.value||'').trim();
+          if(!text){env.toast('Hãy nói lại câu ở phiên bản nâng cấp trước.');return;}
+          var freeAnalysis=localCoach(text,session.lesson,session.pool);
+          var result=window.PersonalizationEngine?.satisfies
+            ? window.PersonalizationEngine.satisfies(progress.personalText,text,progress.personalChallenge,session.lesson,session.pool)
+            : {ok:freeAnalysis.ok};
+          var ok=!!(freeAnalysis.ok&&result.ok);
+          if(progress.personalSampleRevealed&&result.originality&&result.originality.score<55) ok=false;
+          var message='';
+          if(!freeAnalysis.usesPattern) message='Câu nâng cấp chưa giữ đúng mẫu đang học.';
+          else if(!freeAnalysis.ok) message='Câu nâng cấp còn lỗi cơ bản. Hãy sửa rồi thử lại.';
+          else if(!result.requirement) message='Bạn chưa thêm đúng yêu cầu của thử thách.';
+          else if(!result.grew) message='Câu mới cần mở rộng thêm ý, không chỉ đổi một vài từ.';
+          else if(progress.personalSampleRevealed&&result.originality?.score<55) message='Bạn đã xem câu tham khảo nên câu cuối cần khác mẫu tham khảo/câu đã học rõ hơn.';
+          else if(result.originality?.score<35) message='Câu vẫn khá gần các câu vừa học. Hãy đổi hành động, mục đích hoặc hoàn cảnh nhiều hơn.';
+          progress.personalUpgradeText=text;
+          progress.personalUpgradeAnalysis={
+            ok:ok,
+            message:message,
+            freeAnalysis:freeAnalysis,
+            originality:result.originality||freeAnalysis.originality,
+            complexity:result.complexity||freeAnalysis.challengeLevel
+          };
+          progress.personalAiAnalysis=null;
+          progress.personalAiRemaining=null;
+          progress.personalDone=ok;
+          markTouched(session.lesson,item,progress);
+          setTimeout(renderSession,220);
+        };
+        q('#shadowV2UpgradeCheck').onclick=checkUpgrade;
+        q('#shadowV2UpgradeMic').onclick=function(){speechInput(upgradeInput,function(){checkUpgrade();});};
+        upgradeInput.onkeydown=function(e){if(e.key==='Enter') checkUpgrade();};
+        upgradeInput.oninput=function(){
+          if(norm(upgradeInput.value)!==norm(progress.personalUpgradeText||'')){
+            progress.personalDone=false;
+            progress.personalUpgradeAnalysis=null;
+            progress.personalAiAnalysis=null;
+            progress.personalAiRemaining=null;
+            var finish=q('#shadowV2FinishSentence');
+            if(finish) finish.disabled=true;
+          }
+        };
+      }
 
       var aiButton=q('#shadowV2AiCoach');
       if(aiButton){
         aiButton.onclick=async function(){
-          if(!progress.personalText){env.toast('Hãy phân tích câu miễn phí trước.');return;}
+          var aiText=String(progress.personalUpgradeText||progress.personalText||'').trim();
+          if(!aiText){env.toast('Hãy tự tạo câu trước khi gọi AI Coach.');return;}
           aiButton.disabled=true;
           aiButton.textContent='AI đang phân tích...';
           try{
             var result=await window.LanguageStudioAICoach.analyze({
-              sentence:progress.personalText,
+              sentence:aiText,
               targetPattern:patternStem(session.lesson),
               patternMeaning:session.lesson.meaning||'',
               lessonTitle:session.lesson.title||'',
-              lessonId:session.lesson.id||''
+              lessonId:session.lesson.id||'',
+              recentExamples:session.items.map(function(x){return x.en;}),
+              challenge:progress.personalChallenge?.prompt||'',
+              selectedIdea:personalIdeaById(progress)?.prompt||''
             });
             progress.personalAiAnalysis=result.analysis||null;
             progress.personalAiRemaining=result.remaining;
-            if(progress.personalAiAnalysis){
-              var verdict=progress.personalAiAnalysis.verdict;
-              progress.personalDone=verdict==='natural'||verdict==='correct_but_unnatural';
-            }
             markTouched(session.lesson,item,progress);
             renderSession();
           }catch(error){
