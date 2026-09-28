@@ -25,22 +25,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify this run is still current main HEAD
+        id: head_guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT_HEAD="$(git ls-remote origin refs/heads/main | cut -f1)"
+          echo "Current main: $CURRENT_HEAD"
+          echo "This run:     $GITHUB_SHA"
+          if [ "$CURRENT_HEAD" = "$GITHUB_SHA" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping stale Pages deployment."
+          fi
+
       - name: Setup Node
+        if: steps.head_guard.outputs.deploy == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Build static site
+        if: steps.head_guard.outputs.deploy == 'true'
         run: npm run build
 
       - name: Configure Pages
+        if: steps.head_guard.outputs.deploy == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload static site
+        if: steps.head_guard.outputs.deploy == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
       - name: Deploy to GitHub Pages
+        if: steps.head_guard.outputs.deploy == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
