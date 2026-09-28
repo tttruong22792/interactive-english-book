@@ -1464,7 +1464,7 @@
 
       <section class="book-section" id="jpPractice">
         <div class="section-title-row"><div><div class="eyebrow">05 · LUYỆN PHẢN XẠ</div><h2>Tự nói trước khi xem đáp án</h2><p>Đọc tiếng Việt, tự tạo câu với ～ことだ, sau đó mở đáp án để kiểm tra.</p></div></div>
-        <div class="jp-list">${(lesson.practice||[]).map((x,i)=>`<div class="jp-row"><div style="width:100%"><small data-vi-only>${esc(x[0])}</small><details><summary style="cursor:pointer;font-weight:800;margin-top:8px">Xem đáp án ${i+1}</summary><div style="margin-top:10px"><strong class="jp-text">${esc(x[1])}</strong> <button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button></div></details></div></div>`).join('')}</div>
+        <div class="jp-list">${(lesson.practice||[]).map((x,i)=>`<div class="jp-row"><div style="width:100%"><small data-vi-only>${esc(x[0])}</small><details><summary style="cursor:pointer;font-weight:800;margin-top:8px">Xem đáp án ${i+1}</summary><div style="margin-top:10px"><strong class="jp-text">${x[2]||esc(x[1])}</strong> <button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button></div></details></div></div>`).join('')}</div>
         <div class="green-box"><b>Điểm cần nhớ:</b> Vる + ことだ = nên làm · Vない + ことだ = không nên làm.</div>
       </section>
 
