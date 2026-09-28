@@ -457,8 +457,14 @@
         return '<div class="shadow-v2-ai-expansion"><span>→</span><b>'+esc(x)+'</b></div>';
       }).join('');
 
+      var challengeLabel={basic:'Basic',natural:'Natural',stretch:'Stretch'}[data.challenge_level]||'';
+      var originality=Number.isFinite(Number(data.originality_score))?Math.max(0,Math.min(100,Number(data.originality_score))):null;
+      var aiMetrics=(originality!=null||challengeLabel)
+        ? '<div class="shadow-v2-personal-metrics ai"><div><span>Độ mới</span><b>'+(originality!=null?originality+'%':'—')+'</b><small>'+esc(data.originality_note_vi||'So với các câu vừa học.')+'</small></div><div><span>Mức thử thách</span><b>'+esc(challengeLabel||'—')+'</b><small>'+esc(data.next_challenge_vi||'AI sẽ gợi ý bước nâng tiếp theo.')+'</small></div></div>'
+        : '';
       return '<div class="shadow-v2-coach-card ai">'+
         '<div class="shadow-v2-coach-head"><div><span>AI COACH · PHÂN TÍCH SÂU</span><strong>'+esc(label)+'</strong></div><span class="shadow-v2-coach-badge '+tone+'">'+Math.max(0,Math.min(100,Number(data.naturalness_score||0)))+'% tự nhiên</span></div>'+
+        aiMetrics+
         '<div class="shadow-v2-coach-section"><b>Ngữ pháp</b>'+grammar+'</div>'+
         '<div class="shadow-v2-coach-section"><b>Từ vựng / độ tự nhiên</b>'+vocab+'</div>'+
         (corrected?'<div class="shadow-v2-ai-correction"><span>Câu đề xuất</span><strong>'+esc(corrected)+'</strong></div>':'')+
