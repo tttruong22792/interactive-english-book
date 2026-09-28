@@ -164,6 +164,7 @@ const runtimeFiles = [
   "ai-tts.js",
   ...sourceMatches,
   "cloud-sync.js",
+  "shadowing-v2.js",
   "app.js"
 ];
 
@@ -195,7 +196,7 @@ const runtimeSource = runtimeParts.join("\n");
 new vm.Script(runtimeSource, { filename: "language-studio-runtime.js" });
 
 await writeFile(join(dist, "runtime.js"), runtimeSource, "utf8");
-await writeFile(join(dist, "runtime-20260928-jae-auth-v5.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20260928-shadowing-v6.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
