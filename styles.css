@@ -1853,3 +1853,8 @@ button{touch-action:manipulation}
 .jp-text ruby{ruby-position:over;ruby-align:center}
 .jp-text rt{font-size:.52em;font-weight:600;color:#6f6972;line-height:1}
 @media(max-width:680px){.jp-text rt{font-size:.55em}}
+
+/* Japanese clickable dictionary words */
+.jp-word-token{cursor:pointer;border-radius:5px;transition:background .15s ease,box-shadow .15s ease}
+.jp-word-token:hover,.jp-word-token:active{background:#eee9ff;box-shadow:0 0 0 3px #eee9ff}
+.jp-word-token rt{pointer-events:none}
