@@ -137,6 +137,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-010",
+    language: "en",
+    category: "patterns",
+    order: 10,
+    title: "I intend to…",
+    meaning: "Tôi dự định… / Tôi có ý định… / Tôi định sẽ…",
+    description: "Mẫu diễn tả ý định rõ ràng, có chủ đích và thường trang trọng hơn I plan to… hoặc I’m going to…",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/010.js",
+    route: "lesson/10",
+    accent: "green",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "n2-grammar",
