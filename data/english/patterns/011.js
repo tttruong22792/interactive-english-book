@@ -641,75 +641,134 @@ window.CONTENT_REGISTRY["en-pattern-011"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "14. Những cụm từ đáng học trong bài",
-      "blocks": [
-        {
-          "type": "chips",
-          "items": [
-            [
-              "get ready",
-              "chuẩn bị"
-            ],
-            [
-              "pick something up",
-              "tiện đường mua / lấy"
-            ],
-            [
-              "fill up the car",
-              "đổ đầy nhiên liệu"
-            ],
-            [
-              "stop by",
-              "ghé qua"
-            ],
-            [
-              "take care of something",
-              "xử lý một việc"
-            ],
-            [
-              "sort something out",
-              "giải quyết / sắp xếp ổn thỏa"
-            ],
-            [
-              "keep track of something",
-              "theo dõi"
-            ],
-            [
-              "cut back on something",
-              "giảm bớt"
-            ],
-            [
-              "think something through",
-              "suy nghĩ kỹ từ đầu đến cuối"
-            ],
-            [
-              "figure something out",
-              "tìm ra / hiểu ra"
-            ],
-            [
-              "follow up with someone",
-              "liên hệ lại"
-            ],
-            [
-              "get back to someone",
-              "phản hồi lại"
-            ],
-            [
-              "go over something",
-              "xem xét lại"
-            ],
-            [
-              "make sure",
-              "đảm bảo"
-            ],
-            [
-              "put something off",
-              "trì hoãn"
-            ]
+          "id": "phrases",
+          "title": "14. Những cụm từ đáng học trong bài",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "figure out",
+                                  "tìm ra / tìm cách hiểu"
+                            ],
+                            [
+                                  "make sure",
+                                  "đảm bảo / chắc chắn"
+                            ],
+                            [
+                                  "take care of",
+                                  "xử lý / lo liệu"
+                            ],
+                            [
+                                  "get back to someone",
+                                  "phản hồi lại ai"
+                            ],
+                            [
+                                  "work on something",
+                                  "tập trung cải thiện / xử lý"
+                            ],
+                            [
+                                  "get something done",
+                                  "làm xong việc gì"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "sort something out",
+                                  "giải quyết / sắp xếp ổn thỏa"
+                            ],
+                            [
+                                  "keep track of something",
+                                  "theo dõi"
+                            ],
+                            [
+                                  "think something through",
+                                  "suy nghĩ kỹ"
+                            ],
+                            [
+                                  "go over something",
+                                  "xem xét lại"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I need to figure out what's causing the problem.",
+                                  "Tôi cần tìm ra nguyên nhân gây ra vấn đề."
+                            ],
+                            [
+                                  "I need to make sure everything is working properly.",
+                                  "Tôi cần đảm bảo mọi thứ đang hoạt động đúng."
+                            ],
+                            [
+                                  "I need to take care of a few things before I leave.",
+                                  "Tôi cần xử lý vài việc trước khi đi."
+                            ],
+                            [
+                                  "I need to get back to him before lunch.",
+                                  "Tôi cần phản hồi lại anh ấy trước giờ trưa."
+                            ],
+                            [
+                                  "I need to work on my pronunciation every day.",
+                                  "Tôi cần luyện phát âm mỗi ngày."
+                            ],
+                            [
+                                  "I need to get this done by the end of the day.",
+                                  "Tôi cần hoàn thành việc này trước cuối ngày."
+                            ],
+                            [
+                                  "I need to figure out how this works.",
+                                  "Tôi cần tìm hiểu xem cái này hoạt động thế nào."
+                            ],
+                            [
+                                  "I need to make sure I understand the requirements correctly.",
+                                  "Tôi cần chắc chắn mình hiểu đúng yêu cầu."
+                            ],
+                            [
+                                  "I need to take care of this first, then I'll get back to you.",
+                                  "Tôi cần xử lý việc này trước, rồi tôi sẽ phản hồi lại bạn."
+                            ],
+                            [
+                                  "I need to think this through before I make a decision.",
+                                  "Tôi cần suy nghĩ kỹ việc này trước khi đưa ra quyết định."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "must-know",
