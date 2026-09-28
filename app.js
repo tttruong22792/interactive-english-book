@@ -1064,6 +1064,19 @@
     $$('[data-sentence-card]',root).forEach(card=>card.addEventListener('click',e=>{if(e.target.closest('button,input,label,.word-token')) return; speak(card.dataset.enCard,$('.english-text',card));}));
     $$('.word-token',root).forEach(w=>w.addEventListener('click',async e=>{e.stopPropagation();try{if(!L)await ensureCoreEnglish();openLookup(w.dataset.word,'word');}catch(error){toast(error.message);}}));
   }
+  function bindJapaneseDictionary(root){
+    if(!L?.dictionary)return;
+    const terms=Object.keys(L.dictionary).sort((a,b)=>b.length-a.length);
+    $('.jp-text',root).forEach(el=>{
+      el.querySelectorAll('ruby').forEach(r=>{
+        const base=Array.from(r.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('');
+        const term=terms.find(t=>t===base || t.startsWith(base) || base.startsWith(t));
+        if(term){r.classList.add('word-token','jp-word-token');r.dataset.word=term;}
+      });
+    });
+    $('.jp-word-token',root).forEach(w=>w.addEventListener('click',e=>{e.stopPropagation();openLookup(w.dataset.word,'word');}));
+  }
+
   function buildWordSpans(el,text){
     el.innerHTML='';
     const re=/[A-Za-z]+(?:[’'][A-Za-z]+)?|[^A-Za-z’']+/g; let m;
@@ -1474,7 +1487,9 @@
       </section>
     `;
     hydrateSentences($('#mainView'));
-    $$('[data-jp-jump]').forEach(btn=>btn.onclick=()=>{
+    L=lesson;
+    bindJapaneseDictionary($('#mainView'));
+    $('[data-jp-jump]').forEach(btn=>btn.onclick=()=>{
       const target=btn.dataset.jpJump==='practice'?'#jpPractice':'#jpExamples';
       $(target)?.scrollIntoView({behavior:'smooth',block:'start'});
     });
@@ -2068,6 +2083,11 @@
   function lookupData(term,type='word'){
     const normalized=normalizeText(term);
     if(!L) return {key:'w:'+normalized,term,ipa:'',meaning:'Từ điển bài học chưa được tải.',example:'',type:'word'};
+    if(L?.language==='ja'){
+      const w=L.dictionary?.[term] || L.dictionary?.[normalized];
+      if(w) return {key:'ja:'+term,term,speechText:term,ipa:w[0]||'',meaning:w[1]||'',example:w[2]||'',type:'word'};
+      return {key:'ja:'+term,term,speechText:term,ipa:'',meaning:'Từ này chưa có trong từ điển của bài.',example:'',type:'word'};
+    }
     if(type==='phrase' || normalized.includes(' ')){
       const p=(L.phrases&&L.phrases[normalized]) || (window.CORE_PHRASES&&window.CORE_PHRASES[normalized]);
       if(p) return {key:'p:'+normalized,term,ipa:p[0],meaning:p[1],example:p[2],type:'phrase'};
