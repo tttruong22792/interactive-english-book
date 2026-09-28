@@ -697,68 +697,135 @@ window.CONTENT_REGISTRY["en-pattern-001"] = {
     ]
   },
   {
-    "id": "phrases",
-    "title": "13. Các cụm đáng học cùng mẫu này",
-    "blocks": [
-      {
-        "type": "paragraph",
-        "html": "<p>Hãy học nguyên cụm để khi nói không phải lắp từng từ.</p>"
-      },
-      {
-        "type": "chips",
-        "items": [
-          [
-            "take a break",
-            "nghỉ một chút"
-          ],
-          [
-            "make a reservation",
-            "đặt chỗ"
-          ],
-          [
-            "check in",
-            "làm thủ tục nhận phòng"
-          ],
-          [
-            "confirm the details",
-            "xác nhận các chi tiết"
-          ],
-          [
-            "take a closer look",
-            "xem xét kỹ hơn"
-          ],
-          [
-            "set aside some time",
-            "dành riêng một khoảng thời gian"
-          ],
-          [
-            "think it over",
-            "suy nghĩ kỹ"
-          ],
-          [
-            "get someone's opinion",
-            "xin/nghe ý kiến của ai"
-          ],
-          [
-            "go over something",
-            "xem lại / rà soát"
-          ],
-          [
-            "make sure",
-            "đảm bảo / chắc chắn"
-          ],
-          [
-            "follow up on something",
-            "theo dõi / hỏi lại về một việc"
-          ],
-          [
-            "look into a problem",
-            "tìm hiểu một vấn đề"
+          "id": "phrases",
+          "title": "13. Các cụm đáng học cùng mẫu này",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "take a break",
+                                  "nghỉ một chút"
+                            ],
+                            [
+                                  "make a reservation",
+                                  "đặt chỗ"
+                            ],
+                            [
+                                  "make sure",
+                                  "đảm bảo / chắc chắn"
+                            ],
+                            [
+                                  "think it over",
+                                  "suy nghĩ kỹ"
+                            ],
+                            [
+                                  "go over something",
+                                  "xem lại / rà soát"
+                            ],
+                            [
+                                  "follow up on something",
+                                  "theo dõi / hỏi lại về một việc"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "take a closer look",
+                                  "xem xét kỹ hơn"
+                            ],
+                            [
+                                  "set aside some time",
+                                  "dành riêng một khoảng thời gian"
+                            ],
+                            [
+                                  "look into a problem",
+                                  "tìm hiểu một vấn đề"
+                            ],
+                            [
+                                  "get someone's opinion",
+                                  "xin/nghe ý kiến của ai"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        ]
-      }
-    ]
-  },
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I'd like to take a break before we continue.",
+                                  "Tôi muốn nghỉ một chút trước khi chúng ta tiếp tục."
+                            ],
+                            [
+                                  "I'd like to make a reservation for Saturday evening.",
+                                  "Tôi muốn đặt chỗ cho tối thứ Bảy."
+                            ],
+                            [
+                                  "I'd like to make sure I understand the requirements correctly.",
+                                  "Tôi muốn chắc chắn rằng mình hiểu đúng yêu cầu."
+                            ],
+                            [
+                                  "I'd like to think it over before I make a final decision.",
+                                  "Tôi muốn suy nghĩ kỹ trước khi đưa ra quyết định cuối cùng."
+                            ],
+                            [
+                                  "I'd like to go over the document one more time.",
+                                  "Tôi muốn xem lại tài liệu thêm một lần nữa."
+                            ],
+                            [
+                                  "I'd like to follow up on the request I sent yesterday.",
+                                  "Tôi muốn hỏi lại về yêu cầu tôi đã gửi hôm qua."
+                            ],
+                            [
+                                  "I'd like to improve my English so that I can communicate more confidently at work.",
+                                  "Tôi muốn cải thiện tiếng Anh để có thể giao tiếp tự tin hơn trong công việc."
+                            ],
+                            [
+                                  "I'd like to spend more time with my family on weekends.",
+                                  "Tôi muốn dành nhiều thời gian hơn cho gia đình vào cuối tuần."
+                            ],
+                            [
+                                  "I'd like to take some time to consider my options.",
+                                  "Tôi muốn dành chút thời gian cân nhắc các lựa chọn."
+                            ],
+                            [
+                                  "I'd like to make better use of my free time instead of wasting it.",
+                                  "Tôi muốn sử dụng thời gian rảnh hiệu quả hơn thay vì lãng phí nó."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
+    },
   {
     "id": "advanced",
     "title": "14. Những câu ở mức cao hơn nhưng vẫn dùng thường xuyên",
