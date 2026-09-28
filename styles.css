@@ -1848,3 +1848,8 @@ button{touch-action:manipulation}
   .jp-row span,.jp-row small{font-size:13px;line-height:1.55}
   #jpExamples .jp-row{grid-template-columns:28px 44px minmax(0,1fr)}
 }
+
+/* Furigana for Japanese lessons */
+.jp-text ruby{ruby-position:over;ruby-align:center}
+.jp-text rt{font-size:.52em;font-weight:600;color:#6f6972;line-height:1}
+@media(max-width:680px){.jp-text rt{font-size:.55em}}
