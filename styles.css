@@ -2029,3 +2029,206 @@ button{touch-action:manipulation}
     width:100%;
   }
 }
+
+
+/* ===== Account auth + automatic vocabulary sync ===== */
+.account-sync-panel{
+  position:relative;
+  overflow:hidden;
+}
+.account-panel-head{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:16px;
+}
+.account-panel-icon{
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:color-mix(in srgb,var(--purple) 12%,#fff);
+  color:var(--purple);
+}
+.account-panel-icon svg{
+  width:24px;
+  height:24px;
+}
+.account-panel-head h2{
+  margin:3px 0 4px;
+  color:var(--navy);
+}
+.account-panel-head p{
+  margin:0;
+  color:var(--muted);
+}
+.account-live-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  padding:0 11px;
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:800;
+  white-space:nowrap;
+  border:1px solid;
+}
+.account-live-pill.is-live{
+  color:#166534;
+  background:#f0fdf4;
+  border-color:#bbf7d0;
+}
+.account-live-pill.is-connecting{
+  color:#92400e;
+  background:#fffbeb;
+  border-color:#fde68a;
+}
+.account-sync-facts{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:18px 0 14px;
+}
+.account-sync-facts>div{
+  display:grid;
+  gap:3px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--surface);
+}
+.account-sync-facts small{
+  color:var(--muted);
+  font-size:.76rem;
+}
+.account-sync-facts strong{
+  color:var(--navy);
+  overflow-wrap:anywhere;
+}
+.account-actions{
+  display:flex;
+  justify-content:flex-start;
+  margin:12px 0;
+}
+.auth-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  margin-top:18px;
+}
+.auth-card{
+  display:grid;
+  gap:13px;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--surface);
+  box-shadow:0 12px 30px rgba(26,35,67,.05);
+}
+.auth-card-accent{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--purple) 5%,#fff),#fff);
+  border-color:color-mix(in srgb,var(--purple) 20%,var(--line));
+}
+.auth-card h3{
+  margin:3px 0 5px;
+  color:var(--navy);
+  font-size:1.15rem;
+}
+.auth-card p{
+  margin:0;
+  color:var(--muted);
+}
+.auth-card label{
+  display:grid;
+  gap:6px;
+}
+.auth-card label>span{
+  color:var(--navy);
+  font-size:.8rem;
+  font-weight:800;
+}
+.auth-card input{
+  width:100%;
+  min-height:46px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:0 13px;
+  background:#fff;
+  color:var(--navy);
+  font:inherit;
+  outline:none;
+}
+.auth-card input:focus{
+  border-color:color-mix(in srgb,var(--purple) 55%,#fff);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--purple) 12%,transparent);
+}
+.auth-submit{
+  width:100%;
+  justify-content:center;
+  margin-top:2px;
+}
+.auth-footnote{
+  display:block;
+  color:var(--muted);
+  line-height:1.5;
+}
+.account-notice{
+  margin:14px 0;
+  padding:12px 14px;
+  border-radius:13px;
+  background:color-mix(in srgb,var(--yellow) 16%,#fff);
+  border:1px solid color-mix(in srgb,var(--yellow) 34%,var(--line));
+  color:var(--navy);
+  font-weight:700;
+}
+.account-loading{
+  min-height:90px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  color:var(--navy);
+}
+.account-loading>span{
+  width:22px;
+  height:22px;
+  border:2px solid color-mix(in srgb,var(--purple) 22%,#ddd);
+  border-top-color:var(--purple);
+  border-radius:50%;
+  animation:account-spin .8s linear infinite;
+}
+@keyframes account-spin{to{transform:rotate(360deg)}}
+
+@media (max-width:760px){
+  .account-panel-head{
+    grid-template-columns:auto minmax(0,1fr);
+  }
+  .account-live-pill{
+    grid-column:1/-1;
+    justify-self:start;
+  }
+  .auth-grid{
+    grid-template-columns:1fr;
+  }
+  .account-sync-facts{
+    grid-template-columns:1fr;
+  }
+}
+@media (max-width:430px){
+  .account-panel-head{
+    align-items:start;
+    gap:12px;
+  }
+  .account-panel-icon{
+    width:42px;
+    height:42px;
+    border-radius:13px;
+  }
+  .auth-card{
+    padding:16px;
+  }
+  .account-actions .secondary-button{
+    width:100%;
+  }
+}
