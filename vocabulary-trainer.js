@@ -348,25 +348,108 @@
     return {name:'TẦNG 3 · DÙNG TỰ ĐỘNG',title:'Học câu → gọi lại → biến đổi',desc:'Không bắt nói một câu chưa học. Bạn học câu mẫu trước, gọi lại chính câu đó, rồi mới tự biến đổi thành câu mới.'};
   }
 
+  function level3StepperHTML(){
+    const phase=session.level3Phase||'learn';
+    const order=['learn','recall','transform'];
+    const labels=[['3A','Học câu'],['3B','Gọi lại'],['3C','Biến đổi']];
+    const current=order.indexOf(phase);
+    return '<div class="level3-stepper">'+order.map((x,i)=>'<span class="'+(i<current?'done':i===current?'active':'')+'"><b>'+labels[i][0]+'</b>'+labels[i][1]+'</span>').join('<i></i>')+'</div>';
+  }
+
+  function level3CardHTML(card){
+    const p=progressFor(card);
+    const phase=session.level3Phase||'learn';
+    const practiced=Number(session.level3Practice?.[card.key]||0);
+    const seconds=reflexSeconds(card);
+
+    if(phase==='learn'){
+      return `
+        <div class="vocab-trainer-card level-3 phase-learn" id="vocabTrainerCard">
+          <div class="vocab-trainer-card-top">
+            <button id="vocabCardSpeak" class="vocab-card-icon" type="button">${env.uiIcon('volume-2')}</button>
+            <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
+            </button>
+          </div>
+          <div class="vocab-trainer-face">
+            ${level3StepperHTML()}
+            <span class="vocab-trainer-direction">3A · HỌC CÂU MẪU</span>
+            <div class="vocab-trainer-answer">${esc(card.en)}</div>
+            <div class="level3-model-vi">${esc(card.vi)}</div>
+            <div class="level3-study-note">Nghe và nói theo <b>ít nhất 2 lần</b>. Bước này chỉ để quen miệng với cả câu, chưa chấm tốc độ.</div>
+          </div>
+          <div class="level3-study-actions">
+            <button id="level3PracticeModel" class="secondary-button" type="button">${env.uiIcon('volume-2')}<span>Nghe & nhại · ${practiced}/2+</span></button>
+            <button id="level3ToRecall" class="primary-button" type="button" ${practiced<2?'disabled':''}>Đã luyện · sang 3B →</button>
+          </div>
+        </div>`;
+    }
+
+    if(phase==='recall'){
+      return `
+        <div class="vocab-trainer-card level-3 phase-recall" id="vocabTrainerCard">
+          <div class="vocab-trainer-card-top">
+            <button id="vocabCardSpeak" class="vocab-card-icon" type="button" ${session.revealed?'':'disabled'}>${env.uiIcon('volume-2')}</button>
+            <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
+            </button>
+          </div>
+          <div class="vocab-trainer-face">
+            ${level3StepperHTML()}
+            <span class="vocab-trainer-direction">3B · GỌI LẠI CÂU ĐÃ HỌC</span>
+            <div class="vocab-trainer-front">${esc(card.vi)}</div>
+            <div class="vocab-reflex-box">
+              <button id="vocabStartReflex" type="button">Bắt đầu nhớ lại · ${seconds} giây</button>
+              <b id="vocabReflexTimer">${seconds.toFixed(1)}</b>
+              <small id="vocabReflexNote">${esc(session.reflexMessage||'Lần đầu chưa cần ép 3 giây. Hãy cố tự nói lại câu vừa luyện trước khi xem đáp án.')}</small>
+            </div>
+            ${session.revealed?`<div class="vocab-trainer-divider"></div><div class="vocab-trainer-answer">${esc(card.en)}</div>`:''}
+          </div>
+          ${session.revealed?
+            `<div class="level3-recall-actions"><button id="level3BackToLearn" class="secondary-button" type="button">Chưa nhớ · học lại 3A</button><button id="level3ToTransform" class="primary-button" type="button">Nhớ được · sang 3C →</button></div>`
+            :`<div class="vocab-trainer-reveal-wrap"><button id="vocabRevealLevel3" class="vocab-trainer-reveal" type="button">Xem đáp án sau khi tự nói</button></div>`}
+        </div>`;
+    }
+
+    return `
+      <div class="vocab-trainer-card level-3 phase-transform" id="vocabTrainerCard">
+        <div class="vocab-trainer-card-top">
+          <button id="vocabCardSpeak" class="vocab-card-icon" type="button" ${session.level3HintVisible?'':'disabled'}>${env.uiIcon('volume-2')}</button>
+          <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
+          </button>
+        </div>
+        <div class="vocab-trainer-face">
+          ${level3StepperHTML()}
+          <span class="vocab-trainer-direction">3C · BIẾN ĐỔI & DÙNG TỰ ĐỘNG</span>
+          <div class="level3-transform-prompt"><strong>Giữ ý/cấu trúc chính của câu vừa học.</strong><span>Hãy đổi ít nhất một chi tiết thật: thời gian, người, địa điểm, lý do hoặc mục đích — rồi nói thành một câu mới.</span></div>
+          <div class="vocab-reflex-box">
+            <button id="vocabStartReflex" type="button">Bắt đầu phản xạ · ${seconds} giây</button>
+            <b id="vocabReflexTimer">${seconds.toFixed(1)}</b>
+            <small id="vocabReflexNote">${esc(session.reflexMessage||(seconds>3?'Bạn đang xây phản xạ nên được 6 giây. Khi đã gặp lại vài lần, hệ thống mới siết về 3 giây.':'Mục tiêu lúc này là bật ra câu mới trong khoảng 2–3 giây.'))}</small>
+          </div>
+          <button id="level3ShowHint" class="level3-hint-button" type="button">${session.level3HintVisible?'Câu gốc: '+esc(card.en):'Bí ý? xem lại câu gốc'}</button>
+          ${session.revealed?`<div class="active-chunk-auto-tip">Không có một đáp án duy nhất. Hãy tự đánh giá: bạn có tạo được <b>một câu mới</b> từ câu vừa học, không chỉ đọc lại nguyên câu hay không?</div>`:''}
+        </div>
+        ${session.revealed?'':`<div class="vocab-trainer-reveal-wrap"><button id="vocabRevealLevel3" class="vocab-trainer-reveal" type="button">Tôi đã nói một câu mới</button></div>`}
+      </div>`;
+  }
+
   function cardFaceHTML(card){
     const p=progressFor(card);
     const level=Number(card.level);
+    if(level===3) return level3CardHTML(card);
     let front='',answer='',sub='';
     if(level===1){
       front=card.en;
       answer=card.vi;
       sub=card.exampleEn?`${card.exampleEn}||${card.exampleVi||''}`:'';
-    }else if(level===2){
-      front=card.vi;
-      answer=card.en;
-      sub=card.exampleEn?`${card.exampleEn}||${card.exampleVi||''}`:'';
     }else{
       front=card.vi;
       answer=card.en;
-      sub='';
+      sub=card.exampleEn?`${card.exampleEn}||${card.exampleVi||''}`:'';
     }
     const [exampleEn,exampleVi]=sub.split('||');
-
     return `
       <div class="vocab-trainer-card level-${level}" id="vocabTrainerCard" role="button" tabindex="0">
         <div class="vocab-trainer-card-top">
@@ -378,22 +461,10 @@
         <div class="vocab-trainer-face">
           <span class="vocab-trainer-direction">${esc(stageCopy(level).name)}</span>
           <div class="vocab-trainer-front">${esc(front)}</div>
-          ${level===3&&!session.revealed?`
-            <div class="vocab-reflex-box">
-              <button id="vocabStartReflex" type="button">Bắt đầu phản xạ 3 giây</button>
-              <b id="vocabReflexTimer">3.0</b>
-              <small id="vocabReflexNote">${esc(session.reflexMessage||'Hãy nói câu tiếng Anh thành tiếng trước khi xem đáp án.')}</small>
-            </div>`:''}
-          ${session.revealed?`
-            <div class="vocab-trainer-divider"></div>
-            <div class="vocab-trainer-answer">${esc(answer)}</div>
-            ${exampleEn?`<div class="active-chunk-example"><b>${esc(exampleEn)}</b>${exampleVi?`<span>${esc(exampleVi)}</span>`:''}</div>`:''}
-            ${level===3?`<div class="active-chunk-auto-tip">Nếu bạn bật ra được câu này trong khoảng <b>2–3 giây</b>, cụm đang tiến gần tới mức dùng tự động.</div>`:''}
-          `:`<small>Chạm thẻ hoặc bấm “Hiện đáp án” sau khi bạn đã tự trả lời.</small>`}
+          ${session.revealed?`<div class="vocab-trainer-divider"></div><div class="vocab-trainer-answer">${esc(answer)}</div>${exampleEn?`<div class="active-chunk-example"><b>${esc(exampleEn)}</b>${exampleVi?`<span>${esc(exampleVi)}</span>`:''}</div>`:''}`:`<small>Chạm thẻ hoặc bấm “Hiện đáp án” sau khi bạn đã tự trả lời.</small>`}
         </div>
       </div>`;
   }
-
   function ratingHTML(level){
     if(!session.revealed) return `<div class="vocab-trainer-reveal-wrap"><button id="vocabReveal" class="vocab-trainer-reveal" type="button">Hiện đáp án</button></div>`;
     const labels=Number(level)===1
