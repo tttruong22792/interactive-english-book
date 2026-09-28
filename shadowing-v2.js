@@ -453,8 +453,11 @@
         ? '<ul>'+(data.vocabulary_notes||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'
         : '<p>Cách dùng từ phù hợp.</p>';
       var corrected=String(data.corrected_sentence||'').trim();
+      var correctedVi=String(data.corrected_sentence_vi||'').trim();
       var expansions=(data.expansions||[]).map(function(x){
-        return '<div class="shadow-v2-ai-expansion"><span>→</span><b>'+esc(x)+'</b></div>';
+        var en=typeof x==='string'?x:String(x?.en||'').trim();
+        var vi=typeof x==='string'?'':String(x?.vi||'').trim();
+        return '<div class="shadow-v2-ai-expansion"><span>→</span><div><b>'+esc(en)+'</b>'+(vi?'<small>'+esc(vi)+'</small>':'')+'</div></div>';
       }).join('');
 
       var challengeLabel={basic:'Basic',natural:'Natural',stretch:'Stretch'}[data.challenge_level]||'';
@@ -467,7 +470,7 @@
         aiMetrics+
         '<div class="shadow-v2-coach-section"><b>Ngữ pháp</b>'+grammar+'</div>'+
         '<div class="shadow-v2-coach-section"><b>Từ vựng / độ tự nhiên</b>'+vocab+'</div>'+
-        (corrected?'<div class="shadow-v2-ai-correction"><span>Câu đề xuất</span><strong>'+esc(corrected)+'</strong></div>':'')+
+        (corrected?'<div class="shadow-v2-ai-correction"><span>Câu đề xuất</span><strong>'+esc(corrected)+'</strong>'+(correctedVi?'<small>'+esc(correctedVi)+'</small>':'')+'</div>':'')+
         (data.explanation_vi?'<p class="shadow-v2-ai-explain">'+esc(data.explanation_vi)+'</p>':'')+
         (expansions?'<div class="shadow-v2-coach-expansions"><strong>Mở rộng thêm</strong>'+expansions+'</div>':'')+
         (data.encouragement_vi?'<div class="shadow-v2-ai-encourage">'+esc(data.encouragement_vi)+'</div>':'')+
