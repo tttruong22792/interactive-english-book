@@ -78,6 +78,20 @@
 
   function cleanPayload(item){
     const savedAt=Number(item?.savedAt);
+    const trainer=item?.trainer&&typeof item.trainer==='object'&&!Array.isArray(item.trainer)
+      ? {
+          starred:!!item.trainer.starred,
+          mastered:!!item.trainer.mastered,
+          reviewCount:Math.max(0,Math.floor(Number(item.trainer.reviewCount)||0)),
+          correctCount:Math.max(0,Math.floor(Number(item.trainer.correctCount)||0)),
+          wrongCount:Math.max(0,Math.floor(Number(item.trainer.wrongCount)||0)),
+          lastReviewedAt:Math.max(0,Math.floor(Number(item.trainer.lastReviewedAt)||0)),
+          nextReviewAt:Math.max(0,Math.floor(Number(item.trainer.nextReviewAt)||0)),
+          intervalDays:Math.max(0,Math.min(3650,Number(item.trainer.intervalDays)||0)),
+          lastRating:String(item.trainer.lastRating||'').slice(0,24),
+          updatedAt:Math.max(0,Math.floor(Number(item.trainer.updatedAt)||0))
+        }
+      : undefined;
     return {
       key:String(item?.key||'').slice(0,240),
       term:String(item?.term||'').slice(0,180),
@@ -86,7 +100,8 @@
       meaning:String(item?.meaning||'').slice(0,1200),
       example:String(item?.example||'').slice(0,1600),
       type:String(item?.type||'word').slice(0,32),
-      savedAt:Number.isFinite(savedAt)&&savedAt>0?Math.floor(savedAt):Date.now()
+      savedAt:Number.isFinite(savedAt)&&savedAt>0?Math.floor(savedAt):Date.now(),
+      ...(trainer?{trainer}:{})
     };
   }
 
@@ -253,8 +268,9 @@
           if(!item||typeof item!=='object') return;
           const localItem=cleanPayload({...item,key});
           const remoteItem=remote[key];
-          const remoteSavedAt=Number(remoteItem?.savedAt||0);
-          if(!remoteItem||localItem.savedAt>=remoteSavedAt) uploads.push(localItem);
+          const localVersion=Math.max(Number(localItem.savedAt||0),Number(localItem.trainer?.updatedAt||0));
+          const remoteVersion=Math.max(Number(remoteItem?.savedAt||0),Number(remoteItem?.trainer?.updatedAt||0));
+          if(!remoteItem||localVersion>=remoteVersion) uploads.push(localItem);
         });
 
         if(uploads.length){
