@@ -301,6 +301,10 @@
   }
 
   function toggleAutoplay(){
+    if(Number(currentCard()?.level)===3){
+      env.toast('Tầng 3 cần học câu → gọi lại → biến đổi, nên không dùng autoplay.');
+      return;
+    }
     if(session.autoplay){stopAutoplay();renderCard();return;}
     session.autoplay=true;
     renderCard();
@@ -313,6 +317,8 @@
     if(session.index>=session.cards.length-1){renderSummary();return;}
     session.index++;
     session.revealed=false;
+    session.level3Phase='learn';
+    session.level3HintVisible=false;
     render();
   }
 
@@ -322,20 +328,24 @@
     if(session.index<=0) return;
     session.index--;
     session.revealed=false;
+    session.level3Phase='learn';
+    session.level3HintVisible=false;
     render();
   }
 
   function toggleReveal(){
+    const card=currentCard();
+    if(Number(card?.level)===3) return;
     session.revealed=!session.revealed;
     if(session.revealed) resetReflexTimer();
     renderCard();
-    if(session.revealed&&settings().autoSpeak) env.speak(currentCard().en);
+    if(session.revealed&&settings().autoSpeak) env.speak(card.en);
   }
 
   function stageCopy(level){
     if(Number(level)===1) return {name:'TẦNG 1 · NHẬN RA',title:'Thấy cụm → hiểu ngay',desc:'Không dịch từng từ. Nhìn cả khối và nhận ra ý nghĩa lõi.'};
     if(Number(level)===2) return {name:'TẦNG 2 · GỌI RA',title:'Có ý tiếng Việt → bật ra cụm',desc:'Mục tiêu là nhớ ra cụm sau vài giây, không cần nhìn tiếng Anh trước.'};
-    return {name:'TẦNG 3 · DÙNG TỰ ĐỘNG',title:'Có ý → bật ra cả câu',desc:'Mục tiêu phản xạ khoảng 2–3 giây, không dịch từng chữ.'};
+    return {name:'TẦNG 3 · DÙNG TỰ ĐỘNG',title:'Học câu → gọi lại → biến đổi',desc:'Không bắt nói một câu chưa học. Bạn học câu mẫu trước, gọi lại chính câu đó, rồi mới tự biến đổi thành câu mới.'};
   }
 
   function cardFaceHTML(card){
