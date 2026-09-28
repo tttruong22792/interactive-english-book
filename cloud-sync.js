@@ -398,9 +398,11 @@
   async function signUp(email,password){
     const sb=await getClient();
     const normalizedEmail=String(email||'').trim();
+    const redirectTo=location.origin+location.pathname+'#settings';
     const {data,error}=await sb.auth.signUp({
       email:normalizedEmail,
-      password:String(password||'')
+      password:String(password||''),
+      options:{emailRedirectTo:redirectTo}
     });
     if(error) throw error;
 
