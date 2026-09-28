@@ -706,7 +706,55 @@
         '<div class="shadow-v2-action-row"><button id="shadowV2FinishSentence" class="primary-button" type="button" '+(!(progress.recallPassed&&progress.personalDone)?'disabled':'')+'>'+(session.index===session.items.length-1?'Hoàn thành câu 5 →':'Hoàn thành · sang câu tiếp theo →')+'</button></div>';
     }
 
-    function renderSession(){
+    function captureSessionScroll(){
+      var active=document.activeElement;
+      var snapshot={y:window.scrollY||window.pageYOffset||0,anchor:null,top:null};
+      if(!active||!env.main.contains(active)) return snapshot;
+      if(active.id){
+        snapshot.anchor={type:'id',value:active.id};
+      }else{
+        var attrs=['data-personal-idea','data-shadow-v2-step','data-transform-check','data-transform-mic'];
+        for(var i=0;i<attrs.length;i++){
+          var value=active.getAttribute&&active.getAttribute(attrs[i]);
+          if(value!=null){
+            snapshot.anchor={type:'attr',name:attrs[i],value:value};
+            break;
+          }
+        }
+      }
+      if(snapshot.anchor) snapshot.top=active.getBoundingClientRect().top;
+      return snapshot;
+    }
+
+    function restoreSessionScroll(snapshot,mode){
+      requestAnimationFrame(function(){
+        if(mode==='stage'){
+          var stage=q('.shadow-v2-stage',env.main);
+          if(stage){
+            var top=stage.getBoundingClientRect().top+(window.scrollY||0)-12;
+            window.scrollTo({top:Math.max(0,top),behavior:'instant'});
+            return;
+          }
+        }
+        if(!snapshot) return;
+        var target=null;
+        if(snapshot.anchor?.type==='id'){
+          target=document.getElementById(snapshot.anchor.value);
+        }else if(snapshot.anchor?.type==='attr'){
+          target=env.main.querySelector('['+snapshot.anchor.name+'="'+String(snapshot.anchor.value).replace(/"/g,'\\\"')+'"]');
+        }
+        if(target&&Number.isFinite(snapshot.top)){
+          var delta=target.getBoundingClientRect().top-snapshot.top;
+          if(Math.abs(delta)>1) window.scrollBy({top:delta,left:0,behavior:'instant'});
+          return;
+        }
+        window.scrollTo({top:snapshot.y,left:0,behavior:'instant'});
+      });
+    }
+
+    function renderSession(options){
+      var mode=options?.mode||'preserve';
+      var scrollSnapshot=captureSessionScroll();
       var item=session.items[session.index];
       var progress=getProgress(session.lesson,item);
       recalcMastery(progress);
@@ -715,7 +763,7 @@
       env.main.innerHTML=sessionShell(body,item,progress);
       if(env.hydrateSentences) env.hydrateSentences(env.main);
       bindSession(item,progress);
-      window.scrollTo({top:0,behavior:'instant'});
+      restoreSessionScroll(scrollSnapshot,mode);
     }
 
     function speechInput(input,callback){
@@ -734,17 +782,17 @@
     function bindSession(item,progress){
       q('#shadowV2Exit').onclick=function(){session=null;render(env);};
       qa('[data-shadow-v2-step]').forEach(function(btn){
-        btn.onclick=function(){session.step=Number(btn.getAttribute('data-shadow-v2-step'))||0;renderSession();};
+        btn.onclick=function(){session.step=Number(btn.getAttribute('data-shadow-v2-step'))||0;renderSession({mode:'stage'});};
       });
 
       if(session.step===0){
         q('#shadowV2Listen').onclick=function(){env.speak(item.en,q('.shadow-v2-main-en'),env.state.rate);};
-        q('#shadowV2Understand').onclick=function(){progress.understood=true;markTouched(session.lesson,item,progress);session.step=1;renderSession();};
+        q('#shadowV2Understand').onclick=function(){progress.understood=true;markTouched(session.lesson,item,progress);session.step=1;renderSession({mode:'stage'});};
         return;
       }
 
       if(session.step===1){
-        q('#shadowV2ChunksDone').onclick=function(){progress.chunks=true;markTouched(session.lesson,item,progress);session.step=2;renderSession();};
+        q('#shadowV2ChunksDone').onclick=function(){progress.chunks=true;markTouched(session.lesson,item,progress);session.step=2;renderSession({mode:'stage'});};
         return;
       }
 
@@ -768,7 +816,7 @@
             renderSession();
           });
         };
-        q('#shadowV2ShadowNext').onclick=function(){session.step=3;renderSession();};
+        q('#shadowV2ShadowNext').onclick=function(){session.step=3;renderSession({mode:'stage'});};
         return;
       }
 
@@ -792,7 +840,7 @@
           q('[data-transform-mic="'+index+'"]').onclick=function(){speechInput(input,function(){check();});};
           input.onkeydown=function(e){if(e.key==='Enter') check();};
         });
-        q('#shadowV2TransformNext').onclick=function(){session.step=4;renderSession();};
+        q('#shadowV2TransformNext').onclick=function(){session.step=4;renderSession({mode:'stage'});};
         return;
       }
 
@@ -965,7 +1013,7 @@
           session.index++;
           var nextProgress=getProgress(session.lesson,session.items[session.index]);
           session.step=stepUnlocked(nextProgress);
-          renderSession();
+          renderSession({mode:'stage'});
         }else{
           renderSummary();
         }
@@ -1103,7 +1151,8 @@
       return {mastered:mastered,started:started,total:pool.length};
     }
 
-    async function render(nextEnv){
+    async function render(nextEnv,options){
+      var previousScroll=window.scrollY||window.pageYOffset||0;
       if(nextEnv) env=nextEnv;
       session=null;
       env.setHeader('English › Shadowing','Shadowing');
@@ -1183,16 +1232,20 @@
         btn.onclick=function(){
           s.selectedLessonId=btn.getAttribute('data-shadow-v2-lesson');
           save();
-          render(env);
+          render(env,{preserveScroll:true});
         };
       });
       q('#shadowV2Start',env.main).onclick=function(){
         session={lesson:selected,pool:pool,items:todays,index:0,step:0,test:null};
         var p=getProgress(selected,todays[0]);
         session.step=stepUnlocked(p);
-        renderSession();
+        renderSession({mode:'stage'});
       };
-      window.scrollTo({top:0,behavior:'instant'});
+      if(options?.preserveScroll){
+        requestAnimationFrame(function(){window.scrollTo({top:previousScroll,left:0,behavior:'instant'});});
+      }else{
+        window.scrollTo({top:0,behavior:'instant'});
+      }
     }
 
     return {render:render};
