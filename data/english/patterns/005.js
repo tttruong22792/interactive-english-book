@@ -269,79 +269,134 @@ window.CONTENT_REGISTRY["en-pattern-005"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "4. Những cụm đáng học trong 40 câu trên",
-      "blocks": [
-        {
-          "type": "paragraph",
-          "html": "<p>Không nên chỉ học riêng từ <b>hope</b>. Hãy học nguyên cụm vì chúng có thể tái sử dụng trong rất nhiều mẫu câu khác.</p>"
-        },
-        {
-          "type": "chips",
-          "items": [
-            [
-              "make better use of something",
-              "tận dụng thứ gì đó tốt hơn"
-            ],
-            [
-              "make better use of my time",
-              "sử dụng thời gian hiệu quả hơn"
-            ],
-            [
-              "get back into a routine",
-              "quay trở lại nhịp sinh hoạt / thói quen"
-            ],
-            [
-              "make the most of something",
-              "tận dụng tối đa"
-            ],
-            [
-              "make the most of this opportunity",
-              "tận dụng tối đa cơ hội này"
-            ],
-            [
-              "express myself",
-              "diễn đạt suy nghĩ / cảm xúc của bản thân"
-            ],
-            [
-              "build up my confidence",
-              "dần xây dựng sự tự tin"
-            ],
-            [
-              "figure out",
-              "tìm ra / hiểu ra"
-            ],
-            [
-              "take on more responsibility",
-              "đảm nhận thêm trách nhiệm"
-            ],
-            [
-              "hands-on experience",
-              "kinh nghiệm thực tế, trực tiếp làm"
-            ],
-            [
-              "put money aside",
-              "để dành tiền"
-            ],
-            [
-              "pay off a loan",
-              "trả hết khoản vay"
-            ],
-            [
-              "hear from someone",
-              "nhận được tin / liên lạc từ ai"
-            ],
-            [
-              "catch up with someone",
-              "gặp lại và trò chuyện về những chuyện gần đây"
-            ],
-            [
-              "sort something out",
-              "giải quyết ổn thỏa một vấn đề"
-            ]
+          "id": "phrases",
+          "title": "4. Những cụm đáng học trong 40 câu trên",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "get a chance to",
+                                  "có cơ hội làm gì"
+                            ],
+                            [
+                                  "make progress",
+                                  "tiến bộ"
+                            ],
+                            [
+                                  "get better at something",
+                                  "giỏi hơn ở một việc"
+                            ],
+                            [
+                                  "find a way to",
+                                  "tìm ra cách để"
+                            ],
+                            [
+                                  "stay in touch",
+                                  "giữ liên lạc"
+                            ],
+                            [
+                                  "work out",
+                                  "ổn thỏa / thành công"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "have more time to",
+                                  "có thêm thời gian để"
+                            ],
+                            [
+                                  "be able to",
+                                  "có thể"
+                            ],
+                            [
+                                  "get used to",
+                                  "làm quen với"
+                            ],
+                            [
+                                  "learn from my mistakes",
+                                  "học từ sai lầm"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I hope to get a chance to practice English more often.",
+                                  "Tôi hy vọng có cơ hội luyện tiếng Anh thường xuyên hơn."
+                            ],
+                            [
+                                  "I hope to make steady progress over the next few months.",
+                                  "Tôi hy vọng sẽ tiến bộ ổn định trong vài tháng tới."
+                            ],
+                            [
+                                  "I hope to get better at explaining things clearly.",
+                                  "Tôi hy vọng sẽ giỏi hơn trong việc giải thích mọi thứ rõ ràng."
+                            ],
+                            [
+                                  "I hope to find a way to solve the problem without causing another issue.",
+                                  "Tôi hy vọng tìm ra cách giải quyết vấn đề mà không gây ra lỗi khác."
+                            ],
+                            [
+                                  "I hope to stay in touch with the people I've met here.",
+                                  "Tôi hy vọng sẽ giữ liên lạc với những người tôi đã gặp ở đây."
+                            ],
+                            [
+                                  "I hope everything works out in the end.",
+                                  "Tôi hy vọng cuối cùng mọi việc sẽ ổn thỏa."
+                            ],
+                            [
+                                  "I hope to become more confident speaking English at work.",
+                                  "Tôi hy vọng sẽ tự tin hơn khi nói tiếng Anh trong công việc."
+                            ],
+                            [
+                                  "I hope to have more time to spend with my family.",
+                                  "Tôi hy vọng có thêm thời gian dành cho gia đình."
+                            ],
+                            [
+                                  "I hope to learn from my mistakes instead of worrying about them.",
+                                  "Tôi hy vọng học được từ sai lầm thay vì lo lắng về chúng."
+                            ],
+                            [
+                                  "I hope to build a stronger foundation before moving on.",
+                                  "Tôi hy vọng xây được nền tảng vững hơn trước khi tiếp tục."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "hope-vs-want",
