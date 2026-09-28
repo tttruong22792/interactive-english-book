@@ -536,22 +536,75 @@
     $('#vocabNext').onclick=nextCard;
     $('#vocabAutoplay').onclick=toggleAutoplay;
 
+    const current=currentCard();
     const card=$('#vocabTrainerCard');
     if(card){
-      card.onclick=e=>{if(!e.target.closest('button')) toggleReveal();};
+      if(Number(current?.level)!==3){
+        card.onclick=e=>{if(!e.target.closest('button')) toggleReveal();};
+      }
       bindSwipe(card);
     }
+
     const speak=$('#vocabCardSpeak');
-    if(speak) speak.onclick=e=>{e.stopPropagation();env.speak(currentCard().en);};
+    if(speak) speak.onclick=e=>{e.stopPropagation();env.speak(current.en);};
+
     const star=$('#vocabCardStar');
     if(star) star.onclick=e=>{e.stopPropagation();toggleStar();};
+
     const reveal=$('#vocabReveal');
     if(reveal) reveal.onclick=toggleReveal;
+
+    const practice=$('#level3PracticeModel');
+    if(practice) practice.onclick=async()=>{
+      session.level3Practice[current.key]=Number(session.level3Practice[current.key]||0)+1;
+      await env.speak(current.en);
+      renderCard();
+    };
+
+    const toRecall=$('#level3ToRecall');
+    if(toRecall) toRecall.onclick=()=>{
+      session.level3Phase='recall';
+      session.revealed=false;
+      resetReflexTimer();
+      renderCard();
+    };
+
+    const reveal3=$('#vocabRevealLevel3');
+    if(reveal3) reveal3.onclick=()=>{
+      resetReflexTimer();
+      session.revealed=true;
+      renderCard();
+      if(settings().autoSpeak&&session.level3Phase==='recall') env.speak(current.en);
+    };
+
+    const backLearn=$('#level3BackToLearn');
+    if(backLearn) backLearn.onclick=()=>{
+      session.level3Phase='learn';
+      session.revealed=false;
+      resetReflexTimer();
+      renderCard();
+    };
+
+    const toTransform=$('#level3ToTransform');
+    if(toTransform) toTransform.onclick=()=>{
+      session.level3Phase='transform';
+      session.revealed=false;
+      session.level3HintVisible=false;
+      resetReflexTimer();
+      renderCard();
+    };
+
+    const hint=$('#level3ShowHint');
+    if(hint) hint.onclick=()=>{
+      session.level3HintVisible=true;
+      renderCard();
+    };
+
     const reflex=$('#vocabStartReflex');
     if(reflex) reflex.onclick=e=>{e.stopPropagation();startReflexTimer();};
+
     $$('[data-vocab-rate]').forEach(btn=>btn.onclick=()=>rateCurrent(btn.dataset.vocabRate));
   }
-
   function openSettings(){
     stopAutoplay();
     resetReflexTimer();
