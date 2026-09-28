@@ -1826,3 +1826,25 @@ button{touch-action:manipulation}
     min-width:0;
   }
 }
+
+/* ===== JAPANESE N2 MOBILE LAYOUT FIX ===== */
+.jp-row{grid-template-columns:auto minmax(0,1fr);align-items:start}
+.jp-row>div{min-width:0}
+.jp-row .jp-text{
+  display:block;
+  width:100%;
+  max-width:100%;
+  white-space:normal;
+  word-break:normal;
+  overflow-wrap:normal;
+  line-break:strict;
+  writing-mode:horizontal-tb;
+}
+#jpExamples .jp-row{grid-template-columns:34px 46px minmax(0,1fr)}
+#jpExamples .jp-row>span{min-width:0!important}
+@media(max-width:680px){
+  .jp-row{padding:14px 12px;gap:10px}
+  .jp-row .jp-text{font-size:19px;line-height:1.75}
+  .jp-row span,.jp-row small{font-size:13px;line-height:1.55}
+  #jpExamples .jp-row{grid-template-columns:28px 44px minmax(0,1fr)}
+}
