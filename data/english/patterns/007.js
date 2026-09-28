@@ -493,87 +493,134 @@ window.CONTENT_REGISTRY["en-pattern-007"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "10. Những cụm từ nên học nguyên khối",
-      "blocks": [
-        {
-          "type": "chips",
-          "items": [
-            [
-              "grab something to eat",
-              "đi kiếm gì đó ăn"
-            ],
-            [
-              "head home",
-              "về nhà"
-            ],
-            [
-              "call it a day",
-              "kết thúc công việc trong ngày"
-            ],
-            [
-              "hang out",
-              "đi chơi / dành thời gian cùng nhau"
-            ],
-            [
-              "come over",
-              "qua nhà ai đó"
-            ],
-            [
-              "check something out",
-              "xem / thử / ghé xem"
-            ],
-            [
-              "bring someone along",
-              "đưa ai đó đi cùng"
-            ],
-            [
-              "take a look at",
-              "xem qua"
-            ],
-            [
-              "go over something",
-              "xem xét lại"
-            ],
-            [
-              "take care of something",
-              "xử lý / lo việc gì"
-            ],
-            [
-              "walk someone through something",
-              "hướng dẫn từng bước"
-            ],
-            [
-              "double-check",
-              "kiểm tra lại thật kỹ"
-            ],
-            [
-              "give something some thought",
-              "suy nghĩ kỹ"
-            ],
-            [
-              "sleep on it",
-              "để qua đêm suy nghĩ"
-            ],
-            [
-              "give it another shot",
-              "thử lại"
-            ],
-            [
-              "work something out",
-              "tìm cách giải quyết"
-            ],
-            [
-              "leave your options open",
-              "chưa chốt để giữ nhiều lựa chọn"
-            ],
-            [
-              "look into something",
-              "tìm hiểu / điều tra một vấn đề"
-            ]
+          "id": "phrases",
+          "title": "10. Những cụm từ nên học nguyên khối",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "grab something to eat",
+                                  "đi ăn / kiếm gì đó ăn"
+                            ],
+                            [
+                                  "take a break",
+                                  "nghỉ một chút"
+                            ],
+                            [
+                                  "come with me",
+                                  "đi cùng tôi"
+                            ],
+                            [
+                                  "check it out",
+                                  "xem thử / kiểm tra thử"
+                            ],
+                            [
+                                  "figure it out together",
+                                  "cùng tìm cách giải quyết"
+                            ],
+                            [
+                                  "go over it",
+                                  "xem lại / rà soát"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "go out",
+                                  "ra ngoài"
+                            ],
+                            [
+                                  "hang out",
+                                  "đi chơi / dành thời gian cùng nhau"
+                            ],
+                            [
+                                  "give me a hand",
+                                  "giúp tôi một tay"
+                            ],
+                            [
+                                  "talk about it",
+                                  "nói về việc đó"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "Do you want to grab something to eat after work?",
+                                  "Bạn có muốn đi ăn gì đó sau giờ làm không?"
+                            ],
+                            [
+                                  "Do you want to take a break before we continue?",
+                                  "Bạn có muốn nghỉ một chút trước khi tiếp tục không?"
+                            ],
+                            [
+                                  "Do you want to come with me to the supermarket?",
+                                  "Bạn có muốn đi siêu thị cùng tôi không?"
+                            ],
+                            [
+                                  "Do you want to check it out before you buy it?",
+                                  "Bạn có muốn xem thử trước khi mua không?"
+                            ],
+                            [
+                                  "Do you want to figure it out together?",
+                                  "Bạn có muốn cùng tìm cách giải quyết không?"
+                            ],
+                            [
+                                  "Do you want to go over the plan one more time?",
+                                  "Bạn có muốn xem lại kế hoạch thêm một lần nữa không?"
+                            ],
+                            [
+                                  "Do you want me to send you the details?",
+                                  "Bạn có muốn tôi gửi chi tiết cho bạn không?"
+                            ],
+                            [
+                                  "Do you want to talk about it now or later?",
+                                  "Bạn muốn nói về việc đó bây giờ hay để sau?"
+                            ],
+                            [
+                                  "Do you want to go out somewhere this weekend?",
+                                  "Cuối tuần này bạn có muốn đi đâu đó không?"
+                            ],
+                            [
+                                  "Do you want to give me a hand with this?",
+                                  "Bạn có muốn giúp tôi một tay việc này không?"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "natural-chunks",
