@@ -1454,12 +1454,12 @@
 
       <section class="book-section">
         <div class="section-title-row"><div><div class="eyebrow">03 · MẪU CƠ BẢN</div><h2>Nhìn hai dạng đối lập</h2><p>Một dạng khuyên nên làm và một dạng khuyên không nên làm.</p></div></div>
-        <div class="jp-list">${usage.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button><div><small>${esc(x[0])}</small><strong class="jp-text">${esc(x[1])}</strong><span data-vi-only>${esc(x[2])}</span></div></div>`).join('')}</div>
+        <div class="jp-list">${usage.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button><div><small>${esc(x[0])}</small><strong class="jp-text">${x[3]||esc(x[1])}</strong><span data-vi-only>${esc(x[2])}</span></div></div>`).join('')}</div>
       </section>
 
       <section class="book-section" id="jpExamples">
         <div class="section-title-row"><div><div class="eyebrow">04 · CÂU THỰC TẾ</div><h2>${phrases.length} câu N2 nên luyện</h2><p>Ưu tiên câu có thể gặp trong đời sống, công việc và học tập. Bấm loa để nghe tiếng Nhật.</p></div></div>
-        <div class="jp-list">${phrases.map((x,i)=>`<div class="jp-row"><span style="min-width:28px;font-weight:800;color:var(--muted)">${String(i+1).padStart(2,'0')}</span><button class="speaker" data-speak="${escAttr(x[0])}">${uiIcon('volume-2')}</button><div><strong class="jp-text">${esc(x[0])}</strong><span>${esc(x[1])}</span><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div>
+        <div class="jp-list">${phrases.map((x,i)=>`<div class="jp-row"><span style="min-width:28px;font-weight:800;color:var(--muted)">${String(i+1).padStart(2,'0')}</span><button class="speaker" data-speak="${escAttr(x[0])}">${uiIcon('volume-2')}</button><div><strong class="jp-text">${x[1]||esc(x[0])}</strong><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div>
       </section>
 
       <section class="book-section" id="jpPractice">
