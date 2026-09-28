@@ -152,6 +152,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-011",
+    language: "en",
+    category: "patterns",
+    order: 11,
+    title: "I need to…",
+    meaning: "Tôi cần phải… / Tôi cần…",
+    description: "Mẫu quan trọng để nói về những việc cần thiết trong sinh hoạt, công việc, học tập, tiền bạc và kế hoạch.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/011.js",
+    route: "lesson/11",
+    accent: "orange",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "n2-grammar",
