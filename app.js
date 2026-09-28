@@ -55,6 +55,9 @@
       if(next.quizBest && next.quizBestByLesson[CORE_LESSON_ID]==null) next.quizBestByLesson[CORE_LESSON_ID]=next.quizBest;
       if(next.quizRuns && next.quizRunsByLesson[CORE_LESSON_ID]==null) next.quizRunsByLesson[CORE_LESSON_ID]=next.quizRuns;
       if(next.lessonVisits && next.lessonVisitsByLesson[CORE_LESSON_ID]==null) next.lessonVisitsByLesson[CORE_LESSON_ID]=next.lessonVisits;
+      if(Object.keys(raw.saved||{}).length!==Object.keys(next.saved||{}).length){
+        localStorage.setItem(KEY,JSON.stringify(next));
+      }
       return next;
     } catch { return {...defaults}; }
   }
