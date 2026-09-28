@@ -2010,6 +2010,28 @@
   }
 
   async function renderShadowing(){
+    if(window.ShadowingV2?.render){
+      return window.ShadowingV2.render({
+        STORE,
+        state,
+        main:$('#mainView'),
+        ensureContent,
+        collectLessonSentences,
+        setHeader,
+        setLesson:(lesson)=>{L=lesson;},
+        saveState,
+        speak,
+        startRecognition,
+        hydrateSentences,
+        bestQuizAnswerDiff,
+        quizWordDiffHTML,
+        normalizeText,
+        uiIcon,
+        esc,
+        escAttr,
+        toast
+      });
+    }
     L=null;
     setHeader('English › Shadowing','Shadowing');
   
