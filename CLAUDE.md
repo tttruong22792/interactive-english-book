@@ -99,8 +99,9 @@ When adding a new English lesson:
 - Pattern 08: `data/english/patterns/008.js`
 - Pattern 09: `data/english/patterns/009.js`
 - Pattern 10: `data/english/patterns/010.js`
+- Pattern 11: `data/english/patterns/011.js`
 
-Patterns 02–10 demonstrate the reusable `sectioned-pattern` layout.
+Patterns 02–11 demonstrate the reusable `sectioned-pattern` layout.
 
 
 ## AI Voice architecture
