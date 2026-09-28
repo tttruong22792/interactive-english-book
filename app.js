@@ -1566,12 +1566,12 @@
       <section class="page-hero settings-hero">
         <div class="eyebrow">DEVICE & DATA</div>
         <h1>Dùng Language Studio trên PC và điện thoại</h1>
-        <p>Tiến độ học vẫn được giữ cục bộ để app phản hồi nhanh. Riêng My Vocabulary có thể bật cloud sync để cùng một danh sách từ xuất hiện trên nhiều thiết bị.</p>
+        <p>Tiến độ học vẫn được giữ cục bộ để app phản hồi nhanh. Riêng Cụm chủ động có cloud sync để tiến độ nhận ra, gọi ra và dùng tự động theo bạn trên nhiều thiết bị.</p>
       </section>
 
       <section class="book-section vocab-sync-panel">
         <div class="section-title-row">
-          <div><span class="eyebrow">CROSS-DEVICE SYNC</span><h2>Đồng bộ Từ đã lưu</h2><p>Dùng cùng một mã đồng bộ trên PC, điện thoại hoặc tablet. Mã này hoạt động như mật khẩu cho kho từ của bạn.</p></div>
+          <div><span class="eyebrow">CROSS-DEVICE SYNC</span><h2>Đồng bộ Cụm chủ động</h2><p>Dùng cùng một mã đồng bộ trên PC, điện thoại hoặc tablet. Mã này hoạt động như mật khẩu cho kho từ của bạn.</p></div>
           <span class="sync-status-pill ${sync.connected?'is-on':'is-off'}">${sync.connected?'Đang bật':'Chưa bật'}</span>
         </div>
         ${sync.connected?`
@@ -1676,7 +1676,7 @@
         renderSettings();
       };
       $('#disconnectSyncBtn').onclick=()=>{
-        if(!confirm('Ngắt cloud sync trên thiết bị này? Từ đã lưu hiện tại vẫn được giữ trên thiết bị.')){
+        if(!confirm('Ngắt cloud sync trên thiết bị này? Dữ liệu cụm/câu hiện tại vẫn được giữ trên thiết bị.')){
           return;
         }
         window.VocabCloudSync?.disconnect?.();
@@ -2380,7 +2380,7 @@
       <section class="stats-grid">
         <div class="stat-card"><small>Câu đã thuộc</small><strong>${Math.min(all.length,learnedCount())}/${all.length}</strong></div>
         <div class="stat-card"><small>Quiz tốt nhất</small><strong>${Math.min(quizTotal,quizBestFor())}/${quizTotal}</strong></div>
-        <div class="stat-card"><small>Từ đã lưu</small><strong>${savedCount()}</strong></div>
+        <div class="stat-card"><small>Cụm/câu đã ôn</small><strong>${savedCount()}</strong></div>
         <div class="stat-card"><small>Số lượt làm quiz</small><strong>${quizRunsFor()}</strong></div>
       </section>
       <section class="progress-panel"><div class="progress-big"><div class="ring" style="--pct:${pct}%"><strong>${pct}%</strong></div><div><h2 style="margin:0;color:var(--navy)">I’d like to…</h2><p class="muted">Mục tiêu: khi nghĩ “Tôi muốn…”, miệng tự bật ra “I’d like to…”.</p><div class="progress-track" style="height:12px"><div class="progress-fill" style="width:${pct}%"></div></div><div class="hero-actions"><button class="primary-button" data-go="lesson/1">Tiếp tục học</button><button class="secondary-button" data-go="practice">Làm bài luyện</button></div></div></div>
