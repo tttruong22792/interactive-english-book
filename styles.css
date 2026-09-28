@@ -2796,3 +2796,28 @@ html.vocab-trainer-open,html.vocab-trainer-open body{overflow:hidden}
   .active-pack-grid{grid-template-columns:1fr}
   .active-chunk-list article{grid-template-columns:26px 1fr 34px}
 }
+
+/* ===== Level 3 learning bridge ===== */
+.level3-stepper{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.level3-stepper span{display:flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#f2f3f7;color:#8a8fa0;font-size:10px;font-weight:800}
+.level3-stepper span b{font-size:9px}
+.level3-stepper span.active{background:#eeeaff;color:var(--purple)}
+.level3-stepper span.done{background:#edf8f3;color:#267755}
+.level3-stepper i{width:18px;height:1px;background:#dfe1e8}
+.level3-model-vi{max-width:620px;color:var(--muted);font-size:14px;line-height:1.55;text-align:center}
+.level3-study-note{max-width:600px;margin-top:10px;padding:11px 13px;border-radius:13px;background:#f7f6ff;color:#5d6280;font-size:11px;line-height:1.55}
+.level3-study-actions,.level3-recall-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;padding:0 0 4px}
+.level3-study-actions button,.level3-recall-actions button{min-height:42px}
+.level3-study-actions button:disabled{opacity:.45;cursor:not-allowed}
+.level3-transform-prompt{max-width:610px;display:grid;gap:5px;padding:14px 16px;border-radius:15px;background:#f7f7fa;color:var(--navy);text-align:left}
+.level3-transform-prompt strong{font-size:14px}
+.level3-transform-prompt span{font-size:12px;line-height:1.5;color:var(--muted)}
+.level3-hint-button{appearance:none;border:1px dashed rgba(118,92,255,.35);background:#fff;color:var(--purple);border-radius:999px;padding:8px 12px;font:inherit;font-size:10px;font-weight:800}
+.vocab-trainer-card.phase-learn .vocab-trainer-face{align-content:center}
+.vocab-trainer-card.phase-transform .vocab-trainer-face{gap:12px}
+@media(max-width:620px){
+  .level3-stepper{gap:5px}
+  .level3-stepper i{width:10px}
+  .level3-study-actions,.level3-recall-actions{display:grid}
+  .level3-study-actions button,.level3-recall-actions button{width:100%}
+}
