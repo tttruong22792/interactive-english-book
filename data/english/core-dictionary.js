@@ -2755,6 +2755,166 @@ window.CORE_DICTIONARY = {
     "/juːl/",
     "viết tắt của you will",
     "You’ll be joining our team next month."
+  ],
+  "advantage": [
+    "/ədˈvæntɪdʒ/",
+    "lợi thế / sự thuận lợi",
+    "take advantage of every opportunity"
+  ],
+  "busy": [
+    "/ˈbɪzi/",
+    "bận",
+    "I got busy."
+  ],
+  "careful": [
+    "/ˈkerfəl/",
+    "cẩn thận",
+    "careful financial decisions"
+  ],
+  "carefully": [
+    "/ˈkerfəli/",
+    "một cách cẩn thận",
+    "check everything carefully"
+  ],
+  "challenge": [
+    "/ˈtʃælɪndʒ/",
+    "thử thách",
+    "challenge myself"
+  ],
+  "configuration": [
+    "/kənˌfɪɡjəˈreɪʃən/",
+    "cấu hình",
+    "test the new configuration"
+  ],
+  "decisions": [
+    "/dɪˈsɪʒənz/",
+    "các quyết định",
+    "financial decisions"
+  ],
+  "even": [
+    "/ˈiːvən/",
+    "ngay cả / thậm chí",
+    "even when progress feels slow"
+  ],
+  "feels": [
+    "/fiːlz/",
+    "cảm thấy / có vẻ",
+    "progress feels slow"
+  ],
+  "forgot": [
+    "/fərˈɡɑːt/",
+    "đã quên",
+    "I completely forgot."
+  ],
+  "giving": [
+    "/ˈɡɪvɪŋ/",
+    "việc cho / đang cho",
+    "giving up"
+  ],
+  "intention": [
+    "/ɪnˈtenʃən/",
+    "ý định",
+    "I have no intention of giving up."
+  ],
+  "invest": [
+    "/ɪnˈvest/",
+    "đầu tư",
+    "invest for the long term"
+  ],
+  "involved": [
+    "/ɪnˈvɑːlvd/",
+    "có liên quan / dính vào",
+    "getting involved"
+  ],
+  "less": [
+    "/les/",
+    "ít hơn",
+    "spend less time"
+  ],
+  "manage": [
+    "/ˈmænɪdʒ/",
+    "quản lý / xoay xở",
+    "manage my workload"
+  ],
+  "mind": [
+    "/maɪnd/",
+    "tâm trí / ý định",
+    "I changed my mind."
+  ],
+  "moving": [
+    "/ˈmuːvɪŋ/",
+    "đang di chuyển / tiếp tục sang bước mới",
+    "before moving on"
+  ],
+  "natural": [
+    "/ˈnætʃərəl/",
+    "tự nhiên",
+    "natural English"
+  ],
+  "opportunities": [
+    "/ˌɑːpərˈtuːnətiz/",
+    "các cơ hội",
+    "career opportunities"
+  ],
+  "practicing": [
+    "/ˈpræktɪsɪŋ/",
+    "việc luyện tập / đang luyện",
+    "keep practicing every day"
+  ],
+  "project": [
+    "/ˈprɑːdʒekt/",
+    "dự án",
+    "continue with the project"
+  ],
+  "pronunciation": [
+    "/prəˌnʌnsiˈeɪʃən/",
+    "phát âm",
+    "work on my pronunciation"
+  ],
+  "reply": [
+    "/rɪˈplaɪ/",
+    "trả lời / hồi âm",
+    "reply earlier"
+  ],
+  "root": [
+    "/ruːt/",
+    "gốc / gốc rễ",
+    "root cause"
+  ],
+  "rush": [
+    "/rʌʃ/",
+    "vội / làm vội",
+    "rush into anything"
+  ],
+  "selling": [
+    "/ˈselɪŋ/",
+    "việc bán / đang bán",
+    "selling the house"
+  ],
+  "slow": [
+    "/sloʊ/",
+    "chậm",
+    "progress feels slow"
+  ],
+  "sound": [
+    "/saʊnd/",
+    "nghe có vẻ / âm thanh",
+    "sound rude"
+  ],
+  "sounded": [
+    "/ˈsaʊndɪd/",
+    "đã nghe có vẻ",
+    "That sounded harsh."
+  ],
+  "stick": [
+    "/stɪk/",
+    "bám / giữ vững",
+    "stick to the plan"
+  ],
+  "way": [
+    "/weɪ/",
+    "cách / phương pháp / con đường",
+    "the way I manage my workload"
   ]
 };
 
