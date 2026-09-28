@@ -738,6 +738,13 @@
       .catch(()=>{});
   });
 
+  async function getAccessToken(){
+    await ensureClient();
+    const {data,error}=await sb.auth.getSession();
+    if(error) return '';
+    return data?.session?.access_token || '';
+  }
+
   window.VocabCloudSync={
     init,
     status,
@@ -748,6 +755,7 @@
     requestPasswordReset,
     resendSignupConfirmation,
     updateRecoveredPassword,
+    getAccessToken,
     syncAccount,
     pull:pullRaw,
     saveWord:directUpsert,
