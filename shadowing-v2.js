@@ -741,6 +741,18 @@
         '<div class="section-title-row"><div><span class="eyebrow">PHƯƠNG PHÁP</span><h2>5 bước cho mỗi câu</h2><p>Mỗi bước giải quyết một điểm yếu khác nhau của việc học vẹt.</p></div></div>'+
         '<div class="shadow-v2-method-grid"><div><b>1</b><strong>Hiểu</strong><span>Hiểu nghĩa cả câu.</span></div><div><b>2</b><strong>Tách cụm</strong><span>Nhìn ra khung tái sử dụng.</span></div><div><b>3</b><strong>Shadow</strong><span>Bắt nhịp, nối âm, ngữ điệu.</span></div><div><b>4</b><strong>Biến đổi</strong><span>Dùng khung cho 2 ý mới.</span></div><div><b>5</b><strong>Tự nói</strong><span>Không nhìn mẫu + nói về bạn.</span></div></div>'+
       '</section>'+
+      '<details class="book-section shadow-v2-guide">'+
+        '<summary><div><span class="eyebrow">HƯỚNG DẪN CÁCH HỌC</span><h2>Shadowing thế nào để không học vẹt?</h2><p>Đọc phần này một lần để hiểu mục tiêu của phương pháp.</p></div><span class="shadow-v2-guide-toggle">Xem hướng dẫn</span></summary>'+
+        '<div class="shadow-v2-guide-body">'+
+          '<div class="shadow-v2-guide-point"><b>1</b><div><strong>Không shadow một câu khi chưa hiểu.</strong><p>Trước tiên hãy hiểu nghĩa cả câu và các cụm quan trọng. Không cần dịch từng chữ máy móc.</p></div></div>'+
+          '<div class="shadow-v2-guide-point"><b>2</b><div><strong>Không vừa shadow vừa dịch sang tiếng Việt.</strong><p>Khi shadow, tập trung hoàn toàn vào âm thanh, nhịp, nối âm và cách người bản xứ nói. Việc hiểu đã làm ở bước trước.</p></div></div>'+
+          '<div class="shadow-v2-guide-point"><b>3</b><div><strong>Đơn vị cần nhớ là cụm và khung câu.</strong><p>Ví dụ <em>I’d like to + V</em> hoặc <em>so that I can + V</em>. Khi thấy được khung, bạn có thể thay nội dung phía sau để tạo câu mới.</p></div></div>'+
+          '<div class="shadow-v2-guide-point"><b>4</b><div><strong>Nhại được chưa có nghĩa là dùng được.</strong><p>Nếu bạn nói lại rất trôi chảy nhưng khi nhìn tiếng Việt lại không tự tạo được câu, kiến thức đó vẫn chưa thành ngôn ngữ chủ động.</p></div></div>'+
+          '<div class="shadow-v2-guide-point"><b>5</b><div><strong>Tiêu chuẩn cuối cùng: nói được câu mới về chính bạn.</strong><p>Một câu chỉ thực sự là “của bạn” khi bạn giữ được cấu trúc và tự thay nội dung để nói về công việc, gia đình, kế hoạch hoặc suy nghĩ thật của mình.</p></div></div>'+
+          '<div class="shadow-v2-guide-example"><span>Ví dụ</span><strong>I’d like to improve my English so that I can communicate better at work.</strong><p>Không dừng ở việc thuộc câu này. Hãy đổi thành: <b>I’d like to learn more about SCADA.</b> → <b>I’d like to improve my English so that I can understand meetings better.</b> → cuối cùng tự nói một câu thật về bạn.</p></div>'+
+          '<div class="shadow-v2-guide-rule"><strong>Công thức học:</strong><span>Hiểu → Phân tích cụm → Shadow → Biến đổi → Tự nói.</span></div>'+
+        '</div>'+
+      '</details>'+
       '<section class="book-section">'+
         '<div class="section-title-row"><div><span class="eyebrow">CHỌN 1 MẪU CÂU</span><h2>Hôm nay chỉ học sâu một mẫu</h2><p>Không trộn nhiều mẫu trong cùng buổi Shadowing chủ động.</p></div></div>'+
         '<div class="shadow-v2-lesson-grid">'+lessonButtons+'</div>'+
