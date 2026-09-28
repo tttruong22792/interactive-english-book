@@ -457,59 +457,134 @@ window.CONTENT_REGISTRY["en-pattern-008"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "11. Những cụm từ đáng học trong bài",
-      "blocks": [
-        {
-          "type": "chips",
-          "items": [
-            [
-              "avoid rush hour",
-              "tránh giờ cao điểm"
-            ],
-            [
-              "keep something between us",
-              "giữ bí mật giữa chúng ta"
-            ],
-            [
-              "make a big deal out of something",
-              "làm quá / làm nghiêm trọng hóa chuyện gì đó"
-            ],
-            [
-              "root cause",
-              "nguyên nhân gốc rễ"
-            ],
-            [
-              "rush through something",
-              "làm việc gì quá vội"
-            ],
-            [
-              "one thing at a time",
-              "từng việc một"
-            ],
-            [
-              "a better deal",
-              "một mức giá / thỏa thuận tốt hơn"
-            ],
-            [
-              "give up halfway",
-              "bỏ cuộc giữa chừng"
-            ],
-            [
-              "learn from my mistakes",
-              "học từ sai lầm"
-            ],
-            [
-              "make progress",
-              "tiến bộ"
-            ],
-            [
-              "get involved",
-              "dính vào / tham gia vào một việc"
-            ]
+          "id": "phrases",
+          "title": "11. Những cụm từ đáng học trong bài",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "stay home",
+                                  "ở nhà"
+                            ],
+                            [
+                                  "take my time",
+                                  "làm từ từ, không vội"
+                            ],
+                            [
+                                  "play it safe",
+                                  "chọn cách an toàn"
+                            ],
+                            [
+                                  "wait and see",
+                                  "chờ xem tình hình"
+                            ],
+                            [
+                                  "keep it simple",
+                                  "giữ mọi thứ đơn giản"
+                            ],
+                            [
+                                  "deal with it later",
+                                  "xử lý sau"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "not rush things",
+                                  "không vội vàng"
+                            ],
+                            [
+                                  "do it myself",
+                                  "tự làm"
+                            ],
+                            [
+                                  "leave it as it is",
+                                  "để nguyên như vậy"
+                            ],
+                            [
+                                  "talk in person",
+                                  "nói chuyện trực tiếp"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I'd rather stay home tonight and get some rest.",
+                                  "Tối nay tôi thà ở nhà và nghỉ ngơi."
+                            ],
+                            [
+                                  "I'd rather take my time and make sure it's done properly.",
+                                  "Tôi thà làm từ từ và đảm bảo việc đó được làm đúng."
+                            ],
+                            [
+                                  "I'd rather play it safe until we know more.",
+                                  "Tôi thà chọn cách an toàn cho đến khi chúng ta biết thêm."
+                            ],
+                            [
+                                  "I'd rather wait and see what happens before making a decision.",
+                                  "Tôi thà chờ xem chuyện gì xảy ra trước khi quyết định."
+                            ],
+                            [
+                                  "I'd rather keep it simple instead of making things more complicated.",
+                                  "Tôi thà giữ mọi thứ đơn giản thay vì làm chúng phức tạp hơn."
+                            ],
+                            [
+                                  "I'd rather deal with it later when I have more time.",
+                                  "Tôi thà xử lý việc đó sau khi có nhiều thời gian hơn."
+                            ],
+                            [
+                                  "I'd rather not rush into anything right now.",
+                                  "Hiện tại tôi thà không vội vàng lao vào việc gì."
+                            ],
+                            [
+                                  "I'd rather do it myself than ask someone else.",
+                                  "Tôi thà tự làm hơn là nhờ người khác."
+                            ],
+                            [
+                                  "I'd rather talk about this in person.",
+                                  "Tôi thà nói chuyện này trực tiếp."
+                            ],
+                            [
+                                  "I'd rather leave it as it is for now.",
+                                  "Hiện tại tôi thà để nguyên như vậy."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "natural-chunks",
