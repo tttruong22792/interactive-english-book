@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v49-pattern-format';
+const APP_CACHE='language-studio-v50-active-chunks';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20260928-pattern-format-v14.js',
+  './runtime-20260928-active-chunks-v15.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
