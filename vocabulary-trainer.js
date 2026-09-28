@@ -465,16 +465,24 @@
         </div>
       </div>`;
   }
-  function ratingHTML(level){
-    if(!session.revealed) return `<div class="vocab-trainer-reveal-wrap"><button id="vocabReveal" class="vocab-trainer-reveal" type="button">Hiện đáp án</button></div>`;
-    const labels=Number(level)===1
+  function ratingHTML(card){
+    const level=Number(card?.level);
+    if(level===3){
+      if((session.level3Phase||'learn')!=='transform'||!session.revealed) return '';
+      const labels=[
+        ['again','Chưa nói được','Cần học lại'],
+        ['hard','Chậm','Còn phải nghĩ lâu'],
+        ['good','Đạt','Bật ra được'],
+        ['easy','Tự động','Bật ra rất nhanh']
+      ];
+      return '<div class="vocab-trainer-ratings">'+labels.map(([id,b,s])=>'<button data-vocab-rate="'+id+'" type="button"><b>'+b+'</b><span>'+s+'</span></button>').join('')+'</div>';
+    }
+    if(!session.revealed) return '<div class="vocab-trainer-reveal-wrap"><button id="vocabReveal" class="vocab-trainer-reveal" type="button">Hiện đáp án</button></div>';
+    const labels=level===1
       ? [['again','Quên','Không nhận ra'],['hard','Nhận chậm','Phải nghĩ lâu'],['good','Nhận ra','Hiểu ngay'],['easy','Rất chắc','Gần tự động']]
-      : Number(level)===2
-        ? [['again','Không nhớ','Không gọi ra'],['hard','Chậm','Trên 3 giây'],['good','Gọi ra','Khoảng 2–3 giây'],['easy','Bật ra ngay','Rất nhanh']]
-        : [['again','Không nói được','Cần học lại'],['hard','Chậm','Trên 3 giây'],['good','Đạt','Khoảng 2–3 giây'],['easy','Tự động','Bật ra ngay']];
-    return `<div class="vocab-trainer-ratings">${labels.map(([id,b,s])=>`<button data-vocab-rate="${id}" type="button"><b>${b}</b><span>${s}</span></button>`).join('')}</div>`;
+      : [['again','Không nhớ','Không gọi ra'],['hard','Chậm','Trên 3 giây'],['good','Gọi ra','Khoảng 2–3 giây'],['easy','Bật ra ngay','Rất nhanh']];
+    return '<div class="vocab-trainer-ratings">'+labels.map(([id,b,s])=>'<button data-vocab-rate="'+id+'" type="button"><b>'+b+'</b><span>'+s+'</span></button>').join('')+'</div>';
   }
-
   function renderCard(){
     const card=currentCard();
     if(!card){renderEmpty();return;}
@@ -493,7 +501,7 @@
       <div class="active-chunk-stage-intro"><span>${esc(copy.name)}</span><strong>${esc(copy.title)}</strong><p>${esc(copy.desc)}</p></div>
       <div class="vocab-trainer-stage">
         ${cardFaceHTML(card)}
-        ${ratingHTML(card.level)}
+        ${ratingHTML(card)}
       </div>
       <div class="vocab-trainer-bottom">
         <button id="vocabUndo" class="vocab-bottom-icon" type="button" ${session.history.length?'':'disabled'}>↶</button>
