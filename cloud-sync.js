@@ -739,9 +739,11 @@
   });
 
   async function getAccessToken(){
-    await ensureClient();
+    if(session?.access_token) return session.access_token;
+    const sb=await getClient();
     const {data,error}=await sb.auth.getSession();
     if(error) return '';
+    if(data?.session) session=data.session;
     return data?.session?.access_token || '';
   }
 
