@@ -191,8 +191,11 @@ for (const relative of uniqueFiles) {
   runtimeParts.push("\n// ===== " + relative + " =====\n" + source);
 }
 
-await writeFile(join(dist, "runtime.js"), runtimeParts.join("\n"), "utf8");
-await writeFile(join(dist, "runtime-20260928-vocab-sync-v1.js"), runtimeParts.join("\n"), "utf8");
+const runtimeSource = runtimeParts.join("\n");
+new vm.Script(runtimeSource, { filename: "language-studio-runtime.js" });
+
+await writeFile(join(dist, "runtime.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20260928-account-sync-v1.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
