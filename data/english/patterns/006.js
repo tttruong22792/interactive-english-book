@@ -444,63 +444,134 @@ window.CONTENT_REGISTRY["en-pattern-006"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "10. Một số cụm từ đáng học",
-      "blocks": [
-        {
-          "type": "paragraph",
-          "html": "<p>Những cụm dưới đây đều có thể tái sử dụng rất nhiều sau này.</p>"
-        },
-        {
-          "type": "chips",
-          "items": [
-            [
-              "grab a coffee",
-              "đi uống cà phê"
-            ],
-            [
-              "come over",
-              "qua nhà ai đó chơi"
-            ],
-            [
-              "check out a place",
-              "ghé xem / thử một địa điểm"
-            ],
-            [
-              "take a look at",
-              "xem qua"
-            ],
-            [
-              "go over something",
-              "xem xét / rà soát lại"
-            ],
-            [
-              "walk someone through something",
-              "hướng dẫn ai đó từng bước"
-            ],
-            [
-              "take the lead",
-              "phụ trách / dẫn dắt"
-            ],
-            [
-              "think something over",
-              "suy nghĩ kỹ"
-            ],
-            [
-              "give it another try",
-              "thử lại một lần nữa"
-            ],
-            [
-              "take care of something",
-              "xử lý / lo liệu một việc"
-            ],
-            [
-              "I’ll pass",
-              "tôi xin thôi / tôi không tham gia"
-            ]
+          "id": "phrases",
+          "title": "10. Một số cụm từ đáng học",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "take a look",
+                                  "xem thử / xem qua"
+                            ],
+                            [
+                                  "have a seat",
+                                  "ngồi xuống"
+                            ],
+                            [
+                                  "give it a try",
+                                  "thử xem"
+                            ],
+                            [
+                                  "come along",
+                                  "đi cùng"
+                            ],
+                            [
+                                  "grab a coffee",
+                                  "đi uống/lấy cà phê"
+                            ],
+                            [
+                                  "talk it over",
+                                  "cùng bàn bạc kỹ"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "join us",
+                                  "tham gia cùng chúng tôi"
+                            ],
+                            [
+                                  "take a break",
+                                  "nghỉ một chút"
+                            ],
+                            [
+                                  "come with me",
+                                  "đi cùng tôi"
+                            ],
+                            [
+                                  "go somewhere else",
+                                  "đi chỗ khác"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "Would you like to take a look at this first?",
+                                  "Bạn có muốn xem cái này trước không?"
+                            ],
+                            [
+                                  "Would you like to have a seat while you wait?",
+                                  "Bạn có muốn ngồi trong lúc chờ không?"
+                            ],
+                            [
+                                  "Would you like to give it a try before you decide?",
+                                  "Bạn có muốn thử trước khi quyết định không?"
+                            ],
+                            [
+                                  "Would you like to come along with us this weekend?",
+                                  "Bạn có muốn đi cùng chúng tôi cuối tuần này không?"
+                            ],
+                            [
+                                  "Would you like to grab a coffee after the meeting?",
+                                  "Bạn có muốn đi uống cà phê sau cuộc họp không?"
+                            ],
+                            [
+                                  "Would you like to talk it over before we make a decision?",
+                                  "Bạn có muốn cùng bàn kỹ trước khi chúng ta quyết định không?"
+                            ],
+                            [
+                                  "Would you like to take a short break before we continue?",
+                                  "Bạn có muốn nghỉ một chút trước khi chúng ta tiếp tục không?"
+                            ],
+                            [
+                                  "Would you like me to send you the file?",
+                                  "Bạn có muốn tôi gửi file cho bạn không?"
+                            ],
+                            [
+                                  "Would you like to join us for lunch?",
+                                  "Bạn có muốn ăn trưa cùng chúng tôi không?"
+                            ],
+                            [
+                                  "Would you like to go somewhere quieter?",
+                                  "Bạn có muốn đến chỗ nào yên tĩnh hơn không?"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "natural-chunks",
