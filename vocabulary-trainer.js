@@ -599,5 +599,16 @@
     render();
   }
 
-  window.VocabularyTrainer={open,curriculumSummary,packSummary,packById,packs};
+  function isOpen(){
+    return !!session && document.documentElement.classList.contains('vocab-trainer-open');
+  }
+
+  function onRemoteSync(){
+    // Cloud/realtime may update env.state.saved while a study session is open.
+    // Keep the current card/session intact; progressFor() reads env.state.saved
+    // on the next render, so no destructive page rerender is needed here.
+    return isOpen();
+  }
+
+  window.VocabularyTrainer={open,curriculumSummary,packSummary,packById,packs,isOpen,onRemoteSync};
 })();
