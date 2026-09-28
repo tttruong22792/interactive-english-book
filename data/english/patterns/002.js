@@ -611,68 +611,135 @@ window.CONTENT_REGISTRY["en-pattern-002"] = {
     ]
   },
   {
-    "id": "phrases",
-    "title": "13. Các cụm đáng học cùng mẫu này",
-    "blocks": [
-      {
-        "type": "paragraph",
-        "html": "<p>Học nguyên cụm để phần sau <b>I’m going to...</b> bật ra nhanh hơn.</p>"
-      },
-      {
-        "type": "chips",
-        "items": [
-          [
-            "take a shower",
-            "đi tắm"
-          ],
-          [
-            "stop by the supermarket",
-            "ghé qua siêu thị"
-          ],
-          [
-            "pick up some groceries",
-            "mua/lấy một ít đồ ăn"
-          ],
-          [
-            "get some rest",
-            "nghỉ ngơi một chút"
-          ],
-          [
-            "work on my pronunciation",
-            "luyện/cải thiện phát âm"
-          ],
-          [
-            "follow up with someone",
-            "liên hệ lại với ai"
-          ],
-          [
-            "go over something",
-            "xem lại / rà soát"
-          ],
-          [
-            "make sure",
-            "đảm bảo / chắc chắn"
-          ],
-          [
-            "put some money aside",
-            "để dành tiền"
-          ],
-          [
-            "cut back on spending",
-            "cắt giảm chi tiêu"
-          ],
-          [
-            "think it over",
-            "suy nghĩ kỹ"
-          ],
-          [
-            "double-check everything",
-            "kiểm tra kỹ mọi thứ"
+          "id": "phrases",
+          "title": "13. Các cụm đáng học cùng mẫu này",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "stop by",
+                                  "ghé qua"
+                            ],
+                            [
+                                  "pick up something",
+                                  "tiện đường mua / lấy"
+                            ],
+                            [
+                                  "follow up with someone",
+                                  "liên hệ lại với ai"
+                            ],
+                            [
+                                  "go over something",
+                                  "xem lại / rà soát"
+                            ],
+                            [
+                                  "double-check something",
+                                  "kiểm tra kỹ lại"
+                            ],
+                            [
+                                  "make sure",
+                                  "đảm bảo / chắc chắn"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "get some rest",
+                                  "nghỉ ngơi một chút"
+                            ],
+                            [
+                                  "cut back on spending",
+                                  "cắt giảm chi tiêu"
+                            ],
+                            [
+                                  "put some money aside",
+                                  "để dành tiền"
+                            ],
+                            [
+                                  "think it over",
+                                  "suy nghĩ kỹ"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        ]
-      }
-    ]
-  },
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I'm going to stop by the supermarket after work.",
+                                  "Tôi sẽ ghé qua siêu thị sau giờ làm."
+                            ],
+                            [
+                                  "I'm going to pick up some groceries on the way home.",
+                                  "Tôi sẽ tiện đường mua một ít đồ ăn trên đường về."
+                            ],
+                            [
+                                  "I'm going to follow up with the customer this afternoon.",
+                                  "Chiều nay tôi sẽ liên hệ lại với khách hàng."
+                            ],
+                            [
+                                  "I'm going to go over the document one more time.",
+                                  "Tôi sẽ xem lại tài liệu thêm một lần nữa."
+                            ],
+                            [
+                                  "I'm going to double-check everything before I send it.",
+                                  "Tôi sẽ kiểm tra kỹ mọi thứ trước khi gửi."
+                            ],
+                            [
+                                  "I'm going to make sure the system is working properly.",
+                                  "Tôi sẽ đảm bảo hệ thống hoạt động đúng."
+                            ],
+                            [
+                                  "I'm going to practice English for thirty minutes tonight.",
+                                  "Tối nay tôi sẽ luyện tiếng Anh trong 30 phút."
+                            ],
+                            [
+                                  "I'm going to compare a few options before I decide.",
+                                  "Tôi sẽ so sánh vài lựa chọn trước khi quyết định."
+                            ],
+                            [
+                                  "I'm going to be more consistent with my English practice.",
+                                  "Tôi sẽ đều đặn hơn trong việc luyện tiếng Anh."
+                            ],
+                            [
+                                  "I'm going to focus on what matters most and deal with the smaller things later.",
+                                  "Tôi sẽ tập trung vào việc quan trọng nhất và xử lý những việc nhỏ sau."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
+    },
   {
     "id": "advanced",
     "title": "14. Những câu ở mức cao hơn nhưng vẫn dùng thường xuyên",
