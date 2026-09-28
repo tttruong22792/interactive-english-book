@@ -88,8 +88,9 @@ See `CONTENT-SCHEMA.md`.
 - Pattern 07 — **Do you want to…?**
 - Pattern 08 — **I’d rather…**
 - Pattern 09 — **I look forward to…**
+- Pattern 10 — **I intend to…**
 
-Patterns 02–09 use the reusable `sectioned-pattern` renderer.
+Patterns 02–10 use the reusable `sectioned-pattern` renderer.
 
 
 ## AI Voice and central audio
