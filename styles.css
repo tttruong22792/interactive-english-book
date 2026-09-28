@@ -2433,3 +2433,32 @@ button{touch-action:manipulation}
   .shadow-v2-summary-actions{display:grid}
   .shadow-v2-summary-actions button{width:100%}
 }
+
+
+/* ===== Shadowing method guide ===== */
+.shadow-v2-guide{padding:0;overflow:hidden}
+.shadow-v2-guide summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:18px;align-items:center;padding:20px 22px}
+.shadow-v2-guide summary::-webkit-details-marker{display:none}
+.shadow-v2-guide summary h2{margin:4px 0 4px;color:var(--navy)}
+.shadow-v2-guide summary p{margin:0;color:var(--muted)}
+.shadow-v2-guide-toggle{flex:0 0 auto;font-size:12px;font-weight:850;color:var(--purple);background:rgba(118,92,255,.08);padding:8px 11px;border-radius:999px}
+.shadow-v2-guide[open] .shadow-v2-guide-toggle{background:rgba(49,188,142,.1);color:#13754e}
+.shadow-v2-guide-body{padding:0 22px 22px;border-top:1px solid var(--line);display:grid;gap:10px}
+.shadow-v2-guide-point{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px;padding:12px 0;border-bottom:1px solid var(--line)}
+.shadow-v2-guide-point>b{width:30px;height:30px;border-radius:10px;background:rgba(118,92,255,.1);color:var(--purple);display:grid;place-items:center;font-size:12px}
+.shadow-v2-guide-point strong{display:block;color:var(--navy);margin-bottom:3px}
+.shadow-v2-guide-point p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.shadow-v2-guide-point em{font-style:normal;font-weight:800;color:var(--navy)}
+.shadow-v2-guide-example{padding:14px 15px;border-radius:16px;background:linear-gradient(145deg,rgba(118,92,255,.055),rgba(49,188,142,.05));border:1px solid rgba(118,92,255,.12)}
+.shadow-v2-guide-example>span{display:block;font-size:10px;font-weight:900;letter-spacing:.08em;color:var(--purple);text-transform:uppercase;margin-bottom:5px}
+.shadow-v2-guide-example>strong{display:block;color:var(--navy);font-size:16px;line-height:1.5}
+.shadow-v2-guide-example p{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+.shadow-v2-guide-example b{color:var(--navy)}
+.shadow-v2-guide-rule{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:#17213d;color:#fff}
+.shadow-v2-guide-rule strong{font-size:12px}
+.shadow-v2-guide-rule span{font-size:13px;color:rgba(255,255,255,.86)}
+@media(max-width:620px){
+  .shadow-v2-guide summary{align-items:flex-start;padding:17px}
+  .shadow-v2-guide-toggle{white-space:nowrap}
+  .shadow-v2-guide-body{padding:0 17px 17px}
+}
