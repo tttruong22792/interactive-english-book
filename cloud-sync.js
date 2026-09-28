@@ -14,6 +14,7 @@
   let realtimeState='idle';
   let syncPromise=null;
   let realtimeRefreshTimer=null;
+  let recoveryMode=false;
 
   let meta=loadMeta();
 
@@ -56,7 +57,8 @@
       lastSyncAt:user?Number(meta.lastSyncAt[user.id]||0):0,
       pendingCount:pending,
       lastError:meta.lastError||'',
-      realtimeState
+      realtimeState,
+      recoveryMode
     };
   }
 
@@ -338,9 +340,11 @@
     session=nextSession||null;
     const after=currentUser()?.id||'';
 
+    if(event==='PASSWORD_RECOVERY') recoveryMode=true;
+
     if(after){
       await startRealtime();
-      emit({type:'auth',event,signedIn:true,user:currentUser()});
+      emit({type:event==='PASSWORD_RECOVERY'?'password-recovery':'auth',event,signedIn:true,user:currentUser()});
     }else{
       await stopRealtime();
       if(before) meta.lastUserId='';
@@ -393,15 +397,52 @@
 
   async function signUp(email,password){
     const sb=await getClient();
+    const normalizedEmail=String(email||'').trim();
     const {data,error}=await sb.auth.signUp({
-      email:String(email||'').trim(),
+      email:normalizedEmail,
       password:String(password||'')
     });
     if(error) throw error;
+
+    const identities=data?.user?.identities;
+    const alreadyExists=Array.isArray(identities) && identities.length===0;
+
     return {
       ...data,
-      needsConfirmation:!data?.session
+      alreadyExists,
+      needsConfirmation:!alreadyExists && !data?.session
     };
+  }
+
+  async function requestPasswordReset(email){
+    const sb=await getClient();
+    const normalizedEmail=String(email||'').trim();
+    const redirectTo=location.origin+location.pathname+'#settings';
+    const {data,error}=await sb.auth.resetPasswordForEmail(normalizedEmail,{redirectTo});
+    if(error) throw error;
+    return data;
+  }
+
+  async function resendSignupConfirmation(email){
+    const sb=await getClient();
+    const normalizedEmail=String(email||'').trim();
+    const redirectTo=location.origin+location.pathname+'#settings';
+    const {data,error}=await sb.auth.resend({
+      type:'signup',
+      email:normalizedEmail,
+      options:{emailRedirectTo:redirectTo}
+    });
+    if(error) throw error;
+    return data;
+  }
+
+  async function updateRecoveredPassword(password){
+    const sb=await getClient();
+    const {data,error}=await sb.auth.updateUser({password:String(password||'')});
+    if(error) throw error;
+    recoveryMode=false;
+    emit({type:'password-updated'});
+    return data;
   }
 
   async function signOut(){
@@ -440,6 +481,17 @@
       return `<div class='account-loading'><span></span><strong>Đang kiểm tra phiên đăng nhập…</strong></div>`;
     }
     if(s.signedIn){
+      if(s.recoveryMode){
+        return `
+          <div class='section-title-row'><div><span class='eyebrow'>PASSWORD RECOVERY</span><h2>Đặt mật khẩu mới</h2><p>Liên kết khôi phục đã được xác nhận. Hãy đặt mật khẩu mới cho tài khoản này.</p></div></div>
+          ${authNotice?`<div class='account-notice'>${escapeHtml(authNotice)}</div>`:''}
+          <form id='languageStudioRecoveryForm' class='auth-card auth-card-recovery'>
+            <label><span>Mật khẩu mới</span><input id='accountRecoveryPassword' type='password' autocomplete='new-password' required minlength='8' placeholder='Ít nhất 8 ký tự'></label>
+            <label><span>Nhập lại mật khẩu</span><input id='accountRecoveryPassword2' type='password' autocomplete='new-password' required minlength='8' placeholder='Nhập lại mật khẩu'></label>
+            <button class='primary-button auth-submit' type='submit'>Cập nhật mật khẩu</button>
+          </form>
+        `;
+      }
       const synced=s.lastSyncAt?new Date(s.lastSyncAt).toLocaleString('vi-VN'):'Đang đồng bộ lần đầu';
       const live=/subscribed/i.test(s.realtimeState);
       return `
@@ -467,6 +519,7 @@
           <label><span>Email</span><input id='accountLoginEmail' type='email' autocomplete='email' required placeholder='name@example.com'></label>
           <label><span>Mật khẩu</span><input id='accountLoginPassword' type='password' autocomplete='current-password' required minlength='8' placeholder='Ít nhất 8 ký tự'></label>
           <button class='primary-button auth-submit' type='submit'>Đăng nhập</button>
+          <button id='accountForgotPasswordBtn' class='text-button auth-link-button' type='button'>Quên mật khẩu?</button>
         </form>
         <form id='languageStudioRegisterForm' class='auth-card auth-card-accent'>
           <div><span class='eyebrow'>NEW ACCOUNT</span><h3>Đăng ký</h3><p>Tạo tài khoản một lần để dùng chung dữ liệu trên nhiều thiết bị.</p></div>
@@ -474,7 +527,8 @@
           <label><span>Mật khẩu</span><input id='accountRegisterPassword' type='password' autocomplete='new-password' required minlength='8' placeholder='Ít nhất 8 ký tự'></label>
           <label><span>Nhập lại mật khẩu</span><input id='accountRegisterPassword2' type='password' autocomplete='new-password' required minlength='8' placeholder='Nhập lại mật khẩu'></label>
           <button class='primary-button auth-submit' type='submit'>Đăng ký</button>
-          <small class='auth-footnote'>Nếu Supabase yêu cầu xác nhận email, hãy mở email xác nhận rồi quay lại Language Studio để đăng nhập.</small>
+          <button id='accountResendConfirmationBtn' class='text-button auth-link-button' type='button'>Gửi lại email xác nhận</button>
+          <small class='auth-footnote'>Nếu email đã có tài khoản từ trước, hãy dùng “Quên mật khẩu?” thay vì đăng ký lại.</small>
         </form>
       </div>
       <div class='data-note'><b>Bảo mật:</b> website chỉ dùng Supabase publishable key. Dữ liệu được khóa bằng Row Level Security theo ID tài khoản; service-role key không nằm trong frontend.</div>
@@ -483,6 +537,30 @@
 
   function bindAccountPanel(panel){
     const s=status();
+
+    const recovery=panel.querySelector('#languageStudioRecoveryForm');
+    if(recovery){
+      recovery.onsubmit=async(event)=>{
+        event.preventDefault();
+        const password=panel.querySelector('#accountRecoveryPassword').value;
+        const password2=panel.querySelector('#accountRecoveryPassword2').value;
+        if(password.length<8){authNotice='Mật khẩu cần ít nhất 8 ký tự.';scheduleUiEnhance();return;}
+        if(password!==password2){authNotice='Hai lần nhập mật khẩu chưa giống nhau.';scheduleUiEnhance();return;}
+        const button=recovery.querySelector('.auth-submit');
+        button.disabled=true;
+        button.textContent='Đang cập nhật…';
+        try{
+          await updateRecoveredPassword(password);
+          authNotice='Mật khẩu đã được cập nhật. Bạn đang đăng nhập trên thiết bị này.';
+          scheduleUiEnhance();
+        }catch(error){
+          authNotice=authErrorMessage(error);
+          scheduleUiEnhance();
+        }
+      };
+      return;
+    }
+
     const signOutButton=panel.querySelector('#accountSignOutBtn');
     if(signOutButton){
       signOutButton.onclick=async()=>{
@@ -516,6 +594,28 @@
       };
     }
 
+    const forgotButton=panel.querySelector('#accountForgotPasswordBtn');
+    if(forgotButton){
+      forgotButton.onclick=async()=>{
+        const email=panel.querySelector('#accountLoginEmail')?.value?.trim();
+        if(!email){
+          authNotice='Hãy nhập email vào ô Đăng nhập trước.';
+          scheduleUiEnhance();
+          return;
+        }
+        forgotButton.disabled=true;
+        forgotButton.textContent='Đang gửi…';
+        try{
+          await requestPasswordReset(email);
+          authNotice='Nếu email này có tài khoản, Supabase đã gửi liên kết đặt lại mật khẩu. Hãy kiểm tra cả Spam/Thư rác.';
+          scheduleUiEnhance();
+        }catch(error){
+          authNotice=authErrorMessage(error);
+          scheduleUiEnhance();
+        }
+      };
+    }
+
     const register=panel.querySelector('#languageStudioRegisterForm');
     if(register){
       register.onsubmit=async(event)=>{
@@ -530,9 +630,33 @@
         authNotice='';
         try{
           const result=await signUp(panel.querySelector('#accountRegisterEmail').value,password);
-          authNotice=result?.needsConfirmation
-            ? 'Tài khoản đã được tạo. Hãy kiểm tra email xác nhận, sau đó quay lại đăng nhập.'
-            : 'Tài khoản đã được tạo và đăng nhập.';
+          authNotice=result?.alreadyExists
+            ? 'Email này đã có tài khoản từ trước. Supabase không gửi email xác nhận mới cho đăng ký trùng. Hãy dùng “Quên mật khẩu?” để đặt lại mật khẩu.'
+            : result?.needsConfirmation
+              ? 'Tài khoản mới đã được tạo. Hãy kiểm tra email xác nhận; nếu chưa thấy, bấm “Gửi lại email xác nhận”.'
+              : 'Tài khoản đã được tạo và đăng nhập.';
+          scheduleUiEnhance();
+        }catch(error){
+          authNotice=authErrorMessage(error);
+          scheduleUiEnhance();
+        }
+      };
+    }
+
+    const resendButton=panel.querySelector('#accountResendConfirmationBtn');
+    if(resendButton){
+      resendButton.onclick=async()=>{
+        const email=panel.querySelector('#accountRegisterEmail')?.value?.trim();
+        if(!email){
+          authNotice='Hãy nhập email vào ô Đăng ký trước.';
+          scheduleUiEnhance();
+          return;
+        }
+        resendButton.disabled=true;
+        resendButton.textContent='Đang gửi…';
+        try{
+          await resendSignupConfirmation(email);
+          authNotice='Đã yêu cầu gửi lại email xác nhận. Hãy kiểm tra Inbox và Spam/Thư rác.';
           scheduleUiEnhance();
         }catch(error){
           authNotice=authErrorMessage(error);
@@ -549,7 +673,7 @@
     const panel=main.querySelector('.vocab-sync-panel, .account-sync-panel');
     if(!panel) return;
     const s=status();
-    const signature=['settings',s.ready,s.signedIn,s.email,s.lastSyncAt,s.pendingCount,s.realtimeState,authNotice].join('|');
+    const signature=['settings',s.ready,s.signedIn,s.email,s.lastSyncAt,s.pendingCount,s.realtimeState,s.recoveryMode,authNotice].join('|');
     if(panel.dataset.accountSignature===signature) return;
     panel.className='book-section account-sync-panel';
     panel.dataset.accountSignature=signature;
@@ -619,6 +743,9 @@
     signIn,
     signUp,
     signOut,
+    requestPasswordReset,
+    resendSignupConfirmation,
+    updateRecoveredPassword,
     syncAccount,
     pull:pullRaw,
     saveWord:directUpsert,
