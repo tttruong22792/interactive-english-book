@@ -392,11 +392,9 @@
 
   async function signUp(email,password){
     const sb=await getClient();
-    const redirectTo=location.origin+location.pathname+'?auth=confirmed';
     const {data,error}=await sb.auth.signUp({
       email:String(email||'').trim(),
-      password:String(password||''),
-      options:{emailRedirectTo:redirectTo}
+      password:String(password||'')
     });
     if(error) throw error;
     return {
@@ -411,6 +409,199 @@
     if(error) throw error;
     meta.lastUserId='';
     saveMeta();
+  }
+
+  let authNotice='';
+  let uiTimer=null;
+
+  function escapeHtml(value=''){
+    return String(value).replace(/[&<>\"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function authErrorMessage(error){
+    const raw=String(error?.message||error||'').toLowerCase();
+    if(raw.includes('invalid login credentials')) return 'Email hoặc mật khẩu không đúng.';
+    if(raw.includes('email not confirmed')) return 'Email chưa được xác nhận. Hãy mở email xác nhận rồi đăng nhập lại.';
+    if(raw.includes('user already registered')) return 'Email này đã được đăng ký.';
+    if(raw.includes('password')) return 'Mật khẩu chưa đáp ứng yêu cầu bảo mật.';
+    if(raw.includes('rate limit')) return 'Có quá nhiều yêu cầu. Hãy thử lại sau một chút.';
+    return String(error?.message||'Không thể thực hiện yêu cầu lúc này.');
+  }
+
+  function scheduleUiEnhance(){
+    clearTimeout(uiTimer);
+    uiTimer=setTimeout(enhanceAccountUi,0);
+  }
+
+  function accountPanelMarkup(){
+    const s=status();
+    if(!s.ready){
+      return `<div class='account-loading'><span></span><strong>Đang kiểm tra phiên đăng nhập…</strong></div>`;
+    }
+    if(s.signedIn){
+      const synced=s.lastSyncAt?new Date(s.lastSyncAt).toLocaleString('vi-VN'):'Đang đồng bộ lần đầu';
+      const live=/subscribed/i.test(s.realtimeState);
+      return `
+        <div class='account-panel-head'>
+          <div class='account-panel-icon'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' aria-hidden='true'><path d='M20 21a8 8 0 0 0-16 0'/><circle cx='12' cy='7' r='4'/></svg></div>
+          <div><span class='eyebrow'>ACCOUNT SYNC</span><h2>${escapeHtml(s.email||'Language Studio')}</h2><p>Đã đăng nhập. Mỗi lần Lưu/Xóa từ được ghi trực tiếp lên Supabase.</p></div>
+          <span class='account-live-pill ${live?'is-live':'is-connecting'}'>${live?'Realtime đang hoạt động':'Realtime đang kết nối'}</span>
+        </div>
+        <div class='account-sync-facts'>
+          <div><small>Chế độ</small><strong>Tự động</strong></div>
+          <div><small>Lần cập nhật</small><strong>${escapeHtml(synced)}</strong></div>
+          <div><small>Đang chờ gửi</small><strong>${s.pendingCount}</strong></div>
+        </div>
+        ${authNotice?`<div class='account-notice'>${escapeHtml(authNotice)}</div>`:''}
+        <div class='account-actions'><button id='accountSignOutBtn' class='secondary-button' type='button'>Đăng xuất thiết bị này</button></div>
+        <div class='data-note'><b>Đa thiết bị:</b> đăng nhập cùng email và mật khẩu trên PC, điện thoại hoặc tablet. Không cần mã đồng bộ và không cần bấm Đồng bộ.</div>
+      `;
+    }
+    return `
+      <div class='section-title-row'><div><span class='eyebrow'>ACCOUNT SYNC</span><h2>Đăng nhập để đồng bộ tự động</h2><p>Không dùng mã đồng bộ. Cùng một tài khoản sẽ dùng chung danh sách Từ đã lưu trên mọi thiết bị.</p></div></div>
+      ${authNotice?`<div class='account-notice'>${escapeHtml(authNotice)}</div>`:''}
+      <div class='auth-grid'>
+        <form id='languageStudioLoginForm' class='auth-card'>
+          <div><span class='eyebrow'>WELCOME BACK</span><h3>Đăng nhập</h3><p>Dùng tài khoản đã đăng ký trên thiết bị khác.</p></div>
+          <label><span>Email</span><input id='accountLoginEmail' type='email' autocomplete='email' required placeholder='name@example.com'></label>
+          <label><span>Mật khẩu</span><input id='accountLoginPassword' type='password' autocomplete='current-password' required minlength='8' placeholder='Ít nhất 8 ký tự'></label>
+          <button class='primary-button auth-submit' type='submit'>Đăng nhập</button>
+        </form>
+        <form id='languageStudioRegisterForm' class='auth-card auth-card-accent'>
+          <div><span class='eyebrow'>NEW ACCOUNT</span><h3>Đăng ký</h3><p>Tạo tài khoản một lần để dùng chung dữ liệu trên nhiều thiết bị.</p></div>
+          <label><span>Email</span><input id='accountRegisterEmail' type='email' autocomplete='email' required placeholder='name@example.com'></label>
+          <label><span>Mật khẩu</span><input id='accountRegisterPassword' type='password' autocomplete='new-password' required minlength='8' placeholder='Ít nhất 8 ký tự'></label>
+          <label><span>Nhập lại mật khẩu</span><input id='accountRegisterPassword2' type='password' autocomplete='new-password' required minlength='8' placeholder='Nhập lại mật khẩu'></label>
+          <button class='primary-button auth-submit' type='submit'>Đăng ký</button>
+          <small class='auth-footnote'>Nếu Supabase yêu cầu xác nhận email, hãy mở email xác nhận rồi quay lại Language Studio để đăng nhập.</small>
+        </form>
+      </div>
+      <div class='data-note'><b>Bảo mật:</b> website chỉ dùng Supabase publishable key. Dữ liệu được khóa bằng Row Level Security theo ID tài khoản; service-role key không nằm trong frontend.</div>
+    `;
+  }
+
+  function bindAccountPanel(panel){
+    const s=status();
+    const signOutButton=panel.querySelector('#accountSignOutBtn');
+    if(signOutButton){
+      signOutButton.onclick=async()=>{
+        signOutButton.disabled=true;
+        try{
+          await signOut();
+          authNotice='Đã đăng xuất khỏi thiết bị này.';
+          scheduleUiEnhance();
+        }catch(error){
+          signOutButton.disabled=false;
+          authNotice=authErrorMessage(error);
+          scheduleUiEnhance();
+        }
+      };
+    }
+
+    const login=panel.querySelector('#languageStudioLoginForm');
+    if(login){
+      login.onsubmit=async(event)=>{
+        event.preventDefault();
+        const button=login.querySelector('.auth-submit');
+        button.disabled=true;
+        button.textContent='Đang đăng nhập…';
+        authNotice='';
+        try{
+          await signIn(panel.querySelector('#accountLoginEmail').value,panel.querySelector('#accountLoginPassword').value);
+        }catch(error){
+          authNotice=authErrorMessage(error);
+          scheduleUiEnhance();
+        }
+      };
+    }
+
+    const register=panel.querySelector('#languageStudioRegisterForm');
+    if(register){
+      register.onsubmit=async(event)=>{
+        event.preventDefault();
+        const password=panel.querySelector('#accountRegisterPassword').value;
+        const password2=panel.querySelector('#accountRegisterPassword2').value;
+        if(password.length<8){authNotice='Mật khẩu cần ít nhất 8 ký tự.';scheduleUiEnhance();return;}
+        if(password!==password2){authNotice='Hai lần nhập mật khẩu chưa giống nhau.';scheduleUiEnhance();return;}
+        const button=register.querySelector('.auth-submit');
+        button.disabled=true;
+        button.textContent='Đang tạo tài khoản…';
+        authNotice='';
+        try{
+          const result=await signUp(panel.querySelector('#accountRegisterEmail').value,password);
+          authNotice=result?.needsConfirmation
+            ? 'Tài khoản đã được tạo. Hãy kiểm tra email xác nhận, sau đó quay lại đăng nhập.'
+            : 'Tài khoản đã được tạo và đăng nhập.';
+          scheduleUiEnhance();
+        }catch(error){
+          authNotice=authErrorMessage(error);
+          scheduleUiEnhance();
+        }
+      };
+    }
+  }
+
+  function enhanceSettings(){
+    if((location.hash||'#home').slice(1)!=='settings') return;
+    const main=document.querySelector('#mainView');
+    if(!main) return;
+    const panel=main.querySelector('.vocab-sync-panel, .account-sync-panel');
+    if(!panel) return;
+    const s=status();
+    const signature=['settings',s.ready,s.signedIn,s.email,s.lastSyncAt,s.pendingCount,s.realtimeState,authNotice].join('|');
+    if(panel.dataset.accountSignature===signature) return;
+    panel.className='book-section account-sync-panel';
+    panel.dataset.accountSignature=signature;
+    panel.innerHTML=accountPanelMarkup();
+    bindAccountPanel(panel);
+
+    const heroText=main.querySelector('.settings-hero p');
+    if(heroText) heroText.textContent='Tiến độ học vẫn có local cache để phản hồi nhanh. Từ đã lưu được ghi trực tiếp lên tài khoản Supabase khi bạn đăng nhập.';
+    const summaryText=main.querySelector('.data-summary .section-title-row p');
+    if(summaryText) summaryText.textContent=s.signedIn?'My Vocabulary: cloud theo tài khoản + local cache. Các phần tiến độ khác vẫn lưu cục bộ.':'My Vocabulary đang lưu cục bộ. Đăng nhập để tự động đồng bộ giữa các thiết bị.';
+  }
+
+  function enhanceVocab(){
+    if((location.hash||'#home').slice(1)!=='vocab') return;
+    const main=document.querySelector('#mainView');
+    const strip=main?.querySelector('.vocab-sync-strip');
+    if(!strip) return;
+    const s=status();
+    const live=/subscribed/i.test(s.realtimeState);
+    const signature=['vocab',s.ready,s.signedIn,s.email,s.pendingCount,s.realtimeState].join('|');
+    if(strip.dataset.accountSignature===signature) return;
+    strip.dataset.accountSignature=signature;
+    strip.className='vocab-sync-strip '+(s.signedIn?'is-on':'is-off');
+    strip.innerHTML=s.signedIn
+      ? `<div><strong>Đồng bộ tự động · ${escapeHtml(s.email||'Tài khoản')}</strong><span>${live?'Thiết bị khác đang mở sẽ nhận thay đổi gần như ngay lập tức.':'Cloud đã bật; Realtime đang kết nối lại.'}</span></div><button id='vocabAccountSettings' class='secondary-button' type='button'>Tài khoản</button>`
+      : `<div><strong>Từ đang lưu cục bộ trên thiết bị</strong><span>Đăng nhập cùng một tài khoản trên PC và điện thoại để dùng chung danh sách.</span></div><button id='vocabAccountSettings' class='primary-button' type='button'>Đăng nhập / Đăng ký</button>`;
+    const button=strip.querySelector('#vocabAccountSettings');
+    if(button) button.onclick=()=>{location.hash='#settings';};
+
+    const heroText=main.querySelector('.page-hero p');
+    if(heroText) heroText.textContent=s.signedIn?'Chạm một từ trong bài học rồi bấm “Lưu”. Mỗi thay đổi được ghi thẳng lên tài khoản cloud.':'Chạm một từ trong bài học rồi bấm “Lưu”. Bạn có thể lưu cục bộ và đăng nhập để đồng bộ đa thiết bị.';
+  }
+
+  function enhanceSidebar(){
+    const note=document.querySelector('.side-bottom small');
+    if(!note) return;
+    const s=status();
+    note.textContent=s.signedIn?'Từ vựng đang đồng bộ theo tài khoản.':'Đăng nhập để đồng bộ Từ đã lưu.';
+  }
+
+  function enhanceAccountUi(){
+    enhanceSettings();
+    enhanceVocab();
+    enhanceSidebar();
+  }
+
+  function installUiBridge(){
+    const main=document.querySelector('#mainView');
+    if(main){
+      new MutationObserver(scheduleUiEnhance).observe(main,{childList:true,subtree:true});
+    }
+    window.addEventListener('hashchange',scheduleUiEnhance);
+    scheduleUiEnhance();
   }
 
   window.addEventListener('online',()=>{
@@ -433,4 +624,7 @@
     deleteWord:directDelete,
     flushPending
   };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',installUiBridge,{once:true});
+  else installUiBridge();
 })();
