@@ -184,6 +184,47 @@
   }
   function savedCount(){ return Object.keys(state.saved || {}).length; }
 
+  function vocabSyncStatus(){
+    return window.VocabCloudSync?.status?.() || {connected:false,syncKey:'',lastSyncAt:0,pendingCount:0,lastError:''};
+  }
+
+  function queueVocabUpsert(item){
+    window.VocabCloudSync?.queueUpsert?.(item);
+  }
+
+  function queueVocabDelete(key){
+    window.VocabCloudSync?.queueDelete?.(key);
+  }
+
+  async function syncSavedVocabulary({silent=false,rerender=true}={}){
+    if(!window.VocabCloudSync?.status?.().connected) return false;
+    try{
+      const remote=await window.VocabCloudSync.pull();
+      if(remote){
+        state.saved={...remote};
+        saveState();
+        if(rerender){
+          const route=parseRoute();
+          if(route.name==='vocab') renderVocab();
+          else if(route.name==='settings') renderSettings();
+        }
+      }
+      if(!silent) toast('Đã đồng bộ từ đã lưu giữa các thiết bị.');
+      return true;
+    }catch(error){
+      if(!silent) toast('Chưa thể đồng bộ. Dữ liệu vẫn được giữ trên thiết bị và sẽ thử lại khi có mạng.');
+      return false;
+    }
+  }
+
+  async function connectVocabularySync(syncKey=''){
+    if(!window.VocabCloudSync) throw new Error('Cloud sync chưa sẵn sàng.');
+    const result=await window.VocabCloudSync.connect(syncKey,state.saved||{});
+    state.saved={...(result.saved||{})};
+    saveState();
+    return result;
+  }
+
   function normalizeMeaning(s=''){
     return String(s)
       .normalize('NFD')
@@ -1499,11 +1540,48 @@
     setHeader('Thiết bị','Thiết bị & dữ liệu');
     const secure=window.isSecureContext;
     const installed=window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    const sync=vocabSyncStatus();
+    const syncedAt=sync.lastSyncAt?new Date(sync.lastSyncAt).toLocaleString('vi-VN'):'Chưa đồng bộ';
     $('#mainView').innerHTML=`
       <section class="page-hero settings-hero">
         <div class="eyebrow">DEVICE & DATA</div>
         <h1>Dùng Language Studio trên PC và điện thoại</h1>
-        <p>Tiến độ hiện lưu bằng localStorage nên mỗi thiết bị có dữ liệu riêng. Phần này giúp bạn sao lưu, chuyển dữ liệu, chia sẻ link và cài app khi chạy trên HTTPS.</p>
+        <p>Tiến độ học vẫn được giữ cục bộ để app phản hồi nhanh. Riêng My Vocabulary có thể bật cloud sync để cùng một danh sách từ xuất hiện trên nhiều thiết bị.</p>
+      </section>
+
+      <section class="book-section vocab-sync-panel">
+        <div class="section-title-row">
+          <div><span class="eyebrow">CROSS-DEVICE SYNC</span><h2>Đồng bộ Từ đã lưu</h2><p>Dùng cùng một mã đồng bộ trên PC, điện thoại hoặc tablet. Mã này hoạt động như mật khẩu cho kho từ của bạn.</p></div>
+          <span class="sync-status-pill ${sync.connected?'is-on':'is-off'}">${sync.connected?'Đang bật':'Chưa bật'}</span>
+        </div>
+        ${sync.connected?`
+          <div class="sync-connected-grid">
+            <label class="sync-key-field"><span>Mã đồng bộ của bạn</span><input id="syncKeyValue" type="password" value="${escAttr(sync.syncKey)}" readonly autocomplete="off" /></label>
+            <div class="sync-actions">
+              <button id="toggleSyncKeyVisibility" class="secondary-button" type="button">Hiện mã</button>
+              <button id="copySyncKeyBtn" class="secondary-button" type="button">Sao chép mã</button>
+              <button id="syncNowBtn" class="primary-button" type="button">Đồng bộ ngay</button>
+              <button id="disconnectSyncBtn" class="text-button danger-text" type="button">Ngắt đồng bộ thiết bị này</button>
+            </div>
+          </div>
+          <div class="sync-meta-row"><span>Lần đồng bộ gần nhất: <b>${esc(syncedAt)}</b></span><span>Đang chờ gửi: <b>${sync.pendingCount}</b></span></div>
+          <div class="data-note"><b>Thiết bị mới:</b> mở phần này trên thiết bị đó, nhập đúng mã ở trên và chọn “Kết nối”. Từ đang có trên hai thiết bị sẽ được gộp trước khi đồng bộ.</div>
+        `:`
+          <div class="sync-setup-grid">
+            <div class="sync-create-card">
+              <h3>Bắt đầu trên thiết bị này</h3>
+              <p>Tạo một mã riêng và đưa toàn bộ từ đang lưu trên thiết bị này lên cloud.</p>
+              <button id="createSyncKeyBtn" class="primary-button" type="button">Tạo mã & bật đồng bộ</button>
+            </div>
+            <div class="sync-join-card">
+              <h3>Kết nối với thiết bị đã có</h3>
+              <p>Dán mã đồng bộ từ PC/điện thoại khác. Danh sách hiện tại sẽ được gộp, không xóa thô dữ liệu cũ.</p>
+              <input id="syncKeyInput" class="sync-key-input" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxxxxxx-xxxxxxxx-xxxxxxxx-xxxxxxxx" />
+              <button id="connectSyncKeyBtn" class="secondary-button" type="button">Kết nối</button>
+            </div>
+          </div>
+          <div class="data-note"><b>Bảo mật:</b> không gửi mã này cho người khác. Server chỉ lưu bản hash của mã, không lưu mã gốc.</div>
+        `}
       </section>
 
       <section class="settings-grid">
@@ -1516,8 +1594,8 @@
 
         <article class="settings-card accent-green">
           <span class="settings-step">02</span>
-          <h3>Chuyển sang thiết bị khác</h3>
-          <p>Chọn file JSON đã xuất từ PC hoặc điện thoại để khôi phục tiến độ trên thiết bị này.</p>
+          <h3>Khôi phục dữ liệu</h3>
+          <p>Chọn file JSON đã xuất trước đó. Nếu My Vocabulary đang bật sync, các từ được nhập sẽ được đưa vào hàng chờ đồng bộ.</p>
           <button id="importDataBtn" class="primary-button">Nhập dữ liệu</button>
           <input id="importDataFile" type="file" accept="application/json,.json" class="hidden" />
         </article>
@@ -1525,7 +1603,7 @@
         <article class="settings-card accent-yellow">
           <span class="settings-step">03</span>
           <h3>Chia sẻ trang hiện tại</h3>
-          <p>Gửi link cho chính bạn qua Messages, LINE, Mail hoặc ứng dụng khác khi website đã được deploy.</p>
+          <p>Gửi link qua Messages, LINE, Mail hoặc ứng dụng khác khi website đã được deploy.</p>
           <button id="shareAppBtn" class="primary-button">Chia sẻ link</button>
         </article>
 
@@ -1538,14 +1616,13 @@
       </section>
 
       <section class="book-section data-summary">
-        <div class="section-title-row"><div><h2>Dữ liệu hiện tại trên thiết bị này</h2><p>Không gửi lên server ở phiên bản hiện tại.</p></div></div>
+        <div class="section-title-row"><div><h2>Dữ liệu hiện tại</h2><p>My Vocabulary: ${sync.connected?'local cache + cloud sync':'chỉ trên thiết bị này'}. Các phần tiến độ khác vẫn lưu cục bộ ở phiên bản hiện tại.</p></div></div>
         <div class="stats-grid">
           <div class="stat-card"><small>Câu đã thuộc</small><strong>${learnedCount()}</strong></div>
           <div class="stat-card"><small>Từ / cụm đã lưu</small><strong>${savedCount()}</strong></div>
           <div class="stat-card"><small>Quiz tốt nhất</small><strong>${quizBestFor()}/10</strong></div>
           <div class="stat-card"><small>Lượt quiz</small><strong>${quizRunsFor()}</strong></div>
         </div>
-        <div class="data-note"><b>Bước sau:</b> khi cần đồng bộ tự động giữa PC và điện thoại, chúng ta sẽ thêm tài khoản + cloud sync thay vì phụ thuộc vào file JSON.</div>
       </section>
     `;
 
@@ -1554,6 +1631,71 @@
     $('#importDataFile').onchange=e=>{const file=e.target.files?.[0];if(file) importLearningData(file);e.target.value='';};
     $('#shareAppBtn').onclick=shareCurrentPage;
     $('#installAppBtn').onclick=installApp;
+
+    if(sync.connected){
+      $('#toggleSyncKeyVisibility').onclick=()=>{
+        const input=$('#syncKeyValue');
+        const hidden=input.type==='password';
+        input.type=hidden?'text':'password';
+        $('#toggleSyncKeyVisibility').textContent=hidden?'Ẩn mã':'Hiện mã';
+      };
+      $('#copySyncKeyBtn').onclick=async()=>{
+        try{
+          await navigator.clipboard.writeText(sync.syncKey);
+          toast('Đã sao chép mã đồng bộ.');
+        }catch{
+          $('#syncKeyValue').type='text';
+          $('#syncKeyValue').select();
+          toast('Hãy sao chép mã đang được chọn.');
+        }
+      };
+      $('#syncNowBtn').onclick=async()=>{
+        const btn=$('#syncNowBtn');
+        btn.disabled=true;btn.textContent='Đang đồng bộ...';
+        await syncSavedVocabulary({silent:false,rerender:false});
+        renderSettings();
+      };
+      $('#disconnectSyncBtn').onclick=()=>{
+        if(!confirm('Ngắt cloud sync trên thiết bị này? Từ đã lưu hiện tại vẫn được giữ trên thiết bị.')){
+          return;
+        }
+        window.VocabCloudSync?.disconnect?.();
+        toast('Đã ngắt đồng bộ trên thiết bị này.');
+        renderSettings();
+      };
+    }else{
+      $('#createSyncKeyBtn').onclick=async()=>{
+        const btn=$('#createSyncKeyBtn');
+        btn.disabled=true;btn.textContent='Đang tạo...';
+        try{
+          await connectVocabularySync('');
+          toast('Đã bật đồng bộ. Hãy lưu mã để dùng trên thiết bị khác.');
+          renderSettings();
+        }catch(error){
+          btn.disabled=false;btn.textContent='Tạo mã & bật đồng bộ';
+          toast('Không thể bật đồng bộ lúc này.');
+        }
+      };
+      $('#connectSyncKeyBtn').onclick=async()=>{
+        const input=$('#syncKeyInput');
+        const key=input.value.trim();
+        if(!window.VocabCloudSync?.isValidKey?.(key)){
+          toast('Mã đồng bộ chưa đúng định dạng.');
+          input.focus();
+          return;
+        }
+        const btn=$('#connectSyncKeyBtn');
+        btn.disabled=true;btn.textContent='Đang kết nối...';
+        try{
+          await connectVocabularySync(key);
+          toast('Đã kết nối và gộp danh sách từ.');
+          renderSettings();
+        }catch(error){
+          btn.disabled=false;btn.textContent='Kết nối';
+          toast('Không kết nối được. Hãy kiểm tra mạng và mã đồng bộ.');
+        }
+      };
+    }
   }
 
   function exportLearningData(){
@@ -1593,6 +1735,7 @@
         if(state.quizBest && state.quizBestByLesson[CORE_LESSON_ID]==null) state.quizBestByLesson[CORE_LESSON_ID]=state.quizBest;
         if(state.quizRuns && state.quizRunsByLesson[CORE_LESSON_ID]==null) state.quizRunsByLesson[CORE_LESSON_ID]=state.quizRuns;
         saveState();
+        Object.values(state.saved||{}).forEach(queueVocabUpsert);
         toast('Đã khôi phục dữ liệu học.');
         renderSettings();
       }catch{
@@ -1631,10 +1774,30 @@
   function renderVocab(){
     setHeader('Library','Từ đã lưu');
     const items=Object.values(state.saved||{}).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
-    $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">MY VOCABULARY</div><h1>Từ và cụm bạn đã lưu</h1><p>Chạm một từ trong bài học rồi bấm “Lưu”. Danh sách này nằm trên chính thiết bị của bạn.</p></section><div class="vocab-toolbar"><strong>${items.length} mục đã lưu</strong>${items.length?'<button id="startFlashcards" class="primary-button">Ôn bằng flashcard</button>':''}</div><section id="vocabArea">${items.length?vocabCards(items):emptyVocab()}</section>`;
-    $$('[data-vocab-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.vocabSpeak));
-    $$('[data-vocab-remove]').forEach(b=>b.onclick=()=>{delete state.saved[b.dataset.vocabRemove];saveState();renderVocab();});
+    const sync=vocabSyncStatus();
+    $('#mainView').innerHTML=`
+      <section class="page-hero"><div class="eyebrow">MY VOCABULARY</div><h1>Từ và cụm bạn đã lưu</h1><p>Chạm một từ trong bài học rồi bấm “Lưu”. ${sync.connected?'Danh sách này được giữ trên thiết bị và đồng bộ qua cloud.':'Hiện danh sách chỉ nằm trên thiết bị này.'}</p></section>
+      <div class="vocab-sync-strip ${sync.connected?'is-on':'is-off'}">
+        <div><strong>${sync.connected?'Đồng bộ thiết bị đang bật':'Chưa bật đồng bộ thiết bị'}</strong><span>${sync.connected?(sync.pendingCount?sync.pendingCount+' thay đổi đang chờ gửi':'Các thay đổi sẽ tự đồng bộ khi có mạng'):'Bật đồng bộ để dùng cùng danh sách trên PC và điện thoại.'}</span></div>
+        <button id="${sync.connected?'vocabSyncNow':'vocabOpenSync'}" class="${sync.connected?'secondary-button':'primary-button'}" type="button">${sync.connected?'Đồng bộ ngay':'Bật đồng bộ'}</button>
+      </div>
+      <div class="vocab-toolbar"><strong>${items.length} mục đã lưu</strong>${items.length?'<button id="startFlashcards" class="primary-button">Ôn bằng flashcard</button>':''}</div>
+      <section id="vocabArea">${items.length?vocabCards(items):emptyVocab()}</section>`;
+    $('[data-vocab-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.vocabSpeak));
+    $('[data-vocab-remove]').forEach(b=>b.onclick=()=>{
+      const key=b.dataset.vocabRemove;
+      delete state.saved[key];
+      saveState();
+      queueVocabDelete(key);
+      renderVocab();
+    });
     if($('#startFlashcards')) $('#startFlashcards').onclick=()=>renderFlashcards(items);
+    if($('#vocabOpenSync')) $('#vocabOpenSync').onclick=()=>routeTo('settings');
+    if($('#vocabSyncNow')) $('#vocabSyncNow').onclick=async()=>{
+      const btn=$('#vocabSyncNow');
+      btn.disabled=true;btn.textContent='Đang đồng bộ...';
+      await syncSavedVocabulary({silent:false,rerender:true});
+    };
   }
   function vocabCards(items){ return `<div class="vocab-list">${items.map(x=>`<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3><span class="ipa">${esc(x.ipa||'')}</span></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">${uiIcon('volume-2')}</button></div><p>${esc(x.meaning||'')}</p>${x.example?`<small>${esc(x.example)}</small>`:''}<div style="margin-top:10px"><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa khỏi danh sách</button></div></article>`).join('')}</div>`; }
   function emptyVocab(){ return `<div class="empty-state"><strong>Chưa có từ nào được lưu</strong>Vào Mẫu 01, chạm một từ tiếng Anh và bấm ☆ Lưu.<br><button class="primary-button" style="margin-top:14px" data-go="lesson/1">Mở Mẫu 01</button></div>`; }
@@ -2105,7 +2268,21 @@
     const saved=!!state.saved[p.key];$('#saveWordBtn').textContent=saved?'★ Đã lưu':'☆ Lưu';$('#wordPopover').classList.remove('hidden');
   }
   function closePopover(){ $('#wordPopover').classList.add('hidden'); currentLookup=null; }
-  function saveCurrentLookup(){ if(!currentLookup) return; const k=currentLookup.key;if(state.saved[k]){delete state.saved[k];toast('Đã bỏ khỏi từ đã lưu.');}else{state.saved[k]={...currentLookup,savedAt:Date.now(),breakdown:undefined};toast('Đã lưu vào My Vocabulary.');}saveState();$('#saveWordBtn').textContent=state.saved[k]?'★ Đã lưu':'☆ Lưu'; }
+  function saveCurrentLookup(){
+    if(!currentLookup) return;
+    const k=currentLookup.key;
+    if(state.saved[k]){
+      delete state.saved[k];
+      queueVocabDelete(k);
+      toast('Đã bỏ khỏi từ đã lưu.');
+    }else{
+      state.saved[k]={...currentLookup,savedAt:Date.now(),breakdown:undefined};
+      queueVocabUpsert(state.saved[k]);
+      toast('Đã lưu vào My Vocabulary.');
+    }
+    saveState();
+    $('#saveWordBtn').textContent=state.saved[k]?'★ Đã lưu':'☆ Lưu';
+  }
 
   function detectSelection(){
     const sel=window.getSelection(); if(!sel || sel.isCollapsed){hideSelectionBar();return;}
@@ -2129,7 +2306,16 @@
   $('#closePopoverBtn').onclick=closePopover;$('#speakWordBtn').onclick=()=>currentLookup&&speak(currentLookup.speechText||currentLookup.term);$('#saveWordBtn').onclick=saveCurrentLookup;
   $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{if(!L)await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
-  $('#resetDataBtn').onclick=()=>{if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này?')){localStorage.removeItem(KEY);state={...defaults};quiz=makeQuizSession([], 'sequential', null, 'lesson');render();toast('Đã xóa dữ liệu học.');}};
+  $('#resetDataBtn').onclick=()=>{
+    if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này? Cloud sync trên thiết bị này cũng sẽ được ngắt, nhưng bản cloud không bị xóa.')){
+      localStorage.removeItem(KEY);
+      window.VocabCloudSync?.disconnect?.();
+      state={...defaults};
+      quiz=makeQuizSession([], 'sequential', null, 'lesson');
+      render();
+      toast('Đã xóa dữ liệu trên thiết bị và ngắt cloud sync.');
+    }
+  };
   window.addEventListener('hashchange',render);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
   window.addEventListener('appinstalled',()=>{installPrompt=null;toast('Language Studio đã được cài.');});
@@ -2145,7 +2331,12 @@
   window.__LS_RENDERED=false;
   if(!location.hash) location.hash='#home';
   Promise.resolve(render())
-    .then(()=>{window.__LS_RENDERED=true;})
+    .then(()=>{
+      window.__LS_RENDERED=true;
+      if(vocabSyncStatus().connected){
+        setTimeout(()=>syncSavedVocabulary({silent:true,rerender:true}),120);
+      }
+    })
     .catch(error=>{
       console.error('Language Studio boot failed:',error);
       window.__LS_BOOT_ERRORS = window.__LS_BOOT_ERRORS || [];
