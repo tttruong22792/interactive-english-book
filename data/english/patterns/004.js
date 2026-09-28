@@ -605,67 +605,134 @@ window.CONTENT_REGISTRY["en-pattern-004"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "13. Các cụm đáng học cùng mẫu này",
-      "blocks": [
-        {
-          "type": "paragraph",
-          "html": "<p>Hãy học nguyên cụm, không học từng từ rời.</p>"
-        },
-        {
-          "type": "chips",
-          "items": [
-            [
-              "improve my English",
-              "cải thiện tiếng Anh"
-            ],
-            [
-              "cut down on expenses",
-              "cắt giảm chi phí"
-            ],
-            [
-              "put some money aside",
-              "để dành một ít tiền"
-            ],
-            [
-              "pay off a loan",
-              "trả hết khoản vay"
-            ],
-            [
-              "look for a better opportunity",
-              "tìm cơ hội tốt hơn"
-            ],
-            [
-              "take a few days off",
-              "nghỉ vài ngày"
-            ],
-            [
-              "spend more time with my family",
-              "dành thêm thời gian cho gia đình"
-            ],
-            [
-              "get back into exercising",
-              "quay lại tập thể dục"
-            ],
-            [
-              "figure out the problem",
-              "tìm ra vấn đề"
-            ],
-            [
-              "double-check everything",
-              "kiểm tra kỹ mọi thứ"
-            ],
-            [
-              "make some changes",
-              "thực hiện một số thay đổi"
-            ],
-            [
-              "take things more seriously",
-              "nghiêm túc hơn với một việc"
-            ]
+          "id": "phrases",
+          "title": "13. Các cụm đáng học cùng mẫu này",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "cut down on expenses",
+                                  "cắt giảm chi phí"
+                            ],
+                            [
+                                  "put some money aside",
+                                  "để dành tiền"
+                            ],
+                            [
+                                  "pay off a loan",
+                                  "trả hết khoản vay"
+                            ],
+                            [
+                                  "take a few days off",
+                                  "nghỉ vài ngày"
+                            ],
+                            [
+                                  "figure out something",
+                                  "tìm ra / tìm cách hiểu"
+                            ],
+                            [
+                                  "double-check something",
+                                  "kiểm tra kỹ lại"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "look for a better opportunity",
+                                  "tìm cơ hội tốt hơn"
+                            ],
+                            [
+                                  "get back into exercising",
+                                  "quay lại tập thể dục"
+                            ],
+                            [
+                                  "make some changes",
+                                  "thực hiện một số thay đổi"
+                            ],
+                            [
+                                  "take things more seriously",
+                                  "nghiêm túc hơn với một việc"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I plan to cut down on unnecessary expenses this year.",
+                                  "Năm nay tôi dự định cắt giảm các khoản chi không cần thiết."
+                            ],
+                            [
+                                  "I plan to put some money aside every month.",
+                                  "Tôi dự định để dành một ít tiền mỗi tháng."
+                            ],
+                            [
+                                  "I plan to pay off the loan as soon as possible.",
+                                  "Tôi dự định trả hết khoản vay sớm nhất có thể."
+                            ],
+                            [
+                                  "I plan to take a few days off next month.",
+                                  "Tôi dự định nghỉ vài ngày vào tháng sau."
+                            ],
+                            [
+                                  "I plan to figure out the problem before making any changes.",
+                                  "Tôi dự định tìm ra vấn đề trước khi thay đổi gì."
+                            ],
+                            [
+                                  "I plan to double-check everything before I send the file.",
+                                  "Tôi dự định kiểm tra kỹ mọi thứ trước khi gửi file."
+                            ],
+                            [
+                                  "I plan to spend more time with my family this year.",
+                                  "Năm nay tôi dự định dành nhiều thời gian hơn cho gia đình."
+                            ],
+                            [
+                                  "I plan to gradually improve my communication skills.",
+                                  "Tôi dự định từng bước cải thiện kỹ năng giao tiếp."
+                            ],
+                            [
+                                  "I plan to make the most of my time this year.",
+                                  "Tôi dự định tận dụng tối đa thời gian của mình trong năm nay."
+                            ],
+                            [
+                                  "I plan to keep improving instead of trying to be perfect.",
+                                  "Tôi dự định tiếp tục cải thiện thay vì cố trở nên hoàn hảo."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "advanced",
