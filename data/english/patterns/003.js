@@ -598,68 +598,135 @@ window.CONTENT_REGISTRY["en-pattern-003"] = {
     ]
   },
   {
-    "id": "phrases",
-    "title": "13. Các cụm đáng học cùng mẫu này",
-    "blocks": [
-      {
-        "type": "paragraph",
-        "html": "<p>Hãy học nguyên cụm để tạo câu nhanh hơn thay vì dịch từng từ.</p>"
-      },
-      {
-        "type": "chips",
-        "items": [
-          [
-            "take a break",
-            "nghỉ một chút"
-          ],
-          [
-            "go home and relax",
-            "về nhà và thư giãn"
-          ],
-          [
-            "spend more time with my family",
-            "dành thêm thời gian cho gia đình"
-          ],
-          [
-            "get back into shape",
-            "lấy lại thể lực"
-          ],
-          [
-            "work on my pronunciation",
-            "luyện/cải thiện phát âm"
-          ],
-          [
-            "expand my vocabulary",
-            "mở rộng vốn từ"
-          ],
-          [
-            "make sure",
-            "đảm bảo / chắc chắn"
-          ],
-          [
-            "get better at something",
-            "giỏi hơn ở một việc"
-          ],
-          [
-            "cut back on spending",
-            "giảm chi tiêu"
-          ],
-          [
-            "put some money aside",
-            "để dành tiền"
-          ],
-          [
-            "think something through",
-            "suy nghĩ kỹ một việc"
-          ],
-          [
-            "make better use of my time",
-            "sử dụng thời gian hiệu quả hơn"
+          "id": "phrases",
+          "title": "13. Các cụm đáng học cùng mẫu này",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "get back into shape",
+                                  "lấy lại thể lực"
+                            ],
+                            [
+                                  "work on something",
+                                  "tập trung cải thiện / xử lý"
+                            ],
+                            [
+                                  "make sure",
+                                  "đảm bảo / chắc chắn"
+                            ],
+                            [
+                                  "get better at something",
+                                  "giỏi hơn ở một việc"
+                            ],
+                            [
+                                  "cut back on something",
+                                  "giảm bớt"
+                            ],
+                            [
+                                  "make better use of something",
+                                  "tận dụng tốt hơn"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "put some money aside",
+                                  "để dành tiền"
+                            ],
+                            [
+                                  "think something through",
+                                  "suy nghĩ kỹ một việc"
+                            ],
+                            [
+                                  "step outside my comfort zone",
+                                  "bước ra khỏi vùng an toàn"
+                            ],
+                            [
+                                  "expand my vocabulary",
+                                  "mở rộng vốn từ"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        ]
-      }
-    ]
-  },
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I want to get back into shape this year.",
+                                  "Năm nay tôi muốn lấy lại thể lực."
+                            ],
+                            [
+                                  "I want to work on my pronunciation every day.",
+                                  "Tôi muốn luyện phát âm mỗi ngày."
+                            ],
+                            [
+                                  "I want to make sure I understand the problem before I change anything.",
+                                  "Tôi muốn chắc chắn mình hiểu vấn đề trước khi thay đổi gì."
+                            ],
+                            [
+                                  "I want to get better at handling customer questions.",
+                                  "Tôi muốn giỏi hơn trong việc xử lý câu hỏi của khách hàng."
+                            ],
+                            [
+                                  "I want to cut back on unnecessary spending.",
+                                  "Tôi muốn giảm những khoản chi không cần thiết."
+                            ],
+                            [
+                                  "I want to make better use of my free time.",
+                                  "Tôi muốn sử dụng thời gian rảnh hiệu quả hơn."
+                            ],
+                            [
+                                  "I want to improve my English so that I can communicate more confidently at work.",
+                                  "Tôi muốn cải thiện tiếng Anh để có thể giao tiếp tự tin hơn trong công việc."
+                            ],
+                            [
+                                  "I want to think this through before I decide.",
+                                  "Tôi muốn suy nghĩ kỹ việc này trước khi quyết định."
+                            ],
+                            [
+                                  "I want to focus on what I can actually use in real conversations.",
+                                  "Tôi muốn tập trung vào những gì mình thực sự có thể dùng trong hội thoại."
+                            ],
+                            [
+                                  "I want to keep improving little by little instead of trying to be perfect.",
+                                  "Tôi muốn tiếp tục cải thiện từng chút một thay vì cố trở nên hoàn hảo."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
+    },
   {
     "id": "advanced",
     "title": "14. Những câu ở mức cao hơn nhưng vẫn dùng thường xuyên",
