@@ -65,6 +65,7 @@
     listeners.forEach(listener=>{
       try{listener(payload);}catch(error){console.error(error);}
     });
+    if(typeof scheduleUiEnhance==='function') scheduleUiEnhance();
   }
 
   function onChange(listener){
