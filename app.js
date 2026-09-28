@@ -1783,13 +1783,36 @@
     setHeader('Library','Từ đã lưu');
     const items=Object.values(state.saved||{}).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
     const sync=vocabSyncStatus();
+    const trainerSummary=window.VocabularyTrainer?.summary?.(items)||{total:items.length,today:items.length,mastered:0,starred:0};
+    const trainerSettings=state.vocabTrainerSettings||{direction:'vi-en',size:'10'};
     $('#mainView').innerHTML=`
-      <section class="page-hero"><div class="eyebrow">MY VOCABULARY</div><h1>Từ và cụm bạn đã lưu</h1><p>Chạm một từ trong bài học rồi bấm “Lưu”. ${sync.connected?'Danh sách này được giữ trên thiết bị và đồng bộ qua cloud.':'Hiện danh sách chỉ nằm trên thiết bị này.'}</p></section>
+      <section class="page-hero"><div class="eyebrow">MY VOCABULARY</div><h1>Từ và cụm bạn đã lưu</h1><p>Chạm một từ trong bài học rồi bấm “Lưu”. ${sync.connected?'Từ và tiến độ ôn được đồng bộ qua tài khoản cloud.':'Hiện danh sách chỉ nằm trên thiết bị này.'}</p></section>
       <div class="vocab-sync-strip ${sync.connected?'is-on':'is-off'}">
-        <div><strong>${sync.connected?'Đồng bộ thiết bị đang bật':'Chưa bật đồng bộ thiết bị'}</strong><span>${sync.connected?(sync.pendingCount?sync.pendingCount+' thay đổi đang chờ gửi':'Các thay đổi sẽ tự đồng bộ khi có mạng'):'Bật đồng bộ để dùng cùng danh sách trên PC và điện thoại.'}</span></div>
+        <div><strong>${sync.connected?'Đồng bộ tự động · '+esc(sync.email||'Tài khoản'):'Chưa bật đồng bộ thiết bị'}</strong><span>${sync.connected?(sync.pendingCount?sync.pendingCount+' thay đổi đang chờ gửi':'Thiết bị khác sẽ nhận thay đổi gần như ngay lập tức.'):'Bật đồng bộ để dùng cùng danh sách và tiến độ trên PC và điện thoại.'}</span></div>
         <button id="${sync.connected?'vocabSyncNow':'vocabOpenSync'}" class="${sync.connected?'secondary-button':'primary-button'}" type="button">${sync.connected?'Đồng bộ ngay':'Bật đồng bộ'}</button>
       </div>
-      <div class="vocab-toolbar"><strong>${items.length} mục đã lưu</strong>${items.length?'<button id="startFlashcards" class="primary-button">Ôn bằng flashcard</button>':''}</div>
+      ${items.length?`
+      <section class="vocab-trainer-launcher">
+        <div class="vocab-overview-stats">
+          <div><b>${trainerSummary.total}</b><span>đã lưu</span></div>
+          <div><b>${trainerSummary.today}</b><span>cần ôn</span></div>
+          <div><b>${trainerSummary.mastered}</b><span>đã thuộc</span></div>
+          <div><b>${trainerSummary.starred}</b><span>có sao</span></div>
+        </div>
+        <div class="vocab-quick-study">
+          <div><span class="eyebrow">VOCABULARY TRAINER</span><h2>Bắt đầu một buổi ôn ngắn</h2><p>Khuyên dùng <b>VI → EN</b> để buộc não tự nhớ và bật từ tiếng Anh ra trước khi xem đáp án.</p></div>
+          <label><span>Mặt trước</span><select id="vocabQuickDirection">
+            <option value="vi-en" ${trainerSettings.direction==='vi-en'?'selected':''}>Tiếng Việt → Tiếng Anh</option>
+            <option value="en-vi" ${trainerSettings.direction==='en-vi'?'selected':''}>Tiếng Anh → Tiếng Việt</option>
+            <option value="mixed" ${trainerSettings.direction==='mixed'?'selected':''}>Trộn hai hướng</option>
+          </select></label>
+          <label><span>Số thẻ</span><select id="vocabQuickSize">
+            ${['5','10','20','30','all'].map(x=>`<option value="${x}" ${String(trainerSettings.size||'10')===x?'selected':''}>${x==='all'?'Tất cả':x+' thẻ'}</option>`).join('')}
+          </select></label>
+          <button id="startFlashcards" class="primary-button vocab-start-training" type="button">Bắt đầu ôn →</button>
+        </div>
+      </section>`:''}
+      <div class="vocab-toolbar"><strong>${items.length} mục đã lưu</strong>${items.length?'<span>Chạm từ để nghe · tiến độ ôn nằm trong Vocabulary Trainer</span>':''}</div>
       <section id="vocabArea">${items.length?vocabCards(items):emptyVocab()}</section>`;
     $$('[data-vocab-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.vocabSpeak));
     $$('[data-vocab-remove]').forEach(b=>b.onclick=()=>{
@@ -1799,7 +1822,10 @@
       queueVocabDelete(key);
       renderVocab();
     });
-    if($('#startFlashcards')) $('#startFlashcards').onclick=()=>renderFlashcards(items);
+    if($('#startFlashcards')) $('#startFlashcards').onclick=()=>renderFlashcards(items,{
+      direction:$('#vocabQuickDirection')?.value||'vi-en',
+      size:$('#vocabQuickSize')?.value||'10'
+    });
     if($('#vocabOpenSync')) $('#vocabOpenSync').onclick=()=>routeTo('settings');
     if($('#vocabSyncNow')) $('#vocabSyncNow').onclick=async()=>{
       const btn=$('#vocabSyncNow');
@@ -1807,10 +1833,49 @@
       await syncSavedVocabulary({silent:false,rerender:true});
     };
   }
-  function vocabCards(items){ return `<div class="vocab-list">${items.map(x=>`<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3><span class="ipa">${esc(x.ipa||'')}</span></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">${uiIcon('volume-2')}</button></div><p>${esc(x.meaning||'')}</p>${x.example?`<small>${esc(x.example)}</small>`:''}<div style="margin-top:10px"><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa khỏi danh sách</button></div></article>`).join('')}</div>`; }
-  function emptyVocab(){ return `<div class="empty-state"><strong>Chưa có từ nào được lưu</strong>Vào Mẫu 01, chạm một từ tiếng Anh và bấm ☆ Lưu.<br><button class="primary-button" style="margin-top:14px" data-go="lesson/1">Mở Mẫu 01</button></div>`; }
-  function renderFlashcards(items){
-    flashIndex=0; const draw=()=>{const x=items[flashIndex%items.length];$('#vocabArea').innerHTML=`<div class="flashcard"><div><div class="front">${esc(x.term)}</div><div class="ipa">${esc(x.ipa||'')}</div><div id="flashBack" class="back hidden"><strong>${esc(x.meaning||'')}</strong>${x.example?`<p>${esc(x.example)}</p>`:''}</div><div class="quiz-actions" style="justify-content:center;margin-top:22px"><button id="flashSpeak" class="secondary-button">${uiIcon('volume-2')}<span>Nghe</span></button><button id="flashReveal" class="primary-button">Hiện nghĩa</button><button id="flashNext" class="secondary-button">Từ tiếp theo →</button></div></div></div>`;$('#flashSpeak').onclick=()=>speak(x.term);$('#flashReveal').onclick=()=>$('#flashBack').classList.toggle('hidden');$('#flashNext').onclick=()=>{flashIndex=(flashIndex+1)%items.length;draw();};};draw();
+
+  function vocabCards(items){
+    return `<div class="vocab-list">${items.map(x=>{
+      const t=x.trainer||{};
+      const badges=[
+        t.starred?'★ Có sao':'',
+        t.mastered?'✓ Đã thuộc':'',
+        (!t.mastered&&Number(t.reviewCount||0)>0)?'Đang học':''
+      ].filter(Boolean).map(v=>`<span>${v}</span>`).join('');
+      return `<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3><span class="ipa">${esc(x.ipa||'')}</span></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">${uiIcon('volume-2')}</button></div><p>${esc(x.meaning||'')}</p>${x.example?`<small>${esc(x.example)}</small>`:''}${badges?`<div class="vocab-list-badges">${badges}</div>`:''}<div style="margin-top:10px"><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa khỏi danh sách</button></div></article>`;
+    }).join('')}</div>`;
+  }
+
+  function emptyVocab(){
+    return `<div class="empty-state"><strong>Chưa có từ nào được lưu</strong>Vào Mẫu 01, chạm một từ tiếng Anh và bấm ☆ Lưu.<br><button class="primary-button" style="margin-top:14px" data-go="lesson/1">Mở Mẫu 01</button></div>`;
+  }
+
+  function renderFlashcards(items,overrides={}){
+    if(window.VocabularyTrainer?.open){
+      window.VocabularyTrainer.open({
+        state,
+        main:$('#mainView'),
+        setHeader,
+        saveState,
+        queueVocabUpsert,
+        speak,
+        uiIcon,
+        esc,
+        escAttr,
+        toast,
+        renderVocab
+      },overrides);
+      return;
+    }
+    flashIndex=0;
+    const draw=()=>{
+      const x=items[flashIndex%items.length];
+      $('#vocabArea').innerHTML=`<div class="flashcard"><div><div class="front">${esc(x.term)}</div><div class="ipa">${esc(x.ipa||'')}</div><div id="flashBack" class="back hidden"><strong>${esc(x.meaning||'')}</strong>${x.example?`<p>${esc(x.example)}</p>`:''}</div><div class="quiz-actions" style="justify-content:center;margin-top:22px"><button id="flashSpeak" class="secondary-button">${uiIcon('volume-2')}<span>Nghe</span></button><button id="flashReveal" class="primary-button">Hiện nghĩa</button><button id="flashNext" class="secondary-button">Từ tiếp theo →</button></div></div></div>`;
+      $('#flashSpeak').onclick=()=>speak(x.term);
+      $('#flashReveal').onclick=()=>$('#flashBack').classList.toggle('hidden');
+      $('#flashNext').onclick=()=>{flashIndex=(flashIndex+1)%items.length;draw();};
+    };
+    draw();
   }
 
   function shadowItemsFromLessons(lessons){
