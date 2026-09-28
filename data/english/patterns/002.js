@@ -30,245 +30,764 @@ window.CONTENT_REGISTRY["en-pattern-002"] = {
   ],
 
   sections: [
-    {
-      id: "what-is-im",
-      title: "1. I’m là gì?",
-      blocks: [
-        { type: "formula", text: "I’m = I am" },
-        { type: "paragraph", html: "<p>Vì vậy:</p><p><b>I’m going to...</b> = <b>I am going to...</b></p><p>Trong giao tiếp, người bản xứ gần như luôn dùng dạng rút gọn <b>I’m going to...</b> thay vì <b>I am going to...</b>.</p>" },
-        { type: "callout", tone: "green", html: "Bạn nên học luôn cả cụm:<br><strong>I’m going to = Tôi sẽ / Tôi định</strong><br>Đừng dịch từng từ." }
-      ]
-    },
-    {
-      id: "pronunciation",
-      title: "2. Cách đọc",
-      blocks: [
-        { type: "formula", text: "I’m going to", note: "IPA: /aɪm ˈɡoʊɪŋ tə/" },
-        { type: "callout", tone: "purple", html: "Đọc gần đúng cho người Việt:<br><strong>aim gâu-ing tờ</strong>" },
-        { type: "paragraph", html: "<p>Trong giao tiếp tự nhiên, <code>going to</code> thường được nói rất nhanh. Bạn có thể nghe:</p><p><b>I’m gonna...</b></p>" },
-        { type: "sentences", items: [
-          ["I’m going to go home.", "Nói rõ: Aim gâu-ing tờ gâu hôum."],
-          ["I’m gonna go home.", "Nói tự nhiên: Aim gân-nờ gâu hôum."]
-        ]},
-        { type: "callout", tone: "amber", html: "<b>gonna = going to</b> trong cách nói thân mật.<br>Giai đoạn đầu: <b>viết</b> “I’m going to...”; khi <b>nói/nghe</b>, làm quen cả “I’m going to...” và “I’m gonna...”. Không nên viết <code>gonna</code> trong email công việc trang trọng." },
-        { type: "sentences", items: [
-          ["I’m gonna eat.", "I’m going to eat. → Tôi sẽ ăn."]
-        ]}
-      ]
-    },
-    {
-      id: "when-to-use",
-      title: "3. Khi nào dùng I’m going to...?",
-      blocks: [
-        { type: "paragraph", html: "<p>Dùng khi bạn <b>đã có ý định hoặc kế hoạch</b> làm việc gì đó.</p>" },
-        { type: "sentences", items: [
-          ["I’m going to study English tonight.", "Tối nay tôi sẽ học tiếng Anh."],
-          ["I’m going to work tomorrow.", "Ngày mai tôi sẽ đi làm."]
-        ]},
-        { type: "callout", tone: "green", html: "Bạn đã quyết định rồi → <b>I’m going to...</b> rất tự nhiên." }
-      ]
-    },
-    {
-      id: "sentences20",
-      title: "4. 20 câu quan trọng trong cuộc sống",
-      blocks: [
-        { type: "sentences", learnable: true, controls: true, items: [
-          ["I’m going to eat.", "Tôi sẽ ăn."],
-          ["I’m going to sleep.", "Tôi sẽ ngủ."],
-          ["I’m going to take a shower.", "Tôi sẽ đi tắm."],
-          ["I’m going to go home.", "Tôi sẽ về nhà."],
-          ["I’m going to work.", "Tôi sẽ đi làm."],
-          ["I’m going to study.", "Tôi sẽ học."],
-          ["I’m going to study English.", "Tôi sẽ học tiếng Anh."],
-          ["I’m going to cook dinner.", "Tôi sẽ nấu bữa tối."],
-          ["I’m going to clean the room.", "Tôi sẽ dọn phòng."],
-          ["I’m going to call him.", "Tôi sẽ gọi cho anh ấy."],
-          ["I’m going to call her.", "Tôi sẽ gọi cho cô ấy."],
-          ["I’m going to check it.", "Tôi sẽ kiểm tra nó."],
-          ["I’m going to try it.", "Tôi sẽ thử nó."],
-          ["I’m going to buy it.", "Tôi sẽ mua nó."],
-          ["I’m going to ask him.", "Tôi sẽ hỏi anh ấy."],
-          ["I’m going to talk to him.", "Tôi sẽ nói chuyện với anh ấy."],
-          ["I’m going to meet my friend.", "Tôi sẽ gặp bạn tôi."],
-          ["I’m going to take a break.", "Tôi sẽ nghỉ một chút."],
-          ["I’m going to watch TV.", "Tôi sẽ xem TV."],
-          ["I’m going to practice English.", "Tôi sẽ luyện tiếng Anh."]
-        ]}
-      ]
-    },
-    {
-      id: "work",
-      title: "5. Cực kỳ hữu ích trong công việc",
-      blocks: [
-        { type: "paragraph", html: "<p>Bạn có thể dùng mẫu này hàng ngày:</p>" },
-        { type: "sentences", items: [
-          ["I’m going to check it.", "Tôi sẽ kiểm tra."],
-          ["I’m going to check the settings.", "Tôi sẽ kiểm tra cài đặt."],
-          ["I’m going to test it again.", "Tôi sẽ kiểm tra/thử lại."],
-          ["I’m going to restart the system.", "Tôi sẽ khởi động lại hệ thống."],
-          ["I’m going to update the software.", "Tôi sẽ cập nhật phần mềm."],
-          ["I’m going to send you the file.", "Tôi sẽ gửi file cho bạn."],
-          ["I’m going to talk to my manager.", "Tôi sẽ nói chuyện với quản lý của tôi."],
-          ["I’m going to check the problem.", "Tôi sẽ kiểm tra vấn đề."]
-        ]},
-        { type: "callout", tone: "green", html: "Một mẫu bạn nên nhớ ngay:<br><strong>I’m going to check it.</strong><br>Trong công việc, câu này dùng cực nhiều." }
-      ]
-    },
-    {
-      id: "time",
-      title: "6. Thêm thời gian vào cuối câu",
-      blocks: [
-        { type: "paragraph", html: "<p><code>I’m going to...</code> rất dễ mở rộng.</p>" },
-        { type: "sentences", items: [
-          ["I’m going to study English.", "Tôi sẽ học tiếng Anh."],
-          ["I’m going to study English tonight.", "Tối nay tôi sẽ học tiếng Anh."],
-          ["I’m going to study English for 30 minutes tonight.", "Tối nay tôi sẽ học tiếng Anh trong 30 phút."],
-          ["I’m going to call him later.", "Lát nữa tôi sẽ gọi cho anh ấy."],
-          ["I’m going to go shopping this weekend.", "Cuối tuần này tôi sẽ đi mua sắm."]
-        ]},
-        { type: "chips", items: [
-          ["today", "hôm nay"],
-          ["tonight", "tối nay"],
-          ["tomorrow", "ngày mai"],
-          ["this afternoon", "chiều nay"],
-          ["this evening", "tối nay"],
-          ["this weekend", "cuối tuần này"],
-          ["next week", "tuần sau"],
-          ["later", "lát nữa / sau"],
-          ["after work", "sau giờ làm"],
-          ["after dinner", "sau bữa tối"]
-        ]},
-        { type: "builder", title: "Luyện ghép câu", base: "I’m going to" }
-      ]
-    },
-    {
-      id: "negative",
-      title: "7. Dạng phủ định",
-      blocks: [
-        { type: "paragraph", html: "<p>Muốn nói “Tôi sẽ không...”, chỉ cần thêm <code>not</code>.</p>" },
-        { type: "formula", text: "I’m not going to + động từ" },
-        { type: "sentences", items: [
-          ["I’m not going to go.", "Tôi sẽ không đi."],
-          ["I’m not going to buy it.", "Tôi sẽ không mua nó."],
-          ["I’m not going to work tomorrow.", "Ngày mai tôi sẽ không đi làm."],
-          ["I’m not going to drink tonight.", "Tối nay tôi sẽ không uống rượu."],
-          ["I’m not going to do that.", "Tôi sẽ không làm việc đó."]
-        ]}
-      ]
-    },
-    {
-      id: "questions",
-      title: "8. Hỏi người khác",
-      blocks: [
-        { type: "paragraph", html: "<p>Khi <code>I</code> đổi thành <code>you</code>:</p>" },
-        { type: "formula", text: "Are you going to + động từ?", note: "= Bạn sẽ… à? / Bạn định… à?" },
-        { type: "sentences", items: [
-          ["Are you going to eat?", "Bạn định ăn à?"],
-          ["Are you going to work tomorrow?", "Ngày mai bạn đi làm à?"],
-          ["Are you going to buy it?", "Bạn định mua nó à?"],
-          ["Are you going to come with us?", "Bạn sẽ đi cùng chúng tôi chứ?"]
-        ]},
-        { type: "callout", tone: "green", html: "Đây là mẫu cực kỳ phổ biến." }
-      ]
-    },
-    {
-      id: "wh-questions",
-      title: "9. Các câu hỏi tự nhiên hơn",
-      blocks: [
-        { type: "sentences", items: [
-          ["What are you going to do?", "Bạn định làm gì?"],
-          ["What are you gonna do?", "Cách nói tự nhiên của “What are you going to do?”"],
-          ["Where are you going to go?", "Bạn định đi đâu?"],
-          ["When are you going to leave?", "Khi nào bạn sẽ đi?"],
-          ["Who are you going to meet?", "Bạn sẽ gặp ai?"]
-        ]}
-      ]
-    },
-    {
-      id: "common-mistake",
-      title: "10. Một lỗi người mới rất hay mắc",
-      blocks: [
-        { type: "callout", tone: "bad", html: "❌ <strong>I’m going to home.</strong>" },
-        { type: "paragraph", html: "<p>Vì <code>home</code> trong trường hợp này không dùng trực tiếp sau <code>going to</code>.</p>" },
-        { type: "sentences", items: [
-          ["I’m going home.", "Tôi đang/sắp về nhà."],
-          ["I’m going to go home.", "Tôi dự định sẽ về nhà."]
-        ]},
-        { type: "callout", tone: "amber", html: "Trong giao tiếp thường ngày, nếu bạn chuẩn bị về ngay: <b>I’m going home.</b> tự nhiên hơn." }
-      ]
-    },
-    {
-      id: "going-to-vs-will",
-      title: "11. I’m going to và I will",
-      blocks: [
-        { type: "paragraph", html: "<p>Hai cái đều có thể dịch là <b>“tôi sẽ”</b>, nhưng chưa cần học quá sâu.</p>" },
-        { type: "compare", leftTitle: "I’m going to...", rightTitle: "I’ll...", leftHtml: "Bạn <b>đã có dự định trước</b>.", rightHtml: "Bạn <b>quyết định ngay lúc nói</b>." },
-        { type: "sentences", items: [
-          ["I’m going to study English tonight.", "Tối nay tôi sẽ học tiếng Anh. Bạn đã có kế hoạch."],
-          ["I’ll answer it.", "Để tôi nghe máy. Quyết định ngay lúc điện thoại reo."]
-        ]},
-        { type: "callout", tone: "green", html: "Hiện tại hãy tập trung:<br><strong>I’m going to = Tôi định / Tôi sẽ</strong>" }
-      ]
-    },
-    {
-      id: "combine-patterns",
-      title: "12. Kết hợp mẫu số 1 và mẫu số 2",
-      blocks: [
-        { type: "sentences", items: [
-          ["I’d like to buy a new car.", "Tôi muốn mua một chiếc xe mới."],
-          ["I’m going to buy a new car.", "Tôi sẽ mua một chiếc xe mới."],
-          ["I’d like to learn English.", "Tôi muốn học tiếng Anh."],
-          ["I’m going to study English every day.", "Tôi sẽ học tiếng Anh mỗi ngày."]
-        ]},
-        { type: "compare", leftTitle: "I’d like to...", rightTitle: "I’m going to...", leftHtml: "→ <b>mong muốn</b>", rightHtml: "→ <b>đã có ý định/kế hoạch</b>" },
-        { type: "callout", tone: "purple", html: "Đây chính là cách người ta kết hợp nhiều mẫu câu để nói dài hơn." }
-      ]
-    },
-    {
-      id: "dialogs",
-      title: "13. Hội thoại thực tế",
-      blocks: [
-        { type: "dialogs", items: [
-          { place: "Tối nay", rows: [
-            ["A", "What are you going to do tonight?", "Tối nay bạn định làm gì?"],
-            ["B", "I’m going to study English.", "Tôi sẽ học tiếng Anh."],
-            ["A", "Really?", "Thật à?"],
-            ["B", "Yeah. I’m going to practice for about 30 minutes.", "Ừ. Tôi sẽ luyện khoảng 30 phút."]
-          ]},
-          { place: "Trong công việc", rows: [
-            ["A", "Can you check this problem?", "Bạn kiểm tra vấn đề này được không?"],
-            ["B", "Sure. I’m going to check it now.", "Được. Tôi sẽ kiểm tra ngay bây giờ."]
-          ]},
-          { place: "Ở nhà", rows: [
-            ["A", "Where are you going?", "Bạn đi đâu vậy?"],
-            ["B", "I’m going to the supermarket.", "Tôi đang đi siêu thị."],
-            ["A", "What are you going to buy?", "Bạn định mua gì?"],
-            ["B", "I’m going to buy some food.", "Tôi sẽ mua ít đồ ăn."]
-          ]}
-        ]}
-      ]
-    },
-    {
-      id: "practice",
-      title: "14. 10 câu bạn cần tự nói",
-      blocks: [
-        { type: "paragraph", html: "<p>Nhìn tiếng Việt trước và tự nói.</p>" },
-        { type: "quiz" }
-      ]
-    },
-    {
-      id: "summary",
-      title: "Hai mẫu đã học",
-      blocks: [
-        { type: "compare", leftTitle: "01. I’d like to + V", rightTitle: "02. I’m going to + V", leftHtml: "→ Tôi muốn...", rightHtml: "→ Tôi sẽ / Tôi định..." },
-        { type: "sentences", items: [
-          ["I’d like to learn English.", "Tôi muốn học tiếng Anh."],
-          ["I’m going to study English tonight.", "Tôi sẽ học tiếng Anh tối nay."]
-        ]},
-        { type: "callout", tone: "green", html: "Hãy cố đạt đến mức khi trong đầu xuất hiện <b>“Tôi sẽ…”</b>, bạn không dịch nữa mà tự động bật ra:<br><strong>I’m going to…</strong><br>Sau đó chỉ việc gắn động từ phía sau: <b>eat, go, buy, check, call, study, work, try, ask, talk...</b>" }
-      ]
-    }
-  ],
+  {
+    "id": "pronunciation",
+    "title": "1. Cách đọc",
+    "blocks": [
+      {
+        "type": "formula",
+        "text": "I’m going to",
+        "note": "IPA: /aɪm ˈɡoʊɪŋ tə/"
+      },
+      {
+        "type": "callout",
+        "tone": "purple",
+        "html": "Đọc gần đúng: <b>aim gâu-ing tờ</b>. Trong giao tiếp nhanh, bạn sẽ thường nghe <b>I’m gonna...</b>."
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to go home.",
+            "Tôi sẽ về nhà."
+          ],
+          [
+            "I'm gonna go home.",
+            "Cách nói thân mật, tự nhiên của “I’m going to go home.”"
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "amber",
+        "html": "Khi viết, nhất là trong công việc, hãy dùng <b>going to</b>. Khi nghe/nói thân mật, hãy nhận ra cả <b>gonna</b>."
+      }
+    ]
+  },
+  {
+    "id": "when-to-use",
+    "title": "2. Khi nào dùng I’m going to...?",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>Dùng khi bạn <b>đã có ý định hoặc kế hoạch</b> làm một việc trong tương lai gần hoặc tương đối rõ ràng.</p>"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to study English tonight.",
+            "Tối nay tôi sẽ học tiếng Anh."
+          ],
+          [
+            "I'm going to call him after dinner.",
+            "Tôi sẽ gọi cho anh ấy sau bữa tối."
+          ],
+          [
+            "I'm going to check the system tomorrow.",
+            "Ngày mai tôi sẽ kiểm tra hệ thống."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Bạn đã quyết định trước rồi → <b>I’m going to...</b> thường rất tự nhiên."
+      }
+    ]
+  },
+  {
+    "id": "practical-sentences",
+    "title": "3. 40 câu ví dụ thực tế",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>40 câu dưới đây dùng cho sinh hoạt, gia đình, công việc, tiền bạc, học tập và kế hoạch.</p>"
+      },
+      {
+        "type": "sentences",
+        "learnable": true,
+        "controls": true,
+        "items": [
+          [
+            "I'm going to eat something first.",
+            "Tôi sẽ ăn gì đó trước."
+          ],
+          [
+            "I'm going to take a shower.",
+            "Tôi sẽ đi tắm."
+          ],
+          [
+            "I'm going to go home now.",
+            "Tôi sẽ về nhà bây giờ."
+          ],
+          [
+            "I'm going to cook dinner tonight.",
+            "Tối nay tôi sẽ nấu bữa tối."
+          ],
+          [
+            "I'm going to clean the kitchen.",
+            "Tôi sẽ dọn nhà bếp."
+          ],
+          [
+            "I'm going to do the laundry later.",
+            "Lát nữa tôi sẽ giặt quần áo."
+          ],
+          [
+            "I'm going to stop by the supermarket.",
+            "Tôi sẽ ghé qua siêu thị."
+          ],
+          [
+            "I'm going to pick up some groceries.",
+            "Tôi sẽ mua/lấy một ít đồ ăn."
+          ],
+          [
+            "I'm going to call my family tonight.",
+            "Tối nay tôi sẽ gọi cho gia đình."
+          ],
+          [
+            "I'm going to meet a friend this weekend.",
+            "Cuối tuần này tôi sẽ gặp một người bạn."
+          ],
+          [
+            "I'm going to take the kids to the park.",
+            "Tôi sẽ đưa các con ra công viên."
+          ],
+          [
+            "I'm going to get some rest tonight.",
+            "Tối nay tôi sẽ nghỉ ngơi một chút."
+          ],
+          [
+            "I'm going to study English for 30 minutes.",
+            "Tôi sẽ học tiếng Anh trong 30 phút."
+          ],
+          [
+            "I'm going to practice speaking after work.",
+            "Tôi sẽ luyện nói sau giờ làm."
+          ],
+          [
+            "I'm going to review what I learned today.",
+            "Tôi sẽ ôn lại những gì đã học hôm nay."
+          ],
+          [
+            "I'm going to work on my pronunciation.",
+            "Tôi sẽ luyện/cải thiện phát âm."
+          ],
+          [
+            "I'm going to check the settings first.",
+            "Tôi sẽ kiểm tra cài đặt trước."
+          ],
+          [
+            "I'm going to test it again.",
+            "Tôi sẽ thử/kiểm tra lại."
+          ],
+          [
+            "I'm going to restart the system.",
+            "Tôi sẽ khởi động lại hệ thống."
+          ],
+          [
+            "I'm going to update the software.",
+            "Tôi sẽ cập nhật phần mềm."
+          ],
+          [
+            "I'm going to send you the file later.",
+            "Lát nữa tôi sẽ gửi file cho bạn."
+          ],
+          [
+            "I'm going to talk to my manager.",
+            "Tôi sẽ nói chuyện với quản lý."
+          ],
+          [
+            "I'm going to follow up with the customer.",
+            "Tôi sẽ liên hệ lại với khách hàng."
+          ],
+          [
+            "I'm going to go over the document one more time.",
+            "Tôi sẽ xem lại tài liệu thêm một lần nữa."
+          ],
+          [
+            "I'm going to make sure everything is ready.",
+            "Tôi sẽ chắc chắn rằng mọi thứ đã sẵn sàng."
+          ],
+          [
+            "I'm going to finish this before lunch.",
+            "Tôi sẽ hoàn thành việc này trước giờ trưa."
+          ],
+          [
+            "I'm going to take a few days off next month.",
+            "Tháng sau tôi sẽ nghỉ vài ngày."
+          ],
+          [
+            "I'm going to plan a short trip with my family.",
+            "Tôi sẽ lên kế hoạch cho một chuyến đi ngắn cùng gia đình."
+          ],
+          [
+            "I'm going to start exercising again.",
+            "Tôi sẽ bắt đầu tập thể dục lại."
+          ],
+          [
+            "I'm going to cut back on unnecessary spending.",
+            "Tôi sẽ cắt giảm những khoản chi không cần thiết."
+          ],
+          [
+            "I'm going to put some money aside every month.",
+            "Tôi sẽ để dành một ít tiền mỗi tháng."
+          ],
+          [
+            "I'm going to compare a few options before I decide.",
+            "Tôi sẽ so sánh vài lựa chọn trước khi quyết định."
+          ],
+          [
+            "I'm going to think it over tonight.",
+            "Tối nay tôi sẽ suy nghĩ kỹ việc đó."
+          ],
+          [
+            "I'm going to look into the problem in more detail.",
+            "Tôi sẽ tìm hiểu vấn đề kỹ hơn."
+          ],
+          [
+            "I'm going to double-check everything before I send it.",
+            "Tôi sẽ kiểm tra kỹ mọi thứ trước khi gửi."
+          ],
+          [
+            "I'm going to focus more on the tasks that matter most.",
+            "Tôi sẽ tập trung nhiều hơn vào những việc quan trọng nhất."
+          ],
+          [
+            "I'm going to make better use of my free time.",
+            "Tôi sẽ sử dụng thời gian rảnh hiệu quả hơn."
+          ],
+          [
+            "I'm going to be more consistent with my English practice.",
+            "Tôi sẽ đều đặn hơn trong việc luyện tiếng Anh."
+          ],
+          [
+            "I'm going to take this more seriously from now on.",
+            "Từ bây giờ tôi sẽ nghiêm túc hơn với việc này."
+          ],
+          [
+            "I'm going to make some changes and see what works best.",
+            "Tôi sẽ thực hiện một số thay đổi và xem cách nào hiệu quả nhất."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "daily-life",
+    "title": "4. Dùng trong cuộc sống hằng ngày",
+    "blocks": [
+      {
+        "type": "chips",
+        "items": [
+          [
+            "go home",
+            "về nhà"
+          ],
+          [
+            "take a shower",
+            "đi tắm"
+          ],
+          [
+            "cook dinner",
+            "nấu bữa tối"
+          ],
+          [
+            "do the laundry",
+            "giặt quần áo"
+          ],
+          [
+            "stop by the supermarket",
+            "ghé qua siêu thị"
+          ],
+          [
+            "get some rest",
+            "nghỉ ngơi một chút"
+          ]
+        ]
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to cook dinner tonight.",
+            "Tối nay tôi sẽ nấu bữa tối."
+          ],
+          [
+            "I'm going to stop by the supermarket after work.",
+            "Tôi sẽ ghé siêu thị sau giờ làm."
+          ],
+          [
+            "I'm going to get some rest tonight.",
+            "Tối nay tôi sẽ nghỉ ngơi một chút."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "work",
+    "title": "5. Dùng trong công việc",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to check the settings first.",
+            "Tôi sẽ kiểm tra cài đặt trước."
+          ],
+          [
+            "I'm going to test it again.",
+            "Tôi sẽ thử lại."
+          ],
+          [
+            "I'm going to follow up with the customer.",
+            "Tôi sẽ liên hệ lại với khách hàng."
+          ],
+          [
+            "I'm going to go over the document one more time.",
+            "Tôi sẽ xem lại tài liệu thêm một lần nữa."
+          ],
+          [
+            "I'm going to make sure everything is ready.",
+            "Tôi sẽ đảm bảo mọi thứ đã sẵn sàng."
+          ],
+          [
+            "I'm going to double-check everything before I send it.",
+            "Tôi sẽ kiểm tra kỹ mọi thứ trước khi gửi."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Trong công việc, <b>I’m going to...</b> rất hữu ích khi bạn muốn nói rõ bước tiếp theo mình sẽ làm."
+      }
+    ]
+  },
+  {
+    "id": "expand",
+    "title": "6. Mở rộng câu tự nhiên",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>Mở rộng câu bằng <b>thời gian, mục đích, lý do hoặc điều kiện</b>.</p>"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to study English.",
+            "Tôi sẽ học tiếng Anh."
+          ],
+          [
+            "I'm going to study English tonight.",
+            "Tối nay tôi sẽ học tiếng Anh."
+          ],
+          [
+            "I'm going to study English for 30 minutes tonight.",
+            "Tối nay tôi sẽ học tiếng Anh trong 30 phút."
+          ],
+          [
+            "I'm going to practice every day so that I can speak more confidently.",
+            "Tôi sẽ luyện mỗi ngày để có thể nói tự tin hơn."
+          ],
+          [
+            "I'm going to check the logs before I change any settings.",
+            "Tôi sẽ kiểm tra log trước khi thay đổi bất kỳ cài đặt nào."
+          ]
+        ]
+      },
+      {
+        "type": "builder",
+        "title": "Tự ghép câu",
+        "base": "I'm going to"
+      }
+    ]
+  },
+  {
+    "id": "negative",
+    "title": "7. Dạng phủ định",
+    "blocks": [
+      {
+        "type": "formula",
+        "text": "I’m not going to + V",
+        "note": "= Tôi sẽ không / Tôi không định…"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm not going to buy it yet.",
+            "Tôi chưa định mua nó."
+          ],
+          [
+            "I'm not going to rush into a decision.",
+            "Tôi sẽ không vội vàng đưa ra quyết định."
+          ],
+          [
+            "I'm not going to work late tonight.",
+            "Tối nay tôi sẽ không làm muộn."
+          ],
+          [
+            "I'm not going to make any changes until I understand the problem.",
+            "Tôi sẽ không thay đổi gì cho đến khi hiểu vấn đề."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "questions",
+    "title": "8. Hỏi người khác",
+    "blocks": [
+      {
+        "type": "formula",
+        "text": "Are you going to + V?",
+        "note": "= Bạn sẽ / bạn định…?"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "Are you going to work tomorrow?",
+            "Ngày mai bạn đi làm à?"
+          ],
+          [
+            "Are you going to buy it?",
+            "Bạn định mua nó à?"
+          ],
+          [
+            "Are you going to come with us?",
+            "Bạn sẽ đi cùng chúng tôi chứ?"
+          ],
+          [
+            "Are you going to finish it today?",
+            "Hôm nay bạn sẽ làm xong chứ?"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "natural-questions",
+    "title": "9. Những câu hỏi tự nhiên hay gặp",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "What are you going to do?",
+            "Bạn định làm gì?"
+          ],
+          [
+            "Where are you going to go?",
+            "Bạn định đi đâu?"
+          ],
+          [
+            "When are you going to leave?",
+            "Khi nào bạn sẽ đi?"
+          ],
+          [
+            "Who are you going to meet?",
+            "Bạn sẽ gặp ai?"
+          ],
+          [
+            "How are you going to handle it?",
+            "Bạn định xử lý việc đó thế nào?"
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "purple",
+        "html": "Trong hội thoại nhanh, <b>What are you going to do?</b> thường nghe gần giống <b>What are you gonna do?</b>."
+      }
+    ]
+  },
+  {
+    "id": "common-mistakes",
+    "title": "10. Một số lỗi người mới dễ mắc",
+    "blocks": [
+      {
+        "type": "compare",
+        "leftTitle": "Đúng",
+        "rightTitle": "Sai",
+        "leftHtml": "✅ I'm going to <b>go home</b>.<br>✅ I'm <b>going home</b>.",
+        "rightHtml": "❌ I'm going to <b>home</b>.<br>❌ I'm going to <b>going</b> home."
+      },
+      {
+        "type": "callout",
+        "tone": "amber",
+        "html": "Sau <b>going to</b> dùng động từ nguyên mẫu. Nhưng <b>I’m going home</b> là một cấu trúc khác và rất tự nhiên khi bạn đang/sắp về nhà."
+      }
+    ]
+  },
+  {
+    "id": "comparison",
+    "title": "11. I’m going to và I’ll",
+    "blocks": [
+      {
+        "type": "compare",
+        "leftTitle": "I’m going to…",
+        "rightTitle": "I’ll…",
+        "leftHtml": "Thường là kế hoạch/ý định đã có trước.",
+        "rightHtml": "Thường dùng khi quyết định ngay lúc nói hoặc đưa ra lời hứa/dự đoán."
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to study tonight.",
+            "Tối nay tôi sẽ học. — đã có kế hoạch."
+          ],
+          [
+            "The phone is ringing. I'll answer it.",
+            "Điện thoại đang reo. Để tôi nghe. — quyết định ngay lúc nói."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Ở giai đoạn này, chỉ cần nhớ: <b>đã có dự định trước → I’m going to...</b>."
+      }
+    ]
+  },
+  {
+    "id": "dialogs",
+    "title": "12. Hội thoại thực tế",
+    "blocks": [
+      {
+        "type": "dialogs",
+        "items": [
+          {
+            "place": "Buổi tối",
+            "rows": [
+              [
+                "A",
+                "What are you going to do tonight?",
+                "Tối nay bạn định làm gì?"
+              ],
+              [
+                "B",
+                "I'm going to practice English for about 30 minutes.",
+                "Tôi sẽ luyện tiếng Anh khoảng 30 phút."
+              ]
+            ]
+          },
+          {
+            "place": "Công việc",
+            "rows": [
+              [
+                "A",
+                "What are you going to do about the issue?",
+                "Bạn định làm gì với vấn đề này?"
+              ],
+              [
+                "B",
+                "I'm going to check the logs first and then test it again.",
+                "Tôi sẽ kiểm tra log trước rồi thử lại."
+              ]
+            ]
+          },
+          {
+            "place": "Cuối tuần",
+            "rows": [
+              [
+                "A",
+                "Do you have any plans this weekend?",
+                "Cuối tuần này bạn có kế hoạch gì không?"
+              ],
+              [
+                "B",
+                "I'm going to spend some time with my family.",
+                "Tôi sẽ dành thời gian với gia đình."
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "phrases",
+    "title": "13. Các cụm đáng học cùng mẫu này",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>Học nguyên cụm để phần sau <b>I’m going to...</b> bật ra nhanh hơn.</p>"
+      },
+      {
+        "type": "chips",
+        "items": [
+          [
+            "take a shower",
+            "đi tắm"
+          ],
+          [
+            "stop by the supermarket",
+            "ghé qua siêu thị"
+          ],
+          [
+            "pick up some groceries",
+            "mua/lấy một ít đồ ăn"
+          ],
+          [
+            "get some rest",
+            "nghỉ ngơi một chút"
+          ],
+          [
+            "work on my pronunciation",
+            "luyện/cải thiện phát âm"
+          ],
+          [
+            "follow up with someone",
+            "liên hệ lại với ai"
+          ],
+          [
+            "go over something",
+            "xem lại / rà soát"
+          ],
+          [
+            "make sure",
+            "đảm bảo / chắc chắn"
+          ],
+          [
+            "put some money aside",
+            "để dành tiền"
+          ],
+          [
+            "cut back on spending",
+            "cắt giảm chi tiêu"
+          ],
+          [
+            "think it over",
+            "suy nghĩ kỹ"
+          ],
+          [
+            "double-check everything",
+            "kiểm tra kỹ mọi thứ"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "advanced",
+    "title": "14. Những câu ở mức cao hơn nhưng vẫn dùng thường xuyên",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'm going to take a closer look at the issue before I make any changes.",
+            "Tôi sẽ xem xét kỹ vấn đề trước khi thay đổi bất cứ thứ gì."
+          ],
+          [
+            "I'm going to make better use of my time instead of leaving everything until the last minute.",
+            "Tôi sẽ sử dụng thời gian hiệu quả hơn thay vì để mọi việc đến phút cuối."
+          ],
+          [
+            "I'm going to focus on what matters most and deal with the smaller things later.",
+            "Tôi sẽ tập trung vào việc quan trọng nhất và xử lý những việc nhỏ sau."
+          ],
+          [
+            "I'm going to keep practicing until I can explain things more naturally in English.",
+            "Tôi sẽ tiếp tục luyện cho đến khi có thể giải thích mọi thứ tự nhiên hơn bằng tiếng Anh."
+          ],
+          [
+            "I'm going to compare a few options before making a final decision.",
+            "Tôi sẽ so sánh vài lựa chọn trước khi đưa ra quyết định cuối cùng."
+          ],
+          [
+            "I'm going to be more consistent with my routine so that I can make steady progress.",
+            "Tôi sẽ đều đặn hơn với thói quen của mình để có thể tiến bộ ổn định."
+          ]
+        ]
+      },
+      {
+        "type": "chips",
+        "items": [
+          [
+            "take a closer look",
+            "xem xét kỹ hơn"
+          ],
+          [
+            "leave something until the last minute",
+            "để việc gì đến phút cuối"
+          ],
+          [
+            "deal with something",
+            "xử lý một việc"
+          ],
+          [
+            "make a final decision",
+            "đưa ra quyết định cuối cùng"
+          ],
+          [
+            "make steady progress",
+            "tiến bộ ổn định"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "connect-patterns",
+    "title": "15. Ghép mẫu câu với những mẫu trước",
+    "blocks": [
+      {
+        "type": "chips",
+        "items": [
+          [
+            "I'd like to...",
+            "Tôi muốn… — mong muốn/lịch sự"
+          ],
+          [
+            "I'm going to...",
+            "Tôi sẽ / tôi định… — kế hoạch đã có"
+          ]
+        ]
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I'd like to improve my English.",
+            "Tôi muốn cải thiện tiếng Anh."
+          ],
+          [
+            "I'm going to practice for 30 minutes tonight.",
+            "Tối nay tôi sẽ luyện 30 phút."
+          ],
+          [
+            "I'd like to take a short trip with my family.",
+            "Tôi muốn đi một chuyến ngắn cùng gia đình."
+          ],
+          [
+            "I'm going to plan it this weekend.",
+            "Cuối tuần này tôi sẽ lên kế hoạch cho chuyến đi."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Ghép ý theo logic: <b>mong muốn → kế hoạch hành động</b>. Đây là cách các mẫu bắt đầu nối thành một đoạn nói thật."
+      }
+    ]
+  },
+  {
+    "id": "practice",
+    "title": "Luyện toàn bộ câu trong bài",
+    "blocks": [
+      {
+        "type": "quiz"
+      }
+    ]
+  }
+],
 
   practice: [
     ["Tôi sẽ về nhà.", "I’m going to go home."],
