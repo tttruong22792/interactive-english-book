@@ -2915,6 +2915,171 @@ window.CORE_DICTIONARY = {
     "/weɪ/",
     "cách / phương pháp / con đường",
     "the way I manage my workload"
+  ],
+  "advanced": [
+    "/ədˈvænst/",
+    "nâng cao",
+    "advanced material"
+  ],
+  "causing": [
+    "/ˈkɔːzɪŋ/",
+    "đang gây ra",
+    "what's causing the problem"
+  ],
+  "consistently": [
+    "/kənˈsɪstəntli/",
+    "một cách đều đặn / nhất quán",
+    "practice consistently"
+  ],
+  "correctly": [
+    "/kəˈrektli/",
+    "một cách đúng đắn",
+    "understand the requirements correctly"
+  ],
+  "decide": [
+    "/dɪˈsaɪd/",
+    "quyết định",
+    "before I decide"
+  ],
+  "done": [
+    "/dʌn/",
+    "xong / hoàn thành",
+    "get this done"
+  ],
+  "door": [
+    "/dɔːr/",
+    "cửa",
+    "make sure the door is locked"
+  ],
+  "driver's": [
+    "/ˈdraɪvərz/",
+    "của người lái xe",
+    "driver's license"
+  ],
+  "fill": [
+    "/fɪl/",
+    "làm đầy / đổ đầy",
+    "fill up the car"
+  ],
+  "guests": [
+    "/ɡests/",
+    "khách",
+    "before the guests arrive"
+  ],
+  "intend": [
+    "/ɪnˈtend/",
+    "có ý định",
+    "I intend to..."
+  ],
+  "just": [
+    "/dʒʌst/",
+    "chỉ / vừa mới",
+    "I just need to..."
+  ],
+  "late": [
+    "/leɪt/",
+    "muộn",
+    "It's getting late."
+  ],
+  "leaving": [
+    "/ˈliːvɪŋ/",
+    "đang rời đi",
+    "Are you leaving already?"
+  ],
+  "let": [
+    "/let/",
+    "để / cho phép",
+    "let me know"
+  ],
+  "locked": [
+    "/lɑːkt/",
+    "đã khóa",
+    "the door is locked"
+  ],
+  "lunch": [
+    "/lʌntʃ/",
+    "bữa trưa",
+    "before lunch"
+  ],
+  "material": [
+    "/məˈtɪriəl/",
+    "tài liệu / nội dung",
+    "advanced material"
+  ],
+  "minute": [
+    "/ˈmɪnɪt/",
+    "phút",
+    "for a minute"
+  ],
+  "miss": [
+    "/mɪs/",
+    "bỏ lỡ / bỏ sót",
+    "don't miss anything"
+  ],
+  "mistakes": [
+    "/mɪˈsteɪks/",
+    "những sai lầm",
+    "learn from my mistakes"
+  ],
+  "needed": [
+    "/ˈniːdɪd/",
+    "đã cần",
+    "I needed to..."
+  ],
+  "pick": [
+    "/pɪk/",
+    "nhặt / lấy; trong pick up = đón hoặc tiện đường mua",
+    "pick up some groceries"
+  ],
+  "real": [
+    "/riːl/",
+    "thực tế / thật",
+    "real conversations"
+  ],
+  "school": [
+    "/skuːl/",
+    "trường học",
+    "after school"
+  ],
+  "sentence": [
+    "/ˈsentəns/",
+    "câu",
+    "every sentence"
+  ],
+  "strong": [
+    "/strɔːŋ/",
+    "mạnh / vững",
+    "strong foundation"
+  ],
+  "tasks": [
+    "/tæsks/",
+    "các nhiệm vụ / công việc",
+    "urgent tasks"
+  ],
+  "thinking": [
+    "/ˈθɪŋkɪŋ/",
+    "việc suy nghĩ",
+    "thinking in English"
+  ],
+  "track": [
+    "/træk/",
+    "theo dõi; dấu vết",
+    "keep track of"
+  ],
+  "went": [
+    "/went/",
+    "đã đi / đã xảy ra; quá khứ của go",
+    "what went wrong"
+  ],
+  "what's": [
+    "/wʌts/",
+    "viết tắt của what is / what has",
+    "what's causing the problem"
+  ],
+  "wrong": [
+    "/rɔːŋ/",
+    "sai / không ổn",
+    "what went wrong"
   ]
 };
 
