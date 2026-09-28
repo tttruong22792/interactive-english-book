@@ -31,7 +31,10 @@
         targetPattern:String(payload?.targetPattern||'').trim(),
         patternMeaning:String(payload?.patternMeaning||'').trim(),
         lessonTitle:String(payload?.lessonTitle||'').trim(),
-        lessonId:String(payload?.lessonId||'').trim()
+        lessonId:String(payload?.lessonId||'').trim(),
+        recentExamples:Array.isArray(payload?.recentExamples)?payload.recentExamples.slice(0,5).map(x=>String(x||'').trim()):[],
+        challenge:String(payload?.challenge||'').trim(),
+        selectedIdea:String(payload?.selectedIdea||'').trim()
       })
     });
 
