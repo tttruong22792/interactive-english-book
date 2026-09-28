@@ -1067,14 +1067,14 @@
   function bindJapaneseDictionary(root){
     if(!L?.dictionary)return;
     const terms=Object.keys(L.dictionary).sort((a,b)=>b.length-a.length);
-    $('.jp-text',root).forEach(el=>{
+    $$('.jp-text',root).forEach(el=>{
       el.querySelectorAll('ruby').forEach(r=>{
         const base=Array.from(r.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('');
         const term=terms.find(t=>t===base || t.startsWith(base) || base.startsWith(t));
         if(term){r.classList.add('word-token','jp-word-token');r.dataset.word=term;}
       });
     });
-    $('.jp-word-token',root).forEach(w=>w.addEventListener('click',e=>{e.stopPropagation();openLookup(w.dataset.word,'word');}));
+    $$('.jp-word-token',root).forEach(w=>w.addEventListener('click',e=>{e.stopPropagation();openLookup(w.dataset.word,'word');}));
   }
 
   function buildWordSpans(el,text){
@@ -1489,7 +1489,7 @@
     hydrateSentences($('#mainView'));
     L=lesson;
     bindJapaneseDictionary($('#mainView'));
-    $('[data-jp-jump]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-jp-jump]').forEach(btn=>btn.onclick=()=>{
       const target=btn.dataset.jpJump==='practice'?'#jpPractice':'#jpExamples';
       $(target)?.scrollIntoView({behavior:'smooth',block:'start'});
     });
