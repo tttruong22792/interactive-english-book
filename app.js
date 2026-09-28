@@ -2315,13 +2315,21 @@
   $('#selectionSpeakBtn').onclick=()=>currentSelection&&speak(currentSelection);$('#selectionLookupBtn').onclick=async()=>{if(currentSelection){try{if(!L)await ensureCoreEnglish();openLookup(currentSelection,'phrase');}catch(error){toast(error.message);}}hideSelectionBar();};$('#selectionCloseBtn').onclick=hideSelectionBar;
   $('#hideViBtn').onclick=()=>{state.hideVi=!state.hideVi;saveState();};$('#globalRateSelect').onchange=e=>{state.rate=Number(e.target.value);saveState();};
   $('#resetDataBtn').onclick=()=>{
-    if(confirm('Xóa toàn bộ tiến độ, từ đã lưu và điểm luyện trên thiết bị này? Cloud sync trên thiết bị này cũng sẽ được ngắt, nhưng bản cloud không bị xóa.')){
+    const signedIn=vocabSyncStatus().signedIn;
+    const message=signedIn
+      ? 'Xóa tiến độ và dữ liệu cục bộ trên thiết bị này? Từ đã lưu trên tài khoản cloud sẽ không bị xóa.'
+      : 'Xóa toàn bộ tiến độ và dữ liệu học đang lưu trên thiết bị này?';
+    if(confirm(message)){
       localStorage.removeItem(KEY);
-      window.VocabCloudSync?.disconnect?.();
       state={...defaults};
       quiz=makeQuizSession([], 'sequential', null, 'lesson');
       render();
-      toast('Đã xóa dữ liệu trên thiết bị và ngắt cloud sync.');
+      if(signedIn){
+        window.VocabCloudSync?.pull?.()
+          .then(remote=>applyAccountVocabulary(remote))
+          .catch(()=>{});
+      }
+      toast('Đã xóa dữ liệu cục bộ trên thiết bị.');
     }
   };
   window.addEventListener('hashchange',render);
