@@ -1783,8 +1783,8 @@
       </div>
       <div class="vocab-toolbar"><strong>${items.length} mục đã lưu</strong>${items.length?'<button id="startFlashcards" class="primary-button">Ôn bằng flashcard</button>':''}</div>
       <section id="vocabArea">${items.length?vocabCards(items):emptyVocab()}</section>`;
-    $('[data-vocab-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.vocabSpeak));
-    $('[data-vocab-remove]').forEach(b=>b.onclick=()=>{
+    $$('[data-vocab-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.vocabSpeak));
+    $$('[data-vocab-remove]').forEach(b=>b.onclick=()=>{
       const key=b.dataset.vocabRemove;
       delete state.saved[key];
       saveState();
