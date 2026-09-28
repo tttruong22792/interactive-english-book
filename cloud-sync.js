@@ -100,6 +100,10 @@
       meaning:String(item?.meaning||'').slice(0,1200),
       example:String(item?.example||'').slice(0,1600),
       type:String(item?.type||'word').slice(0,32),
+      lessonId:String(item?.lessonId||'').slice(0,120),
+      lessonOrder:Math.max(0,Math.floor(Number(item?.lessonOrder)||0)),
+      studyLevel:Math.max(0,Math.floor(Number(item?.studyLevel)||0)),
+      cardKind:String(item?.cardKind||'').slice(0,32),
       savedAt:Number.isFinite(savedAt)&&savedAt>0?Math.floor(savedAt):Date.now(),
       ...(trainer?{trainer}:{})
     };
