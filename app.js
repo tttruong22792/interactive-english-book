@@ -185,15 +185,26 @@
   function savedCount(){ return Object.keys(state.saved || {}).length; }
 
   function vocabSyncStatus(){
-    return window.VocabCloudSync?.status?.() || {connected:false,syncKey:'',lastSyncAt:0,pendingCount:0,lastError:''};
+    const sync=window.VocabCloudSync?.status?.() || {ready:false,signedIn:false,lastSyncAt:0,pendingCount:0,lastError:'',email:'',realtimeState:'idle'};
+    return {...sync,connected:!!sync.signedIn,syncKey:''};
   }
 
   function queueVocabUpsert(item){
-    window.VocabCloudSync?.queueUpsert?.(item);
+    window.VocabCloudSync?.saveWord?.(item);
   }
 
   function queueVocabDelete(key){
-    window.VocabCloudSync?.queueDelete?.(key);
+    window.VocabCloudSync?.deleteWord?.(key);
+  }
+
+  async function applyAccountVocabulary(remote){
+    if(!remote || typeof remote!=='object') return;
+    state.saved={...remote};
+    saveState();
+    const route=parseRoute();
+    if(route.name==='vocab') renderVocab();
+    else if(route.name==='settings') renderSettings();
+    else updateGlobalUI();
   }
 
   async function syncSavedVocabulary({silent=false,rerender=true}={}){
@@ -217,12 +228,9 @@
     }
   }
 
-  async function connectVocabularySync(syncKey=''){
-    if(!window.VocabCloudSync) throw new Error('Cloud sync chưa sẵn sàng.');
-    const result=await window.VocabCloudSync.connect(syncKey,state.saved||{});
-    state.saved={...(result.saved||{})};
-    saveState();
-    return result;
+  async function connectVocabularySync(){
+    routeTo('settings');
+    throw new Error('Đồng bộ hiện dùng tài khoản đăng nhập, không dùng mã đồng bộ.');
   }
 
   function normalizeMeaning(s=''){
@@ -2278,7 +2286,7 @@
     }else{
       state.saved[k]={...currentLookup,savedAt:Date.now(),breakdown:undefined};
       queueVocabUpsert(state.saved[k]);
-      toast('Đã lưu vào My Vocabulary.');
+      toast(vocabSyncStatus().signedIn?'Đã lưu và gửi lên tài khoản cloud.':'Đã lưu trên thiết bị. Đăng nhập để đồng bộ.');
     }
     saveState();
     $('#saveWordBtn').textContent=state.saved[k]?'★ Đã lưu':'☆ Lưu';
@@ -2331,10 +2339,35 @@
   window.__LS_RENDERED=false;
   if(!location.hash) location.hash='#home';
   Promise.resolve(render())
-    .then(()=>{
+    .then(async()=>{
       window.__LS_RENDERED=true;
-      if(vocabSyncStatus().connected){
-        setTimeout(()=>syncSavedVocabulary({silent:true,rerender:true}),120);
+      if(!window.VocabCloudSync) return;
+
+      window.VocabCloudSync.onChange?.(event=>{
+        if(event?.type==='remote-vocab' && event.saved){
+          void applyAccountVocabulary(event.saved);
+          return;
+        }
+        if(event?.type==='auth'){
+          if(event.signedIn){
+            window.VocabCloudSync.syncAccount?.(state.saved||{})
+              .then(remote=>applyAccountVocabulary(remote))
+              .catch(()=>{});
+          }else if(event.previousUserId){
+            state.saved={};
+            saveState();
+            const route=parseRoute();
+            if(route.name==='vocab') renderVocab();
+            else if(route.name==='settings') renderSettings();
+            else updateGlobalUI();
+          }
+        }
+      });
+
+      await window.VocabCloudSync.init?.();
+      if(vocabSyncStatus().signedIn){
+        const remote=await window.VocabCloudSync.syncAccount?.(state.saved||{}).catch(()=>null);
+        if(remote) await applyAccountVocabulary(remote);
       }
     })
     .catch(error=>{
