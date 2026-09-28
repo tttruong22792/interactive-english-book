@@ -1829,7 +1829,7 @@
       <section class="active-learning-principle">
         <div><span>1</span><strong>Nhận ra</strong><p>Thấy/nghe cả cụm và hiểu ngay ý nghĩa lõi.</p></div>
         <div><span>2</span><strong>Gọi ra được</strong><p>Có ý tiếng Việt và nhớ ra cụm sau vài giây.</p></div>
-        <div><span>3</span><strong>Dùng tự động</strong><p>Có ý và bật ra cả câu mà không dịch từng chữ.</p></div>
+        <div><span>3</span><strong>Dùng tự động</strong><p>Học câu mẫu trước, gọi lại câu đã học, rồi biến đổi để dùng chủ động.</p></div>
       </section>
 
       <div class="vocab-sync-strip ${sync.connected?'is-on':'is-off'}">
@@ -1860,7 +1860,7 @@
         <div class="active-stage-buttons">
           <button data-active-level="1" class="${String(trainerSettings.level)==='1'?'active':''}" type="button"><span>TẦNG 1</span><b>Nhận ra</b><small>EN → hiểu cả cụm</small></button>
           <button data-active-level="2" class="${String(trainerSettings.level)==='2'?'active':''}" type="button"><span>TẦNG 2</span><b>Gọi ra được</b><small>VI → cụm tiếng Anh</small></button>
-          <button data-active-level="3" class="${String(trainerSettings.level)==='3'?'active':''}" type="button"><span>TẦNG 3</span><b>Dùng tự động</b><small>VI → cả câu ≤3 giây</small></button>
+          <button data-active-level="3" class="${String(trainerSettings.level)==='3'?'active':''}" type="button"><span>TẦNG 3</span><b>Dùng tự động</b><small>Học câu → gọi lại → biến đổi</small></button>
         </div>
 
         <div class="active-chunk-columns">
