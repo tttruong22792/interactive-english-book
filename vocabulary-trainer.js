@@ -246,13 +246,21 @@
     if(session) session.reflexMessage='';
   }
 
+  function reflexSeconds(card){
+    if(!card||Number(card.level)!==3) return 3;
+    const p=progressFor(card);
+    return Number(p.reviewCount||0)>=2?3:6;
+  }
+
   function startReflexTimer(){
-    if(!session||currentCard()?.level!==3) return;
+    const card=currentCard();
+    if(!session||Number(card?.level)!==3||session.level3Phase==='learn') return;
     resetReflexTimer();
     reflexStartedAt=Date.now();
+    const seconds=reflexSeconds(card);
+    let left=seconds;
     const target=$('#vocabReflexTimer');
-    let left=3.0;
-    if(target) target.textContent='3.0';
+    if(target) target.textContent=left.toFixed(1);
     reflexTimer=setInterval(()=>{
       left=Math.max(0,left-.1);
       const el=$('#vocabReflexTimer');
@@ -260,13 +268,14 @@
       if(left<=0){
         clearInterval(reflexTimer);
         reflexTimer=null;
-        session.reflexMessage='Hết 3 giây. Nếu bạn chưa bật ra được câu, hãy chọn Chậm hoặc Quên.';
+        session.reflexMessage=seconds>3
+          ? 'Hết thời gian gợi ý ban đầu. Không sao — bạn đang xây phản xạ. Hãy xem đáp án rồi thử lại.'
+          : 'Hết 3 giây. Nếu chưa bật ra được, hãy đánh giá Chậm hoặc Chưa nói được.';
         const note=$('#vocabReflexNote');
         if(note) note.textContent=session.reflexMessage;
       }
     },100);
   }
-
   function stopAutoplay(){
     clearTimeout(autoplayTimer);
     autoplayTimer=null;
