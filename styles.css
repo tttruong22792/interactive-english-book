@@ -2574,3 +2574,9 @@ button{touch-action:manipulation}
   .shadow-v2-personal-metrics{grid-template-columns:1fr}
   .shadow-v2-challenge-head{align-items:flex-start}
 }
+
+
+/* ===== AI coach Vietnamese translations ===== */
+.shadow-v2-ai-correction small{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5;font-weight:600}
+.shadow-v2-ai-expansion>div{display:grid;gap:3px}
+.shadow-v2-ai-expansion small{display:block;color:var(--muted);font-size:11px;line-height:1.45;font-weight:500}
