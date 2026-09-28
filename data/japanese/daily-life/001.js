@@ -44,7 +44,7 @@ window.CONTENT_REGISTRY["ja-daily-001"] = {
     ["忙しいときほど、焦って判断しないことだ。","<ruby>忙<rt>いそが</rt></ruby>しいときほど、<ruby>焦<rt>あせ</rt></ruby>って<ruby>判断<rt>はんだん</rt></ruby>しないことだ。","Càng bận thì càng không nên vội vàng phán đoán."],
     ["問題が起きたら、まず事実を確認することだ。","<ruby>問題<rt>もんだい</rt></ruby>が<ruby>起<rt>お</rt></ruby>きたら、まず<ruby>事実<rt>じじつ</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>することだ。","Khi có vấn đề xảy ra, trước tiên nên xác nhận sự việc thực tế."],
     ["上達したいなら、間違いを恐れず実際に使ってみることだ。","<ruby>上達<rt>じょうたつ</rt></ruby>したいなら、<ruby>間違<rt>まちが</rt></ruby>いを<ruby>恐<rt>おそ</rt></ruby>れず<ruby>実際<rt>じっさい</rt></ruby>に<ruby>使<rt>つか</rt></ruby>ってみることだ。","Nếu muốn tiến bộ thì nên thử dùng thực tế mà không sợ sai."]
-  ],,
+  ],
   dictionary:{
     "健康":["けんこう","sức khỏe","健康を保つ"],
     "保つ":["たもつ","duy trì, giữ gìn","健康を保つ"],
@@ -108,7 +108,7 @@ window.CONTENT_REGISTRY["ja-daily-001"] = {
     "間違い":["まちがい","lỗi, sự nhầm lẫn","間違いを恐れない"],
     "恐れる":["おそれる","sợ, e ngại","失敗を恐れる"],
     "実際":["じっさい","thực tế, thực sự","実際に使う"]
-  }
+  },
   practice:[
     ["Nếu muốn giỏi tiếng Nhật thì nên luyện thành tiếng mỗi ngày.","日本語が上手になりたいなら、毎日声に出して練習することだ。","<ruby>日本語<rt>にほんご</rt></ruby>が<ruby>上手<rt>じょうず</rt></ruby>になりたいなら、<ruby>毎日<rt>まいにち</rt></ruby><ruby>声<rt>こえ</rt></ruby>に<ruby>出<rt>だ</rt></ruby>して<ruby>練習<rt>れんしゅう</rt></ruby>することだ。"],
     ["Khi mệt thì không nên cố quá sức.","疲れているときは、無理をしないことだ。","<ruby>疲<rt>つか</rt></ruby>れているときは、<ruby>無理<rt>むり</rt></ruby>をしないことだ。"],
