@@ -30,269 +30,755 @@ window.CONTENT_REGISTRY["en-pattern-003"] = {
   ],
 
   sections: [
-    {
-      id: "pronunciation",
-      title: "1. Cách đọc",
-      blocks: [
-        { type: "formula", text: "I want to", note: "IPA: /aɪ wɑːnt tə/ hoặc /aɪ wɒnt tə/ tùy giọng." },
-        { type: "callout", tone: "purple", html: "Đọc gần đúng:<br><strong>ai won-tờ</strong>" },
-        { type: "paragraph", html: "<p>Khi nói tự nhiên, <code>want to</code> thường nối lại và bạn có thể nghe gần giống <b>wanna</b>.</p>" },
-        { type: "sentences", items: [
-          ["I want to go home.", "Nói rõ: Ai won-tờ gâu hôum."],
-          ["I wanna go home.", "Nói rất tự nhiên: Ai wo-nờ gâu hôum."],
-          ["I wanna eat.", "I want to eat. → Tôi muốn ăn."]
-        ]},
-        { type: "callout", tone: "amber", html: "<b>wanna = want to</b> trong giao tiếp thân mật.<br>Bạn nên <b>viết: I want to</b>; khi nghe giao tiếp, hãy nhận ra cả <b>I wanna…</b>." }
-      ]
-    },
-
-    {
-      id: "when-to-use",
-      title: "2. I want to... dùng khi nào?",
-      blocks: [
-        { type: "paragraph", html: "<p>Dùng khi bạn muốn làm một hành động nào đó.</p>" },
-        { type: "sentences", items: [
-          ["I want to eat.", "Tôi muốn ăn."],
-          ["I want to rest.", "Tôi muốn nghỉ."],
-          ["I want to talk to you.", "Tôi muốn nói chuyện với bạn."]
-        ]},
-        { type: "callout", tone: "green", html: "Điểm quan trọng: sau <code>to</code> phải là <b>động từ nguyên mẫu</b>." },
-        { type: "compare", leftTitle: "Đúng", rightTitle: "Không dùng", leftHtml: "✅ I want to eat.<br>✅ I want to go.<br>✅ I want to buy it.", rightHtml: "❌ I want to eating.<br>❌ I want to went." }
-      ]
-    },
-
-    {
-      id: "sentences20",
-      title: "3. 20 câu rất thường dùng",
-      blocks: [
-        { type: "sentences", learnable: true, controls: true, items: [
-          ["I want to eat.", "Tôi muốn ăn."],
-          ["I want to drink something.", "Tôi muốn uống gì đó."],
-          ["I want to sleep.", "Tôi muốn ngủ."],
-          ["I want to go home.", "Tôi muốn về nhà."],
-          ["I want to take a break.", "Tôi muốn nghỉ một chút."],
-          ["I want to buy this.", "Tôi muốn mua cái này."],
-          ["I want to try it.", "Tôi muốn thử nó."],
-          ["I want to see it.", "Tôi muốn xem nó."],
-          ["I want to know.", "Tôi muốn biết."],
-          ["I want to know more.", "Tôi muốn biết thêm."],
-          ["I want to ask you something.", "Tôi muốn hỏi bạn một việc."],
-          ["I want to talk to you.", "Tôi muốn nói chuyện với bạn."],
-          ["I want to learn English.", "Tôi muốn học tiếng Anh."],
-          ["I want to practice English.", "Tôi muốn luyện tiếng Anh."],
-          ["I want to speak English better.", "Tôi muốn nói tiếng Anh tốt hơn."],
-          ["I want to change it.", "Tôi muốn thay đổi nó."],
-          ["I want to check it.", "Tôi muốn kiểm tra nó."],
-          ["I want to do it myself.", "Tôi muốn tự làm nó."],
-          ["I want to help you.", "Tôi muốn giúp bạn."],
-          ["I want to understand this.", "Tôi muốn hiểu cái này."]
-        ]}
-      ]
-    },
-
-    {
-      id: "want-vs-id-like",
-      title: "4. I want to và I’d like to khác nhau thế nào?",
-      blocks: [
-        { type: "paragraph", html: "<p>Hai câu đều có thể dịch là <b>“Tôi muốn…”</b>, nhưng sắc thái khác nhau.</p>" },
-        { type: "compare", leftTitle: "I want to...", rightTitle: "I’d like to...", leftHtml: "<b>Trực tiếp hơn.</b>", rightHtml: "<b>Mềm và lịch sự hơn.</b>" },
-        { type: "sentences", items: [
-          ["I want to buy this.", "Tôi muốn mua cái này."],
-          ["I’d like to buy this.", "Tôi muốn mua cái này."]
-        ]},
-        { type: "paragraph", html: "<p>Trong gia đình, bạn bè: <b>I want to eat.</b> hoàn toàn tự nhiên.</p><p>Nhưng khi nói với nhân viên, khách hàng hoặc người lạ: <b>I’d like to order this.</b> thường lịch sự hơn.</p>" },
-        { type: "callout", tone: "green", html: "<b>I want to = Tôi muốn</b><br><b>I’d like to = Tôi muốn, nhưng lịch sự hơn</b>" }
-      ]
-    },
-
-    {
-      id: "want-noun",
-      title: "5. I want + danh từ",
-      blocks: [
-        { type: "paragraph", html: "<p>Nếu phía sau là <b>động từ</b>:</p>" },
-        { type: "formula", text: "I want to + động từ" },
-        { type: "sentences", items: [
-          ["I want to eat.", "Tôi muốn ăn."]
-        ]},
-        { type: "paragraph", html: "<p>Nhưng nếu phía sau là đồ vật / danh từ, không dùng <code>to</code>.</p>" },
-        { type: "formula", text: "I want + danh từ" },
-        { type: "sentences", items: [
-          ["I want water.", "Tôi muốn nước."],
-          ["I want some coffee.", "Tôi muốn một ít cà phê."],
-          ["I want this one.", "Tôi muốn cái này."],
-          ["I want a new phone.", "Tôi muốn một chiếc điện thoại mới."]
-        ]},
-        { type: "compare", leftTitle: "I want + danh từ", rightTitle: "I want to + động từ", leftHtml: "I want coffee.<br><span data-vi-only>Tôi muốn cà phê.</span>", rightHtml: "I want to drink coffee.<br><span data-vi-only>Tôi muốn uống cà phê.</span>" }
-      ]
-    },
-
-    {
-      id: "negative",
-      title: "6. Dạng phủ định",
-      blocks: [
-        { type: "formula", text: "I don’t want to + động từ", note: "= Tôi không muốn…" },
-        { type: "sentences", items: [
-          ["I don’t want to go.", "Tôi không muốn đi."],
-          ["I don’t want to eat.", "Tôi không muốn ăn."],
-          ["I don’t want to wait.", "Tôi không muốn chờ."],
-          ["I don’t want to work today.", "Hôm nay tôi không muốn làm việc."],
-          ["I don’t want to do that.", "Tôi không muốn làm việc đó."]
-        ]},
-        { type: "callout", tone: "green", html: "Câu rất đáng học thuộc:<br><strong>I don’t want to do that.</strong>" }
-      ]
-    },
-
-    {
-      id: "questions",
-      title: "7. Hỏi người khác",
-      blocks: [
-        { type: "paragraph", html: "<p>Đổi <code>I</code> thành <code>you</code>:</p>" },
-        { type: "formula", text: "Do you want to + động từ?", note: "= Bạn có muốn… không?" },
-        { type: "sentences", items: [
-          ["Do you want to eat?", "Bạn muốn ăn không?"],
-          ["Do you want to go?", "Bạn muốn đi không?"],
-          ["Do you want to try it?", "Bạn muốn thử không?"],
-          ["Do you want to come with me?", "Bạn muốn đi cùng tôi không?"],
-          ["Do you want to take a break?", "Bạn muốn nghỉ một chút không?"],
-          ["Do you wanna go?", "Cách nói nhanh, thân mật của “Do you want to go?”"]
-        ]}
-      ]
-    },
-
-    {
-      id: "wh-questions",
-      title: "8. Câu hỏi với What",
-      blocks: [
-        { type: "formula", text: "What do you want to do?", note: "= Bạn muốn làm gì?" },
-        { type: "callout", tone: "purple", html: "Đây là một câu cực kỳ quan trọng." },
-        { type: "sentences", items: [
-          ["What do you want to eat?", "Bạn muốn ăn gì?"],
-          ["What do you want to drink?", "Bạn muốn uống gì?"],
-          ["Where do you want to go?", "Bạn muốn đi đâu?"],
-          ["When do you want to leave?", "Bạn muốn đi lúc nào?"],
-          ["Who do you want to talk to?", "Bạn muốn nói chuyện với ai?"]
-        ]}
-      ]
-    },
-
-    {
-      id: "daily-life",
-      title: "9. Dùng trong cuộc sống hằng ngày",
-      blocks: [
-        { type: "sentences", items: [
-          ["I want to sleep a little longer.", "Tôi muốn ngủ thêm một chút."],
-          ["I want to go home and relax.", "Tôi muốn về nhà và thư giãn."],
-          ["I want to look around first.", "Tôi muốn xem quanh trước."],
-          ["I want to eat something.", "Tôi muốn ăn gì đó."],
-          ["I want to watch a movie tonight.", "Tối nay tôi muốn xem phim."]
-        ]}
-      ]
-    },
-
-    {
-      id: "work",
-      title: "10. Dùng trong công việc",
-      blocks: [
-        { type: "sentences", items: [
-          ["I want to check something.", "Tôi muốn kiểm tra một việc."],
-          ["I want to make sure it works.", "Tôi muốn chắc chắn rằng nó hoạt động."],
-          ["I want to test it again.", "Tôi muốn thử lại."],
-          ["I want to understand the problem.", "Tôi muốn hiểu vấn đề."],
-          ["I want to talk about this issue.", "Tôi muốn nói về vấn đề này."]
-        ]},
-        { type: "paragraph", html: "<p>Tuy nhiên, với khách hàng hoặc cấp trên, thường nên đổi:</p>" },
-        { type: "sentences", items: [
-          ["I want to ask you something.", "Cách nói trực tiếp."],
-          ["I’d like to ask you something.", "Nghe mềm hơn."]
-        ]}
-      ]
-    },
-
-    {
-      id: "compare-three",
-      title: "11. So sánh 3 mẫu bạn đã học",
-      blocks: [
-        { type: "paragraph", html: "<p>Đây là phần quan trọng nhất.</p>" },
-        { type: "sentences", items: [
-          ["I’d like to buy a new computer.", "Tôi muốn mua một máy tính mới. — lịch sự."],
-          ["I’m going to buy a new computer next month.", "Tháng sau tôi sẽ mua một máy tính mới. — đã có kế hoạch."],
-          ["I want to buy a new computer.", "Tôi muốn mua một máy tính mới. — mong muốn trực tiếp."],
-          ["I want to buy it.", "Tôi muốn mua nó."],
-          ["I’d like to buy it.", "Tôi muốn mua nó. (lịch sự hơn)"],
-          ["I’m going to buy it.", "Tôi sẽ mua nó. (đã có ý định)"]
-        ]},
-        { type: "chips", items: [
-          ["I’d like to...", "Tôi muốn… — lịch sự"],
-          ["I’m going to...", "Tôi sẽ / tôi định… — kế hoạch"],
-          ["I want to...", "Tôi muốn… — trực tiếp"]
-        ]}
-      ]
-    },
-
-    {
-      id: "build-longer",
-      title: "12. Mở rộng câu từng bước",
-      blocks: [
-        { type: "sentences", items: [
-          ["I want to go.", "Bắt đầu."],
-          ["I want to go to the supermarket.", "Thêm địa điểm."],
-          ["I want to go to the supermarket tonight.", "Thêm thời gian."],
-          ["I want to go to the supermarket tonight to buy some food.", "Thêm mục đích."],
-          ["I want to go there tomorrow.", "Một cách mở rộng đơn giản khác."]
-        ]},
-        { type: "callout", tone: "amber", html: "Đừng cố học nguyên câu dài. Hãy xây từng tầng:<br><b>I want to…</b> → <b>I want to go…</b> → <b>I want to go there…</b> → <b>I want to go there tomorrow.</b>" },
-        { type: "builder", title: "Tự ghép câu", base: "I want to" }
-      ]
-    },
-
-    {
-      id: "dialogs",
-      title: "13. Hội thoại ngắn",
-      blocks: [
-        { type: "dialogs", items: [
-          { place: "Ăn uống", rows: [
-            ["A", "What do you want to eat?", "Bạn muốn ăn gì?"],
-            ["B", "I want to eat pizza.", "Tôi muốn ăn pizza."]
-          ]},
-          { place: "Buổi tối", rows: [
-            ["A", "Do you want to go out tonight?", "Tối nay bạn muốn ra ngoài không?"],
-            ["B", "Yeah, I want to go somewhere.", "Ừ, tôi muốn đi đâu đó."]
-          ]},
-          { place: "Cuối tuần", rows: [
-            ["A", "What do you want to do this weekend?", "Cuối tuần này bạn muốn làm gì?"],
-            ["B", "I want to spend time with my family.", "Tôi muốn dành thời gian với gia đình."]
-          ]}
-        ]}
-      ]
-    },
-
-    {
-      id: "practice",
-      title: "14. 10 câu luyện phản xạ",
-      blocks: [
-        { type: "paragraph", html: "<p>Hãy nhìn tiếng Việt và nói ngay bằng tiếng Anh.</p>" },
-        { type: "quiz" }
-      ]
-    },
-
-    {
-      id: "summary",
-      title: "3 mẫu hiện tại cần nhớ như một khối",
-      blocks: [
-        { type: "chips", items: [
-          ["01 — I’d like to + V", "Tôi muốn… (lịch sự)"],
-          ["02 — I’m going to + V", "Tôi sẽ / tôi định…"],
-          ["03 — I want to + V", "Tôi muốn…"]
-        ]},
-        { type: "sentences", items: [
-          ["I’d like to talk to him.", "Tôi muốn nói chuyện với anh ấy. (lịch sự)"],
-          ["I’m going to talk to him.", "Tôi sẽ nói chuyện với anh ấy."],
-          ["I want to talk to him.", "Tôi muốn nói chuyện với anh ấy."]
-        ]},
-        { type: "callout", tone: "green", html: "Mục tiêu là khi nghĩ <b>“Tôi muốn…”</b>, bạn có thể bật ngay:<br><strong>I want to…</strong><br>rồi thay phía sau bằng <b>eat, go, buy, ask, check, try, learn, talk, call, sleep…</b>" }
-      ]
-    }
-  ],
+  {
+    "id": "pronunciation",
+    "title": "1. Cách đọc",
+    "blocks": [
+      {
+        "type": "formula",
+        "text": "I want to",
+        "note": "IPA: /aɪ wɑːnt tə/ hoặc /aɪ wɒnt tə/ tùy giọng"
+      },
+      {
+        "type": "callout",
+        "tone": "purple",
+        "html": "Đọc gần đúng: <b>ai won-tờ</b>. Trong giao tiếp nhanh, <b>want to</b> thường nối lại và có thể nghe gần giống <b>wanna</b>."
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to go home.",
+            "Tôi muốn về nhà."
+          ],
+          [
+            "I wanna go home.",
+            "Cách nói thân mật, rất tự nhiên của “I want to go home.”"
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "amber",
+        "html": "Khi viết, hãy dùng <b>want to</b>. Khi nghe/nói thân mật, cần nhận ra <b>wanna</b>."
+      }
+    ]
+  },
+  {
+    "id": "when-to-use",
+    "title": "2. Khi nào dùng I want to...?",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>Dùng khi bạn muốn nói trực tiếp điều mình muốn làm. Đây là một trong những mẫu phổ biến nhất trong giao tiếp hằng ngày.</p>"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to eat.",
+            "Tôi muốn ăn."
+          ],
+          [
+            "I want to go home.",
+            "Tôi muốn về nhà."
+          ],
+          [
+            "I want to talk to you.",
+            "Tôi muốn nói chuyện với bạn."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Sau <b>I want to</b> dùng <b>động từ nguyên mẫu</b>: eat, go, buy, learn, check, talk…"
+      }
+    ]
+  },
+  {
+    "id": "practical-sentences",
+    "title": "3. 40 câu ví dụ thực tế",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>40 câu này bao phủ sinh hoạt, gia đình, công việc, học tập và phát triển bản thân.</p>"
+      },
+      {
+        "type": "sentences",
+        "learnable": true,
+        "controls": true,
+        "items": [
+          [
+            "I want to eat something.",
+            "Tôi muốn ăn gì đó."
+          ],
+          [
+            "I want to drink some water.",
+            "Tôi muốn uống chút nước."
+          ],
+          [
+            "I want to get some coffee.",
+            "Tôi muốn uống/lấy một chút cà phê."
+          ],
+          [
+            "I want to sleep a little longer.",
+            "Tôi muốn ngủ thêm một chút."
+          ],
+          [
+            "I want to go home and relax.",
+            "Tôi muốn về nhà và thư giãn."
+          ],
+          [
+            "I want to take a break.",
+            "Tôi muốn nghỉ một chút."
+          ],
+          [
+            "I want to buy this one.",
+            "Tôi muốn mua cái này."
+          ],
+          [
+            "I want to try it first.",
+            "Tôi muốn thử nó trước."
+          ],
+          [
+            "I want to look around a little more.",
+            "Tôi muốn xem quanh thêm một chút."
+          ],
+          [
+            "I want to watch a movie tonight.",
+            "Tối nay tôi muốn xem phim."
+          ],
+          [
+            "I want to spend more time with my family.",
+            "Tôi muốn dành nhiều thời gian hơn cho gia đình."
+          ],
+          [
+            "I want to take my kids somewhere this weekend.",
+            "Cuối tuần này tôi muốn đưa các con đi đâu đó."
+          ],
+          [
+            "I want to plan a short trip.",
+            "Tôi muốn lên kế hoạch cho một chuyến đi ngắn."
+          ],
+          [
+            "I want to start exercising again.",
+            "Tôi muốn bắt đầu tập thể dục lại."
+          ],
+          [
+            "I want to get back into shape.",
+            "Tôi muốn lấy lại thể lực."
+          ],
+          [
+            "I want to learn English.",
+            "Tôi muốn học tiếng Anh."
+          ],
+          [
+            "I want to practice speaking more often.",
+            "Tôi muốn luyện nói thường xuyên hơn."
+          ],
+          [
+            "I want to improve my pronunciation.",
+            "Tôi muốn cải thiện phát âm."
+          ],
+          [
+            "I want to expand my vocabulary.",
+            "Tôi muốn mở rộng vốn từ."
+          ],
+          [
+            "I want to speak English more confidently.",
+            "Tôi muốn nói tiếng Anh tự tin hơn."
+          ],
+          [
+            "I want to ask you something.",
+            "Tôi muốn hỏi bạn một việc."
+          ],
+          [
+            "I want to understand the problem.",
+            "Tôi muốn hiểu vấn đề."
+          ],
+          [
+            "I want to check the settings.",
+            "Tôi muốn kiểm tra cài đặt."
+          ],
+          [
+            "I want to test it again.",
+            "Tôi muốn thử/kiểm tra lại."
+          ],
+          [
+            "I want to make sure it works properly.",
+            "Tôi muốn chắc chắn rằng nó hoạt động đúng."
+          ],
+          [
+            "I want to talk about this issue.",
+            "Tôi muốn nói về vấn đề này."
+          ],
+          [
+            "I want to explain this more clearly.",
+            "Tôi muốn giải thích việc này rõ hơn."
+          ],
+          [
+            "I want to learn more about the system.",
+            "Tôi muốn tìm hiểu thêm về hệ thống."
+          ],
+          [
+            "I want to get better at handling customer questions.",
+            "Tôi muốn giỏi hơn trong việc xử lý câu hỏi của khách hàng."
+          ],
+          [
+            "I want to manage my time better.",
+            "Tôi muốn quản lý thời gian tốt hơn."
+          ],
+          [
+            "I want to save more money this year.",
+            "Năm nay tôi muốn tiết kiệm nhiều tiền hơn."
+          ],
+          [
+            "I want to cut back on unnecessary spending.",
+            "Tôi muốn giảm những khoản chi không cần thiết."
+          ],
+          [
+            "I want to put some money aside every month.",
+            "Tôi muốn để dành một ít tiền mỗi tháng."
+          ],
+          [
+            "I want to think this through before I decide.",
+            "Tôi muốn suy nghĩ kỹ việc này trước khi quyết định."
+          ],
+          [
+            "I want to compare a few options first.",
+            "Tôi muốn so sánh vài lựa chọn trước."
+          ],
+          [
+            "I want to focus more on what actually matters.",
+            "Tôi muốn tập trung nhiều hơn vào những điều thực sự quan trọng."
+          ],
+          [
+            "I want to make better use of my free time.",
+            "Tôi muốn sử dụng thời gian rảnh hiệu quả hơn."
+          ],
+          [
+            "I want to be more consistent with my practice.",
+            "Tôi muốn đều đặn hơn trong việc luyện tập."
+          ],
+          [
+            "I want to step outside my comfort zone more often.",
+            "Tôi muốn bước ra khỏi vùng an toàn thường xuyên hơn."
+          ],
+          [
+            "I want to keep improving instead of trying to be perfect.",
+            "Tôi muốn tiếp tục cải thiện thay vì cố gắng trở nên hoàn hảo."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "daily-life",
+    "title": "4. Dùng trong cuộc sống hằng ngày",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to sleep a little longer.",
+            "Tôi muốn ngủ thêm một chút."
+          ],
+          [
+            "I want to go home and relax.",
+            "Tôi muốn về nhà và thư giãn."
+          ],
+          [
+            "I want to get some coffee.",
+            "Tôi muốn uống/lấy một chút cà phê."
+          ],
+          [
+            "I want to spend more time with my family.",
+            "Tôi muốn dành nhiều thời gian hơn cho gia đình."
+          ],
+          [
+            "I want to start exercising again.",
+            "Tôi muốn bắt đầu tập thể dục lại."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Với gia đình và bạn bè, <b>I want to...</b> hoàn toàn tự nhiên và rất thường dùng."
+      }
+    ]
+  },
+  {
+    "id": "work",
+    "title": "5. Dùng trong công việc",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to understand the problem.",
+            "Tôi muốn hiểu vấn đề."
+          ],
+          [
+            "I want to check the settings.",
+            "Tôi muốn kiểm tra cài đặt."
+          ],
+          [
+            "I want to make sure it works properly.",
+            "Tôi muốn chắc chắn rằng nó hoạt động đúng."
+          ],
+          [
+            "I want to explain this more clearly.",
+            "Tôi muốn giải thích việc này rõ hơn."
+          ],
+          [
+            "I want to learn more about the system.",
+            "Tôi muốn tìm hiểu thêm về hệ thống."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "amber",
+        "html": "Với khách hàng, người lạ hoặc cấp trên, <b>I’d like to...</b> thường mềm hơn <b>I want to...</b>. Nội dung vẫn có thể giống nhau, nhưng sắc thái khác."
+      }
+    ]
+  },
+  {
+    "id": "expand",
+    "title": "6. Mở rộng câu tự nhiên",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>Bắt đầu ngắn rồi thêm <b>địa điểm, thời gian, lý do, mục đích hoặc kết quả mong muốn</b>.</p>"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to go.",
+            "Tôi muốn đi."
+          ],
+          [
+            "I want to go to the supermarket.",
+            "Tôi muốn đi siêu thị."
+          ],
+          [
+            "I want to go to the supermarket tonight.",
+            "Tối nay tôi muốn đi siêu thị."
+          ],
+          [
+            "I want to go to the supermarket tonight to buy some food.",
+            "Tối nay tôi muốn đi siêu thị để mua một ít đồ ăn."
+          ],
+          [
+            "I want to improve my English so that I can communicate more confidently at work.",
+            "Tôi muốn cải thiện tiếng Anh để có thể giao tiếp tự tin hơn trong công việc."
+          ]
+        ]
+      },
+      {
+        "type": "builder",
+        "title": "Tự ghép câu",
+        "base": "I want to"
+      }
+    ]
+  },
+  {
+    "id": "negative",
+    "title": "7. Dạng phủ định",
+    "blocks": [
+      {
+        "type": "formula",
+        "text": "I don’t want to + V",
+        "note": "= Tôi không muốn…"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I don't want to wait.",
+            "Tôi không muốn chờ."
+          ],
+          [
+            "I don't want to rush into a decision.",
+            "Tôi không muốn vội vàng quyết định."
+          ],
+          [
+            "I don't want to waste time on things that don't matter.",
+            "Tôi không muốn lãng phí thời gian vào những việc không quan trọng."
+          ],
+          [
+            "I don't want to make the same mistake again.",
+            "Tôi không muốn mắc lại cùng lỗi đó."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "questions",
+    "title": "8. Hỏi người khác",
+    "blocks": [
+      {
+        "type": "formula",
+        "text": "Do you want to + V?",
+        "note": "= Bạn có muốn… không?"
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "Do you want to eat?",
+            "Bạn muốn ăn không?"
+          ],
+          [
+            "Do you want to go out tonight?",
+            "Tối nay bạn muốn ra ngoài không?"
+          ],
+          [
+            "Do you want to take a break?",
+            "Bạn muốn nghỉ một chút không?"
+          ],
+          [
+            "Do you want to come with me?",
+            "Bạn muốn đi cùng tôi không?"
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "purple",
+        "html": "Đây là mẫu số 7 trong lộ trình. Ở bài này hãy nhận ra mối liên hệ giữa <b>I want to...</b> và <b>Do you want to...?</b>."
+      }
+    ]
+  },
+  {
+    "id": "natural-questions",
+    "title": "9. Những câu hỏi tự nhiên hay gặp",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "What do you want to do?",
+            "Bạn muốn làm gì?"
+          ],
+          [
+            "What do you want to eat?",
+            "Bạn muốn ăn gì?"
+          ],
+          [
+            "Where do you want to go?",
+            "Bạn muốn đi đâu?"
+          ],
+          [
+            "When do you want to leave?",
+            "Bạn muốn đi lúc nào?"
+          ],
+          [
+            "Who do you want to talk to?",
+            "Bạn muốn nói chuyện với ai?"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "common-mistakes",
+    "title": "10. Một số lỗi người mới dễ mắc",
+    "blocks": [
+      {
+        "type": "compare",
+        "leftTitle": "Đúng",
+        "rightTitle": "Sai",
+        "leftHtml": "✅ I want to <b>eat</b>.<br>✅ I want to <b>go</b>.",
+        "rightHtml": "❌ I want to <b>eating</b>.<br>❌ I want to <b>went</b>."
+      },
+      {
+        "type": "paragraph",
+        "html": "<p>Nếu phía sau là <b>danh từ</b>, bỏ <code>to</code>: <b>I want coffee.</b> / <b>I want a new phone.</b></p>"
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Công thức chính: <b>I want to + động từ nguyên mẫu</b>."
+      }
+    ]
+  },
+  {
+    "id": "comparison",
+    "title": "11. I want to và I’d like to",
+    "blocks": [
+      {
+        "type": "compare",
+        "leftTitle": "I want to…",
+        "rightTitle": "I’d like to…",
+        "leftHtml": "Trực tiếp, thân mật, dùng rất nhiều hằng ngày.",
+        "rightHtml": "Mềm và lịch sự hơn, phù hợp với dịch vụ/công việc."
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to buy this.",
+            "Tôi muốn mua cái này."
+          ],
+          [
+            "I'd like to buy this.",
+            "Tôi muốn mua cái này. — lịch sự hơn."
+          ],
+          [
+            "I want to ask you something.",
+            "Tôi muốn hỏi bạn một việc."
+          ],
+          [
+            "I'd like to ask you something.",
+            "Tôi muốn hỏi bạn một việc. — mềm hơn."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dialogs",
+    "title": "12. Hội thoại thực tế",
+    "blocks": [
+      {
+        "type": "dialogs",
+        "items": [
+          {
+            "place": "Ăn uống",
+            "rows": [
+              [
+                "A",
+                "What do you want to eat?",
+                "Bạn muốn ăn gì?"
+              ],
+              [
+                "B",
+                "I want to get something light.",
+                "Tôi muốn ăn gì đó nhẹ một chút."
+              ]
+            ]
+          },
+          {
+            "place": "Cuối tuần",
+            "rows": [
+              [
+                "A",
+                "What do you want to do this weekend?",
+                "Cuối tuần này bạn muốn làm gì?"
+              ],
+              [
+                "B",
+                "I want to spend some time with my family.",
+                "Tôi muốn dành thời gian với gia đình."
+              ]
+            ]
+          },
+          {
+            "place": "Công việc",
+            "rows": [
+              [
+                "A",
+                "What do you want to check first?",
+                "Bạn muốn kiểm tra gì trước?"
+              ],
+              [
+                "B",
+                "I want to check the settings and make sure everything is correct.",
+                "Tôi muốn kiểm tra cài đặt và chắc chắn mọi thứ đều đúng."
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "phrases",
+    "title": "13. Các cụm đáng học cùng mẫu này",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "html": "<p>Hãy học nguyên cụm để tạo câu nhanh hơn thay vì dịch từng từ.</p>"
+      },
+      {
+        "type": "chips",
+        "items": [
+          [
+            "take a break",
+            "nghỉ một chút"
+          ],
+          [
+            "go home and relax",
+            "về nhà và thư giãn"
+          ],
+          [
+            "spend more time with my family",
+            "dành thêm thời gian cho gia đình"
+          ],
+          [
+            "get back into shape",
+            "lấy lại thể lực"
+          ],
+          [
+            "work on my pronunciation",
+            "luyện/cải thiện phát âm"
+          ],
+          [
+            "expand my vocabulary",
+            "mở rộng vốn từ"
+          ],
+          [
+            "make sure",
+            "đảm bảo / chắc chắn"
+          ],
+          [
+            "get better at something",
+            "giỏi hơn ở một việc"
+          ],
+          [
+            "cut back on spending",
+            "giảm chi tiêu"
+          ],
+          [
+            "put some money aside",
+            "để dành tiền"
+          ],
+          [
+            "think something through",
+            "suy nghĩ kỹ một việc"
+          ],
+          [
+            "make better use of my time",
+            "sử dụng thời gian hiệu quả hơn"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "advanced",
+    "title": "14. Những câu ở mức cao hơn nhưng vẫn dùng thường xuyên",
+    "blocks": [
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to get better at explaining technical problems in a way that's easy to understand.",
+            "Tôi muốn giỏi hơn trong việc giải thích vấn đề kỹ thuật theo cách dễ hiểu."
+          ],
+          [
+            "I want to make better use of my time instead of constantly feeling rushed.",
+            "Tôi muốn sử dụng thời gian hiệu quả hơn thay vì lúc nào cũng cảm thấy vội vàng."
+          ],
+          [
+            "I want to focus on what I can actually use in real conversations.",
+            "Tôi muốn tập trung vào những gì mình thực sự có thể dùng trong hội thoại thật."
+          ],
+          [
+            "I want to become more confident speaking up when I have something useful to say.",
+            "Tôi muốn tự tin hơn khi lên tiếng nếu mình có điều hữu ích để nói."
+          ],
+          [
+            "I want to build a stronger foundation before moving on to more advanced material.",
+            "Tôi muốn xây nền tảng vững hơn trước khi chuyển sang nội dung nâng cao."
+          ],
+          [
+            "I want to keep improving little by little instead of expecting myself to be perfect.",
+            "Tôi muốn tiếp tục cải thiện từng chút một thay vì đòi hỏi bản thân phải hoàn hảo."
+          ]
+        ]
+      },
+      {
+        "type": "chips",
+        "items": [
+          [
+            "in a way that's easy to understand",
+            "theo cách dễ hiểu"
+          ],
+          [
+            "constantly feel rushed",
+            "liên tục cảm thấy vội vàng"
+          ],
+          [
+            "speak up",
+            "lên tiếng / phát biểu"
+          ],
+          [
+            "build a stronger foundation",
+            "xây nền tảng vững hơn"
+          ],
+          [
+            "little by little",
+            "từng chút một"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "connect-patterns",
+    "title": "15. Ghép mẫu câu với những mẫu trước",
+    "blocks": [
+      {
+        "type": "chips",
+        "items": [
+          [
+            "I'd like to...",
+            "Tôi muốn… — lịch sự"
+          ],
+          [
+            "I'm going to...",
+            "Tôi sẽ / tôi định… — kế hoạch"
+          ],
+          [
+            "I want to...",
+            "Tôi muốn… — trực tiếp"
+          ]
+        ]
+      },
+      {
+        "type": "sentences",
+        "items": [
+          [
+            "I want to improve my English.",
+            "Tôi muốn cải thiện tiếng Anh."
+          ],
+          [
+            "I'd like to speak more confidently at work.",
+            "Tôi muốn nói tự tin hơn trong công việc. — lịch sự/mềm hơn."
+          ],
+          [
+            "I'm going to practice for 30 minutes tonight.",
+            "Tối nay tôi sẽ luyện 30 phút. — kế hoạch hành động."
+          ],
+          [
+            "I want to spend more time with my family, so I'm going to keep this weekend free.",
+            "Tôi muốn dành nhiều thời gian hơn cho gia đình, nên tôi sẽ để cuối tuần này rảnh."
+          ]
+        ]
+      },
+      {
+        "type": "callout",
+        "tone": "green",
+        "html": "Hãy nối các mẫu theo ý nghĩa: <b>mong muốn → cách nói lịch sự → kế hoạch hành động</b>. Đây là bước chuyển từ học câu đơn sang nói thành đoạn."
+      }
+    ]
+  },
+  {
+    "id": "practice",
+    "title": "Luyện toàn bộ câu trong bài",
+    "blocks": [
+      {
+        "type": "quiz"
+      }
+    ]
+  }
+],
 
   practice: [
     ["Tôi muốn ăn.", "I want to eat."],
