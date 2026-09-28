@@ -501,47 +501,134 @@ window.CONTENT_REGISTRY["en-pattern-009"] = {
       ]
     },
     {
-      "id": "phrases",
-      "title": "13. Một số cụm từ đáng học",
-      "blocks": [
-        {
-          "type": "chips",
-          "items": [
-            [
-              "catch up with someone",
-              "gặp lại và trò chuyện về những chuyện gần đây"
-            ],
-            [
-              "hear from someone",
-              "nhận được tin / phản hồi từ ai"
-            ],
-            [
-              "take on responsibility",
-              "đảm nhận trách nhiệm"
-            ],
-            [
-              "put something into practice",
-              "áp dụng vào thực tế"
-            ],
-            [
-              "build a working relationship",
-              "xây dựng mối quan hệ làm việc"
-            ],
-            [
-              "put myself to the test",
-              "thử thách bản thân"
-            ],
-            [
-              "see how things turn out",
-              "xem mọi chuyện cuối cùng diễn ra thế nào"
-            ],
-            [
-              "see what the future brings",
-              "xem tương lai mang lại điều gì"
-            ]
+          "id": "phrases",
+          "title": "13. Một số cụm từ đáng học",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p><b>PHẢI THUỘC CHỦ ĐỘNG:</b> chỉ tập trung 5–8 cụm dưới đây. Mục tiêu là từ nhận ra → gọi ra được → dùng tự động.</p>"
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "hear from someone",
+                                  "nhận tin / phản hồi từ ai"
+                            ],
+                            [
+                                  "see someone again",
+                                  "gặp lại ai"
+                            ],
+                            [
+                                  "work with someone",
+                                  "làm việc cùng ai"
+                            ],
+                            [
+                                  "learn more about something",
+                                  "tìm hiểu thêm về việc gì"
+                            ],
+                            [
+                                  "get started",
+                                  "bắt đầu"
+                            ],
+                            [
+                                  "spend time with someone",
+                                  "dành thời gian với ai"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "purple",
+                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                },
+                {
+                      "type": "chips",
+                      "items": [
+                            [
+                                  "meet in person",
+                                  "gặp trực tiếp"
+                            ],
+                            [
+                                  "try something new",
+                                  "thử điều mới"
+                            ],
+                            [
+                                  "visit somewhere",
+                                  "đến thăm nơi nào"
+                            ],
+                            [
+                                  "work together",
+                                  "làm việc cùng nhau"
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "green",
+                      "html": "Không học từng từ trong cụm. Hãy coi mỗi cụm là <b>một mảnh Lego ngôn ngữ</b> và học nó trong câu hoàn chỉnh."
+                }
           ]
-        }
-      ]
+    },
+    {
+          "id": "deep-practice",
+          "title": "10 câu luyện sâu · Việt → Anh không nhìn đáp án",
+          "blocks": [
+                {
+                      "type": "paragraph",
+                      "html": "<p>40 câu ví dụ giúp bạn gặp mẫu trong nhiều ngữ cảnh; <b>10 câu này mới là nhóm nên luyện nói sâu</b>. Mục tiêu: nhìn ý tiếng Việt và bật ra câu tiếng Anh trong khoảng 2–3 giây.</p>"
+                },
+                {
+                      "type": "sentences",
+                      "items": [
+                            [
+                                  "I look forward to hearing from you soon.",
+                                  "Tôi mong sớm nhận được phản hồi từ bạn."
+                            ],
+                            [
+                                  "I look forward to seeing you again next month.",
+                                  "Tôi mong được gặp lại bạn vào tháng sau."
+                            ],
+                            [
+                                  "I look forward to working with you on this project.",
+                                  "Tôi mong được làm việc cùng bạn trong dự án này."
+                            ],
+                            [
+                                  "I look forward to learning more about how the system works.",
+                                  "Tôi mong được tìm hiểu thêm về cách hệ thống hoạt động."
+                            ],
+                            [
+                                  "I look forward to getting started next week.",
+                                  "Tôi mong được bắt đầu vào tuần sau."
+                            ],
+                            [
+                                  "I look forward to spending more time with my family.",
+                                  "Tôi mong được dành nhiều thời gian hơn cho gia đình."
+                            ],
+                            [
+                                  "I'm looking forward to meeting everyone in person.",
+                                  "Tôi đang mong được gặp trực tiếp mọi người."
+                            ],
+                            [
+                                  "I'm looking forward to trying something new this weekend.",
+                                  "Tôi đang mong được thử điều gì đó mới vào cuối tuần này."
+                            ],
+                            [
+                                  "Looking forward to hearing your thoughts.",
+                                  "Mong nhận được ý kiến của bạn."
+                            ],
+                            [
+                                  "I look forward to continuing to improve my English.",
+                                  "Tôi mong tiếp tục cải thiện tiếng Anh của mình."
+                            ]
+                      ]
+                },
+                {
+                      "type": "callout",
+                      "tone": "amber",
+                      "html": "Nếu chỉ nhìn câu tiếng Anh mới nhớ nghĩa, bạn đang ở mức <b>nhận ra</b>. Khi có ý tiếng Việt và tự bật ra được cụm/câu, bạn mới chuyển sang <b>chủ động</b>."
+                }
+          ]
     },
     {
       "id": "natural-chunks",
