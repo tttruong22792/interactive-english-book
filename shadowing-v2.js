@@ -64,6 +64,9 @@
           recallText:'',
           personalDone:false,
           personalText:'',
+          personalLocalAnalysis:null,
+          personalAiAnalysis:null,
+          personalAiRemaining:null,
           mastered:false,
           firstDay:0,
           lastDay:0,
@@ -280,6 +283,168 @@
       return candidates.slice(0,2);
     }
 
+
+    function expansionSuggestions(text,lesson,pool){
+      var stem=norm(patternStem(lesson));
+      var current=norm(text);
+      var currentLen=words(text).length;
+      var candidates=(pool||[]).filter(function(item){
+        var n=norm(item.en);
+        return n!==current && n.indexOf(stem)===0;
+      }).map(function(item){
+        var len=words(item.en).length;
+        var richer=len>=currentLen?0:5;
+        var distance=Math.abs(len-currentLen);
+        var sourceBoost=/work|dialog|expansion|master/i.test(item.source||'')?-1:0;
+        return {item:item,score:richer+distance+sourceBoost};
+      }).sort(function(a,b){return a.score-b.score;});
+
+      var picked=[];
+      for(var i=0;i<candidates.length&&picked.length<3;i++){
+        if(!picked.some(function(x){return norm(x)===norm(candidates[i].item.en);})) picked.push(candidates[i].item.en);
+      }
+      return picked;
+    }
+
+    function localCoach(text,lesson,pool){
+      var sentence=String(text||'').trim();
+      var normalized=norm(sentence);
+      var stem=norm(patternStem(lesson));
+      var sentenceWords=words(sentence);
+      var stemWords=words(patternStem(lesson));
+      var usesPattern=normalized.indexOf(stem)===0;
+      var grammar=[];
+      var vocabulary=[];
+      var tips=[];
+      var tail=sentenceWords.slice(stemWords.length);
+      var firstTail=String(tail[0]||'').toLowerCase();
+      var basePatterns=[
+        "i'd like to","i'm going to","i want to","i plan to","i hope to",
+        "would you like to","do you want to","i intend to","i need to"
+      ];
+      var basePattern=basePatterns.indexOf(stem)>=0;
+
+      for(var i=1;i<sentenceWords.length;i++){
+        if(norm(sentenceWords[i])===norm(sentenceWords[i-1])){
+          grammar.push('Có một từ bị lặp liên tiếp: “'+sentenceWords[i]+'”.');
+          break;
+        }
+      }
+
+      if(basePattern && /ing$/i.test(firstTail) && firstTail.length>4){
+        grammar.push('Sau mẫu này thường dùng động từ nguyên mẫu: '+patternStem(lesson)+' + V, không dùng V-ing ngay sau “to”.');
+      }
+      if(stem==="i'd rather" && /ing$/i.test(firstTail) && firstTail.length>4){
+        grammar.push('Sau “I’d rather” thường dùng động từ nguyên mẫu không “to”: I’d rather + V.');
+      }
+      if(stem==='i look forward to'){
+        var commonBase=['see','meet','hear','work','talk','visit','learn','start','go','come','join','discuss','receive'];
+        if(commonBase.indexOf(firstTail)>=0){
+          grammar.push('Sau “look forward to”, “to” là giới từ: thường dùng danh từ hoặc V-ing, ví dụ “I look forward to seeing…”.');
+        }
+      }
+
+      if(/\bcan\s+to\b/i.test(sentence)) grammar.push('Sau “can” dùng động từ nguyên mẫu không “to”: can + V.');
+      if(/\bcan\s+[a-z]+ing\b/i.test(sentence)) grammar.push('Sau “can” thường dùng động từ nguyên mẫu: can + V.');
+      if(/\bfor\s+(talk|communicate|learn|improve|work|study|practice|buy|go|do|make|check|discuss|speak)\b/i.test(sentence)){
+        grammar.push('Sau “for” không đặt trực tiếp động từ nguyên mẫu. Có thể dùng “for + V-ing” hoặc đổi sang “so that I can + V” tùy ý nghĩa.');
+      }
+
+      var phraseBank=Object.assign({},window.CORE_PHRASES||{},lesson.phrases||{});
+      var phraseHits=Object.keys(phraseBank).filter(function(key){
+        var n=norm(key);
+        return n.split(' ').length>=2 && normalized.indexOf(n)>=0;
+      }).sort(function(a,b){return words(b).length-words(a).length;});
+      if(phraseHits.length){
+        var best=phraseHits[0];
+        var meaning=phraseBank[best]?.[1]||'';
+        vocabulary.push('Bạn đã dùng cụm “'+best+'”'+(meaning?' = '+meaning:'')+'.');
+      }else{
+        vocabulary.push('Câu đã dùng đúng khung; hãy ưu tiên học thêm các cụm cố định thay vì ghép từng từ riêng lẻ.');
+      }
+
+      if(/\bimprove english\b/i.test(sentence) && !/\bimprove my english\b/i.test(sentence)){
+        tips.push('Nếu nói về kỹ năng của chính bạn, “improve my English” thường tự nhiên và cụ thể hơn.');
+      }
+      if(sentenceWords.length<=stemWords.length+1){
+        tips.push('Câu còn rất ngắn. Hãy thêm đối tượng, thời gian, lý do hoặc mục đích để biến nó thành câu giao tiếp thật.');
+      }
+
+      var ok=usesPattern && sentenceWords.length>stemWords.length && grammar.length===0;
+      return {
+        ok:ok,
+        usesPattern:usesPattern,
+        verdict:!usesPattern?'wrong_pattern':grammar.length?'needs_review':'basic_pass',
+        grammarNotes:grammar,
+        vocabularyNotes:vocabulary,
+        tips:tips,
+        expansions:expansionSuggestions(sentence,lesson,pool)
+      };
+    }
+
+    function localCoachHTML(analysis){
+      if(!analysis) return '';
+      var verdict=analysis.verdict==='basic_pass'
+        ? '<span class="shadow-v2-coach-badge good">Qua kiểm tra cơ bản</span>'
+        : analysis.verdict==='wrong_pattern'
+          ? '<span class="shadow-v2-coach-badge bad">Chưa dùng đúng mẫu</span>'
+          : '<span class="shadow-v2-coach-badge warn">Có điểm cần xem lại</span>';
+
+      var grammar=analysis.grammarNotes?.length
+        ? '<ul>'+analysis.grammarNotes.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'
+        : '<p>Không phát hiện lỗi thuộc các quy tắc miễn phí hiện đang kiểm tra.</p>';
+      var vocab=analysis.vocabularyNotes?.length
+        ? '<ul>'+analysis.vocabularyNotes.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'
+        : '';
+      var tips=analysis.tips?.length
+        ? '<div class="shadow-v2-coach-tip"><strong>Gợi ý:</strong> '+analysis.tips.map(esc).join(' ')+'</div>'
+        : '';
+      var expansions=analysis.expansions?.length
+        ? '<div class="shadow-v2-coach-expansions"><strong>Gợi ý mở rộng từ bài học</strong>'+analysis.expansions.map(function(x){return '<div><span>→</span><b>'+esc(x)+'</b></div>';}).join('')+'</div>'
+        : '';
+
+      return '<div class="shadow-v2-coach-card local">'+
+        '<div class="shadow-v2-coach-head"><div><span>KIỂM TRA MIỄN PHÍ · TRÊN THIẾT BỊ</span><strong>Nhận xét nhanh</strong></div>'+verdict+'</div>'+
+        '<div class="shadow-v2-coach-section"><b>Mẫu câu</b><p>'+(analysis.usesPattern?'✓ Bạn đang dùng đúng khung hôm nay.':'Hãy bắt đầu câu bằng đúng khung đang học.')+'</p></div>'+
+        '<div class="shadow-v2-coach-section"><b>Ngữ pháp cơ bản</b>'+grammar+'</div>'+
+        '<div class="shadow-v2-coach-section"><b>Từ vựng / cụm từ</b>'+vocab+'</div>'+
+        tips+expansions+
+        '<small class="shadow-v2-coach-limit">Bộ kiểm tra miễn phí chỉ dùng quy tắc và dữ liệu bài học, nên không thể đánh giá mọi sắc thái tự nhiên như AI/người bản xứ.</small>'+
+      '</div>';
+    }
+
+    function aiCoachHTML(data,remaining){
+      if(!data) return '';
+      var label={
+        natural:'Đúng & tự nhiên',
+        correct_but_unnatural:'Đúng nhưng có cách tự nhiên hơn',
+        needs_correction:'Cần sửa',
+        wrong_pattern:'Đúng ý nhưng chưa luyện đúng mẫu'
+      }[data.verdict]||'AI Coach';
+      var tone=(data.verdict==='natural')?'good':(data.verdict==='correct_but_unnatural'?'warn':'bad');
+      var grammar=(data.grammar_notes||[]).length
+        ? '<ul>'+(data.grammar_notes||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'
+        : '<p>AI không thấy lỗi ngữ pháp đáng kể.</p>';
+      var vocab=(data.vocabulary_notes||[]).length
+        ? '<ul>'+(data.vocabulary_notes||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'
+        : '<p>Cách dùng từ phù hợp.</p>';
+      var corrected=String(data.corrected_sentence||'').trim();
+      var expansions=(data.expansions||[]).map(function(x){
+        return '<div class="shadow-v2-ai-expansion"><span>→</span><b>'+esc(x)+'</b></div>';
+      }).join('');
+
+      return '<div class="shadow-v2-coach-card ai">'+
+        '<div class="shadow-v2-coach-head"><div><span>AI COACH · PHÂN TÍCH SÂU</span><strong>'+esc(label)+'</strong></div><span class="shadow-v2-coach-badge '+tone+'">'+Math.max(0,Math.min(100,Number(data.naturalness_score||0)))+'% tự nhiên</span></div>'+
+        '<div class="shadow-v2-coach-section"><b>Ngữ pháp</b>'+grammar+'</div>'+
+        '<div class="shadow-v2-coach-section"><b>Từ vựng / độ tự nhiên</b>'+vocab+'</div>'+
+        (corrected?'<div class="shadow-v2-ai-correction"><span>Câu đề xuất</span><strong>'+esc(corrected)+'</strong></div>':'')+
+        (data.explanation_vi?'<p class="shadow-v2-ai-explain">'+esc(data.explanation_vi)+'</p>':'')+
+        (expansions?'<div class="shadow-v2-coach-expansions"><strong>Mở rộng thêm</strong>'+expansions+'</div>':'')+
+        (data.encouragement_vi?'<div class="shadow-v2-ai-encourage">'+esc(data.encouragement_vi)+'</div>':'')+
+        (remaining!=null?'<small class="shadow-v2-coach-limit">Còn '+Number(remaining)+' lượt AI Coach trong giới hạn 24 giờ.</small>':'')+
+      '</div>';
+    }
+
     function maskedSentence(item,lesson,count){
       if(count<2) return esc(item.en);
       if(count>=3) return '<span class="shadow-v2-blind-line">Không nhìn chữ. Nghe và nói đuổi theo.</span>';
@@ -413,9 +578,17 @@
         '<div class="shadow-v2-personal-box">'+
           '<span>MAKE IT YOURS · NÓI VỀ BẠN</span>'+
           '<h3>Dùng <b>'+esc(stem)+'</b> để nói một điều thật về cuộc sống của bạn.</h3>'+
-          '<p>Không có đáp án cố định. Hệ thống chỉ kiểm tra bạn có chủ động dùng đúng khung và nói thêm ý của riêng mình hay không.</p>'+
-          '<div class="shadow-v2-answer-row"><input id="shadowV2PersonalInput" type="text" value="'+escAttr(progress.personalText||'')+'" placeholder="'+escAttr(stem)+' ..."><button id="shadowV2PersonalMic" class="secondary-button" type="button">Nói</button><button id="shadowV2PersonalCheck" class="primary-button" type="button">Xác nhận câu của tôi</button></div>'+
-          '<div id="shadowV2PersonalFeedback">'+(progress.personalDone?'<div class="shadow-v2-mini-result good">Đã tạo được câu của riêng bạn.</div>':'')+'</div>'+
+          '<p>Tự nói trước. Sau đó web kiểm tra miễn phí ngay trên thiết bị; nếu đã đăng nhập, bạn có thể nhờ AI Coach phân tích sâu hơn về ngữ pháp, từ vựng và độ tự nhiên.</p>'+
+          '<div class="shadow-v2-answer-row"><input id="shadowV2PersonalInput" type="text" value="'+escAttr(progress.personalText||'')+'" placeholder="'+escAttr(stem)+' ..."><button id="shadowV2PersonalMic" class="secondary-button" type="button">Nói</button><button id="shadowV2PersonalCheck" class="primary-button" type="button">Phân tích câu của tôi</button></div>'+
+          '<div id="shadowV2PersonalFeedback">'+
+            localCoachHTML(progress.personalLocalAnalysis)+
+            aiCoachHTML(progress.personalAiAnalysis,progress.personalAiRemaining)+
+            (progress.personalLocalAnalysis?(
+              window.LanguageStudioAICoach?.status?.().signedIn
+                ? '<button id="shadowV2AiCoach" class="shadow-v2-ai-button" type="button">'+(progress.personalAiAnalysis?'Phân tích lại bằng AI':'AI Coach · phân tích sâu')+'</button>'
+                : '<button id="shadowV2AiLogin" class="shadow-v2-ai-button is-login" type="button">Đăng nhập để dùng AI Coach</button>'
+            ):'')+
+          '</div>'+
         '</div>'+
         '<div class="shadow-v2-action-row"><button id="shadowV2FinishSentence" class="primary-button" type="button" '+(!(progress.recallPassed&&progress.personalDone)?'disabled':'')+'>'+(session.index===session.items.length-1?'Hoàn thành câu 5 →':'Hoàn thành · sang câu tiếp theo →')+'</button></div>';
     }
@@ -528,21 +701,63 @@
       var personalInput=q('#shadowV2PersonalInput');
       var checkPersonal=function(){
         var text=String(personalInput.value||'').trim();
-        var stem=norm(patternStem(session.lesson));
-        var ok=norm(text).indexOf(stem)===0 && words(text).length>words(patternStem(session.lesson)).length;
-        if(ok){
-          progress.personalDone=true;
-          progress.personalText=text;
-          markTouched(session.lesson,item,progress);
-          q('#shadowV2PersonalFeedback').innerHTML='<div class="shadow-v2-mini-result good">Đạt. Đây là câu của chính bạn.</div>';
-          setTimeout(renderSession,450);
-        }else{
-          q('#shadowV2PersonalFeedback').innerHTML='<div class="shadow-v2-mini-result bad">Hãy bắt đầu bằng khung <b>'+esc(patternStem(session.lesson))+'</b> rồi thêm ý của bạn.</div>';
-        }
+        if(!text){env.toast('Hãy nói hoặc nhập câu của bạn trước.');return;}
+        var analysis=localCoach(text,session.lesson,session.pool);
+        progress.personalText=text;
+        progress.personalLocalAnalysis=analysis;
+        progress.personalAiAnalysis=null;
+        progress.personalAiRemaining=null;
+        progress.personalDone=!!analysis.ok;
+        markTouched(session.lesson,item,progress);
+        setTimeout(renderSession,220);
       };
       q('#shadowV2PersonalCheck').onclick=checkPersonal;
       q('#shadowV2PersonalMic').onclick=function(){speechInput(personalInput,function(){checkPersonal();});};
       personalInput.onkeydown=function(e){if(e.key==='Enter') checkPersonal();};
+      personalInput.oninput=function(){
+        if(norm(personalInput.value)!==norm(progress.personalText||'')){
+          progress.personalDone=false;
+          progress.personalLocalAnalysis=null;
+          progress.personalAiAnalysis=null;
+          progress.personalAiRemaining=null;
+          var finish=q('#shadowV2FinishSentence');
+          if(finish) finish.disabled=true;
+        }
+      };
+
+      var aiButton=q('#shadowV2AiCoach');
+      if(aiButton){
+        aiButton.onclick=async function(){
+          if(!progress.personalText){env.toast('Hãy phân tích câu miễn phí trước.');return;}
+          aiButton.disabled=true;
+          aiButton.textContent='AI đang phân tích...';
+          try{
+            var result=await window.LanguageStudioAICoach.analyze({
+              sentence:progress.personalText,
+              targetPattern:patternStem(session.lesson),
+              patternMeaning:session.lesson.meaning||'',
+              lessonTitle:session.lesson.title||'',
+              lessonId:session.lesson.id||''
+            });
+            progress.personalAiAnalysis=result.analysis||null;
+            progress.personalAiRemaining=result.remaining;
+            if(progress.personalAiAnalysis){
+              var verdict=progress.personalAiAnalysis.verdict;
+              progress.personalDone=verdict==='natural'||verdict==='correct_but_unnatural';
+            }
+            markTouched(session.lesson,item,progress);
+            renderSession();
+          }catch(error){
+            aiButton.disabled=false;
+            aiButton.textContent='AI Coach · thử lại';
+            if(error?.code==='DAILY_LIMIT_REACHED') env.toast('Đã hết lượt AI Coach trong 24 giờ. Phần kiểm tra miễn phí vẫn dùng bình thường.');
+            else if(error?.code==='AUTH_REQUIRED') env.toast('Hãy đăng nhập để dùng AI Coach.');
+            else env.toast('AI Coach tạm thời chưa phản hồi. Kiểm tra miễn phí vẫn hoạt động.');
+          }
+        };
+      }
+      var aiLogin=q('#shadowV2AiLogin');
+      if(aiLogin) aiLogin.onclick=function(){location.hash='#settings';};
 
       q('#shadowV2FinishSentence').onclick=function(){
         recalcMastery(progress);
