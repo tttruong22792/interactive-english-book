@@ -212,10 +212,22 @@
     return clean;
   }
 
+  function vocabularyTrainerIsOpen(){
+    return !!window.VocabularyTrainer?.isOpen?.();
+  }
+
   async function applyAccountVocabulary(remote){
     if(!remote || typeof remote!=='object') return;
     state.saved=cleanAccountVocabulary(remote);
     saveState();
+
+    // Realtime updates are expected after every flashcard rating.
+    // Never destroy the active trainer DOM while the learner is mid-session.
+    if(vocabularyTrainerIsOpen()){
+      window.VocabularyTrainer?.onRemoteSync?.();
+      return;
+    }
+
     const route=parseRoute();
     if(route.name==='vocab') renderVocab();
     else if(route.name==='settings') renderSettings();
@@ -229,7 +241,7 @@
       if(remote){
         state.saved=cleanAccountVocabulary(remote);
         saveState();
-        if(rerender){
+        if(rerender && !vocabularyTrainerIsOpen()){
           const route=parseRoute();
           if(route.name==='vocab') renderVocab();
           else if(route.name==='settings') renderSettings();
@@ -409,6 +421,9 @@
     $('#lessonControls').classList.toggle('hidden', !lesson);
   }
   async function render(){
+    if(!window.VocabularyTrainer?.isOpen?.()){
+      document.documentElement.classList.remove('vocab-trainer-open');
+    }
     stopSpeech();
     closePopover();
     hideSelectionBar();
@@ -2521,6 +2536,9 @@
           }else if(event.previousUserId){
             state.saved={};
             saveState();
+            if(vocabularyTrainerIsOpen()){
+              document.documentElement.classList.remove('vocab-trainer-open');
+            }
             const route=parseRoute();
             if(route.name==='vocab') renderVocab();
             else if(route.name==='settings') renderSettings();
