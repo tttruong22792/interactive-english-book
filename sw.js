@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v52-runtime-recovery';
+const APP_CACHE='language-studio-v53-trainer-realtime-fix';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20260928-active-chunks-v16.js',
+  './runtime-20260928-active-chunks-v17.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
