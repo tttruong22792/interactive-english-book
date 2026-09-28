@@ -1,6 +1,6 @@
 (function(){
-  const SUPABASE_URL='https://npkekrjzebsjfaizfcyb.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY='sb_publishable_q7AqCGH0aa17PqDGsWafXA_0fIppITC';
+  const SUPABASE_URL='https://aypyeqwbespobiwoaefe.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY='sb_publishable_qENy8oNhPwOOL9fWnotYBg_we0Trwsr';
   const SUPABASE_MODULE='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/+esm';
   const TABLE='language_studio_saved_vocab';
   const META_KEY='languageStudio:accountVocabSync:v2';
