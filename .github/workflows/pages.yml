@@ -46,6 +46,14 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Check JavaScript syntax
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: |
+          node --check app.js
+          node --check vocabulary-trainer.js
+          node --check data/english/active-study-packs.js
+          node --check cloud-sync.js
+
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
         run: npm run build
