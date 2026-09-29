@@ -325,20 +325,20 @@
     return packs().flatMap(pack=>studyChunks(pack));
   }
 
-  function reviewCandidates(){
-    const reviewed=allStudyChunks().filter(card=>progressFor(card).reviewCount>0);
+  function reviewCandidates(saved=env?.state?.saved||{}){
+    const reviewed=allStudyChunks().filter(card=>progressFor(card,saved).reviewCount>0);
     const now=Date.now();
     const due=reviewed
-      .filter(card=>Number(progressFor(card).nextReviewAt||0)<=now)
-      .sort((a,b)=>Number(progressFor(a).nextReviewAt||0)-Number(progressFor(b).nextReviewAt||0));
+      .filter(card=>Number(progressFor(card,saved).nextReviewAt||0)<=now)
+      .sort((a,b)=>Number(progressFor(a,saved).nextReviewAt||0)-Number(progressFor(b,saved).nextReviewAt||0));
     if(due.length) return due;
     return reviewed
-      .sort((a,b)=>Number(progressFor(a).lastReviewedAt||0)-Number(progressFor(b).lastReviewedAt||0))
+      .sort((a,b)=>Number(progressFor(a,saved).lastReviewedAt||0)-Number(progressFor(b,saved).lastReviewedAt||0))
       .slice(0,10);
   }
 
-  function reviewCount(){
-    return reviewCandidates().length;
+  function reviewCount(saved={}){
+    return reviewCandidates(saved).length;
   }
 
   function requeueCurrent(card){
