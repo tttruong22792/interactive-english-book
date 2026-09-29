@@ -2950,3 +2950,55 @@ html.vocab-trainer-open,html.vocab-trainer-open body{overflow:hidden}
   .chunk-review-today{align-items:stretch;display:grid}
   .chunk-review-today .primary-button{width:100%}
 }
+
+
+/* ===== Micro chunk hierarchy ===== */
+.active-chunk-list article.is-building{
+  background:#f7f5ff;
+  border:1px dashed rgba(111,88,220,.22);
+  border-radius:12px;
+  padding-left:7px;
+  padding-right:7px;
+}
+.active-chunk-list article.is-building em{
+  background:#ebe6ff;
+  color:#6652c9;
+}
+.chunk-layer-note{
+  max-width:620px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:#f7f7fa;
+  color:#646b7c;
+  font-size:12px;
+  line-height:1.55;
+  text-align:center;
+}
+.chunk-layer-map{
+  width:min(650px,100%);
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+}
+.chunk-layer-map span{
+  display:grid;
+  gap:2px;
+  padding:9px 11px;
+  border:1px solid #dddfe8;
+  border-radius:12px;
+  background:#fff;
+  color:#22283a;
+  font-size:12px;
+  font-weight:750;
+}
+.chunk-layer-map span b{
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#8a8fa0;
+}
+@media(max-width:620px){
+  .chunk-layer-map{display:grid}
+  .chunk-layer-map span{text-align:center}
+}
