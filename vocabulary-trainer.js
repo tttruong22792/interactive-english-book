@@ -314,9 +314,9 @@
   function dueRank(card){
     const p=progressFor(card);
     if(p.reviewCount&&p.nextReviewAt&&p.nextReviewAt<=Date.now()) return 0;
-    if(!p.reviewCount) return 2;
+    if(!p.reviewCount) return 1;
     if(p.mastered) return 4;
-    return 1;
+    return 2;
   }
 
   function allStudyChunks(){
@@ -605,7 +605,13 @@
 
   function extensionFor(card,variant){
     const sentence=String(variant?.en||card.modelEn||'').toLowerCase();
-    const blocks=studyChunks(card.pack).filter(x=>x.kind==='building'&&x.key!==card.key);
+    const baseTokens=contentTokens(card.baseEn);
+    const blocks=studyChunks(card.pack).filter(x=>{
+      if(x.kind!=='building'||x.key===card.key) return false;
+      const extTokens=contentTokens(x.baseEn);
+      const overlap=baseTokens.length?baseTokens.filter(t=>extTokens.includes(t)).length/baseTokens.length:0;
+      return overlap<0.6;
+    });
     const exact=blocks
       .filter(x=>sentence.includes(String(x.baseEn||'').toLowerCase()))
       .sort((a,b)=>b.baseEn.length-a.baseEn.length);
