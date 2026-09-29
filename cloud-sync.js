@@ -89,6 +89,13 @@
           nextReviewAt:Math.max(0,Math.floor(Number(item.trainer.nextReviewAt)||0)),
           intervalDays:Math.max(0,Math.min(3650,Number(item.trainer.intervalDays)||0)),
           lastRating:String(item.trainer.lastRating||'').slice(0,24),
+          lastMode:String(item.trainer.lastMode||'').slice(0,24),
+          skills:{
+            recognize:Math.max(0,Math.min(3,Math.floor(Number(item.trainer.skills?.recognize)||0))),
+            recall:Math.max(0,Math.min(3,Math.floor(Number(item.trainer.skills?.recall)||0))),
+            use:Math.max(0,Math.min(3,Math.floor(Number(item.trainer.skills?.use)||0))),
+            writing:Math.max(0,Math.min(3,Math.floor(Number(item.trainer.skills?.writing)||0)))
+          },
           updatedAt:Math.max(0,Math.floor(Number(item.trainer.updatedAt)||0))
         }
       : undefined;
