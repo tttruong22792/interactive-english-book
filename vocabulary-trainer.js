@@ -5,6 +5,7 @@
   const MINUTE=60*1000;
   let env=null;
   let session=null;
+  let viewportHandler=null;
 
   const $=(s,root=document)=>root.querySelector(s);
   const $$=(s,root=document)=>Array.from(root.querySelectorAll(s));
@@ -775,9 +776,9 @@
 
     root.innerHTML=`
       <div class="vocab-trainer-topbar">
-        <button id="vocabTrainerClose" class="vocab-trainer-round" type="button">×</button>
+        <button id="vocabTrainerClose" class="vocab-trainer-round" type="button" aria-label="Đóng">${env.uiIcon('x')}</button>
         <div class="vocab-trainer-counter"><strong>${session.index+1} / ${session.cards.length}</strong><span>${esc(session.options.reviewToday?'Ôn tổng hợp':session.pack.pattern)}</span></div>
-        <button id="vocabTrainerSettings" class="vocab-trainer-round" type="button" aria-label="Tùy chọn">⚙</button>
+        <button id="vocabTrainerSettings" class="vocab-trainer-round" type="button" aria-label="Tùy chọn">${env.uiIcon('settings')}</button>
       </div>
       <div class="vocab-trainer-progress"><i style="width:${Math.round(((session.index+1)/Math.max(1,session.cards.length))*100)}%"></i></div>
       <div class="chunk-mode-intro"><span>${esc(info.name)}</span><strong>${esc(info.title)}</strong><p>Mục tiêu hiện tại: ${esc(info.skill)}</p></div>
@@ -786,7 +787,7 @@
       </div>
       <div class="vocab-trainer-bottom">
         <button id="vocabPrev" class="vocab-bottom-text" type="button" ${session.index<=0?'disabled':''}>← Trước</button>
-        <button id="vocabTrainerSettingsBottom" class="vocab-bottom-icon" type="button">⚙</button>
+        <button id="vocabTrainerSettingsBottom" class="vocab-bottom-icon" type="button" aria-label="Tùy chọn">${env.uiIcon('settings')}</button>
         <button id="vocabNext" class="vocab-bottom-text" type="button">Sau →</button>
       </div>
       <div id="vocabSettingsSheet"></div>`;
@@ -794,10 +795,56 @@
   }
 
   function bindAudio(){
-    $$('[data-chunk-speak]').forEach(btn=>btn.onclick=()=>{
+    $('[data-chunk-speak]').forEach(btn=>btn.onclick=()=>{
       const rate=Number(btn.dataset.rate||0.92);
       env.speak(btn.dataset.chunkSpeak,null,rate);
     });
+  }
+
+  function isMobileTypingDevice(){
+    return !!(window.matchMedia?.('(max-width: 820px), (pointer: coarse)')?.matches);
+  }
+
+  function updateTypingViewport(){
+    const vv=window.visualViewport;
+    const height=Math.max(320,Math.round(vv?.height||window.innerHeight||document.documentElement.clientHeight||0));
+    document.documentElement.style.setProperty('--vocab-visual-height',height+'px');
+
+    const base=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+    const keyboardOpen=isMobileTypingDevice()&&!!vv&&(base-vv.height>120);
+    document.documentElement.classList.toggle('vocab-keyboard-open',keyboardOpen);
+  }
+
+  function keepTypingInputVisible(input,{smooth=true}={}){
+    if(!input||!isMobileTypingDevice()) return;
+    updateTypingViewport();
+    const align=()=>{
+      if(!document.body.contains(input)) return;
+      input.scrollIntoView({block:'center',inline:'nearest',behavior:smooth?'smooth':'auto'});
+    };
+    requestAnimationFrame(align);
+    setTimeout(()=>{updateTypingViewport();align();},260);
+    setTimeout(()=>{updateTypingViewport();align();},520);
+  }
+
+  function bindViewportTracking(){
+    if(viewportHandler) return;
+    viewportHandler=()=>updateTypingViewport();
+    window.visualViewport?.addEventListener('resize',viewportHandler);
+    window.visualViewport?.addEventListener('scroll',viewportHandler);
+    window.addEventListener('resize',viewportHandler);
+    updateTypingViewport();
+  }
+
+  function unbindViewportTracking(){
+    if(viewportHandler){
+      window.visualViewport?.removeEventListener('resize',viewportHandler);
+      window.visualViewport?.removeEventListener('scroll',viewportHandler);
+      window.removeEventListener('resize',viewportHandler);
+      viewportHandler=null;
+    }
+    document.documentElement.classList.remove('vocab-keyboard-open');
+    document.documentElement.style.removeProperty('--vocab-visual-height');
   }
 
   function submitTyping(card,specOverride=null,advanceGuided=false){
@@ -828,11 +875,39 @@
     const spec=specOverride||typingSpec(card,mode);
     const input=$('#chunkAnswerInput');
     if(input){
-      input.focus({preventScroll:true});
+      const mobile=isMobileTypingDevice();
+
+      // Do not programmatically open the iOS keyboard on the first render.
+      // The first focus comes from the user's tap, after which we align the
+      // input only when the keyboard has finished resizing the visual viewport.
+      if(!mobile){
+        input.focus({preventScroll:true});
+      }else if(session.retainInputFocus){
+        session.retainInputFocus=false;
+        setTimeout(()=>{
+          if(!document.body.contains(input)) return;
+          input.focus({preventScroll:true});
+          keepTypingInputVisible(input,{smooth:false});
+        },40);
+      }
+
+      input.addEventListener('focus',()=>{
+        document.documentElement.classList.add('vocab-keyboard-open');
+        keepTypingInputVisible(input);
+      });
+      input.addEventListener('blur',()=>{
+        setTimeout(()=>{
+          if(document.activeElement?.id!=='chunkAnswerInput'){
+            document.documentElement.classList.remove('vocab-keyboard-open');
+            updateTypingViewport();
+          }
+        },80);
+      });
       input.oninput=()=>{session.inputValue=input.value;};
       input.onkeydown=e=>{
         if(e.key==='Enter'){
           e.preventDefault();
+          session.retainInputFocus=true;
           if(session.result?.correct){
             if(advanceGuided) advanceGuidedStep();
             else nextCard();
@@ -840,7 +915,10 @@
         }
       };
     }
-    $('#checkChunkAnswer')?.addEventListener('click',()=>submitTyping(card,specOverride,advanceGuided));
+    $('#checkChunkAnswer')?.addEventListener('click',()=>{
+      session.retainInputFocus=isMobileTypingDevice();
+      submitTyping(card,specOverride,advanceGuided);
+    });
     $('#chunkHint')?.addEventListener('click',()=>{
       session.hintLevel=Math.min(3,session.hintLevel+1);
       renderCard();
@@ -987,7 +1065,7 @@
     const s=settings();
     return `<div class="vocab-settings-backdrop" id="vocabSettingsBackdrop">
       <section class="vocab-settings-sheet">
-        <div class="vocab-settings-head"><h2>Tùy chọn buổi học</h2><button id="vocabSettingsClose" type="button">×</button></div>
+        <div class="vocab-settings-head"><h2>Tùy chọn buổi học</h2><button id="vocabSettingsClose" type="button" aria-label="Đóng">${env.uiIcon('x')}</button></div>
         <label class="vocab-settings-row"><span><b>Mẫu câu</b><small>10 cụm chính + các khối bổ trợ được web chọn sẵn</small></span>
           <select id="vocabLessonSelect">${packs().map(p=>`<option value="${p.lessonId}" ${p.lessonId===s.lessonId?'selected':''}>#${p.order} · ${esc(p.pattern)}</option>`).join('')}</select>
         </label>
@@ -1037,7 +1115,7 @@
 
   function renderEmpty(){
     $('#vocabTrainerRoot').innerHTML=`<div class="vocab-trainer-empty">
-      <button id="vocabTrainerClose" class="vocab-trainer-round" type="button">×</button>
+      <button id="vocabTrainerClose" class="vocab-trainer-round" type="button" aria-label="Đóng">${env.uiIcon('x')}</button>
       <span class="eyebrow">CHUNK TRAINER</span>
       <h2>Không có cụm phù hợp.</h2>
       <p>Hãy đổi bài, số lượng hoặc phạm vi trong tùy chọn.</p>
@@ -1077,6 +1155,7 @@
 
   function close(){
     document.documentElement.classList.remove('vocab-trainer-open');
+    unbindViewportTracking();
     session=null;
     env.renderVocab();
   }
@@ -1115,6 +1194,7 @@
     buildSession(overrides);
     env.setHeader(overrides.reviewToday?'Learning › Ôn hôm nay':'Learning › Chunk Trainer','Cụm chủ động');
     document.documentElement.classList.add('vocab-trainer-open');
+    bindViewportTracking();
     env.main.innerHTML='<section id="vocabTrainerRoot" class="vocab-trainer-root"></section>';
     render();
   }
