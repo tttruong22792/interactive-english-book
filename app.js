@@ -1817,6 +1817,8 @@
     const trainerSettings=state.vocabTrainerSettings||{lessonId:packs[0]?.lessonId||'en-pattern-001',mode:'write',size:'10',priority:'all'};
     const selected=window.VocabularyTrainer?.packById?.(trainerSettings.lessonId)||packs[0]||null;
     const selectedChunks=selected?(window.VocabularyTrainer?.studyChunks?.(selected)||[]):[];
+    const selectedMainChunks=selectedChunks.filter(x=>x.kind!=='building');
+    const selectedBuildingBlocks=selectedChunks.filter(x=>x.kind==='building');
     const selectedSummary=selected?window.VocabularyTrainer?.packSummary?.(selected,state.saved||{}):null;
     const reviewCount=window.VocabularyTrainer?.reviewCount?.(state.saved||{})||0;
     const personalPhrases=Object.values(state.saved||{}).filter(x=>x?.type==='phrase');
@@ -1826,7 +1828,7 @@
       ['write','TẬP VIẾT VI → ANH','Nhìn tiếng Việt và tự gõ cụm tiếng Anh','Gọi ra'],
       ['cloze','ĐIỀN CỤM','Điền phần còn thiếu vào mẫu câu','Gọi ra'],
       ['sentence','VIỆT → CÂU ANH','Tự viết cả câu đã được học','Dùng trong câu'],
-      ['guided','ỨNG DỤNG 3A–3E','Thay · chọn · ghép · biến đổi · tình huống','Dùng tự động']
+      ['guided','GHÉP & DÙNG CỤM','Chunk nhỏ → mở rộng → ghép → câu → tình huống','Dùng tự động']
     ];
   
     $('#mainView').innerHTML=`
@@ -1871,7 +1873,7 @@
         </div>
   
         <div class="active-pack-formula">
-          <div><b>${selectedChunks.length}</b><span>CỤM ĐÁNG HỌC</span><strong>6 ưu tiên + 4 mở rộng</strong></div>
+          <div><b>${selectedChunks.length}</b><span>KHỐI ĐÁNG HỌC</span><strong>${selectedMainChunks.length} cụm chính + ${selectedBuildingBlocks.length} khối bổ trợ</strong></div>
           <div><b>${selectedSummary?.level2||0}</b><span>GỌI RA ĐƯỢC</span><strong>/ ${selectedChunks.length} cụm</strong></div>
           <div><b>${selectedSummary?.level3||0}</b><span>DÙNG TRONG CÂU</span><strong>/ ${selectedChunks.length} cụm</strong></div>
         </div>
@@ -1884,9 +1886,9 @@
   
         <div class="chunk-v2-columns">
           <div class="active-must-know">
-            <div class="section-title-row"><div><span class="eyebrow">10 CỤM CỦA BÀI</span><h3>Web đã chọn sẵn nguyên liệu</h3><p>Không lưu từ đơn. Mỗi cụm đều có câu mẫu và sẽ được tái sử dụng ở nhiều kiểu luyện.</p></div></div>
+            <div class="section-title-row"><div><span class="eyebrow">CHUNK NHỎ + KHỐI BỔ TRỢ</span><h3>Web chia câu thành các viên Lego vừa sức</h3><p>Không bắt bạn học một đoạn dài như một chunk. Cụm chính được học riêng; phần bổ trợ được tách thành các khối ngắn rồi mới ghép lại thành câu.</p></div></div>
             <div class="active-chunk-list">${selectedChunks.map((x,i)=>`
-              <article class="${x.priority==='core'?'is-core':'is-extra'}">
+              <article class="${x.kind==='building'?'is-building':x.priority==='core'?'is-core':'is-extra'}">
                 <em>${i+1}</em>
                 <div><strong>${esc(x.baseEn)}</strong><span>${esc(x.baseVi)}</span><small>${esc(x.modelEn||'')}</small></div>
                 <button data-active-speak="${escAttr(x.baseEn)}" type="button">${uiIcon('volume-2')}</button>
@@ -1900,15 +1902,15 @@
               <li><b>Học cụm</b><span>Nghe, hiểu, xem cụm trong câu.</span></li>
               <li><b>Tập viết</b><span>Việt → Anh. Phải tự gõ trước khi xem đáp án.</span></li>
               <li><b>Điền / viết câu</b><span>Đưa cụm vào mẫu câu đã học.</span></li>
-              <li><b>Ứng dụng 3A–3E</b><span>Web cho nguyên liệu; bạn thay, chọn, ghép rồi mới nói.</span></li>
+              <li><b>Ghép & dùng cụm</b><span>Chunk nhỏ → chunk mở rộng → ghép khối → câu hoàn chỉnh → tình huống.</span></li>
             </ol>
-            <div class="chunk-v2-example"><small>Ví dụ</small><b>tìm ra nguyên nhân</b><span>→ figure out the cause</span></div>
+            <div class="chunk-v2-example"><small>Ví dụ cách tách</small><b>suy nghĩ kỹ → think it over</b><span>đưa ra quyết định cuối cùng → make a final decision</span></div>
           </aside>
         </div>
   
         <div class="active-pack-actions">
           <label><span>Số cụm mỗi lượt</span><select id="activePackSize">${['5','10','all'].map(x=>`<option value="${x}" ${String(trainerSettings.size||'10')===x?'selected':''}>${x==='all'?'Tất cả':x+' cụm'}</option>`).join('')}</select></label>
-          <label><span>Phạm vi</span><select id="activePackPriority"><option value="all" ${(trainerSettings.priority||'all')==='all'?'selected':''}>Toàn bộ 10 cụm</option><option value="core" ${trainerSettings.priority==='core'?'selected':''}>6 cụm ưu tiên</option></select></label>
+          <label><span>Phạm vi</span><select id="activePackPriority"><option value="all" ${(trainerSettings.priority||'all')==='all'?'selected':''}>Toàn bộ cụm + khối bổ trợ</option><option value="core" ${trainerSettings.priority==='core'?'selected':''}>6 cụm ưu tiên</option></select></label>
           <button id="startActiveTrainer" class="primary-button" type="button">Bắt đầu ${esc(modes.find(x=>x[0]===selectedMode)?.[1]||'luyện')} →</button>
         </div>
       </section>`:''}
