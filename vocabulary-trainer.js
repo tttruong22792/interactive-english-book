@@ -359,9 +359,12 @@
   }
 
   function buildSession(overrides={}){
-    const s=settings();
-    Object.assign(s,overrides||{});
+    const stored=settings();
+    const persistentOverrides={...(overrides||{})};
+    delete persistentOverrides.reviewToday;
+    Object.assign(stored,persistentOverrides);
     env.saveState();
+    const s={...stored,...(overrides||{})};
     const isReview=!!s.reviewToday;
     const pack=packById(s.lessonId);
     let cards=isReview?reviewCandidates():studyChunks(pack);
