@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v61-trainer-input-fix';
+const APP_CACHE='language-studio-v62-ios-viewport-lock';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20260930-trainer-input-fix-v25.js',
+  './runtime-20260930-ios-viewport-lock-v26.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
