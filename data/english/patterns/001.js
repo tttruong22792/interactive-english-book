@@ -736,7 +736,7 @@ window.CONTENT_REGISTRY["en-pattern-001"] = {
                 {
                       "type": "callout",
                       "tone": "purple",
-                      "html": "<b>CHỈ CẦN NHẬN BIẾT:</b> các cụm dưới đây chỉ cần hiểu khi gặp. Chưa cần ép học thuộc; chúng sẽ được tái sử dụng ở các bài sau."
+                      "html": "<b>CỤM MỞ RỘNG:</b> các cụm này vẫn đáng học, nhưng ưu tiên sau nhóm lõi. Hãy gặp lại qua flashcard, câu ví dụ và các bài sau thay vì cố nhồi một lần."
                 },
                 {
                       "type": "chips",
