@@ -3002,3 +3002,82 @@ html.vocab-trainer-open,html.vocab-trainer-open body{overflow:hidden}
   .chunk-layer-map{display:grid}
   .chunk-layer-map span{text-align:center}
 }
+
+
+/* ===== iOS trainer keyboard + shared icons ===== */
+.vocab-bottom-icon{
+  display:grid;
+  place-items:center;
+  color:#59627b;
+}
+.vocab-bottom-icon .ui-icon{
+  width:24px;
+  height:24px;
+}
+.vocab-settings-head button{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  padding:0;
+  color:#626b82;
+}
+.vocab-settings-head button:hover{
+  background:#f5f6f9;
+}
+.vocab-settings-head button .ui-icon{
+  width:24px;
+  height:24px;
+}
+.vocab-trainer-round{
+  touch-action:manipulation;
+}
+.vocab-trainer-round .ui-icon{
+  pointer-events:none;
+}
+
+/* When iOS opens the keyboard, use the visual viewport rather than the
+   pre-keyboard layout viewport. This prevents the first focus from placing
+   the input behind the keyboard/accessory bar. */
+html.vocab-keyboard-open .vocab-trainer-root{
+  height:var(--vocab-visual-height,100dvh);
+  bottom:auto;
+  overscroll-behavior:contain;
+}
+html.vocab-keyboard-open .vocab-trainer-bottom{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translateY(110%);
+}
+html.vocab-keyboard-open .vocab-trainer-stage{
+  padding-bottom:24px;
+}
+html.vocab-keyboard-open .chunk-study-card{
+  min-height:max(360px,calc(var(--vocab-visual-height,100dvh) - 190px));
+}
+html.vocab-keyboard-open .chunk-writing-card{
+  justify-content:flex-start;
+  padding-top:88px;
+}
+html.vocab-keyboard-open .chunk-writing-prompt{
+  scroll-margin-top:84px;
+}
+html.vocab-keyboard-open .chunk-writing-box{
+  scroll-margin-top:110px;
+  scroll-margin-bottom:150px;
+}
+@media(max-width:620px){
+  .vocab-trainer-round .ui-icon{width:25px;height:25px}
+  html.vocab-keyboard-open .vocab-trainer-topbar{
+    height:74px;
+  }
+  html.vocab-keyboard-open .chunk-study-card{
+    min-height:max(340px,calc(var(--vocab-visual-height,100dvh) - 150px));
+    padding-top:76px;
+  }
+  html.vocab-keyboard-open .chunk-priority{
+    margin-top:0;
+  }
+}
