@@ -795,7 +795,7 @@
   }
 
   function bindAudio(){
-    $('[data-chunk-speak]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-chunk-speak]').forEach(btn=>btn.onclick=()=>{
       const rate=Number(btn.dataset.rate||0.92);
       env.speak(btn.dataset.chunkSpeak,null,rate);
     });
