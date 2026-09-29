@@ -176,9 +176,14 @@ const uniqueFiles = [...new Set(runtimeFiles)];
 
 // Guard against a recurring class of UI bugs:
 // $() returns one Element; collection methods must use the collection selector helper.
-const appSourceForGuard = await readFile(join(root, "app.js"), "utf8");
-const badSingleSelectorCalls = [...appSourceForGuard.matchAll(/(?<!\$)\$\([^\n;]+\)\.(forEach|map|filter|some|every)\s*\(/g)]
-  .map((match) => match[0]);
+const selectorGuardFiles = ["app.js", "vocabulary-trainer.js", "shadowing-v2.js"];
+const badSingleSelectorCalls = [];
+for (const relative of selectorGuardFiles) {
+  const source = await readFile(join(root, relative), "utf8");
+  for (const match of source.matchAll(/(?<!\$)\$\([^\n;]+\)\.(forEach|map|filter|some|every)\s*\(/g)) {
+    badSingleSelectorCalls.push(relative + ": " + match[0]);
+  }
+}
 if (badSingleSelectorCalls.length) {
   throw new Error(
     "Invalid single-element selector used with a collection method. Use the collection selector helper instead:\n" +
