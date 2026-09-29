@@ -808,7 +808,12 @@
   function updateTypingViewport(){
     const vv=window.visualViewport;
     const height=Math.max(320,Math.round(vv?.height||window.innerHeight||document.documentElement.clientHeight||0));
+    const offsetTop=Math.max(0,Math.round(vv?.offsetTop||0));
+    const offsetLeft=Math.max(0,Math.round(vv?.offsetLeft||0));
+
     document.documentElement.style.setProperty('--vocab-visual-height',height+'px');
+    document.documentElement.style.setProperty('--vocab-visual-top',offsetTop+'px');
+    document.documentElement.style.setProperty('--vocab-visual-left',offsetLeft+'px');
 
     const base=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
     const keyboardOpen=isMobileTypingDevice()&&!!vv&&(base-vv.height>120);
@@ -847,13 +852,15 @@
       const viewportTop=Number(vv?.offsetTop||0);
       const viewportBottom=viewportTop+Number(vv?.height||window.innerHeight||0);
       const rect=input.getBoundingClientRect();
-      const safeTop=viewportTop+150;
-      const safeBottom=viewportBottom-135;
+      const safeTop=viewportTop+88;
+      const safeBottom=viewportBottom-118;
       let delta=0;
 
       if(rect.bottom>safeBottom) delta=rect.bottom-safeBottom;
       else if(rect.top<safeTop) delta=rect.top-safeTop;
 
+      // Never recenter the card. Move only the minimum amount necessary
+      // to keep the input between the trainer header and keyboard.
       if(Math.abs(delta)>1) root.scrollTop+=delta;
     };
 
@@ -883,6 +890,8 @@
     }
     document.documentElement.classList.remove('vocab-keyboard-open');
     document.documentElement.style.removeProperty('--vocab-visual-height');
+    document.documentElement.style.removeProperty('--vocab-visual-top');
+    document.documentElement.style.removeProperty('--vocab-visual-left');
   }
 
   function submitTyping(card,specOverride=null,advanceGuided=false){
