@@ -815,16 +815,54 @@
     document.documentElement.classList.toggle('vocab-keyboard-open',keyboardOpen);
   }
 
-  function keepTypingInputVisible(input,{smooth=true}={}){
+  function rememberTypingScroll(){
+    if(!session||!isMobileTypingDevice()) return;
+    const root=$('#vocabTrainerRoot');
+    if(root) session.typingScrollTop=root.scrollTop;
+  }
+
+  function keepTypingInputVisible(input){
     if(!input||!isMobileTypingDevice()) return;
     updateTypingViewport();
-    const align=()=>{
+    const root=$('#vocabTrainerRoot');
+    if(!root) return;
+
+    const startTop=Number.isFinite(Number(session?.typingScrollTop))
+      ? Number(session.typingScrollTop)
+      : root.scrollTop;
+
+    const align=(restore=false)=>{
       if(!document.body.contains(input)) return;
-      input.scrollIntoView({block:'center',inline:'nearest',behavior:smooth?'smooth':'auto'});
+      updateTypingViewport();
+
+      // iOS may auto-scroll the fixed trainer when the keyboard opens.
+      // Restore the position that the learner had before tapping the input,
+      // then move only the minimum amount needed to keep the field visible.
+      if(restore){
+        const maxTop=Math.max(0,root.scrollHeight-root.clientHeight);
+        root.scrollTop=Math.max(0,Math.min(maxTop,startTop));
+      }
+
+      const vv=window.visualViewport;
+      const viewportTop=Number(vv?.offsetTop||0);
+      const viewportBottom=viewportTop+Number(vv?.height||window.innerHeight||0);
+      const rect=input.getBoundingClientRect();
+      const safeTop=viewportTop+150;
+      const safeBottom=viewportBottom-135;
+      let delta=0;
+
+      if(rect.bottom>safeBottom) delta=rect.bottom-safeBottom;
+      else if(rect.top<safeTop) delta=rect.top-safeTop;
+
+      if(Math.abs(delta)>1) root.scrollTop+=delta;
     };
-    requestAnimationFrame(align);
-    setTimeout(()=>{updateTypingViewport();align();},260);
-    setTimeout(()=>{updateTypingViewport();align();},520);
+
+    requestAnimationFrame(()=>align(true));
+    setTimeout(()=>align(true),220);
+    setTimeout(()=>{
+      align(false);
+      if(session) delete session.typingScrollTop;
+    },480);
   }
 
   function bindViewportTracking(){
@@ -877,19 +915,21 @@
     if(input){
       const mobile=isMobileTypingDevice();
 
-      // Do not programmatically open the iOS keyboard on the first render.
-      // The first focus comes from the user's tap, after which we align the
-      // input only when the keyboard has finished resizing the visual viewport.
       if(!mobile){
         input.focus({preventScroll:true});
       }else if(session.retainInputFocus){
         session.retainInputFocus=false;
         setTimeout(()=>{
           if(!document.body.contains(input)) return;
+          rememberTypingScroll();
           input.focus({preventScroll:true});
-          keepTypingInputVisible(input,{smooth:false});
+          keepTypingInputVisible(input);
         },40);
       }
+
+      const remember=()=>rememberTypingScroll();
+      input.addEventListener('pointerdown',remember,{passive:true});
+      input.addEventListener('touchstart',remember,{passive:true});
 
       input.addEventListener('focus',()=>{
         document.documentElement.classList.add('vocab-keyboard-open');
@@ -907,6 +947,7 @@
       input.onkeydown=e=>{
         if(e.key==='Enter'){
           e.preventDefault();
+          rememberTypingScroll();
           session.retainInputFocus=true;
           if(session.result?.correct){
             if(advanceGuided) advanceGuidedStep();
@@ -916,14 +957,19 @@
       };
     }
     $('#checkChunkAnswer')?.addEventListener('click',()=>{
+      rememberTypingScroll();
       session.retainInputFocus=isMobileTypingDevice();
       submitTyping(card,specOverride,advanceGuided);
     });
     $('#chunkHint')?.addEventListener('click',()=>{
+      rememberTypingScroll();
+      session.retainInputFocus=isMobileTypingDevice();
       session.hintLevel=Math.min(3,session.hintLevel+1);
       renderCard();
     });
     $('#showChunkAnswer')?.addEventListener('click',()=>{
+      rememberTypingScroll();
+      session.retainInputFocus=isMobileTypingDevice();
       if(!advanceGuided && !session.failureRecorded){
         record(card,{rating:'again',skill:spec.skill,writing:!!spec.writing});
         session.failureRecorded=true;
