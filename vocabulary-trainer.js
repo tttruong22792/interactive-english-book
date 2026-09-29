@@ -187,10 +187,11 @@
   function studyChunks(pack){
     if(!pack) return [];
     const rows=[
-      ...(pack.activeChunks||[]).map(row=>({row,priority:'core'})),
-      ...(pack.recognitionChunks||[]).map(row=>({row,priority:'extra'}))
+      ...(pack.activeChunks||[]).map(row=>({row,priority:'core',kind:'main'})),
+      ...(pack.recognitionChunks||[]).map(row=>({row,priority:'extra',kind:'main'})),
+      ...(pack.buildingBlocks||[]).map(row=>({row,priority:'building',kind:'building'}))
     ];
-    return rows.map(({row,priority},index)=>{
+    return rows.map(({row,priority,kind},index)=>{
       const [baseEn,baseVi,modelEn='',modelVi='']=row;
       const examples=buildExamples(pack,row);
       const primary=examples[0]||{
@@ -205,6 +206,7 @@
         pack,
         index,
         priority,
+        kind,
         baseEn,
         baseVi,
         modelEn:primary.en,
@@ -364,6 +366,7 @@
     const isReview=!!s.reviewToday;
     const pack=packById(s.lessonId);
     let cards=isReview?reviewCandidates():studyChunks(pack);
+    if(!isReview&&s.mode==='guided') cards=cards.filter(x=>x.kind!=='building');
     if(!isReview&&s.priority==='core') cards=cards.filter(x=>x.priority==='core');
 
     if(s.order==='random') cards=[...cards].sort(()=>Math.random()-.5);
@@ -501,29 +504,47 @@
     return words.slice(0,count).join(' ')+' …';
   }
 
+  function clozeSpec(card){
+    const sentence=String(card.modelEn||'');
+    const lower=sentence.toLowerCase();
+    const needle=String(card.baseEn||'').toLowerCase();
+    const at=needle?lower.indexOf(needle):-1;
+    if(at>=0){
+      return {
+        prompt:sentence.slice(0,at)+'______'+sentence.slice(at+card.baseEn.length),
+        expected:card.baseEn
+      };
+    }
+    return {
+      prompt:`${prefixEn(card.pack)} ______${[6,7].includes(Number(card.pack.order))?'?':'.'}`,
+      expected:card.baseEn
+    };
+  }
+
   function typingSpec(card,mode=session.options.mode){
     const v=session.variant||chooseVariant(card);
     if(mode==='write'){
       return {
-        eyebrow:'VIỆT → CỤM ANH',
-        prompt:v.phraseVi||card.baseVi,
-        expected:v.phraseEn||card.baseEn,
-        context:v.en,
-        contextVi:v.vi,
+        eyebrow:card.kind==='building'?'VIỆT → KHỐI BỔ TRỢ':'VIỆT → CHUNK NHỎ',
+        prompt:card.baseVi,
+        expected:card.baseEn,
+        context:card.modelEn||v.en,
+        contextVi:card.modelVi||v.vi,
         placeholder:'Gõ cụm tiếng Anh…',
         skill:'recall',
         writing:true
       };
     }
     if(mode==='cloze'){
+      const cloze=clozeSpec(card);
       return {
-        eyebrow:'ĐIỀN CỤM',
-        prompt:`${prefixEn(card.pack)} ______${[6,7].includes(Number(card.pack.order))?'?':'.'}`,
-        sub:v.vi,
-        expected:v.phraseEn||card.baseEn,
-        context:v.en,
-        contextVi:v.vi,
-        placeholder:'Điền phần còn thiếu…',
+        eyebrow:'ĐIỀN CHUNK VÀO CÂU',
+        prompt:cloze.prompt,
+        sub:card.modelVi||v.vi,
+        expected:cloze.expected,
+        context:card.modelEn||v.en,
+        contextVi:card.modelVi||v.vi,
+        placeholder:'Điền chunk còn thiếu…',
         skill:'recall',
         writing:true
       };
@@ -574,12 +595,36 @@
 
   function guidedSteps(){
     return [
-      ['3A','Thay một phần'],
-      ['3B','Chọn cụm'],
-      ['3C','Ghép khối'],
-      ['3D','Biến đổi câu'],
-      ['3E','Tình huống']
+      ['1','Chunk nhỏ'],
+      ['2','Chunk mở rộng'],
+      ['3','Ghép chunk'],
+      ['4','Câu hoàn chỉnh'],
+      ['5','Tình huống']
     ];
+  }
+
+  function extensionFor(card,variant){
+    const sentence=String(variant?.en||card.modelEn||'').toLowerCase();
+    const blocks=studyChunks(card.pack).filter(x=>x.kind==='building'&&x.key!==card.key);
+    const exact=blocks
+      .filter(x=>sentence.includes(String(x.baseEn||'').toLowerCase()))
+      .sort((a,b)=>b.baseEn.length-a.baseEn.length);
+    return exact[0]||blocks.find(x=>String(x.modelEn||'').toLowerCase()===String(card.modelEn||'').toLowerCase())||null;
+  }
+
+  function assemblyBlocks(card,variant,extension){
+    const blocks=[prefixEn(card.pack),card.baseEn];
+    if(extension){
+      const phrase=stripEnglish(card.pack,variant?.en||card.modelEn||'');
+      const baseAt=phrase.toLowerCase().indexOf(card.baseEn.toLowerCase());
+      const extAt=phrase.toLowerCase().indexOf(extension.baseEn.toLowerCase());
+      if(baseAt>=0&&extAt>baseAt){
+        const between=phrase.slice(baseAt+card.baseEn.length,extAt).trim();
+        if(between&&tokens(between).length<=3) blocks.push(between);
+      }
+      blocks.push(extension.baseEn);
+    }
+    return blocks.filter(Boolean);
   }
 
   function guidedStepper(){
