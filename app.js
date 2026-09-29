@@ -1818,6 +1818,7 @@
     const selected=window.VocabularyTrainer?.packById?.(trainerSettings.lessonId)||packs[0]||null;
     const selectedChunks=selected?(window.VocabularyTrainer?.studyChunks?.(selected)||[]):[];
     const selectedSummary=selected?window.VocabularyTrainer?.packSummary?.(selected,state.saved||{}):null;
+    const reviewCount=window.VocabularyTrainer?.reviewCount?.(state.saved||{})||0;
     const personalPhrases=Object.values(state.saved||{}).filter(x=>x?.type==='phrase');
     const selectedMode=trainerSettings.mode||'write';
     const modes=[
@@ -1851,6 +1852,15 @@
         <div><b>${summary.chunks}</b><span>cụm được web chọn</span></div>
         <div><b>${summary.mastered2}</b><span>gọi ra được</span></div>
         <div><b>${summary.mastered3}</b><span>dùng trong câu</span></div>
+      </section>
+
+      <section class="chunk-review-today">
+        <div>
+          <span class="eyebrow">ÔN LẶP LẠI</span>
+          <h2>${summary.due>0?summary.due+' cụm đến hạn hôm nay':reviewCount>0?'Củng cố lại các cụm cũ':'Chưa có cụm nào đã học'}</h2>
+          <p>${summary.due>0?'Hệ thống ưu tiên các cụm đến hạn, cụm yếu và cụm từng phải xem đáp án.':'Ngay cả khi chưa đến hạn, bạn vẫn có thể dùng vài phút rảnh để củng cố các cụm đã học lâu nhất.'}</p>
+        </div>
+        <button id="startTodayReview" class="primary-button" type="button" ${reviewCount?'':'disabled'}>Ôn lại hôm nay →</button>
       </section>
   
       ${selected?`
@@ -1942,6 +1952,11 @@
       state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),lessonId,mode,size,priority};
       saveState();
       renderFlashcards([], {lessonId,mode,size,priority});
+    });
+    $('#startTodayReview')?.addEventListener('click',()=>{
+      const mode=String(state.vocabTrainerSettings?.mode||'write');
+      const size=String(state.vocabTrainerSettings?.size||'10');
+      renderFlashcards([], {reviewToday:true,mode,size,order:'srs'});
     });
     $('#vocabOpenSync')?.addEventListener('click',()=>routeTo('settings'));
     $('#vocabSyncNow')?.addEventListener('click',async()=>{
