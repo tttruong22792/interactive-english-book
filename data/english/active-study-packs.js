@@ -364,4 +364,89 @@ Object.values(window.ACTIVE_STUDY_PACKS).forEach(pack=>{
   });
 });
 
+
+const MICRO_BUILDING_BLOCKS = {
+  1:[
+    ["make a final decision","đưa ra quyết định cuối cùng","I'd like to think it over before I make a final decision.","Tôi muốn suy nghĩ kỹ trước khi đưa ra quyết định cuối cùng."],
+    ["before I decide","trước khi tôi quyết định","I'd like to think it over before I decide.","Tôi muốn suy nghĩ kỹ trước khi quyết định."],
+    ["understand correctly","hiểu đúng","I'd like to make sure I understand correctly.","Tôi muốn chắc chắn rằng mình hiểu đúng."],
+    ["get your opinion","nghe ý kiến của bạn","I'd like to get your opinion on this.","Tôi muốn nghe ý kiến của bạn về việc này."],
+    ["take some time","dành chút thời gian","I'd like to take some time to consider my options.","Tôi muốn dành chút thời gian cân nhắc các lựa chọn."]
+  ],
+  2:[
+    ["after work","sau giờ làm","I'm going to stop by the supermarket after work.","Tôi sẽ ghé qua siêu thị sau giờ làm."],
+    ["on the way home","trên đường về nhà","I'm going to pick up some groceries on the way home.","Tôi sẽ tiện đường mua một ít đồ ăn trên đường về."],
+    ["before I send it","trước khi tôi gửi nó","I'm going to double-check everything before I send it.","Tôi sẽ kiểm tra kỹ mọi thứ trước khi gửi."],
+    ["everything is ready","mọi thứ đã sẵn sàng","I'm going to make sure everything is ready.","Tôi sẽ đảm bảo mọi thứ đã sẵn sàng."],
+    ["every month","mỗi tháng","I'm going to put some money aside every month.","Tôi sẽ để dành một ít tiền mỗi tháng."]
+  ],
+  3:[
+    ["my free time","thời gian rảnh của tôi","I want to make better use of my free time.","Tôi muốn sử dụng thời gian rảnh hiệu quả hơn."],
+    ["unnecessary spending","chi tiêu không cần thiết","I want to cut back on unnecessary spending.","Tôi muốn giảm những khoản chi không cần thiết."],
+    ["technical issues","các vấn đề kỹ thuật","I want to get better at explaining technical issues.","Tôi muốn giỏi hơn trong việc giải thích các vấn đề kỹ thuật."],
+    ["more confidently","tự tin hơn","I want to speak English more confidently.","Tôi muốn nói tiếng Anh tự tin hơn."],
+    ["before I decide","trước khi tôi quyết định","I want to think this through before I decide.","Tôi muốn suy nghĩ kỹ việc này trước khi quyết định."]
+  ],
+  4:[
+    ["as soon as possible","sớm nhất có thể","I plan to pay off the loan as soon as possible.","Tôi dự định trả hết khoản vay sớm nhất có thể."],
+    ["next month","tháng sau","I plan to take a few days off next month.","Tôi dự định nghỉ vài ngày vào tháng sau."],
+    ["a better opportunity","một cơ hội tốt hơn","I plan to look for a better opportunity next year.","Năm sau tôi dự định tìm một cơ hội tốt hơn."],
+    ["my routine","thói quen hằng ngày của tôi","I plan to make some changes to my routine.","Tôi dự định thay đổi một vài thói quen hằng ngày."],
+    ["before I submit it","trước khi tôi nộp nó","I plan to double-check everything before I submit it.","Tôi dự định kiểm tra kỹ mọi thứ trước khi nộp."]
+  ],
+  5:[
+    ["more often","thường xuyên hơn","I hope to practice English more often.","Tôi hy vọng được luyện tiếng Anh thường xuyên hơn."],
+    ["steady progress","sự tiến bộ ổn định","I hope to make steady progress.","Tôi hy vọng sẽ tiến bộ ổn định."],
+    ["speaking English","việc nói tiếng Anh","I hope to get better at speaking English.","Tôi hy vọng sẽ nói tiếng Anh tốt hơn."],
+    ["solve this","giải quyết việc này","I hope to find a way to solve this.","Tôi hy vọng tìm ra cách giải quyết việc này."],
+    ["in the end","cuối cùng","I hope everything works out in the end.","Tôi hy vọng cuối cùng mọi việc sẽ ổn thỏa."]
+  ],
+  6:[
+    ["after the meeting","sau cuộc họp","Would you like to grab a coffee after the meeting?","Bạn có muốn đi uống cà phê sau cuộc họp không?"],
+    ["before you decide","trước khi bạn quyết định","Would you like to give it a try before you decide?","Bạn có muốn thử trước khi quyết định không?"],
+    ["for lunch","để ăn trưa","Would you like to join us for lunch?","Bạn có muốn ăn trưa cùng chúng tôi không?"],
+    ["with us","cùng chúng tôi","Would you like to come along with us this weekend?","Bạn có muốn đi cùng chúng tôi cuối tuần này không?"],
+    ["a short break","một quãng nghỉ ngắn","Would you like to take a short break before we continue?","Bạn có muốn nghỉ một chút trước khi chúng ta tiếp tục không?"]
+  ],
+  7:[
+    ["after work","sau giờ làm","Do you want to grab something to eat after work?","Bạn có muốn đi ăn gì đó sau giờ làm không?"],
+    ["this weekend","cuối tuần này","Do you want to go out somewhere this weekend?","Cuối tuần này bạn có muốn đi đâu đó không?"],
+    ["something to eat","gì đó để ăn","Do you want to grab something to eat?","Bạn có muốn đi ăn gì đó không?"],
+    ["one more time","thêm một lần nữa","Do you want to go over the plan one more time?","Bạn có muốn xem lại kế hoạch thêm một lần nữa không?"],
+    ["with this","với việc này","Do you want to give me a hand with this?","Bạn có muốn giúp tôi một tay việc này không?"]
+  ],
+  8:[
+    ["for now","hiện tại / lúc này","I'd rather play it safe for now.","Hiện tại tôi thà chọn cách an toàn."],
+    ["what happens","chuyện gì xảy ra","I'd rather wait and see what happens.","Tôi thà chờ xem chuyện gì xảy ra."],
+    ["in person","trực tiếp","I'd rather talk about this in person.","Tôi thà nói chuyện này trực tiếp."],
+    ["right now","ngay lúc này","I'd rather not rush into anything right now.","Hiện tại tôi thà không vội vàng lao vào việc gì."],
+    ["as it is","nguyên như vậy","I'd rather leave it as it is for now.","Hiện tại tôi thà để nguyên như vậy."]
+  ],
+  9:[
+    ["hearing from you","nhận được phản hồi từ bạn","I look forward to hearing from you soon.","Tôi mong sớm nhận được phản hồi từ bạn."],
+    ["next month","tháng sau","I look forward to seeing you again next month.","Tôi mong được gặp lại bạn vào tháng sau."],
+    ["on this project","trong dự án này","I look forward to working with you on this project.","Tôi mong được làm việc cùng bạn trong dự án này."],
+    ["how it works","nó hoạt động thế nào","I look forward to learning more about how the system works.","Tôi mong được tìm hiểu thêm về cách hệ thống hoạt động."],
+    ["with my family","với gia đình tôi","I look forward to spending more time with my family.","Tôi mong được dành nhiều thời gian hơn cho gia đình."]
+  ],
+  10:[
+    ["with it","với việc đó","I intend to follow through with it.","Tôi định làm việc đó đến cùng."],
+    ["communication skills","kỹ năng giao tiếp","I intend to work on my communication skills.","Tôi định cải thiện kỹ năng giao tiếp."],
+    ["into practice","vào thực tế","I intend to put what I learn into practice.","Tôi định áp dụng những gì học được vào thực tế."],
+    ["as soon as possible","sớm nhất có thể","I intend to put what I learn into practice as soon as possible.","Tôi định áp dụng những gì học được vào thực tế sớm nhất có thể."],
+    ["more responsibility","nhiều trách nhiệm hơn","I intend to take on more responsibility as I gain experience.","Tôi định đảm nhận thêm trách nhiệm khi có nhiều kinh nghiệm hơn."]
+  ],
+  11:[
+    ["what went wrong","chuyện gì đã sai","I need to figure out what went wrong.","Tôi cần tìm ra chuyện gì đã sai."],
+    ["working properly","hoạt động đúng","I need to make sure everything is working properly.","Tôi cần đảm bảo mọi thứ đang hoạt động đúng."],
+    ["a few things","một vài việc","I need to take care of a few things.","Tôi cần xử lý một vài việc."],
+    ["before lunch","trước giờ trưa","I need to get back to him before lunch.","Tôi cần phản hồi lại anh ấy trước giờ trưa."],
+    ["by the end of the day","trước cuối ngày","I need to get this done by the end of the day.","Tôi cần hoàn thành việc này trước cuối ngày."]
+  ]
+};
+
+Object.values(window.ACTIVE_STUDY_PACKS).forEach(pack=>{
+  pack.buildingBlocks=MICRO_BUILDING_BLOCKS[pack.order]||[];
+});
+
 window.ACTIVE_STUDY_PACK_LIST = Object.values(window.ACTIVE_STUDY_PACKS).sort((a,b)=>a.order-b.order);
