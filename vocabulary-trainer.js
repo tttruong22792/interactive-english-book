@@ -1,13 +1,10 @@
-(function ActiveChunkTrainer(){
+(function ChunkFlashcardTrainerV2(){
   'use strict';
 
   const DAY=24*60*60*1000;
   const MINUTE=60*1000;
   let env=null;
   let session=null;
-  let autoplayTimer=null;
-  let reflexTimer=null;
-  let reflexStartedAt=0;
 
   const $=(s,root=document)=>root.querySelector(s);
   const $$=(s,root=document)=>Array.from(root.querySelectorAll(s));
@@ -15,6 +12,206 @@
   function esc(value=''){
     if(env?.esc) return env.esc(value);
     return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function slug(text=''){
+    return String(text).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,80);
+  }
+
+  function normalize(text=''){
+    return String(text)
+      .toLowerCase()
+      .replace(/[’‘]/g,"'")
+      .replace(/\b(i am)\b/g,"i'm")
+      .replace(/\b(cannot)\b/g,"can't")
+      .replace(/[^a-z0-9'\s]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function tokens(text=''){
+    return normalize(text).split(' ').filter(Boolean);
+  }
+
+  function stem(token=''){
+    let t=String(token).toLowerCase();
+    if(t.endsWith('ing')&&t.length>5){
+      t=t.slice(0,-3);
+      if(t.length>2&&t.at(-1)===t.at(-2)) t=t.slice(0,-1);
+    }else if(t.endsWith('ed')&&t.length>4) t=t.slice(0,-2);
+    else if(t.endsWith('s')&&t.length>4) t=t.slice(0,-1);
+    return t;
+  }
+
+  function contentTokens(text=''){
+    const stop=new Set(['a','an','the','to','of','on','with','for','something','someone','somebody','it','one','ones','my','your','this','that']);
+    return tokens(text).filter(x=>!stop.has(x)).map(stem);
+  }
+
+  function wordDiff(expected,actual){
+    const a=tokens(expected), b=tokens(actual);
+    const m=a.length,n=b.length;
+    const dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
+    for(let i=m-1;i>=0;i--){
+      for(let j=n-1;j>=0;j--) dp[i][j]=a[i]===b[j]?1+dp[i+1][j+1]:Math.max(dp[i+1][j],dp[i][j+1]);
+    }
+    const out=[];
+    let i=0,j=0;
+    while(i<m||j<n){
+      if(i<m&&j<n&&a[i]===b[j]){out.push({type:'ok',text:a[i]});i++;j++;continue;}
+      if(j<n&&(i===m||dp[i][j+1]>=dp[i+1]?.[j])){out.push({type:'extra',text:b[j]});j++;continue;}
+      if(i<m){out.push({type:'missing',text:a[i]});i++;}
+    }
+    return out;
+  }
+
+  function diffHTML(expected,actual){
+    return `<div class="chunk-word-diff">${wordDiff(expected,actual).map(x=>`<span class="${x.type}">${esc(x.text)}</span>`).join(' ')}</div>`;
+  }
+
+  function packs(){
+    return window.ACTIVE_STUDY_PACK_LIST||[];
+  }
+
+  function packById(id){
+    return window.ACTIVE_STUDY_PACKS?.[id]||packs()[0]||null;
+  }
+
+  function settings(){
+    const first=packs()[0]?.lessonId||'en-pattern-001';
+    const defaults={
+      lessonId:first,
+      mode:'write',
+      size:'10',
+      order:'srs',
+      priority:'all',
+      autoSpeak:false
+    };
+    env.state.vocabTrainerSettings={...defaults,...(env.state.vocabTrainerSettings||{})};
+    if(!packById(env.state.vocabTrainerSettings.lessonId)) env.state.vocabTrainerSettings.lessonId=first;
+    if(!['learn','write','cloze','sentence','guided'].includes(env.state.vocabTrainerSettings.mode)){
+      env.state.vocabTrainerSettings.mode='write';
+    }
+    return env.state.vocabTrainerSettings;
+  }
+
+  function prefixEn(pack){
+    return {
+      1:"I'd like to",
+      2:"I'm going to",
+      3:"I want to",
+      4:"I plan to",
+      5:"I hope to",
+      6:"Would you like to",
+      7:"Do you want to",
+      8:"I'd rather",
+      9:"I look forward to",
+      10:"I intend to",
+      11:"I need to"
+    }[Number(pack?.order)]||String(pack?.pattern||'').replace(/[.…?]+$/g,'').trim();
+  }
+
+  function stripEnglish(pack,sentence=''){
+    let s=String(sentence).trim();
+    const patterns={
+      1:/^i['’]d like to\s+/i,
+      2:/^i['’]m going to\s+/i,
+      3:/^i want to\s+/i,
+      4:/^i plan to\s+/i,
+      5:/^i hope to\s+/i,
+      6:/^would you like to\s+/i,
+      7:/^do you want to\s+/i,
+      8:/^i['’]d rather\s+/i,
+      9:/^(?:i look forward to|i['’]m looking forward to)\s+/i,
+      10:/^i intend to\s+/i,
+      11:/^i need to\s+/i
+    };
+    s=s.replace(patterns[Number(pack?.order)]||/^$/,'').replace(/[?.!]+$/,'').trim();
+    return s||String(sentence).trim();
+  }
+
+  function stripVietnamese(pack,sentence=''){
+    let s=String(sentence).trim().replace(/[?.!]+$/,'');
+    const order=Number(pack?.order);
+    const patterns={
+      1:/^tôi muốn\s+/i,
+      2:/^tôi sẽ\s+/i,
+      3:/^tôi muốn\s+/i,
+      4:/^(?:năm nay |tháng sau )?tôi dự định\s+/i,
+      5:/^tôi hy vọng(?: sẽ)?\s+/i,
+      6:/^bạn có muốn\s+/i,
+      7:/^bạn có muốn\s+/i,
+      8:/^tôi thà\s+/i,
+      9:/^tôi (?:đang )?mong(?: được)?\s+/i,
+      10:/^(?:năm nay )?tôi định\s+/i,
+      11:/^tôi cần\s+/i
+    };
+    s=s.replace(patterns[order]||/^$/,'').replace(/\s+không$/i,'').trim();
+    return s||String(sentence).trim();
+  }
+
+  function matchScore(base,sentence){
+    const target=contentTokens(base);
+    const hay=contentTokens(sentence);
+    if(!target.length) return 0;
+    const hits=target.filter(t=>hay.includes(t)).length;
+    return hits/target.length;
+  }
+
+  function buildExamples(pack,row){
+    const [baseEn,baseVi,modelEn='',modelVi='']=row;
+    const seen=new Set();
+    const examples=[];
+    function add(en,vi){
+      const key=normalize(en);
+      if(!en||seen.has(key)) return;
+      seen.add(key);
+      examples.push({
+        en:String(en),
+        vi:String(vi||''),
+        phraseEn:stripEnglish(pack,en),
+        phraseVi:stripVietnamese(pack,vi||'')
+      });
+    }
+    add(modelEn,modelVi);
+    const ranked=(pack.deepSentences||[])
+      .map(x=>({row:x,score:matchScore(baseEn,x[0])}))
+      .filter(x=>x.score>=0.5)
+      .sort((a,b)=>b.score-a.score);
+    ranked.forEach(x=>add(x.row[0],x.row[1]));
+    return examples.slice(0,3);
+  }
+
+  function studyChunks(pack){
+    if(!pack) return [];
+    const rows=[
+      ...(pack.activeChunks||[]).map(row=>({row,priority:'core'})),
+      ...(pack.recognitionChunks||[]).map(row=>({row,priority:'extra'}))
+    ];
+    return rows.map(({row,priority},index)=>{
+      const [baseEn,baseVi,modelEn='',modelVi='']=row;
+      const examples=buildExamples(pack,row);
+      const primary=examples[0]||{
+        en:modelEn||baseEn,
+        vi:modelVi||baseVi,
+        phraseEn:modelEn?stripEnglish(pack,modelEn):baseEn,
+        phraseVi:modelVi?stripVietnamese(pack,modelVi):baseVi
+      };
+      return {
+        id:`${pack.lessonId}:${slug(baseEn)}`,
+        key:`chunk2:${pack.lessonId}:${slug(baseEn)}`,
+        pack,
+        index,
+        priority,
+        baseEn,
+        baseVi,
+        modelEn:primary.en,
+        modelVi:primary.vi,
+        phraseEn:primary.phraseEn||baseEn,
+        phraseVi:primary.phraseVi||baseVi,
+        examples:examples.length?examples:[primary]
+      };
+    });
   }
 
   function trainerDefaults(){
@@ -28,100 +225,84 @@
       nextReviewAt:0,
       intervalDays:0,
       lastRating:'',
+      lastMode:'',
       updatedAt:0,
-      fastestMs:0
+      skills:{recognize:0,recall:0,use:0,writing:0}
     };
   }
 
-  function packs(){
-    return window.ACTIVE_STUDY_PACK_LIST||[];
-  }
-
-  function packById(id){
-    return (window.ACTIVE_STUDY_PACKS||{})[id]||packs()[0]||null;
-  }
-
-  function settings(){
-    const first=packs()[0]?.lessonId||'en-pattern-001';
-    const defaults={
-      lessonId:first,
-      level:'1',
-      size:'all',
-      order:'srs',
-      starredOnly:false,
-      autoSpeak:false
+  function progressFor(card,saved=env?.state?.saved||{}){
+    const raw=saved?.[card.key]?.trainer||{};
+    const base=trainerDefaults();
+    return {
+      ...base,
+      ...raw,
+      skills:{...base.skills,...(raw.skills||{})}
     };
-    env.state.vocabTrainerSettings={...defaults,...(env.state.vocabTrainerSettings||{})};
-    if(!packById(env.state.vocabTrainerSettings.lessonId)) env.state.vocabTrainerSettings.lessonId=first;
-    return env.state.vocabTrainerSettings;
   }
 
-  function keyFor(packId,kind,id,level){
-    return `study:${packId}:${kind}:${id}:l${level}`;
+  function skillForMode(mode){
+    if(mode==='learn') return 'recognize';
+    if(mode==='write'||mode==='cloze') return 'recall';
+    return 'use';
   }
 
-  function cardIdFromText(prefix,text,index){
-    const base=String(text||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,52);
-    return `${prefix}-${base||index+1}`;
-  }
-
-  function chunkCards(pack,level){
-    return (pack.activeChunks||[]).map((row,index)=>{
-      const [en,vi,exampleEn,exampleVi]=row;
-      const id=cardIdFromText('c',en,index);
-      return {
-        key:keyFor(pack.lessonId,'chunk',id,level),
-        pack, level, kind:'chunk',
-        en,vi,exampleEn,exampleVi,
-        term:en,meaning:vi,speechText:en
-      };
-    });
-  }
-
-  function sentenceCards(pack){
-    return (pack.deepSentences||[]).map((row,index)=>{
-      const [en,vi]=row;
-      const id=cardIdFromText('s',en,index);
-      return {
-        key:keyFor(pack.lessonId,'sentence',id,3),
-        pack, level:3, kind:'sentence',
-        en,vi,exampleEn:'',exampleVi:'',
-        term:en,meaning:vi,speechText:en
-      };
-    });
-  }
-
-  function allCardsFor(pack,level){
-    if(String(level)==='1') return chunkCards(pack,1);
-    if(String(level)==='2') return chunkCards(pack,2);
-    if(String(level)==='3') return sentenceCards(pack);
-    return [...chunkCards(pack,1),...chunkCards(pack,2),...sentenceCards(pack)];
-  }
-
-  function progressFor(card){
-    const saved=env.state.saved?.[card.key];
-    return {...trainerDefaults(),...(saved?.trainer||{})};
-  }
-
-  function persist(card,progress){
+  function persist(card,p){
     const item={
       key:card.key,
-      term:card.en,
-      speechText:card.en,
+      term:card.baseEn,
+      speechText:card.baseEn,
       ipa:'',
-      meaning:card.vi,
-      example:card.exampleEn||'',
+      meaning:card.baseVi,
+      example:card.modelEn,
       type:'study-card',
       lessonId:card.pack.lessonId,
       lessonOrder:card.pack.order,
-      studyLevel:card.level,
-      cardKind:card.kind,
+      studyLevel:Math.min(3,Math.max(1,Number(p.skills?.use>=2?3:p.skills?.recall>=2?2:1))),
+      cardKind:'chunk-v2',
       savedAt:Number(env.state.saved?.[card.key]?.savedAt||Date.now()),
-      trainer:{...trainerDefaults(),...progress,updatedAt:Date.now()}
+      trainer:{...trainerDefaults(),...p,skills:{...trainerDefaults().skills,...(p.skills||{})},updatedAt:Date.now()}
     };
     env.state.saved[card.key]=item;
     env.saveState();
     env.queueVocabUpsert(item);
+  }
+
+  function reviewInterval(p,rating){
+    const current=Math.max(0,Number(p.intervalDays)||0);
+    if(rating==='again') return 0;
+    if(rating==='hard') return current<1?1:Math.min(20,Math.max(1,Math.ceil(current*1.4)));
+    if(rating==='good') return current<1?2:Math.min(60,Math.max(2,Math.ceil(current*2)));
+    return current<1?4:Math.min(120,Math.max(4,Math.ceil(current*2.7)));
+  }
+
+  function record(card,{rating='good',skill=skillForMode(session.options.mode),writing=false}={}){
+    const p=progressFor(card);
+    p.reviewCount=Number(p.reviewCount||0)+1;
+    p.lastReviewedAt=Date.now();
+    p.lastRating=rating;
+    p.lastMode=session.options.mode;
+    p.skills={...trainerDefaults().skills,...(p.skills||{})};
+
+    if(rating==='again'){
+      p.wrongCount=Number(p.wrongCount||0)+1;
+      p.skills[skill]=Math.max(0,Number(p.skills[skill]||0)-1);
+      p.intervalDays=0;
+      p.nextReviewAt=Date.now()+10*MINUTE;
+      p.mastered=false;
+      session.stats.wrong++;
+    }else{
+      p.correctCount=Number(p.correctCount||0)+1;
+      const gain=rating==='easy'?2:1;
+      p.skills[skill]=Math.min(3,Number(p.skills[skill]||0)+gain);
+      if(writing) p.skills.writing=Math.min(3,Number(p.skills.writing||0)+gain);
+      p.intervalDays=reviewInterval(p,rating);
+      p.nextReviewAt=Date.now()+p.intervalDays*DAY;
+      p.mastered=p.skills.recognize>=2&&p.skills.recall>=2&&p.skills.use>=2;
+      session.stats.correct++;
+    }
+    persist(card,p);
+    return p;
   }
 
   function dueRank(card){
@@ -132,91 +313,79 @@
     return 2;
   }
 
+  function chooseVariant(card){
+    const p=progressFor(card);
+    const list=card.examples?.length?card.examples:[{en:card.modelEn,vi:card.modelVi,phraseEn:card.phraseEn,phraseVi:card.phraseVi}];
+    const idx=(Number(p.reviewCount||0)+card.index)%list.length;
+    return list[idx]||list[0];
+  }
+
   function buildSession(overrides={}){
     const s=settings();
     Object.assign(s,overrides||{});
     env.saveState();
-
     const pack=packById(s.lessonId);
-    let cards=pack?allCardsFor(pack,s.level):[];
-    if(s.starredOnly) cards=cards.filter(card=>progressFor(card).starred);
+    let cards=studyChunks(pack);
+    if(s.priority==='core') cards=cards.filter(x=>x.priority==='core');
 
-    if(s.order==='random'){
-      cards=[...cards].sort(()=>Math.random()-.5);
-    }else if(s.order==='srs'){
-      cards=[...cards].sort((a,b)=>{
-        const ar=dueRank(a),br=dueRank(b);
-        if(ar!==br) return ar-br;
-        return Number(progressFor(a).nextReviewAt||0)-Number(progressFor(b).nextReviewAt||0);
-      });
-    }
+    if(s.order==='random') cards=[...cards].sort(()=>Math.random()-.5);
+    else cards=[...cards].sort((a,b)=>{
+      const ar=dueRank(a),br=dueRank(b);
+      if(ar!==br) return ar-br;
+      return Number(progressFor(a).nextReviewAt||0)-Number(progressFor(b).nextReviewAt||0);
+    });
 
-    const size=s.size==='all'?cards.length:Math.max(1,Number(s.size)||cards.length);
-    cards=cards.slice(0,size);
+    const n=s.size==='all'?cards.length:Math.max(1,Number(s.size)||10);
+    cards=cards.slice(0,n);
 
     session={
       pack,
       cards,
       index:0,
-      revealed:false,
-      history:[],
-      autoplay:false,
-      stats:{again:0,hard:0,good:0,easy:0},
       options:{...s},
-      reflexMessage:'',
-      level3Phase:'learn',
-      level3Practice:{},
-      level3HintVisible:false
+      revealed:false,
+      hintLevel:0,
+      attempts:0,
+      result:null,
+      inputValue:'',
+      variant:null,
+      guidedStep:0,
+      guidedAnswer:[],
+      stats:{correct:0,wrong:0},
+      history:[]
     };
-  }
-
-  function reviewInterval(progress,rating){
-    const current=Math.max(0,Number(progress.intervalDays)||0);
-    if(rating==='again') return 0;
-    if(rating==='hard') return current<1?1:Math.min(30,Math.max(1,Math.ceil(current*1.4)));
-    if(rating==='good') return current<1?2:Math.min(90,Math.max(2,Math.ceil(current*2.2)));
-    return current<1?4:Math.min(180,Math.max(4,Math.ceil(current*3)));
+    prepareCard();
   }
 
   function currentCard(){
     return session?.cards?.[session.index]||null;
   }
 
-  function rateCurrent(rating){
+  function prepareCard(){
     const card=currentCard();
     if(!card) return;
-    const old=progressFor(card);
-    session.history.push({key:card.key,index:session.index,progress:old});
-    if(session.history.length>20) session.history.shift();
+    session.revealed=false;
+    session.hintLevel=0;
+    session.attempts=0;
+    session.result=null;
+    session.inputValue='';
+    session.guidedStep=0;
+    session.guidedAnswer=[];
+    session.variant=chooseVariant(card);
+  }
 
-    const p={...old};
-    p.reviewCount++;
-    p.lastReviewedAt=Date.now();
-    p.lastRating=rating;
+  function nextCard(){
+    if(session.index>=session.cards.length-1){renderSummary();return;}
+    session.index++;
+    prepareCard();
+    render();
+  }
 
-    if(reflexStartedAt&&card.level===3){
-      const ms=Math.max(0,Date.now()-reflexStartedAt);
-      if(!p.fastestMs||ms<p.fastestMs) p.fastestMs=ms;
-    }
-
-    if(rating==='again'){
-      p.wrongCount++;
-      p.intervalDays=0;
-      p.nextReviewAt=Date.now()+10*MINUTE;
-      p.mastered=false;
-      session.stats.again++;
-    }else{
-      p.correctCount++;
-      p.intervalDays=reviewInterval(p,rating);
-      p.nextReviewAt=Date.now()+p.intervalDays*DAY;
-      if(rating==='hard') session.stats.hard++;
-      if(rating==='good') session.stats.good++;
-      if(rating==='easy') session.stats.easy++;
-      if((rating==='good'||rating==='easy')&&p.correctCount>=3&&p.intervalDays>=14) p.mastered=true;
-    }
-
-    persist(card,p);
-    nextCard();
+  function prevCard(){
+    if(session.index<=0) return;
+    session.index--;
+    prepareCard();
+    render();
   }
 
   function toggleStar(){
@@ -225,426 +394,500 @@
     const p=progressFor(card);
     p.starred=!p.starred;
     persist(card,p);
-    renderCard();
-  }
-
-  function undoLast(){
-    const last=session?.history?.pop();
-    if(!last){env.toast('Chưa có lần đánh giá nào để hoàn tác.');return;}
-    const card=session.cards.find(x=>x.key===last.key);
-    if(card) persist(card,last.progress);
-    session.index=Math.max(0,Math.min(last.index,session.cards.length-1));
-    session.revealed=false;
-    resetReflexTimer();
     render();
   }
 
-  function resetReflexTimer(){
-    clearInterval(reflexTimer);
-    reflexTimer=null;
-    reflexStartedAt=0;
-    if(session) session.reflexMessage='';
+  function modeInfo(mode){
+    return {
+      learn:{name:'HỌC CỤM',title:'Nghe · hiểu · gặp trong câu',skill:'Nhận ra'},
+      write:{name:'TẬP VIẾT VI → ANH',title:'Tự gõ cụm tiếng Anh',skill:'Gọi ra'},
+      cloze:{name:'ĐIỀN CỤM',title:'Điền cụm vào mẫu câu',skill:'Gọi ra'},
+      sentence:{name:'VIỆT → CÂU ANH',title:'Tự viết cả câu đã học',skill:'Dùng trong câu'},
+      guided:{name:'ỨNG DỤNG CÓ KIỂM SOÁT',title:'Thay · chọn · ghép · biến đổi · tình huống',skill:'Dùng tự động'}
+    }[mode]||{name:'FLASHCARD',title:'Luyện cụm',skill:'Ôn'};
   }
 
-  function reflexSeconds(card){
-    if(!card||Number(card.level)!==3) return 3;
+  function skillPills(card){
     const p=progressFor(card);
-    return Number(p.reviewCount||0)>=2?3:6;
+    const s=p.skills||{};
+    return `<div class="chunk-skill-pills">
+      <span class="${s.recognize>=2?'done':''}">1 · Nhận ra</span>
+      <span class="${s.recall>=2?'done':''}">2 · Gọi ra</span>
+      <span class="${s.use>=2?'done':''}">3 · Dùng</span>
+    </div>`;
   }
 
-  function startReflexTimer(){
-    const card=currentCard();
-    if(!session||Number(card?.level)!==3||session.level3Phase==='learn') return;
-    resetReflexTimer();
-    reflexStartedAt=Date.now();
-    const seconds=reflexSeconds(card);
-    let left=seconds;
-    const target=$('#vocabReflexTimer');
-    if(target) target.textContent=left.toFixed(1);
-    reflexTimer=setInterval(()=>{
-      left=Math.max(0,left-.1);
-      const el=$('#vocabReflexTimer');
-      if(el) el.textContent=left.toFixed(1);
-      if(left<=0){
-        clearInterval(reflexTimer);
-        reflexTimer=null;
-        session.reflexMessage=seconds>3
-          ? 'Hết thời gian gợi ý ban đầu. Không sao — bạn đang xây phản xạ. Hãy xem đáp án rồi thử lại.'
-          : 'Hết 3 giây. Nếu chưa bật ra được, hãy đánh giá Chậm hoặc Chưa nói được.';
-        const note=$('#vocabReflexNote');
-        if(note) note.textContent=session.reflexMessage;
-      }
-    },100);
-  }
-  function stopAutoplay(){
-    clearTimeout(autoplayTimer);
-    autoplayTimer=null;
-    if(session) session.autoplay=false;
+  function audioButtons(text){
+    return `<div class="chunk-audio-row">
+      <button data-chunk-speak="${esc(text)}" data-rate="0.68" type="button">${env.uiIcon('volume-2')}<span>Chậm</span></button>
+      <button data-chunk-speak="${esc(text)}" data-rate="0.92" type="button">${env.uiIcon('volume-2')}<span>Tự nhiên</span></button>
+    </div>`;
   }
 
-  async function autoplayStep(){
-    if(!session?.autoplay) return;
-    const card=currentCard();
-    if(!card){stopAutoplay();return;}
-    session.revealed=true;
-    renderCard();
-    await env.speak(card.en);
-    if(!session?.autoplay) return;
-    autoplayTimer=setTimeout(()=>{
-      if(session.index>=session.cards.length-1){stopAutoplay();renderSummary();return;}
-      session.index++;
-      session.revealed=false;
-      render();
-      session.autoplay=true;
-      autoplayStep();
-    },2600);
+  function examplesHTML(card){
+    return `<div class="chunk-example-list">${card.examples.map((x,i)=>`
+      <article>
+        <b>${esc(x.en)}</b>
+        <span>${esc(x.vi)}</span>
+        <button data-chunk-speak="${esc(x.en)}" data-rate="0.92" type="button" aria-label="Nghe ví dụ">${env.uiIcon('volume-2')}</button>
+      </article>`).join('')}</div>`;
   }
 
-  function toggleAutoplay(){
-    if(Number(currentCard()?.level)===3){
-      env.toast('Tầng 3 cần học câu → gọi lại → biến đổi, nên không dùng autoplay.');
-      return;
-    }
-    if(session.autoplay){stopAutoplay();renderCard();return;}
-    session.autoplay=true;
-    renderCard();
-    autoplayStep();
-  }
-
-  function nextCard(){
-    stopAutoplay();
-    resetReflexTimer();
-    if(session.index>=session.cards.length-1){renderSummary();return;}
-    session.index++;
-    session.revealed=false;
-    session.level3Phase='learn';
-    session.level3HintVisible=false;
-    render();
-  }
-
-  function prevCard(){
-    stopAutoplay();
-    resetReflexTimer();
-    if(session.index<=0) return;
-    session.index--;
-    session.revealed=false;
-    session.level3Phase='learn';
-    session.level3HintVisible=false;
-    render();
-  }
-
-  function toggleReveal(){
-    const card=currentCard();
-    if(Number(card?.level)===3) return;
-    session.revealed=!session.revealed;
-    if(session.revealed) resetReflexTimer();
-    renderCard();
-    if(session.revealed&&settings().autoSpeak) env.speak(card.en);
-  }
-
-  function stageCopy(level){
-    if(Number(level)===1) return {name:'TẦNG 1 · NHẬN RA',title:'Thấy cụm → hiểu ngay',desc:'Không dịch từng từ. Nhìn cả khối và nhận ra ý nghĩa lõi.'};
-    if(Number(level)===2) return {name:'TẦNG 2 · GỌI RA',title:'Có ý tiếng Việt → bật ra cụm',desc:'Mục tiêu là nhớ ra cụm sau vài giây, không cần nhìn tiếng Anh trước.'};
-    return {name:'TẦNG 3 · DÙNG TỰ ĐỘNG',title:'Học câu → gọi lại → biến đổi',desc:'Không bắt nói một câu chưa học. Bạn học câu mẫu trước, gọi lại chính câu đó, rồi mới tự biến đổi thành câu mới.'};
-  }
-
-  function level3StepperHTML(){
-    const phase=session.level3Phase||'learn';
-    const order=['learn','recall','transform'];
-    const labels=[['3A','Học câu'],['3B','Gọi lại'],['3C','Biến đổi']];
-    const current=order.indexOf(phase);
-    return '<div class="level3-stepper">'+order.map((x,i)=>'<span class="'+(i<current?'done':i===current?'active':'')+'"><b>'+labels[i][0]+'</b>'+labels[i][1]+'</span>').join('<i></i>')+'</div>';
-  }
-
-  function level3CardHTML(card){
-    const p=progressFor(card);
-    const phase=session.level3Phase||'learn';
-    const practiced=Number(session.level3Practice?.[card.key]||0);
-    const seconds=reflexSeconds(card);
-
-    if(phase==='learn'){
-      return `
-        <div class="vocab-trainer-card level-3 phase-learn" id="vocabTrainerCard">
-          <div class="vocab-trainer-card-top">
-            <button id="vocabCardSpeak" class="vocab-card-icon" type="button">${env.uiIcon('volume-2')}</button>
-            <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
-              <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
-            </button>
-          </div>
-          <div class="vocab-trainer-face">
-            ${level3StepperHTML()}
-            <span class="vocab-trainer-direction">3A · HỌC CÂU MẪU</span>
-            <div class="vocab-trainer-answer">${esc(card.en)}</div>
-            <div class="level3-model-vi">${esc(card.vi)}</div>
-            <div class="level3-study-note">Nghe và nói theo <b>ít nhất 2 lần</b>. Bước này chỉ để quen miệng với cả câu, chưa chấm tốc độ.</div>
-          </div>
-          <div class="level3-study-actions">
-            <button id="level3PracticeModel" class="secondary-button" type="button">${env.uiIcon('volume-2')}<span>Nghe & nhại · ${practiced}/2+</span></button>
-            <button id="level3ToRecall" class="primary-button" type="button" ${practiced<2?'disabled':''}>Đã luyện · sang 3B →</button>
-          </div>
-        </div>`;
-    }
-
-    if(phase==='recall'){
-      return `
-        <div class="vocab-trainer-card level-3 phase-recall" id="vocabTrainerCard">
-          <div class="vocab-trainer-card-top">
-            <button id="vocabCardSpeak" class="vocab-card-icon" type="button" ${session.revealed?'':'disabled'}>${env.uiIcon('volume-2')}</button>
-            <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
-              <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
-            </button>
-          </div>
-          <div class="vocab-trainer-face">
-            ${level3StepperHTML()}
-            <span class="vocab-trainer-direction">3B · GỌI LẠI CÂU ĐÃ HỌC</span>
-            <div class="vocab-trainer-front">${esc(card.vi)}</div>
-            <div class="vocab-reflex-box">
-              <button id="vocabStartReflex" type="button">Bắt đầu nhớ lại · ${seconds} giây</button>
-              <b id="vocabReflexTimer">${seconds.toFixed(1)}</b>
-              <small id="vocabReflexNote">${esc(session.reflexMessage||'Lần đầu chưa cần ép 3 giây. Hãy cố tự nói lại câu vừa luyện trước khi xem đáp án.')}</small>
-            </div>
-            ${session.revealed?`<div class="vocab-trainer-divider"></div><div class="vocab-trainer-answer">${esc(card.en)}</div>`:''}
-          </div>
-          ${session.revealed?
-            `<div class="level3-recall-actions"><button id="level3BackToLearn" class="secondary-button" type="button">Chưa nhớ · học lại 3A</button><button id="level3ToTransform" class="primary-button" type="button">Nhớ được · sang 3C →</button></div>`
-            :`<div class="vocab-trainer-reveal-wrap"><button id="vocabRevealLevel3" class="vocab-trainer-reveal" type="button">Xem đáp án sau khi tự nói</button></div>`}
-        </div>`;
-    }
-
-    return `
-      <div class="vocab-trainer-card level-3 phase-transform" id="vocabTrainerCard">
-        <div class="vocab-trainer-card-top">
-          <button id="vocabCardSpeak" class="vocab-card-icon" type="button" ${session.level3HintVisible?'':'disabled'}>${env.uiIcon('volume-2')}</button>
-          <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
-          </button>
+  function learnHTML(card){
+    return `<div class="chunk-study-card">
+      <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
+      <span class="chunk-priority">${card.priority==='core'?'ƯU TIÊN CHỦ ĐỘNG':'MỞ RỘNG · GẶP LẠI NHIỀU LẦN'}</span>
+      <h2>${esc(card.baseEn)}</h2>
+      ${audioButtons(card.baseEn)}
+      ${session.revealed?`
+        <div class="chunk-meaning"><strong>${esc(card.baseVi)}</strong></div>
+        <div class="chunk-in-context"><span>Trong câu</span><b>${esc(session.variant.phraseEn)}</b><small>${esc(session.variant.phraseVi)}</small></div>
+        ${examplesHTML(card)}
+        <div class="chunk-rating-row">
+          <button data-learn-rate="again" type="button"><b>Chưa nhớ</b><span>Đưa lại sớm</span></button>
+          <button data-learn-rate="hard" type="button"><b>Nhận chậm</b><span>Phải nghĩ</span></button>
+          <button data-learn-rate="good" type="button"><b>Hiểu ngay</b><span>Đã nhận ra</span></button>
         </div>
-        <div class="vocab-trainer-face">
-          ${level3StepperHTML()}
-          <span class="vocab-trainer-direction">3C · BIẾN ĐỔI & DÙNG TỰ ĐỘNG</span>
-          <div class="level3-transform-prompt"><strong>Giữ ý/cấu trúc chính của câu vừa học.</strong><span>Hãy đổi ít nhất một chi tiết thật: thời gian, người, địa điểm, lý do hoặc mục đích — rồi nói thành một câu mới.</span></div>
-          <div class="vocab-reflex-box">
-            <button id="vocabStartReflex" type="button">Bắt đầu phản xạ · ${seconds} giây</button>
-            <b id="vocabReflexTimer">${seconds.toFixed(1)}</b>
-            <small id="vocabReflexNote">${esc(session.reflexMessage||(seconds>3?'Bạn đang xây phản xạ nên được 6 giây. Khi đã gặp lại vài lần, hệ thống mới siết về 3 giây.':'Mục tiêu lúc này là bật ra câu mới trong khoảng 2–3 giây.'))}</small>
-          </div>
-          <button id="level3ShowHint" class="level3-hint-button" type="button">${session.level3HintVisible?'Câu gốc: '+esc(card.en):'Bí ý? xem lại câu gốc'}</button>
-          ${session.revealed?`<div class="active-chunk-auto-tip">Không có một đáp án duy nhất. Hãy tự đánh giá: bạn có tạo được <b>một câu mới</b> từ câu vừa học, không chỉ đọc lại nguyên câu hay không?</div>`:''}
-        </div>
-        ${session.revealed?'':`<div class="vocab-trainer-reveal-wrap"><button id="vocabRevealLevel3" class="vocab-trainer-reveal" type="button">Tôi đã nói một câu mới</button></div>`}
+      `:`<button id="revealChunkMeaning" class="chunk-primary-action" type="button">Tôi đã thử nhớ · xem nghĩa</button>`}
+    </div>`;
+  }
+
+  function hintText(card,expected,kind){
+    const words=tokens(expected);
+    if(session.hintLevel<=0) return '';
+    if(session.hintLevel===1) return words.length?`${words[0]}…`:'';
+    if(session.hintLevel===2) return kind==='sentence'?`Cụm chính: ${card.baseEn}`:`${card.baseEn}…`;
+    const count=Math.max(1,Math.ceil(words.length*.6));
+    return words.slice(0,count).join(' ')+' …';
+  }
+
+  function typingSpec(card,mode=session.options.mode){
+    const v=session.variant||chooseVariant(card);
+    if(mode==='write'){
+      return {
+        eyebrow:'VIỆT → CỤM ANH',
+        prompt:v.phraseVi||card.baseVi,
+        expected:v.phraseEn||card.baseEn,
+        context:v.en,
+        contextVi:v.vi,
+        placeholder:'Gõ cụm tiếng Anh…',
+        skill:'recall',
+        writing:true
+      };
+    }
+    if(mode==='cloze'){
+      return {
+        eyebrow:'ĐIỀN CỤM',
+        prompt:`${prefixEn(card.pack)} ______${[6,7].includes(Number(card.pack.order))?'?':'.'}`,
+        sub:v.vi,
+        expected:v.phraseEn||card.baseEn,
+        context:v.en,
+        contextVi:v.vi,
+        placeholder:'Điền phần còn thiếu…',
+        skill:'recall',
+        writing:true
+      };
+    }
+    return {
+      eyebrow:'VIỆT → CÂU ANH',
+      prompt:v.vi||card.modelVi,
+      expected:v.en||card.modelEn,
+      context:v.en||card.modelEn,
+      contextVi:v.vi||card.modelVi,
+      placeholder:'Gõ cả câu tiếng Anh…',
+      skill:'use',
+      writing:true
+    };
+  }
+
+  function typingHTML(card,mode=session.options.mode,specOverride=null){
+    const spec=specOverride||typingSpec(card,mode);
+    const hint=hintText(card,spec.expected,mode==='sentence'?'sentence':'phrase');
+    const correct=!!session.result?.correct;
+    return `<div class="chunk-study-card chunk-typing-card">
+      <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
+      <span class="chunk-priority">${esc(spec.eyebrow)}</span>
+      <div class="chunk-writing-prompt">${esc(spec.prompt)}</div>
+      ${spec.sub?`<div class="chunk-writing-sub">${esc(spec.sub)}</div>`:''}
+      ${hint?`<div class="chunk-hint-box"><b>Gợi ý ${session.hintLevel}</b><span>${esc(hint)}</span></div>`:''}
+      <div class="chunk-writing-box ${session.result?.correct?'is-correct':session.result?'is-wrong':''}">
+        <input id="chunkAnswerInput" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(session.inputValue||'')}" placeholder="${esc(spec.placeholder)}" ${correct?'disabled':''}>
+        ${!correct?`<button id="checkChunkAnswer" type="button">Kiểm tra</button>`:''}
+      </div>
+      ${session.result?`
+        <div class="chunk-writing-feedback ${correct?'correct':'wrong'}">
+          <strong>${correct?'✓ Đúng rồi':'Chưa đúng. Sửa lại rồi thử lần nữa.'}</strong>
+          ${correct?`<div class="chunk-correct-answer">${esc(spec.expected)}</div>`:diffHTML(spec.expected,session.inputValue)}
+          ${correct?`<div class="chunk-context-after"><b>${esc(spec.context)}</b><span>${esc(spec.contextVi)}</span>${audioButtons(spec.context)}</div>`:''}
+        </div>`:''}
+      <div class="chunk-writing-actions">
+        ${!correct?`<button id="chunkHint" class="secondary-button" type="button" ${session.hintLevel>=3?'disabled':''}>Gợi ý ${Math.min(3,session.hintLevel+1)}</button>`:''}
+        ${!correct&&session.attempts>0?`<button id="showChunkAnswer" class="text-button" type="button">Hiện đáp án</button>`:''}
+        ${correct?`<button id="nextAfterWriting" class="primary-button" type="button">Tiếp tục →</button>`:''}
+      </div>
+      ${session.revealed&&!correct?`
+        <div class="chunk-revealed-answer"><span>Đáp án</span><b>${esc(spec.expected)}</b>${audioButtons(spec.expected)}
+          <button id="copyAnswerToInput" class="secondary-button" type="button">Gõ lại đáp án</button>
+        </div>`:''}
+    </div>`;
+  }
+
+  function guidedSteps(){
+    return [
+      ['3A','Thay một phần'],
+      ['3B','Chọn cụm'],
+      ['3C','Ghép khối'],
+      ['3D','Biến đổi câu'],
+      ['3E','Tình huống']
+    ];
+  }
+
+  function guidedStepper(){
+    return `<div class="guided-stepper">${guidedSteps().map((x,i)=>`<span class="${i<session.guidedStep?'done':i===session.guidedStep?'active':''}"><b>${x[0]}</b>${x[1]}</span>`).join('<i></i>')}</div>`;
+  }
+
+  function alternativeVariant(card){
+    return card.examples?.[1]||card.examples?.[0]||session.variant;
+  }
+
+  function choiceOptions(card){
+    const all=studyChunks(card.pack);
+    const others=all.filter(x=>x.key!==card.key).sort(()=>Math.random()-.5).slice(0,3);
+    return [...others,card].sort(()=>Math.random()-.5);
+  }
+
+  function guidedHTML(card){
+    const step=session.guidedStep;
+    const variant=session.variant;
+    const alt=alternativeVariant(card);
+
+    if(step===0){
+      const spec={
+        eyebrow:'3A · THAY MỘT PHẦN',
+        prompt:`Câu đã học: ${variant.en}\n\nBây giờ hãy viết lại theo ý: ${alt.vi}`,
+        expected:alt.en,
+        context:alt.en,
+        contextVi:alt.vi,
+        placeholder:'Viết câu sau khi thay một phần…',
+        skill:'use',
+        writing:true
+      };
+      return `<div class="guided-wrap">${guidedStepper()}${typingHTML(card,'sentence',spec)}</div>`;
+    }
+
+    if(step===1){
+      if(!session.guidedChoices) session.guidedChoices=choiceOptions(card);
+      return `<div class="chunk-study-card guided-choice-card">
+        <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
+        ${guidedStepper()}
+        <span class="chunk-priority">3B · CHỌN CỤM PHÙ HỢP</span>
+        <div class="chunk-writing-prompt">${esc(card.baseVi)}</div>
+        <div class="guided-choice-grid">${session.guidedChoices.map(x=>`<button data-guided-choice="${esc(x.key)}" type="button">${esc(x.baseEn)}</button>`).join('')}</div>
+        ${session.result?`<div class="chunk-writing-feedback ${session.result.correct?'correct':'wrong'}"><strong>${session.result.correct?'✓ Đúng cụm':'Chưa đúng. Hãy nhìn nghĩa và thử lại.'}</strong></div>`:''}
       </div>`;
+    }
+
+    if(step===2){
+      const blocks=[prefixEn(card.pack),variant.phraseEn].sort(()=>Math.random()-.5);
+      if(!session.guidedBlocks) session.guidedBlocks=blocks;
+      const assembled=session.guidedAnswer.join(' ');
+      return `<div class="chunk-study-card guided-assemble-card">
+        <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
+        ${guidedStepper()}
+        <span class="chunk-priority">3C · GHÉP CÁC KHỐI ĐÃ HỌC</span>
+        <div class="chunk-writing-prompt">${esc(variant.vi)}</div>
+        <div class="guided-answer-slot">${assembled?esc(assembled):'Chạm các khối theo đúng thứ tự'}</div>
+        <div class="guided-blocks">${session.guidedBlocks.map((x,i)=>`<button data-guided-block="${i}" type="button" ${session.guidedUsed?.includes(i)?'disabled':''}>${esc(x)}</button>`).join('')}</div>
+        <div class="chunk-writing-actions"><button id="resetGuidedBlocks" class="secondary-button" type="button">Làm lại</button><button id="checkGuidedBlocks" class="primary-button" type="button">Kiểm tra</button></div>
+        ${session.result?`<div class="chunk-writing-feedback ${session.result.correct?'correct':'wrong'}"><strong>${session.result.correct?'✓ Ghép đúng':'Chưa đúng thứ tự'}</strong></div>`:''}
+      </div>`;
+    }
+
+    if(step===3){
+      const spec={
+        eyebrow:'3D · BIẾN ĐỔI CÂU',
+        prompt:alt.vi,
+        sub:`Cụm cần dùng: ${card.baseEn}`,
+        expected:alt.en,
+        context:alt.en,
+        contextVi:alt.vi,
+        placeholder:'Viết câu đã biến đổi…',
+        skill:'use',
+        writing:true
+      };
+      return `<div class="guided-wrap">${guidedStepper()}${typingHTML(card,'sentence',spec)}</div>`;
+    }
+
+    return `<div class="chunk-study-card guided-situation-card">
+      <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
+      ${guidedStepper()}
+      <span class="chunk-priority">3E · NÓI TRONG TÌNH HUỐNG</span>
+      <div class="guided-situation">
+        <b>Tình huống</b>
+        <p>Bạn cần diễn đạt ý: <strong>${esc(variant.vi)}</strong></p>
+        <small>Web đã cung cấp nội dung; nhiệm vụ của bạn là lấy cụm phù hợp ra và nói, không phải tự sáng tác từ số 0.</small>
+      </div>
+      ${!session.revealed?`
+        <button id="showSituationHint" class="secondary-button" type="button">Gợi ý cụm</button>
+        ${session.hintLevel?`<div class="chunk-hint-box"><b>Cụm nên dùng</b><span>${esc(card.baseEn)}</span></div>`:''}
+        <button id="revealSituationAnswer" class="chunk-primary-action" type="button">Tôi đã thử nói · xem câu mẫu</button>
+      `:`
+        <div class="chunk-correct-answer">${esc(variant.en)}</div>
+        ${audioButtons(variant.en)}
+        <div class="chunk-rating-row">
+          <button data-guided-rate="again" type="button"><b>Chưa nói được</b><span>Cần gặp lại sớm</span></button>
+          <button data-guided-rate="good" type="button"><b>Nói được</b><span>Đã lấy ra được</span></button>
+          <button data-guided-rate="easy" type="button"><b>Tự động</b><span>Bật ra nhanh</span></button>
+        </div>
+      `}
+    </div>`;
   }
 
-  function cardFaceHTML(card){
-    const p=progressFor(card);
-    const level=Number(card.level);
-    if(level===3) return level3CardHTML(card);
-    let front='',answer='',sub='';
-    if(level===1){
-      front=card.en;
-      answer=card.vi;
-      sub=card.exampleEn?`${card.exampleEn}||${card.exampleVi||''}`:'';
-    }else{
-      front=card.vi;
-      answer=card.en;
-      sub=card.exampleEn?`${card.exampleEn}||${card.exampleVi||''}`:'';
-    }
-    const [exampleEn,exampleVi]=sub.split('||');
-    return `
-      <div class="vocab-trainer-card level-${level}" id="vocabTrainerCard" role="button" tabindex="0">
-        <div class="vocab-trainer-card-top">
-          <button id="vocabCardSpeak" class="vocab-card-icon" type="button" ${level>1&&!session.revealed?'disabled':''}>${env.uiIcon('volume-2')}</button>
-          <button id="vocabCardStar" class="vocab-card-icon ${p.starred?'active':''}" type="button">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="${p.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>
-          </button>
-        </div>
-        <div class="vocab-trainer-face">
-          <span class="vocab-trainer-direction">${esc(stageCopy(level).name)}</span>
-          <div class="vocab-trainer-front">${esc(front)}</div>
-          ${session.revealed?`<div class="vocab-trainer-divider"></div><div class="vocab-trainer-answer">${esc(answer)}</div>${exampleEn?`<div class="active-chunk-example"><b>${esc(exampleEn)}</b>${exampleVi?`<span>${esc(exampleVi)}</span>`:''}</div>`:''}`:`<small>Chạm thẻ hoặc bấm “Hiện đáp án” sau khi bạn đã tự trả lời.</small>`}
-        </div>
-      </div>`;
-  }
-  function ratingHTML(card){
-    const level=Number(card?.level);
-    if(level===3){
-      if((session.level3Phase||'learn')!=='transform'||!session.revealed) return '';
-      const labels=[
-        ['again','Chưa nói được','Cần học lại'],
-        ['hard','Chậm','Còn phải nghĩ lâu'],
-        ['good','Đạt','Bật ra được'],
-        ['easy','Tự động','Bật ra rất nhanh']
-      ];
-      return '<div class="vocab-trainer-ratings">'+labels.map(([id,b,s])=>'<button data-vocab-rate="'+id+'" type="button"><b>'+b+'</b><span>'+s+'</span></button>').join('')+'</div>';
-    }
-    if(!session.revealed) return '<div class="vocab-trainer-reveal-wrap"><button id="vocabReveal" class="vocab-trainer-reveal" type="button">Hiện đáp án</button></div>';
-    const labels=level===1
-      ? [['again','Quên','Không nhận ra'],['hard','Nhận chậm','Phải nghĩ lâu'],['good','Nhận ra','Hiểu ngay'],['easy','Rất chắc','Gần tự động']]
-      : [['again','Không nhớ','Không gọi ra'],['hard','Chậm','Trên 3 giây'],['good','Gọi ra','Khoảng 2–3 giây'],['easy','Bật ra ngay','Rất nhanh']];
-    return '<div class="vocab-trainer-ratings">'+labels.map(([id,b,s])=>'<button data-vocab-rate="'+id+'" type="button"><b>'+b+'</b><span>'+s+'</span></button>').join('')+'</div>';
-  }
   function renderCard(){
     const card=currentCard();
     if(!card){renderEmpty();return;}
+    const mode=session.options.mode;
+    const info=modeInfo(mode);
     const root=$('#vocabTrainerRoot');
     if(!root) return;
-    const copy=stageCopy(card.level);
+
     root.innerHTML=`
       <div class="vocab-trainer-topbar">
         <button id="vocabTrainerClose" class="vocab-trainer-round" type="button">×</button>
         <div class="vocab-trainer-counter"><strong>${session.index+1} / ${session.cards.length}</strong><span>${esc(session.pack.pattern)}</span></div>
-        <button id="vocabTrainerSettings" class="vocab-trainer-round" type="button" aria-label="Tùy chọn">
-          <svg viewBox="0 0 24 24" class="ui-icon" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21h-4v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
-        </button>
+        <button id="vocabTrainerSettings" class="vocab-trainer-round" type="button" aria-label="Tùy chọn">⚙</button>
       </div>
-      <div class="vocab-trainer-progress"><i style="width:${Math.round(((session.index+1)/session.cards.length)*100)}%"></i></div>
-      <div class="active-chunk-stage-intro"><span>${esc(copy.name)}</span><strong>${esc(copy.title)}</strong><p>${esc(copy.desc)}</p></div>
+      <div class="vocab-trainer-progress"><i style="width:${Math.round(((session.index+1)/Math.max(1,session.cards.length))*100)}%"></i></div>
+      <div class="chunk-mode-intro"><span>${esc(info.name)}</span><strong>${esc(info.title)}</strong><p>Mục tiêu hiện tại: ${esc(info.skill)}</p></div>
       <div class="vocab-trainer-stage">
-        ${cardFaceHTML(card)}
-        ${ratingHTML(card)}
+        ${mode==='learn'?learnHTML(card):mode==='guided'?guidedHTML(card):typingHTML(card,mode)}
       </div>
       <div class="vocab-trainer-bottom">
-        <button id="vocabUndo" class="vocab-bottom-icon" type="button" ${session.history.length?'':'disabled'}>↶</button>
         <button id="vocabPrev" class="vocab-bottom-text" type="button" ${session.index<=0?'disabled':''}>← Trước</button>
-        <button id="vocabAutoplay" class="vocab-bottom-icon ${session.autoplay?'active':''}" type="button">${session.autoplay?'■':'▶'}</button>
+        <button id="vocabTrainerSettingsBottom" class="vocab-bottom-icon" type="button">⚙</button>
         <button id="vocabNext" class="vocab-bottom-text" type="button">Sau →</button>
       </div>
       <div id="vocabSettingsSheet"></div>`;
     bindCard();
   }
 
-  function bindSwipe(cardEl){
-    let sx=0,sy=0;
-    cardEl.addEventListener('touchstart',e=>{
-      if(!e.touches?.length) return;
-      sx=e.touches[0].clientX;sy=e.touches[0].clientY;
-    },{passive:true});
-    cardEl.addEventListener('touchend',e=>{
-      if(!e.changedTouches?.length) return;
-      const dx=e.changedTouches[0].clientX-sx;
-      const dy=e.changedTouches[0].clientY-sy;
-      if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.25) return;
-      dx<0?nextCard():prevCard();
-    },{passive:true});
+  function bindAudio(){
+    $$('[data-chunk-speak]').forEach(btn=>btn.onclick=()=>{
+      const rate=Number(btn.dataset.rate||0.92);
+      env.speak(btn.dataset.chunkSpeak,null,rate);
+    });
+  }
+
+  function submitTyping(card,specOverride=null,advanceGuided=false){
+    const mode=session.options.mode;
+    const spec=specOverride||typingSpec(card,mode);
+    const input=$('#chunkAnswerInput');
+    if(!input) return;
+    session.inputValue=input.value;
+    session.attempts++;
+    const correct=normalize(session.inputValue)===normalize(spec.expected);
+    session.result={correct,expected:spec.expected};
+
+    if(correct){
+      if(advanceGuided){
+        session.result.correct=true;
+      }else{
+        record(card,{rating:session.attempts===1?'easy':'good',skill:spec.skill,writing:!!spec.writing});
+      }
+    }
+    renderCard();
+  }
+
+  function bindTyping(card,specOverride=null,advanceGuided=false){
+    const mode=session.options.mode;
+    const spec=specOverride||typingSpec(card,mode);
+    const input=$('#chunkAnswerInput');
+    if(input){
+      input.focus({preventScroll:true});
+      input.oninput=()=>{session.inputValue=input.value;};
+      input.onkeydown=e=>{
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(session.result?.correct){
+            if(advanceGuided) advanceGuidedStep();
+            else nextCard();
+          }else submitTyping(card,specOverride,advanceGuided);
+        }
+      };
+    }
+    $('#checkChunkAnswer')?.addEventListener('click',()=>submitTyping(card,specOverride,advanceGuided));
+    $('#chunkHint')?.addEventListener('click',()=>{
+      session.hintLevel=Math.min(3,session.hintLevel+1);
+      renderCard();
+    });
+    $('#showChunkAnswer')?.addEventListener('click',()=>{
+      session.revealed=true;
+      session.hintLevel=3;
+      renderCard();
+    });
+    $('#copyAnswerToInput')?.addEventListener('click',()=>{
+      session.inputValue=spec.expected;
+      session.revealed=false;
+      session.result=null;
+      renderCard();
+    });
+    $('#nextAfterWriting')?.addEventListener('click',()=>{
+      if(advanceGuided) advanceGuidedStep();
+      else nextCard();
+    });
+  }
+
+  function advanceGuidedStep(){
+    session.guidedStep=Math.min(4,session.guidedStep+1);
+    session.result=null;
+    session.inputValue='';
+    session.hintLevel=0;
+    session.revealed=false;
+    session.guidedAnswer=[];
+    session.guidedBlocks=null;
+    session.guidedUsed=[];
+    session.guidedChoices=null;
+    renderCard();
+  }
+
+  function bindGuided(card){
+    if(session.guidedStep===0){
+      const alt=alternativeVariant(card);
+      const spec={eyebrow:'3A · THAY MỘT PHẦN',prompt:`Câu đã học: ${session.variant.en}\n\nBây giờ hãy viết lại theo ý: ${alt.vi}`,expected:alt.en,context:alt.en,contextVi:alt.vi,placeholder:'Viết câu sau khi thay một phần…',skill:'use',writing:true};
+      bindTyping(card,spec,true);
+      return;
+    }
+
+    if(session.guidedStep===1){
+      $$('[data-guided-choice]').forEach(btn=>btn.onclick=()=>{
+        const correct=btn.dataset.guidedChoice===card.key;
+        session.result={correct};
+        if(correct) setTimeout(advanceGuidedStep,280);
+        else renderCard();
+      });
+      return;
+    }
+
+    if(session.guidedStep===2){
+      if(!session.guidedUsed) session.guidedUsed=[];
+      $$('[data-guided-block]').forEach(btn=>btn.onclick=()=>{
+        const i=Number(btn.dataset.guidedBlock);
+        if(session.guidedUsed.includes(i)) return;
+        session.guidedUsed.push(i);
+        session.guidedAnswer.push(session.guidedBlocks[i]);
+        renderCard();
+      });
+      $('#resetGuidedBlocks')?.addEventListener('click',()=>{
+        session.guidedAnswer=[];
+        session.guidedUsed=[];
+        session.result=null;
+        renderCard();
+      });
+      $('#checkGuidedBlocks')?.addEventListener('click',()=>{
+        const expected=normalize(`${prefixEn(card.pack)} ${session.variant.phraseEn}`);
+        const actual=normalize(session.guidedAnswer.join(' '));
+        session.result={correct:expected===actual};
+        if(session.result.correct) setTimeout(advanceGuidedStep,300);
+        else renderCard();
+      });
+      return;
+    }
+
+    if(session.guidedStep===3){
+      const alt=alternativeVariant(card);
+      const spec={eyebrow:'3D · BIẾN ĐỔI CÂU',prompt:alt.vi,sub:`Cụm cần dùng: ${card.baseEn}`,expected:alt.en,context:alt.en,contextVi:alt.vi,placeholder:'Viết câu đã biến đổi…',skill:'use',writing:true};
+      bindTyping(card,spec,true);
+      return;
+    }
+
+    $('#showSituationHint')?.addEventListener('click',()=>{
+      session.hintLevel=1;
+      renderCard();
+    });
+    $('#revealSituationAnswer')?.addEventListener('click',()=>{
+      session.revealed=true;
+      renderCard();
+    });
+    $$('[data-guided-rate]').forEach(btn=>btn.onclick=()=>{
+      record(card,{rating:btn.dataset.guidedRate,skill:'use',writing:false});
+      nextCard();
+    });
   }
 
   function bindCard(){
     $('#vocabTrainerClose').onclick=close;
     $('#vocabTrainerSettings').onclick=openSettings;
-    $('#vocabUndo').onclick=undoLast;
+    $('#vocabTrainerSettingsBottom').onclick=openSettings;
     $('#vocabPrev').onclick=prevCard;
     $('#vocabNext').onclick=nextCard;
-    $('#vocabAutoplay').onclick=toggleAutoplay;
+    $('#chunkStar')?.addEventListener('click',toggleStar);
 
-    const current=currentCard();
-    const card=$('#vocabTrainerCard');
-    if(card){
-      if(Number(current?.level)!==3){
-        card.onclick=e=>{if(!e.target.closest('button')) toggleReveal();};
-      }
-      bindSwipe(card);
+    bindAudio();
+
+    const card=currentCard();
+    const mode=session.options.mode;
+    if(mode==='learn'){
+      $('#revealChunkMeaning')?.addEventListener('click',()=>{
+        session.revealed=true;
+        renderCard();
+      });
+      $$('[data-learn-rate]').forEach(btn=>btn.onclick=()=>{
+        record(card,{rating:btn.dataset.learnRate,skill:'recognize'});
+        nextCard();
+      });
+    }else if(mode==='guided'){
+      bindGuided(card);
+    }else{
+      bindTyping(card);
     }
-
-    const speak=$('#vocabCardSpeak');
-    if(speak) speak.onclick=e=>{e.stopPropagation();env.speak(current.en);};
-
-    const star=$('#vocabCardStar');
-    if(star) star.onclick=e=>{e.stopPropagation();toggleStar();};
-
-    const reveal=$('#vocabReveal');
-    if(reveal) reveal.onclick=toggleReveal;
-
-    const practice=$('#level3PracticeModel');
-    if(practice) practice.onclick=async()=>{
-      session.level3Practice[current.key]=Number(session.level3Practice[current.key]||0)+1;
-      await env.speak(current.en);
-      renderCard();
-    };
-
-    const toRecall=$('#level3ToRecall');
-    if(toRecall) toRecall.onclick=()=>{
-      session.level3Phase='recall';
-      session.revealed=false;
-      resetReflexTimer();
-      renderCard();
-    };
-
-    const reveal3=$('#vocabRevealLevel3');
-    if(reveal3) reveal3.onclick=()=>{
-      resetReflexTimer();
-      session.revealed=true;
-      renderCard();
-      if(settings().autoSpeak&&session.level3Phase==='recall') env.speak(current.en);
-    };
-
-    const backLearn=$('#level3BackToLearn');
-    if(backLearn) backLearn.onclick=()=>{
-      session.level3Phase='learn';
-      session.revealed=false;
-      resetReflexTimer();
-      renderCard();
-    };
-
-    const toTransform=$('#level3ToTransform');
-    if(toTransform) toTransform.onclick=()=>{
-      session.level3Phase='transform';
-      session.revealed=false;
-      session.level3HintVisible=false;
-      resetReflexTimer();
-      renderCard();
-    };
-
-    const hint=$('#level3ShowHint');
-    if(hint) hint.onclick=()=>{
-      session.level3HintVisible=true;
-      renderCard();
-    };
-
-    const reflex=$('#vocabStartReflex');
-    if(reflex) reflex.onclick=e=>{e.stopPropagation();startReflexTimer();};
-
-    $$('[data-vocab-rate]').forEach(btn=>btn.onclick=()=>rateCurrent(btn.dataset.vocabRate));
   }
-  function openSettings(){
-    stopAutoplay();
-    resetReflexTimer();
-    const holder=$('#vocabSettingsSheet');
+
+  function settingsHTML(){
     const s=settings();
-    holder.innerHTML=`
-      <div class="vocab-settings-backdrop" id="vocabSettingsBackdrop">
-        <section class="vocab-settings-sheet">
-          <div class="vocab-settings-head"><h2>Tùy chọn buổi học</h2><button id="vocabSettingsClose" type="button">×</button></div>
-          <label class="vocab-settings-row"><span><b>Mẫu câu</b><small>Mỗi buổi chỉ tập trung một bộ 1–5–10</small></span>
-            <select id="vocabLessonSelect">${packs().map(p=>`<option value="${p.lessonId}" ${p.lessonId===s.lessonId?'selected':''}>#${p.order} · ${esc(p.pattern)}</option>`).join('')}</select>
-          </label>
-          <label class="vocab-settings-row"><span><b>Tầng học</b><small>Nhận ra → Gọi ra → Dùng tự động</small></span>
-            <select id="vocabLevelSelect">
-              <option value="1" ${s.level==='1'?'selected':''}>1 · Nhận ra</option>
-              <option value="2" ${s.level==='2'?'selected':''}>2 · Gọi ra được</option>
-              <option value="3" ${s.level==='3'?'selected':''}>3 · Dùng tự động</option>
-            </select>
-          </label>
-          <label class="vocab-settings-row"><span><b>Số thẻ</b><small>Không cần nhồi quá nhiều trong một buổi</small></span>
-            <select id="vocabSizeSelect">${['5','8','10','all'].map(x=>`<option value="${x}" ${String(s.size)===x?'selected':''}>${x==='all'?'Tất cả':x+' thẻ'}</option>`).join('')}</select>
-          </label>
-          <label class="vocab-settings-row"><span><b>Thứ tự</b><small>SRS ưu tiên thẻ đến hạn và thẻ chưa học</small></span>
-            <select id="vocabOrderSelect"><option value="srs" ${s.order==='srs'?'selected':''}>Ưu tiên SRS</option><option value="random" ${s.order==='random'?'selected':''}>Ngẫu nhiên</option></select>
-          </label>
-          <label class="vocab-settings-toggle"><span><b>Chỉ thẻ có sao</b><small>Dùng khi muốn tập trung vào một số cụm khó</small></span><input id="vocabStarredOnly" type="checkbox" ${s.starredOnly?'checked':''}><i></i></label>
-          <label class="vocab-settings-toggle"><span><b>Tự phát tiếng Anh sau khi lật</b><small>Không phát trước để tránh lộ đáp án ở tầng 2–3</small></span><input id="vocabAutoSpeak" type="checkbox" ${s.autoSpeak?'checked':''}><i></i></label>
-          <div class="vocab-settings-actions"><button id="vocabApplySettings" class="primary-button" type="button">Áp dụng & bắt đầu lại</button></div>
-        </section>
-      </div>`;
+    return `<div class="vocab-settings-backdrop" id="vocabSettingsBackdrop">
+      <section class="vocab-settings-sheet">
+        <div class="vocab-settings-head"><h2>Tùy chọn buổi học</h2><button id="vocabSettingsClose" type="button">×</button></div>
+        <label class="vocab-settings-row"><span><b>Mẫu câu</b><small>10 cụm được web chọn sẵn cho mỗi bài</small></span>
+          <select id="vocabLessonSelect">${packs().map(p=>`<option value="${p.lessonId}" ${p.lessonId===s.lessonId?'selected':''}>#${p.order} · ${esc(p.pattern)}</option>`).join('')}</select>
+        </label>
+        <label class="vocab-settings-row"><span><b>Cách luyện</b><small>Đổi giữa flashcard, viết và ứng dụng</small></span>
+          <select id="vocabModeSelect">
+            <option value="learn" ${s.mode==='learn'?'selected':''}>Học cụm · Nhận ra</option>
+            <option value="write" ${s.mode==='write'?'selected':''}>Tập viết Việt → cụm Anh</option>
+            <option value="cloze" ${s.mode==='cloze'?'selected':''}>Điền cụm vào câu</option>
+            <option value="sentence" ${s.mode==='sentence'?'selected':''}>Việt → câu Anh</option>
+            <option value="guided" ${s.mode==='guided'?'selected':''}>Ứng dụng có kiểm soát 3A–3E</option>
+          </select>
+        </label>
+        <label class="vocab-settings-row"><span><b>Số cụm</b><small>Phù hợp để tranh thủ học khi rảnh</small></span>
+          <select id="vocabSizeSelect">${['5','10','all'].map(x=>`<option value="${x}" ${String(s.size)===x?'selected':''}>${x==='all'?'Tất cả':x+' cụm'}</option>`).join('')}</select>
+        </label>
+        <label class="vocab-settings-row"><span><b>Phạm vi</b><small>6 cụm ưu tiên hoặc toàn bộ 10 cụm</small></span>
+          <select id="vocabPrioritySelect"><option value="all" ${s.priority==='all'?'selected':''}>Toàn bộ 10 cụm</option><option value="core" ${s.priority==='core'?'selected':''}>6 cụm ưu tiên</option></select>
+        </label>
+        <label class="vocab-settings-row"><span><b>Thứ tự</b><small>SRS ưu tiên cụm cần ôn</small></span>
+          <select id="vocabOrderSelect"><option value="srs" ${s.order==='srs'?'selected':''}>Ưu tiên SRS</option><option value="random" ${s.order==='random'?'selected':''}>Ngẫu nhiên</option></select>
+        </label>
+        <label class="vocab-settings-toggle"><span><b>Tự phát đáp án sau khi viết đúng</b><small>Không phát trước khi bạn tự gọi lại</small></span><input id="vocabAutoSpeak" type="checkbox" ${s.autoSpeak?'checked':''}><i></i></label>
+        <div class="vocab-settings-actions"><button id="vocabApplySettings" class="primary-button" type="button">Áp dụng & bắt đầu lại</button></div>
+      </section>
+    </div>`;
+  }
+
+  function openSettings(){
+    const holder=$('#vocabSettingsSheet');
+    if(!holder) return;
+    holder.innerHTML=settingsHTML();
     $('#vocabSettingsClose').onclick=()=>holder.innerHTML='';
     $('#vocabSettingsBackdrop').onclick=e=>{if(e.target.id==='vocabSettingsBackdrop') holder.innerHTML='';};
     $('#vocabApplySettings').onclick=()=>{
-      const next=settings();
-      next.lessonId=$('#vocabLessonSelect').value;
-      next.level=$('#vocabLevelSelect').value;
-      next.size=$('#vocabSizeSelect').value;
-      next.order=$('#vocabOrderSelect').value;
-      next.starredOnly=$('#vocabStarredOnly').checked;
-      next.autoSpeak=$('#vocabAutoSpeak').checked;
+      const s=settings();
+      s.lessonId=$('#vocabLessonSelect').value;
+      s.mode=$('#vocabModeSelect').value;
+      s.size=$('#vocabSizeSelect').value;
+      s.priority=$('#vocabPrioritySelect').value;
+      s.order=$('#vocabOrderSelect').value;
+      s.autoSpeak=$('#vocabAutoSpeak').checked;
       env.saveState();
       buildSession();
       render();
@@ -652,52 +895,37 @@
   }
 
   function renderEmpty(){
-    $('#vocabTrainerRoot').innerHTML=`
-      <div class="vocab-trainer-empty">
-        <button id="vocabTrainerClose" class="vocab-trainer-round" type="button">×</button>
-        <span class="eyebrow">ACTIVE CHUNKS</span><h2>Không có thẻ phù hợp.</h2>
-        <p>Hãy bỏ “chỉ thẻ có sao”, đổi tầng học hoặc chọn một mẫu câu khác.</p>
-        <button id="vocabEmptySettings" class="primary-button" type="button">Mở tùy chọn</button>
-        <div id="vocabSettingsSheet"></div>
-      </div>`;
+    $('#vocabTrainerRoot').innerHTML=`<div class="vocab-trainer-empty">
+      <button id="vocabTrainerClose" class="vocab-trainer-round" type="button">×</button>
+      <span class="eyebrow">CHUNK TRAINER</span>
+      <h2>Không có cụm phù hợp.</h2>
+      <p>Hãy đổi bài, số lượng hoặc phạm vi trong tùy chọn.</p>
+      <button id="vocabEmptySettings" class="primary-button" type="button">Mở tùy chọn</button>
+      <div id="vocabSettingsSheet"></div>
+    </div>`;
     $('#vocabTrainerClose').onclick=close;
     $('#vocabEmptySettings').onclick=openSettings;
   }
 
-  function nextLevel(level){
-    const n=Number(level);
-    return n<3?String(n+1):'1';
-  }
-
   function renderSummary(){
-    stopAutoplay();
-    resetReflexTimer();
-    const total=session.stats.again+session.stats.hard+session.stats.good+session.stats.easy;
-    const currentLevel=String(session.options.level);
-    const next=nextLevel(currentLevel);
-    $('#vocabTrainerRoot').innerHTML=`
-      <div class="vocab-trainer-summary">
-        <span class="eyebrow">SESSION COMPLETE</span>
-        <h1>Hoàn thành ${esc(stageCopy(currentLevel).name.toLowerCase())}</h1>
-        <p>${total?`Bạn đã tự đánh giá ${total} lượt. Đừng cố học hết một lúc; mục tiêu là gặp lại cụm nhiều lần trong các ngữ cảnh khác nhau.`:'Bạn đã xem hết bộ thẻ.'}</p>
-        <div class="vocab-trainer-summary-grid">
-          <div><b>${session.stats.again}</b><span>Quên</span></div>
-          <div><b>${session.stats.hard}</b><span>Chậm</span></div>
-          <div><b>${session.stats.good}</b><span>Đạt</span></div>
-          <div><b>${session.stats.easy}</b><span>Tự động</span></div>
-        </div>
-        <div class="active-chunk-summary-note">Công thức của chương trình: <b>1 mẫu câu · 5–8 cụm chủ động · khoảng 10 câu luyện sâu.</b></div>
-        <div class="vocab-trainer-summary-actions">
-          ${Number(currentLevel)<3?`<button id="vocabNextLevel" class="primary-button" type="button">Sang tầng ${next} →</button>`:`<button id="vocabNextLevel" class="primary-button" type="button">Ôn lại từ tầng 1</button>`}
-          <button id="vocabSummaryClose" class="secondary-button" type="button">Về Cụm chủ động</button>
-        </div>
-      </div>`;
-    $('#vocabNextLevel').onclick=()=>{
-      settings().level=next;
-      env.saveState();
-      buildSession();
-      render();
-    };
+    const total=session.cards.length;
+    $('#vocabTrainerRoot').innerHTML=`<div class="vocab-trainer-summary">
+      <span class="eyebrow">SESSION COMPLETE</span>
+      <h1>Hoàn thành ${esc(modeInfo(session.options.mode).name.toLowerCase())}</h1>
+      <p>Bạn vừa luyện ${total} cụm. Cụm chưa vững sẽ tự quay lại sớm hơn qua SRS.</p>
+      <div class="vocab-trainer-summary-grid">
+        <div><b>${session.stats.correct}</b><span>Đạt</span></div>
+        <div><b>${session.stats.wrong}</b><span>Cần ôn lại</span></div>
+        <div><b>${studyChunks(session.pack).filter(x=>progressFor(x).skills?.recall>=2).length}</b><span>Gọi ra tốt</span></div>
+        <div><b>${studyChunks(session.pack).filter(x=>progressFor(x).skills?.use>=2).length}</b><span>Dùng trong câu</span></div>
+      </div>
+      <div class="active-chunk-summary-note">Đường học đúng: <b>được cung cấp → hiểu → bắt chước → nhớ lại → viết lại → biến đổi → sử dụng.</b></div>
+      <div class="vocab-trainer-summary-actions">
+        <button id="repeatChunkSession" class="primary-button" type="button">Ôn tiếp</button>
+        <button id="vocabSummaryClose" class="secondary-button" type="button">Về Cụm chủ động</button>
+      </div>
+    </div>`;
+    $('#repeatChunkSession').onclick=()=>{buildSession();render();};
     $('#vocabSummaryClose').onclick=close;
   }
 
@@ -707,26 +935,22 @@
   }
 
   function close(){
-    stopAutoplay();
-    resetReflexTimer();
     document.documentElement.classList.remove('vocab-trainer-open');
     session=null;
     env.renderVocab();
   }
 
   function curriculumSummary(saved={}){
-    const data={packs:packs().length,active:0,deep:0,mastered1:0,mastered2:0,mastered3:0,due:0};
+    const data={packs:packs().length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,due:0};
     packs().forEach(pack=>{
-      data.active+=(pack.activeChunks||[]).length;
-      data.deep+=(pack.deepSentences||[]).length;
-      [1,2].forEach(level=>chunkCards(pack,level).forEach(card=>{
-        const p={...trainerDefaults(),...(saved[card.key]?.trainer||{})};
-        if(p.mastered) data[`mastered${level}`]++;
-        if(p.reviewCount&&p.nextReviewAt<=Date.now()) data.due++;
-      }));
-      sentenceCards(pack).forEach(card=>{
-        const p={...trainerDefaults(),...(saved[card.key]?.trainer||{})};
-        if(p.mastered) data.mastered3++;
+      const chunks=studyChunks(pack);
+      data.chunks+=chunks.length;
+      data.core+=chunks.filter(x=>x.priority==='core').length;
+      chunks.forEach(card=>{
+        const p=progressFor(card,saved);
+        if(p.skills.recognize>=2) data.mastered1++;
+        if(p.skills.recall>=2) data.mastered2++;
+        if(p.skills.use>=2) data.mastered3++;
         if(p.reviewCount&&p.nextReviewAt<=Date.now()) data.due++;
       });
     });
@@ -734,35 +958,42 @@
   }
 
   function packSummary(pack,saved={}){
-    const result={level1:0,level2:0,level3:0,total1:(pack.activeChunks||[]).length,total2:(pack.activeChunks||[]).length,total3:(pack.deepSentences||[]).length};
-    chunkCards(pack,1).forEach(card=>{if(saved[card.key]?.trainer?.mastered) result.level1++;});
-    chunkCards(pack,2).forEach(card=>{if(saved[card.key]?.trainer?.mastered) result.level2++;});
-    sentenceCards(pack).forEach(card=>{if(saved[card.key]?.trainer?.mastered) result.level3++;});
+    const chunks=studyChunks(pack);
+    const result={level1:0,level2:0,level3:0,total1:chunks.length,total2:chunks.length,total3:chunks.length};
+    chunks.forEach(card=>{
+      const p=progressFor(card,saved);
+      if(p.skills.recognize>=2) result.level1++;
+      if(p.skills.recall>=2) result.level2++;
+      if(p.skills.use>=2) result.level3++;
+    });
     return result;
   }
 
   function open(nextEnv,overrides={}){
     env=nextEnv;
-    Object.keys(env.state.saved||{}).forEach(key=>{
-      if(env.state.saved[key]?.type==='word') delete env.state.saved[key];
-    });
     buildSession(overrides);
-    env.setHeader('Learning › Active Chunks','Cụm chủ động');
+    env.setHeader('Learning › Chunk Trainer','Cụm chủ động');
     document.documentElement.classList.add('vocab-trainer-open');
     env.main.innerHTML='<section id="vocabTrainerRoot" class="vocab-trainer-root"></section>';
     render();
   }
 
   function isOpen(){
-    return !!session && document.documentElement.classList.contains('vocab-trainer-open');
+    return !!session&&document.documentElement.classList.contains('vocab-trainer-open');
   }
 
   function onRemoteSync(){
-    // Cloud/realtime may update env.state.saved while a study session is open.
-    // Keep the current card/session intact; progressFor() reads env.state.saved
-    // on the next render, so no destructive page rerender is needed here.
     return isOpen();
   }
 
-  window.VocabularyTrainer={open,curriculumSummary,packSummary,packById,packs,isOpen,onRemoteSync};
+  window.VocabularyTrainer={
+    open,
+    curriculumSummary,
+    packSummary,
+    packById,
+    packs,
+    studyChunks,
+    isOpen,
+    onRemoteSync
+  };
 })();
