@@ -3041,9 +3041,14 @@ html.vocab-trainer-open,html.vocab-trainer-open body{overflow:hidden}
    pre-keyboard layout viewport. This prevents the first focus from placing
    the input behind the keyboard/accessory bar. */
 html.vocab-keyboard-open .vocab-trainer-root{
-  height:var(--vocab-visual-height,100dvh);
+  top:var(--vocab-visual-top,0px);
+  left:var(--vocab-visual-left,0px);
+  right:auto;
   bottom:auto;
+  width:100vw;
+  height:var(--vocab-visual-height,100dvh);
   overscroll-behavior:contain;
+  scroll-behavior:auto;
 }
 html.vocab-keyboard-open .vocab-trainer-bottom{
   opacity:0;
