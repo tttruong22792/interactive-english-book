@@ -276,10 +276,6 @@
     if(rating==='hard') return 1;
     const ladder=[1,3,7,14,30];
     const next=ladder.find(day=>day>current);
-    if(rating==='easy'&&next){
-      const i=ladder.indexOf(next);
-      return ladder[Math.min(i+1,ladder.length-1)];
-    }
     return next||30;
   }
 
