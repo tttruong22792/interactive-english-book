@@ -2937,3 +2937,16 @@ html.vocab-trainer-open,html.vocab-trainer-open body{overflow:hidden}
   .guided-choice-grid{grid-template-columns:1fr}
   .chunk-v2-launcher .active-pack-actions{display:grid;grid-template-columns:1fr}
 }
+
+
+/* ===== Recurring chunk review ===== */
+.chunk-review-today{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:14px 0 18px;padding:16px 18px;border:1px solid #ded9ff;border-radius:18px;background:linear-gradient(135deg,#f7f5ff 0%,#fff 72%)}
+.chunk-review-today>div{display:grid;gap:3px}
+.chunk-review-today h2{margin:0;color:var(--navy);font-size:19px}
+.chunk-review-today p{margin:0;max-width:760px;color:var(--muted);font-size:11px;line-height:1.55}
+.chunk-review-today .primary-button{white-space:nowrap}
+.chunk-review-today .primary-button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:620px){
+  .chunk-review-today{align-items:stretch;display:grid}
+  .chunk-review-today .primary-button{width:100%}
+}
