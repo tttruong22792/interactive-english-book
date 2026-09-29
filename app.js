@@ -1813,91 +1813,110 @@
     setHeader('Learning','Cụm chủ động');
     const packs=window.VocabularyTrainer?.packs?.()||window.ACTIVE_STUDY_PACK_LIST||[];
     const sync=vocabSyncStatus();
-    const summary=window.VocabularyTrainer?.curriculumSummary?.(state.saved||{})||{packs:packs.length,active:0,deep:0,mastered1:0,mastered2:0,mastered3:0,due:0};
-    const trainerSettings=state.vocabTrainerSettings||{lessonId:packs[0]?.lessonId||'en-pattern-001',level:'1',size:'all'};
+    const summary=window.VocabularyTrainer?.curriculumSummary?.(state.saved||{})||{packs:packs.length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,due:0};
+    const trainerSettings=state.vocabTrainerSettings||{lessonId:packs[0]?.lessonId||'en-pattern-001',mode:'write',size:'10',priority:'all'};
     const selected=window.VocabularyTrainer?.packById?.(trainerSettings.lessonId)||packs[0]||null;
+    const selectedChunks=selected?(window.VocabularyTrainer?.studyChunks?.(selected)||[]):[];
     const selectedSummary=selected?window.VocabularyTrainer?.packSummary?.(selected,state.saved||{}):null;
     const personalPhrases=Object.values(state.saved||{}).filter(x=>x?.type==='phrase');
-
+    const selectedMode=trainerSettings.mode||'write';
+    const modes=[
+      ['learn','HỌC CỤM','Nghe · hiểu · xem 2–3 câu ví dụ','Nhận ra'],
+      ['write','TẬP VIẾT VI → ANH','Nhìn tiếng Việt và tự gõ cụm tiếng Anh','Gọi ra'],
+      ['cloze','ĐIỀN CỤM','Điền phần còn thiếu vào mẫu câu','Gọi ra'],
+      ['sentence','VIỆT → CÂU ANH','Tự viết cả câu đã được học','Dùng trong câu'],
+      ['guided','ỨNG DỤNG 3A–3E','Thay · chọn · ghép · biến đổi · tình huống','Dùng tự động']
+    ];
+  
     $('#mainView').innerHTML=`
       <section class="page-hero active-chunk-hero">
-        <div class="eyebrow">ACTIVE LANGUAGE · 1–5–10</div>
-        <h1>Cụm chủ động & phản xạ nói</h1>
-        <p>Không học từ đơn rời rạc. Mỗi bài: <b>1 mẫu câu</b> → <b>5–8 cụm PHẢI THUỘC</b> → <b>khoảng 10 câu luyện sâu</b>. Mục tiêu cuối cùng là bật ra tiếng Anh trong khoảng 2–3 giây.</p>
+        <div class="eyebrow">CHUNK-FIRST ENGLISH</div>
+        <h1>Học tiếng Anh bằng cụm</h1>
+        <p>Web chọn sẵn những <b>khối ngôn ngữ đáng học</b>. Bạn không phải tự nghĩ nội dung từ số 0. Quy trình: <b>được cung cấp → hiểu → bắt chước → nhớ lại → viết lại → biến đổi → sử dụng</b>.</p>
       </section>
-
+  
       <section class="active-learning-principle">
-        <div><span>1</span><strong>Nhận ra</strong><p>Thấy/nghe cả cụm và hiểu ngay ý nghĩa lõi.</p></div>
-        <div><span>2</span><strong>Gọi ra được</strong><p>Có ý tiếng Việt và nhớ ra cụm sau vài giây.</p></div>
-        <div><span>3</span><strong>Dùng tự động</strong><p>Học câu mẫu trước, gọi lại câu đã học, rồi biến đổi để dùng chủ động.</p></div>
+        <div><span>1</span><strong>Nhận ra</strong><p>Nghe/đọc cụm và hiểu ngay cả khối, không dịch từng từ.</p></div>
+        <div><span>2</span><strong>Gọi ra được</strong><p>Nhìn ý tiếng Việt rồi tự nhớ và tự viết cụm tiếng Anh.</p></div>
+        <div><span>3</span><strong>Dùng tự động</strong><p>Dùng cụm trong câu qua bài thay, ghép, biến đổi và tình huống có kiểm soát.</p></div>
       </section>
-
+  
       <div class="vocab-sync-strip ${sync.connected?'is-on':'is-off'}">
-        <div><strong>${sync.connected?'Đồng bộ tiến độ · '+esc(sync.email||'Tài khoản'):'Tiến độ đang lưu trên thiết bị'}</strong><span>${sync.connected?'Tầng học, lịch ôn và mức đã thuộc sẽ theo bạn sang thiết bị khác.':'Đăng nhập để đồng bộ tiến độ cụm/câu giữa PC và điện thoại.'}</span></div>
+        <div><strong>${sync.connected?'Đồng bộ tiến độ · '+esc(sync.email||'Tài khoản'):'Tiến độ đang lưu trên thiết bị'}</strong><span>${sync.connected?'Mức Nhận ra / Gọi ra / Dùng và lịch ôn theo bạn sang thiết bị khác.':'Đăng nhập để đồng bộ tiến độ cụm giữa PC và điện thoại.'}</span></div>
         <button id="${sync.connected?'vocabSyncNow':'vocabOpenSync'}" class="${sync.connected?'secondary-button':'primary-button'}" type="button">${sync.connected?'Đồng bộ ngay':'Đăng nhập'}</button>
       </div>
-
+  
       <section class="active-curriculum-stats">
-        <div><b>${summary.packs}</b><span>mẫu đã có bộ học</span></div>
-        <div><b>${summary.active}</b><span>cụm chủ động</span></div>
-        <div><b>${summary.deep}</b><span>câu luyện sâu</span></div>
-        <div><b>${summary.due}</b><span>thẻ đến hạn ôn</span></div>
+        <div><b>${summary.packs}</b><span>bài đã có bộ cụm</span></div>
+        <div><b>${summary.chunks}</b><span>cụm được web chọn</span></div>
+        <div><b>${summary.mastered2}</b><span>gọi ra được</span></div>
+        <div><b>${summary.mastered3}</b><span>dùng trong câu</span></div>
       </section>
-
+  
       ${selected?`
-      <section class="active-pack-launcher">
+      <section class="active-pack-launcher chunk-v2-launcher">
         <div class="active-pack-heading">
           <div><span class="eyebrow">BỘ ĐANG CHỌN · MẪU ${String(selected.order).padStart(2,'0')}</span><h2>${esc(selected.pattern)}</h2><p>${esc(selected.meaning)}</p></div>
           <label><span>Chọn bài</span><select id="activePackSelect">${packs.map(p=>`<option value="${p.lessonId}" ${p.lessonId===selected.lessonId?'selected':''}>#${p.order} · ${esc(p.pattern)}</option>`).join('')}</select></label>
         </div>
-
+  
         <div class="active-pack-formula">
-          <div><b>1</b><span>Mẫu câu</span><strong>${esc(selected.pattern)}</strong></div>
-          <div><b>${selected.activeChunks.length}</b><span>Cụm PHẢI THUỘC</span><strong>${selectedSummary?.level2||0}/${selected.activeChunks.length} gọi ra chủ động</strong></div>
-          <div><b>${selected.deepSentences.length}</b><span>Câu luyện sâu</span><strong>${selectedSummary?.level3||0}/${selected.deepSentences.length} đã tự động</strong></div>
+          <div><b>${selectedChunks.length}</b><span>CỤM ĐÁNG HỌC</span><strong>6 ưu tiên + 4 mở rộng</strong></div>
+          <div><b>${selectedSummary?.level2||0}</b><span>GỌI RA ĐƯỢC</span><strong>/ ${selectedChunks.length} cụm</strong></div>
+          <div><b>${selectedSummary?.level3||0}</b><span>DÙNG TRONG CÂU</span><strong>/ ${selectedChunks.length} cụm</strong></div>
         </div>
-
-        <div class="active-stage-buttons">
-          <button data-active-level="1" class="${String(trainerSettings.level)==='1'?'active':''}" type="button"><span>TẦNG 1</span><b>Nhận ra</b><small>EN → hiểu cả cụm</small></button>
-          <button data-active-level="2" class="${String(trainerSettings.level)==='2'?'active':''}" type="button"><span>TẦNG 2</span><b>Gọi ra được</b><small>VI → cụm tiếng Anh</small></button>
-          <button data-active-level="3" class="${String(trainerSettings.level)==='3'?'active':''}" type="button"><span>TẦNG 3</span><b>Dùng tự động</b><small>Học câu → gọi lại → biến đổi</small></button>
+  
+        <div class="chunk-mode-picker">
+          ${modes.map(([id,title,desc,skill])=>`<button data-chunk-mode="${id}" class="${selectedMode===id?'active':''}" type="button">
+            <span>${skill}</span><b>${title}</b><small>${desc}</small>
+          </button>`).join('')}
         </div>
-
-        <div class="active-chunk-columns">
+  
+        <div class="chunk-v2-columns">
           <div class="active-must-know">
-            <div class="section-title-row"><div><span class="eyebrow">PHẢI THUỘC CHỦ ĐỘNG</span><h3>${selected.activeChunks.length} cụm trọng tâm</h3><p>Các cụm này đáng đầu tư tới mức dùng tự động.</p></div></div>
-            <div class="active-chunk-list">${selected.activeChunks.map((x,i)=>`
-              <article><em>${i+1}</em><div><strong>${esc(x[0])}</strong><span>${esc(x[1])}</span><small>${esc(x[2])}</small></div><button data-active-speak="${escAttr(x[0])}" type="button">${uiIcon('volume-2')}</button></article>
+            <div class="section-title-row"><div><span class="eyebrow">10 CỤM CỦA BÀI</span><h3>Web đã chọn sẵn nguyên liệu</h3><p>Không lưu từ đơn. Mỗi cụm đều có câu mẫu và sẽ được tái sử dụng ở nhiều kiểu luyện.</p></div></div>
+            <div class="active-chunk-list">${selectedChunks.map((x,i)=>`
+              <article class="${x.priority==='core'?'is-core':'is-extra'}">
+                <em>${i+1}</em>
+                <div><strong>${esc(x.baseEn)}</strong><span>${esc(x.baseVi)}</span><small>${esc(x.modelEn||'')}</small></div>
+                <button data-active-speak="${escAttr(x.baseEn)}" type="button">${uiIcon('volume-2')}</button>
+              </article>
             `).join('')}</div>
           </div>
-          <div class="active-recognition-only">
-            <span class="eyebrow">CHỈ CẦN NHẬN BIẾT</span>
-            <h3>Không ép học thuộc</h3>
-            <p>Gặp lại nhiều lần trong các bài sau sẽ tự mạnh lên.</p>
-            <div>${selected.recognitionChunks.map(x=>`<span><b>${esc(x[0])}</b><small>${esc(x[1])}</small></span>`).join('')}</div>
-          </div>
+          <aside class="chunk-v2-guide">
+            <span class="eyebrow">CÁCH HỌC KHI RẢNH</span>
+            <h3>5–10 cụm một lượt là đủ</h3>
+            <ol>
+              <li><b>Học cụm</b><span>Nghe, hiểu, xem cụm trong câu.</span></li>
+              <li><b>Tập viết</b><span>Việt → Anh. Phải tự gõ trước khi xem đáp án.</span></li>
+              <li><b>Điền / viết câu</b><span>Đưa cụm vào mẫu câu đã học.</span></li>
+              <li><b>Ứng dụng 3A–3E</b><span>Web cho nguyên liệu; bạn thay, chọn, ghép rồi mới nói.</span></li>
+            </ol>
+            <div class="chunk-v2-example"><small>Ví dụ</small><b>tìm ra nguyên nhân</b><span>→ figure out the cause</span></div>
+          </aside>
         </div>
-
+  
         <div class="active-pack-actions">
-          <label><span>Số thẻ</span><select id="activePackSize">${['5','8','10','all'].map(x=>`<option value="${x}" ${String(trainerSettings.size||'all')===x?'selected':''}>${x==='all'?'Tất cả':x+' thẻ'}</option>`).join('')}</select></label>
-          <button id="startActiveTrainer" class="primary-button" type="button">Bắt đầu tầng ${trainerSettings.level||'1'} →</button>
+          <label><span>Số cụm mỗi lượt</span><select id="activePackSize">${['5','10','all'].map(x=>`<option value="${x}" ${String(trainerSettings.size||'10')===x?'selected':''}>${x==='all'?'Tất cả':x+' cụm'}</option>`).join('')}</select></label>
+          <label><span>Phạm vi</span><select id="activePackPriority"><option value="all" ${(trainerSettings.priority||'all')==='all'?'selected':''}>Toàn bộ 10 cụm</option><option value="core" ${trainerSettings.priority==='core'?'selected':''}>6 cụm ưu tiên</option></select></label>
+          <button id="startActiveTrainer" class="primary-button" type="button">Bắt đầu ${esc(modes.find(x=>x[0]===selectedMode)?.[1]||'luyện')} →</button>
         </div>
       </section>`:''}
-
+  
       <section class="active-pack-grid">
         ${packs.map(pack=>{
-          const p=window.VocabularyTrainer?.packSummary?.(pack,state.saved||{})||{level1:0,level2:0,level3:0,total1:pack.activeChunks.length,total2:pack.activeChunks.length,total3:pack.deepSentences.length};
+          const p=window.VocabularyTrainer?.packSummary?.(pack,state.saved||{})||{level1:0,level2:0,level3:0,total1:10,total2:10,total3:10};
           return `<article class="active-pack-card ${pack.lessonId===selected?.lessonId?'selected':''}" data-pack-card="${pack.lessonId}">
             <span>MẪU ${String(pack.order).padStart(2,'0')}</span>
             <h3>${esc(pack.pattern)}</h3><p>${esc(pack.meaning)}</p>
-            <div><small>Nhận ra <b>${p.level1}/${p.total1}</b></small><small>Gọi ra <b>${p.level2}/${p.total2}</b></small><small>Tự động <b>${p.level3}/${p.total3}</b></small></div>
+            <div><small>Nhận ra <b>${p.level1}/${p.total1}</b></small><small>Gọi ra <b>${p.level2}/${p.total2}</b></small><small>Dùng <b>${p.level3}/${p.total3}</b></small></div>
           </article>`;
         }).join('')}
       </section>
-
-      ${personalPhrases.length?`<section class="book-section"><div class="section-title-row"><div><span class="eyebrow">CỤM CÁ NHÂN</span><h2>Các cụm bạn tự lưu khi đọc bài</h2><p>Các cụm này không tự động đưa vào bộ PHẢI THUỘC để tránh làm quá tải lịch ôn.</p></div></div><div class="vocab-list">${personalPhrases.map(x=>`<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">${uiIcon('volume-2')}</button></div><p>${esc(x.meaning||'')}</p><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa cụm</button></article>`).join('')}</div></section>`:''}
+  
+      ${personalPhrases.length?`<section class="book-section"><div class="section-title-row"><div><span class="eyebrow">CỤM CÁ NHÂN</span><h2>Các cụm bạn tự lưu khi đọc bài</h2><p>Phần này chỉ là thư viện cá nhân; bộ luyện chính vẫn do web chọn để tránh lịch ôn bị phình quá lớn.</p></div></div><div class="vocab-list">${personalPhrases.map(x=>`<article class="vocab-card"><div class="vocab-card-head"><div><h3>${esc(x.term)}</h3></div><button class="mini-button" data-vocab-speak="${escAttr(x.term)}">${uiIcon('volume-2')}</button></div><p>${esc(x.meaning||'')}</p><button class="text-button" data-vocab-remove="${escAttr(x.key)}">Xóa cụm</button></article>`).join('')}</div></section>`:''}
     `;
-
+  
     $('#activePackSelect')?.addEventListener('change',e=>{
       state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),lessonId:e.target.value};
       saveState();renderVocab();
@@ -1906,8 +1925,8 @@
       state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),lessonId:card.dataset.packCard};
       saveState();renderVocab();
     });
-    $$('[data-active-level]').forEach(btn=>btn.onclick=()=>{
-      state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),level:btn.dataset.activeLevel};
+    $$('[data-chunk-mode]').forEach(btn=>btn.onclick=()=>{
+      state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),mode:btn.dataset.chunkMode};
       saveState();renderVocab();
     });
     $$('[data-active-speak]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();speak(btn.dataset.activeSpeak);});
@@ -1917,11 +1936,12 @@
     });
     $('#startActiveTrainer')?.addEventListener('click',()=>{
       const lessonId=selected.lessonId;
-      const level=String(state.vocabTrainerSettings?.level||'1');
-      const size=$('#activePackSize')?.value||'all';
-      state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),lessonId,level,size};
+      const mode=String(state.vocabTrainerSettings?.mode||'write');
+      const size=$('#activePackSize')?.value||'10';
+      const priority=$('#activePackPriority')?.value||'all';
+      state.vocabTrainerSettings={...(state.vocabTrainerSettings||{}),lessonId,mode,size,priority};
       saveState();
-      renderFlashcards([], {lessonId,level,size});
+      renderFlashcards([], {lessonId,mode,size,priority});
     });
     $('#vocabOpenSync')?.addEventListener('click',()=>routeTo('settings'));
     $('#vocabSyncNow')?.addEventListener('click',async()=>{
@@ -1947,7 +1967,6 @@
       },overrides);
     }
   }
-
   function shadowItemsFromLessons(lessons){
     const out=[];
     const seen=new Set();
