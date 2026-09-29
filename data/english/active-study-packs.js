@@ -298,4 +298,70 @@ window.ACTIVE_STUDY_PACKS = {
   }
 };
 
+
+const RECOGNITION_CHUNK_EXAMPLES = {
+  "1|take a closer look":["I'd like to take a closer look at this.","Tôi muốn xem kỹ cái này hơn."],
+  "1|set aside some time":["I'd like to set aside some time to study tonight.","Tối nay tôi muốn dành riêng một chút thời gian để học."],
+  "1|look into a problem":["I'd like to look into the problem before we change anything.","Tôi muốn tìm hiểu vấn đề trước khi chúng ta thay đổi gì."],
+  "1|get someone's opinion":["I'd like to get your opinion on this.","Tôi muốn nghe ý kiến của bạn về việc này."],
+
+  "2|get some rest":["I'm going to get some rest tonight.","Tối nay tôi sẽ nghỉ ngơi một chút."],
+  "2|cut back on spending":["I'm going to cut back on unnecessary spending.","Tôi sẽ cắt giảm những khoản chi không cần thiết."],
+  "2|put some money aside":["I'm going to put some money aside every month.","Tôi sẽ để dành một ít tiền mỗi tháng."],
+  "2|think it over":["I'm going to think it over before I decide.","Tôi sẽ suy nghĩ kỹ trước khi quyết định."],
+
+  "3|put some money aside":["I want to put some money aside every month.","Tôi muốn để dành một ít tiền mỗi tháng."],
+  "3|think something through":["I want to think this through before I decide.","Tôi muốn suy nghĩ kỹ việc này trước khi quyết định."],
+  "3|step outside my comfort zone":["I want to step outside my comfort zone more often.","Tôi muốn bước ra khỏi vùng an toàn thường xuyên hơn."],
+  "3|expand my vocabulary":["I want to expand my vocabulary.","Tôi muốn mở rộng vốn từ của mình."],
+
+  "4|look for a better opportunity":["I plan to look for a better opportunity next year.","Năm sau tôi dự định tìm một cơ hội tốt hơn."],
+  "4|get back into exercising":["I plan to get back into exercising.","Tôi dự định quay lại tập thể dục."],
+  "4|make some changes":["I plan to make some changes to my routine.","Tôi dự định thay đổi một vài thói quen hằng ngày."],
+  "4|take things more seriously":["I plan to take my English more seriously.","Tôi dự định học tiếng Anh nghiêm túc hơn."],
+
+  "5|have more time to":["I hope to have more time to practice.","Tôi hy vọng có thêm thời gian để luyện tập."],
+  "5|be able to":["I hope to be able to speak more confidently.","Tôi hy vọng có thể nói tự tin hơn."],
+  "5|get used to":["I hope to get used to speaking English every day.","Tôi hy vọng sẽ quen với việc nói tiếng Anh mỗi ngày."],
+  "5|learn from my mistakes":["I hope to learn from my mistakes.","Tôi hy vọng học được từ những sai lầm của mình."],
+
+  "6|join us":["Would you like to join us for lunch?","Bạn có muốn ăn trưa cùng chúng tôi không?"],
+  "6|take a break":["Would you like to take a break?","Bạn có muốn nghỉ một chút không?"],
+  "6|come with me":["Would you like to come with me?","Bạn có muốn đi cùng tôi không?"],
+  "6|go somewhere else":["Would you like to go somewhere else?","Bạn có muốn đi chỗ khác không?"],
+
+  "7|go out":["Do you want to go out tonight?","Tối nay bạn có muốn ra ngoài không?"],
+  "7|hang out":["Do you want to hang out this weekend?","Cuối tuần này bạn có muốn đi chơi không?"],
+  "7|give me a hand":["Do you want to give me a hand with this?","Bạn có muốn giúp tôi một tay việc này không?"],
+  "7|talk about it":["Do you want to talk about it now?","Bạn có muốn nói về việc đó bây giờ không?"],
+
+  "8|not rush things":["I'd rather not rush things.","Tôi thà không vội vàng."],
+  "8|do it myself":["I'd rather do it myself.","Tôi thà tự làm việc đó."],
+  "8|leave it as it is":["I'd rather leave it as it is.","Tôi thà để nguyên như vậy."],
+  "8|talk in person":["I'd rather talk in person.","Tôi thà nói chuyện trực tiếp."],
+
+  "9|meet in person":["I look forward to meeting you in person.","Tôi mong được gặp bạn trực tiếp."],
+  "9|try something new":["I look forward to trying something new.","Tôi mong được thử một điều mới."],
+  "9|visit somewhere":["I look forward to visiting Kyoto again.","Tôi mong được đến Kyoto lần nữa."],
+  "9|work together":["I look forward to working together.","Tôi mong được làm việc cùng nhau."],
+
+  "10|build a solid foundation":["I intend to build a solid foundation first.","Tôi định xây một nền tảng vững trước."],
+  "10|take on responsibility":["I intend to take on more responsibility.","Tôi định đảm nhận thêm trách nhiệm."],
+  "10|raise an issue":["I intend to raise this issue at the meeting.","Tôi định nêu vấn đề này trong cuộc họp."],
+  "10|keep my options open":["I intend to keep my options open.","Tôi định để ngỏ các lựa chọn của mình."],
+
+  "11|sort something out":["I need to sort this out today.","Tôi cần giải quyết việc này hôm nay."],
+  "11|keep track of something":["I need to keep track of the changes.","Tôi cần theo dõi các thay đổi."],
+  "11|think something through":["I need to think this through carefully.","Tôi cần suy nghĩ kỹ việc này."],
+  "11|go over something":["I need to go over the details again.","Tôi cần xem lại các chi tiết lần nữa."]
+};
+
+Object.values(window.ACTIVE_STUDY_PACKS).forEach(pack=>{
+  pack.recognitionChunks=(pack.recognitionChunks||[]).map(row=>{
+    if(row.length>=4) return row;
+    const extra=RECOGNITION_CHUNK_EXAMPLES[pack.order+'|'+row[0]];
+    return extra?[...row,...extra]:row;
+  });
+});
+
 window.ACTIVE_STUDY_PACK_LIST = Object.values(window.ACTIVE_STUDY_PACKS).sort((a,b)=>a.order-b.order);
