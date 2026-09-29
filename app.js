@@ -16,7 +16,11 @@
     quizInputMode:'speech',
     quizBest:0, quizRuns:0,
     quizBestByLesson:{}, quizRunsByLesson:{},
-    lessonVisits:0, lessonVisitsByLesson:{}
+    lessonVisits:0, lessonVisitsByLesson:{},
+    vocabHubView:'today',
+    vocabHubLessonId:'',
+    vocabLibraryFilter:'all',
+    vocabLibraryQuery:''
   };
   let state = loadState();
   let currentLookup = null;
