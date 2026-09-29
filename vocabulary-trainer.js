@@ -188,8 +188,8 @@
     if(!pack) return [];
     const rows=[
       ...(pack.activeChunks||[]).map(row=>({row,priority:'core',kind:'main'})),
-      ...(pack.recognitionChunks||[]).map(row=>({row,priority:'extra',kind:'main'})),
-      ...(pack.buildingBlocks||[]).map(row=>({row,priority:'building',kind:'building'}))
+      ...(pack.buildingBlocks||[]).map(row=>({row,priority:'building',kind:'building'})),
+      ...(pack.recognitionChunks||[]).map(row=>({row,priority:'extra',kind:'main'}))
     ];
     return rows.map(({row,priority,kind},index)=>{
       const [baseEn,baseVi,modelEn='',modelVi='']=row;
@@ -446,7 +446,7 @@
       write:{name:'TẬP VIẾT VI → ANH',title:'Tự gõ cụm tiếng Anh',skill:'Gọi ra'},
       cloze:{name:'ĐIỀN CỤM',title:'Điền cụm vào mẫu câu',skill:'Gọi ra'},
       sentence:{name:'VIỆT → CÂU ANH',title:'Tự viết cả câu đã học',skill:'Dùng trong câu'},
-      guided:{name:'ỨNG DỤNG CÓ KIỂM SOÁT',title:'Thay · chọn · ghép · biến đổi · tình huống',skill:'Dùng tự động'}
+      guided:{name:'GHÉP & DÙNG CỤM',title:'Chunk nhỏ → mở rộng → ghép → câu → tình huống',skill:'Dùng tự động'}
     }[mode]||{name:'FLASHCARD',title:'Luyện cụm',skill:'Ôn'};
   }
 
@@ -479,12 +479,12 @@
   function learnHTML(card){
     return `<div class="chunk-study-card">
       <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
-      <span class="chunk-priority">${card.priority==='core'?'ƯU TIÊN CHỦ ĐỘNG':'MỞ RỘNG · GẶP LẠI NHIỀU LẦN'}</span>
+      <span class="chunk-priority">${card.kind==='building'?'KHỐI BỔ TRỢ':card.priority==='core'?'CHUNK CHÍNH · ƯU TIÊN':'CHUNK CHÍNH · MỞ RỘNG'}</span>
       <h2>${esc(card.baseEn)}</h2>
       ${audioButtons(card.baseEn)}
       ${session.revealed?`
         <div class="chunk-meaning"><strong>${esc(card.baseVi)}</strong></div>
-        <div class="chunk-in-context"><span>Trong câu</span><b>${esc(session.variant.phraseEn)}</b><small>${esc(session.variant.phraseVi)}</small></div>
+        <div class="chunk-in-context"><span>Ví dụ trong câu · không phải một chunk duy nhất</span><b>${esc(session.variant.en)}</b><small>${esc(session.variant.vi)}</small></div>
         ${examplesHTML(card)}
         <div class="chunk-rating-row">
           <button data-learn-rate="again" type="button"><b>Chưa nhớ</b><span>Đưa lại sớm</span></button>
@@ -982,7 +982,7 @@
     return `<div class="vocab-settings-backdrop" id="vocabSettingsBackdrop">
       <section class="vocab-settings-sheet">
         <div class="vocab-settings-head"><h2>Tùy chọn buổi học</h2><button id="vocabSettingsClose" type="button">×</button></div>
-        <label class="vocab-settings-row"><span><b>Mẫu câu</b><small>10 cụm được web chọn sẵn cho mỗi bài</small></span>
+        <label class="vocab-settings-row"><span><b>Mẫu câu</b><small>10 cụm chính + các khối bổ trợ được web chọn sẵn</small></span>
           <select id="vocabLessonSelect">${packs().map(p=>`<option value="${p.lessonId}" ${p.lessonId===s.lessonId?'selected':''}>#${p.order} · ${esc(p.pattern)}</option>`).join('')}</select>
         </label>
         <label class="vocab-settings-row"><span><b>Cách luyện</b><small>Đổi giữa flashcard, viết và ứng dụng</small></span>
@@ -991,14 +991,14 @@
             <option value="write" ${s.mode==='write'?'selected':''}>Tập viết Việt → cụm Anh</option>
             <option value="cloze" ${s.mode==='cloze'?'selected':''}>Điền cụm vào câu</option>
             <option value="sentence" ${s.mode==='sentence'?'selected':''}>Việt → câu Anh</option>
-            <option value="guided" ${s.mode==='guided'?'selected':''}>Ứng dụng có kiểm soát 3A–3E</option>
+            <option value="guided" ${s.mode==='guided'?'selected':''}>Ghép & dùng: chunk → câu → tình huống</option>
           </select>
         </label>
         <label class="vocab-settings-row"><span><b>Số cụm</b><small>Phù hợp để tranh thủ học khi rảnh</small></span>
           <select id="vocabSizeSelect">${['5','10','all'].map(x=>`<option value="${x}" ${String(s.size)===x?'selected':''}>${x==='all'?'Tất cả':x+' cụm'}</option>`).join('')}</select>
         </label>
-        <label class="vocab-settings-row"><span><b>Phạm vi</b><small>6 cụm ưu tiên hoặc toàn bộ 10 cụm</small></span>
-          <select id="vocabPrioritySelect"><option value="all" ${s.priority==='all'?'selected':''}>Toàn bộ 10 cụm</option><option value="core" ${s.priority==='core'?'selected':''}>6 cụm ưu tiên</option></select>
+        <label class="vocab-settings-row"><span><b>Phạm vi</b><small>6 cụm ưu tiên hoặc toàn bộ cụm + khối bổ trợ</small></span>
+          <select id="vocabPrioritySelect"><option value="all" ${s.priority==='all'?'selected':''}>Toàn bộ cụm + khối bổ trợ</option><option value="core" ${s.priority==='core'?'selected':''}>6 cụm ưu tiên</option></select>
         </label>
         <label class="vocab-settings-row"><span><b>Thứ tự</b><small>SRS ưu tiên cụm cần ôn</small></span>
           <select id="vocabOrderSelect"><option value="srs" ${s.order==='srs'?'selected':''}>Ưu tiên SRS</option><option value="random" ${s.order==='random'?'selected':''}>Ngẫu nhiên</option></select>
