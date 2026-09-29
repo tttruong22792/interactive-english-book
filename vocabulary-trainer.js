@@ -641,87 +641,118 @@
     return [...others,card].sort(()=>Math.random()-.5);
   }
 
+  function guidedSmallSpec(card){
+    return {
+      eyebrow:'1 · CHUNK NHỎ',
+      prompt:card.baseVi,
+      expected:card.baseEn,
+      context:card.modelEn,
+      contextVi:card.modelVi,
+      placeholder:'Gõ chunk nhỏ…',
+      skill:'recall',
+      writing:true
+    };
+  }
+  
+  function guidedExtensionSpec(card,variant){
+    const extension=extensionFor(card,variant);
+    if(!extension) return null;
+    return {
+      eyebrow:'2 · CHUNK MỞ RỘNG',
+      prompt:extension.baseVi,
+      expected:extension.baseEn,
+      context:extension.modelEn,
+      contextVi:extension.modelVi,
+      placeholder:'Gõ khối bổ trợ…',
+      skill:'recall',
+      writing:true,
+      extension
+    };
+  }
+  
   function guidedHTML(card){
     const step=session.guidedStep;
     const variant=session.variant;
-    const alt=alternativeVariant(card);
-
+    const extension=extensionFor(card,variant);
+  
     if(step===0){
-      const spec={
-        eyebrow:'3A · THAY MỘT PHẦN',
-        prompt:`Câu đã học: ${variant.en}\n\nBây giờ hãy viết lại theo ý: ${alt.vi}`,
-        expected:alt.en,
-        context:alt.en,
-        contextVi:alt.vi,
-        placeholder:'Viết câu sau khi thay một phần…',
-        skill:'use',
-        writing:true
-      };
-      return `<div class="guided-wrap">${guidedStepper()}${typingHTML(card,'sentence',spec)}</div>`;
+      return `<div class="guided-wrap">${guidedStepper()}${typingHTML(card,'write',guidedSmallSpec(card))}</div>`;
     }
-
+  
     if(step===1){
-      if(!session.guidedChoices) session.guidedChoices=choiceOptions(card);
-      return `<div class="chunk-study-card guided-choice-card">
-        <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
-        ${guidedStepper()}
-        <span class="chunk-priority">3B · CHỌN CỤM PHÙ HỢP</span>
-        <div class="chunk-writing-prompt">${esc(card.baseVi)}</div>
-        <div class="guided-choice-grid">${session.guidedChoices.map(x=>`<button data-guided-choice="${esc(x.key)}" type="button">${esc(x.baseEn)}</button>`).join('')}</div>
-        ${session.result?`<div class="chunk-writing-feedback ${session.result.correct?'correct':'wrong'}"><strong>${session.result.correct?'✓ Đúng cụm':'Chưa đúng. Hãy nhìn nghĩa và thử lại.'}</strong></div>`:''}
-      </div>`;
+      const spec=guidedExtensionSpec(card,variant);
+      if(!spec){
+        return `<div class="chunk-study-card guided-choice-card">
+          <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
+          ${guidedStepper()}
+          <span class="chunk-priority">2 · CHUNK MỞ RỘNG</span>
+          <div class="chunk-writing-prompt">${esc(card.baseEn)}</div>
+          <div class="chunk-layer-note">Cụm này đã đủ ngắn và chưa cần tách thêm trong câu hiện tại. Không ép học một đoạn dài chỉ để đủ bước.</div>
+          <button id="skipGuidedExtension" class="primary-button" type="button">Sang bước ghép chunk →</button>
+        </div>`;
+      }
+      return `<div class="guided-wrap">${guidedStepper()}${typingHTML(card,'write',spec)}</div>`;
     }
-
+  
     if(step===2){
-      const blocks=[prefixEn(card.pack),variant.phraseEn].sort(()=>Math.random()-.5);
-      if(!session.guidedBlocks) session.guidedBlocks=blocks;
+      const ordered=assemblyBlocks(card,variant,extension);
+      if(!session.guidedBlocks) session.guidedBlocks=[...ordered].sort(()=>Math.random()-.5);
       const assembled=session.guidedAnswer.join(' ');
       return `<div class="chunk-study-card guided-assemble-card">
         <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
         ${guidedStepper()}
-        <span class="chunk-priority">3C · GHÉP CÁC KHỐI ĐÃ HỌC</span>
-        <div class="chunk-writing-prompt">${esc(variant.vi)}</div>
-        <div class="guided-answer-slot">${assembled?esc(assembled):'Chạm các khối theo đúng thứ tự'}</div>
+        <span class="chunk-priority">3 · GHÉP CHUNK</span>
+        <div class="chunk-writing-prompt">${esc(variant.vi||card.modelVi)}</div>
+        <div class="chunk-layer-map">
+          <span><b>Mẫu câu</b>${esc(prefixEn(card.pack))}</span>
+          <span><b>Chunk chính</b>${esc(card.baseEn)}</span>
+          ${extension?`<span><b>Khối bổ trợ</b>${esc(extension.baseEn)}</span>`:''}
+        </div>
+        <div class="guided-answer-slot">${assembled?esc(assembled):'Chạm từng khối theo thứ tự để ghép câu'}</div>
         <div class="guided-blocks">${session.guidedBlocks.map((x,i)=>`<button data-guided-block="${i}" type="button" ${session.guidedUsed?.includes(i)?'disabled':''}>${esc(x)}</button>`).join('')}</div>
         <div class="chunk-writing-actions"><button id="resetGuidedBlocks" class="secondary-button" type="button">Làm lại</button><button id="checkGuidedBlocks" class="primary-button" type="button">Kiểm tra</button></div>
-        ${session.result?`<div class="chunk-writing-feedback ${session.result.correct?'correct':'wrong'}"><strong>${session.result.correct?'✓ Ghép đúng':'Chưa đúng thứ tự'}</strong></div>`:''}
+        ${session.result?`<div class="chunk-writing-feedback ${session.result.correct?'correct':'wrong'}"><strong>${session.result.correct?'✓ Ghép đúng các khối':'Chưa đúng thứ tự. Hãy nhìn lại từng khối.'}</strong></div>`:''}
       </div>`;
     }
-
+  
     if(step===3){
       const spec={
-        eyebrow:'3D · BIẾN ĐỔI CÂU',
-        prompt:alt.vi,
-        sub:`Cụm cần dùng: ${card.baseEn}`,
-        expected:alt.en,
-        context:alt.en,
-        contextVi:alt.vi,
-        placeholder:'Viết câu đã biến đổi…',
+        eyebrow:'4 · CÂU HOÀN CHỈNH',
+        prompt:variant.vi||card.modelVi,
+        sub:`Bạn đã học riêng: ${card.baseEn}${extension?' + '+extension.baseEn:''}`,
+        expected:variant.en||card.modelEn,
+        context:variant.en||card.modelEn,
+        contextVi:variant.vi||card.modelVi,
+        placeholder:'Viết cả câu sau khi đã học các khối…',
         skill:'use',
         writing:true
       };
       return `<div class="guided-wrap">${guidedStepper()}${typingHTML(card,'sentence',spec)}</div>`;
     }
-
+  
     return `<div class="chunk-study-card guided-situation-card">
       <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${progressFor(card).starred?'active':''}" type="button">★</button></div>
       ${guidedStepper()}
-      <span class="chunk-priority">3E · NÓI TRONG TÌNH HUỐNG</span>
+      <span class="chunk-priority">5 · TÌNH HUỐNG</span>
       <div class="guided-situation">
-        <b>Tình huống</b>
-        <p>Bạn cần diễn đạt ý: <strong>${esc(variant.vi)}</strong></p>
-        <small>Web đã cung cấp nội dung; nhiệm vụ của bạn là lấy cụm phù hợp ra và nói, không phải tự sáng tác từ số 0.</small>
+        <b>Tình huống có kiểm soát</b>
+        <p>Bạn cần diễn đạt ý: <strong>${esc(variant.vi||card.modelVi)}</strong></p>
+        <small>Hãy lấy các khối đã học ra dùng. Bạn chưa phải tự sáng tác nội dung từ số 0.</small>
       </div>
       ${!session.revealed?`
-        <button id="showSituationHint" class="secondary-button" type="button">Gợi ý cụm</button>
-        ${session.hintLevel?`<div class="chunk-hint-box"><b>Cụm nên dùng</b><span>${esc(card.baseEn)}</span></div>`:''}
+        <button id="showSituationHint" class="secondary-button" type="button">Xem các khối gợi ý</button>
+        ${session.hintLevel?`<div class="chunk-layer-map">
+          <span><b>Mẫu</b>${esc(prefixEn(card.pack))}</span>
+          <span><b>Chunk</b>${esc(card.baseEn)}</span>
+          ${extension?`<span><b>Bổ trợ</b>${esc(extension.baseEn)}</span>`:''}
+        </div>`:''}
         <button id="revealSituationAnswer" class="chunk-primary-action" type="button">Tôi đã thử nói · xem câu mẫu</button>
       `:`
-        <div class="chunk-correct-answer">${esc(variant.en)}</div>
-        ${audioButtons(variant.en)}
+        <div class="chunk-correct-answer">${esc(variant.en||card.modelEn)}</div>
+        ${audioButtons(variant.en||card.modelEn)}
         <div class="chunk-rating-row">
-          <button data-guided-rate="again" type="button"><b>Chưa nói được</b><span>Cần gặp lại sớm</span></button>
-          <button data-guided-rate="good" type="button"><b>Nói được</b><span>Đã lấy ra được</span></button>
+          <button data-guided-rate="again" type="button"><b>Chưa nói được</b><span>Đưa lại sớm</span></button>
+          <button data-guided-rate="good" type="button"><b>Nói được</b><span>Lấy các khối ra được</span></button>
           <button data-guided-rate="easy" type="button"><b>Tự động</b><span>Bật ra nhanh</span></button>
         </div>
       `}
