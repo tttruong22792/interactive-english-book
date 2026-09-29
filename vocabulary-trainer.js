@@ -369,6 +369,7 @@
     session.attempts=0;
     session.result=null;
     session.inputValue='';
+    session.failureRecorded=false;
     session.guidedStep=0;
     session.guidedAnswer=[];
     session.variant=chooseVariant(card);
@@ -696,6 +697,9 @@
       }
     }
     renderCard();
+    if(correct && !advanceGuided && settings().autoSpeak){
+      setTimeout(()=>env.speak(spec.expected,null,0.92),80);
+    }
   }
 
   function bindTyping(card,specOverride=null,advanceGuided=false){
@@ -721,6 +725,10 @@
       renderCard();
     });
     $('#showChunkAnswer')?.addEventListener('click',()=>{
+      if(!advanceGuided && !session.failureRecorded){
+        record(card,{rating:'again',skill:spec.skill,writing:!!spec.writing});
+        session.failureRecorded=true;
+      }
       session.revealed=true;
       session.hintLevel=3;
       renderCard();
