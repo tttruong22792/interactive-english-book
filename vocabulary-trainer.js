@@ -155,7 +155,9 @@
     const hay=contentTokens(sentence);
     if(!target.length) return 0;
     const hits=target.filter(t=>hay.includes(t)).length;
-    return hits/target.length;
+    if(target.length<=2) return hits===target.length?1:0;
+    const score=hits/target.length;
+    return hits>=2&&score>=0.67?score:0;
   }
 
   function buildExamples(pack,row){
@@ -271,9 +273,14 @@
   function reviewInterval(p,rating){
     const current=Math.max(0,Number(p.intervalDays)||0);
     if(rating==='again') return 0;
-    if(rating==='hard') return current<1?1:Math.min(20,Math.max(1,Math.ceil(current*1.4)));
-    if(rating==='good') return current<1?2:Math.min(60,Math.max(2,Math.ceil(current*2)));
-    return current<1?4:Math.min(120,Math.max(4,Math.ceil(current*2.7)));
+    if(rating==='hard') return 1;
+    const ladder=[1,3,7,14,30];
+    const next=ladder.find(day=>day>current);
+    if(rating==='easy'&&next){
+      const i=ladder.indexOf(next);
+      return ladder[Math.min(i+1,ladder.length-1)];
+    }
+    return next||30;
   }
 
   function record(card,{rating='good',skill=skillForMode(session.options.mode),writing=false}={}){
@@ -291,6 +298,7 @@
       p.nextReviewAt=Date.now()+10*MINUTE;
       p.mastered=false;
       session.stats.wrong++;
+      requeueCurrent(card);
     }else{
       p.correctCount=Number(p.correctCount||0)+1;
       const gain=rating==='easy'?2:1;
@@ -307,10 +315,40 @@
 
   function dueRank(card){
     const p=progressFor(card);
-    if(!p.reviewCount) return 1;
-    if(p.nextReviewAt&&p.nextReviewAt<=Date.now()) return 0;
+    if(p.reviewCount&&p.nextReviewAt&&p.nextReviewAt<=Date.now()) return 0;
+    if(!p.reviewCount) return 2;
     if(p.mastered) return 4;
-    return 2;
+    return 1;
+  }
+
+  function allStudyChunks(){
+    return packs().flatMap(pack=>studyChunks(pack));
+  }
+
+  function reviewCandidates(){
+    const reviewed=allStudyChunks().filter(card=>progressFor(card).reviewCount>0);
+    const now=Date.now();
+    const due=reviewed
+      .filter(card=>Number(progressFor(card).nextReviewAt||0)<=now)
+      .sort((a,b)=>Number(progressFor(a).nextReviewAt||0)-Number(progressFor(b).nextReviewAt||0));
+    if(due.length) return due;
+    return reviewed
+      .sort((a,b)=>Number(progressFor(a).lastReviewedAt||0)-Number(progressFor(b).lastReviewedAt||0))
+      .slice(0,10);
+  }
+
+  function reviewCount(){
+    return reviewCandidates().length;
+  }
+
+  function requeueCurrent(card){
+    if(!session||!card) return;
+    session.retryCounts=session.retryCounts||{};
+    const count=Number(session.retryCounts[card.key]||0);
+    if(count>=2) return;
+    session.retryCounts[card.key]=count+1;
+    const insertAt=Math.min(session.cards.length,session.index+3);
+    session.cards.splice(insertAt,0,card);
   }
 
   function chooseVariant(card){
@@ -324,12 +362,13 @@
     const s=settings();
     Object.assign(s,overrides||{});
     env.saveState();
+    const isReview=!!s.reviewToday;
     const pack=packById(s.lessonId);
-    let cards=studyChunks(pack);
-    if(s.priority==='core') cards=cards.filter(x=>x.priority==='core');
+    let cards=isReview?reviewCandidates():studyChunks(pack);
+    if(!isReview&&s.priority==='core') cards=cards.filter(x=>x.priority==='core');
 
     if(s.order==='random') cards=[...cards].sort(()=>Math.random()-.5);
-    else cards=[...cards].sort((a,b)=>{
+    else if(!isReview) cards=[...cards].sort((a,b)=>{
       const ar=dueRank(a),br=dueRank(b);
       if(ar!==br) return ar-br;
       return Number(progressFor(a).nextReviewAt||0)-Number(progressFor(b).nextReviewAt||0);
@@ -342,7 +381,7 @@
       pack,
       cards,
       index:0,
-      options:{...s},
+      options:{...s,reviewToday:isReview},
       revealed:false,
       hintLevel:0,
       attempts:0,
@@ -352,7 +391,8 @@
       guidedStep:0,
       guidedAnswer:[],
       stats:{correct:0,wrong:0},
-      history:[]
+      history:[],
+      retryCounts:{}
     };
     prepareCard();
   }
@@ -655,7 +695,7 @@
     root.innerHTML=`
       <div class="vocab-trainer-topbar">
         <button id="vocabTrainerClose" class="vocab-trainer-round" type="button">×</button>
-        <div class="vocab-trainer-counter"><strong>${session.index+1} / ${session.cards.length}</strong><span>${esc(session.pack.pattern)}</span></div>
+        <div class="vocab-trainer-counter"><strong>${session.index+1} / ${session.cards.length}</strong><span>${esc(session.options.reviewToday?'Ôn tổng hợp':session.pack.pattern)}</span></div>
         <button id="vocabTrainerSettings" class="vocab-trainer-round" type="button" aria-label="Tùy chọn">⚙</button>
       </div>
       <div class="vocab-trainer-progress"><i style="width:${Math.round(((session.index+1)/Math.max(1,session.cards.length))*100)}%"></i></div>
@@ -924,8 +964,8 @@
       <div class="vocab-trainer-summary-grid">
         <div><b>${session.stats.correct}</b><span>Đạt</span></div>
         <div><b>${session.stats.wrong}</b><span>Cần ôn lại</span></div>
-        <div><b>${studyChunks(session.pack).filter(x=>progressFor(x).skills?.recall>=2).length}</b><span>Gọi ra tốt</span></div>
-        <div><b>${studyChunks(session.pack).filter(x=>progressFor(x).skills?.use>=2).length}</b><span>Dùng trong câu</span></div>
+        <div><b>${(session.options.reviewToday?allStudyChunks():studyChunks(session.pack)).filter(x=>progressFor(x).skills?.recall>=2).length}</b><span>Gọi ra tốt</span></div>
+        <div><b>${(session.options.reviewToday?allStudyChunks():studyChunks(session.pack)).filter(x=>progressFor(x).skills?.use>=2).length}</b><span>Dùng trong câu</span></div>
       </div>
       <div class="active-chunk-summary-note">Đường học đúng: <b>được cung cấp → hiểu → bắt chước → nhớ lại → viết lại → biến đổi → sử dụng.</b></div>
       <div class="vocab-trainer-summary-actions">
@@ -980,7 +1020,7 @@
   function open(nextEnv,overrides={}){
     env=nextEnv;
     buildSession(overrides);
-    env.setHeader('Learning › Chunk Trainer','Cụm chủ động');
+    env.setHeader(overrides.reviewToday?'Learning › Ôn hôm nay':'Learning › Chunk Trainer','Cụm chủ động');
     document.documentElement.classList.add('vocab-trainer-open');
     env.main.innerHTML='<section id="vocabTrainerRoot" class="vocab-trainer-root"></section>';
     render();
@@ -1001,6 +1041,7 @@
     packById,
     packs,
     studyChunks,
+    reviewCount,
     isOpen,
     onRemoteSync
   };
