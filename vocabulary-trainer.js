@@ -874,24 +874,26 @@
   }
 
   function bindGuided(card){
+    const variant=session.variant;
+  
     if(session.guidedStep===0){
-      const alt=alternativeVariant(card);
-      const spec={eyebrow:'3A · THAY MỘT PHẦN',prompt:`Câu đã học: ${session.variant.en}\n\nBây giờ hãy viết lại theo ý: ${alt.vi}`,expected:alt.en,context:alt.en,contextVi:alt.vi,placeholder:'Viết câu sau khi thay một phần…',skill:'use',writing:true};
-      bindTyping(card,spec,true);
+      bindTyping(card,guidedSmallSpec(card),true);
       return;
     }
-
+  
     if(session.guidedStep===1){
-      $$('[data-guided-choice]').forEach(btn=>btn.onclick=()=>{
-        const correct=btn.dataset.guidedChoice===card.key;
-        session.result={correct};
-        if(correct) setTimeout(advanceGuidedStep,280);
-        else renderCard();
-      });
+      const spec=guidedExtensionSpec(card,variant);
+      if(spec){
+        bindTyping(card,spec,true);
+      }else{
+        $('#skipGuidedExtension')?.addEventListener('click',advanceGuidedStep);
+      }
       return;
     }
-
+  
     if(session.guidedStep===2){
+      const extension=extensionFor(card,variant);
+      const ordered=assemblyBlocks(card,variant,extension);
       if(!session.guidedUsed) session.guidedUsed=[];
       $$('[data-guided-block]').forEach(btn=>btn.onclick=()=>{
         const i=Number(btn.dataset.guidedBlock);
@@ -907,7 +909,7 @@
         renderCard();
       });
       $('#checkGuidedBlocks')?.addEventListener('click',()=>{
-        const expected=normalize(`${prefixEn(card.pack)} ${session.variant.phraseEn}`);
+        const expected=normalize(ordered.join(' '));
         const actual=normalize(session.guidedAnswer.join(' '));
         session.result={correct:expected===actual};
         if(session.result.correct) setTimeout(advanceGuidedStep,300);
@@ -915,14 +917,24 @@
       });
       return;
     }
-
+  
     if(session.guidedStep===3){
-      const alt=alternativeVariant(card);
-      const spec={eyebrow:'3D · BIẾN ĐỔI CÂU',prompt:alt.vi,sub:`Cụm cần dùng: ${card.baseEn}`,expected:alt.en,context:alt.en,contextVi:alt.vi,placeholder:'Viết câu đã biến đổi…',skill:'use',writing:true};
+      const extension=extensionFor(card,variant);
+      const spec={
+        eyebrow:'4 · CÂU HOÀN CHỈNH',
+        prompt:variant.vi||card.modelVi,
+        sub:`Bạn đã học riêng: ${card.baseEn}${extension?' + '+extension.baseEn:''}`,
+        expected:variant.en||card.modelEn,
+        context:variant.en||card.modelEn,
+        contextVi:variant.vi||card.modelVi,
+        placeholder:'Viết cả câu sau khi đã học các khối…',
+        skill:'use',
+        writing:true
+      };
       bindTyping(card,spec,true);
       return;
     }
-
+  
     $('#showSituationHint')?.addEventListener('click',()=>{
       session.hintLevel=1;
       renderCard();
