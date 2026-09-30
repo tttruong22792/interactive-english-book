@@ -4,6 +4,8 @@
 
   var session={items:[],index:0,playing:false,paused:false,signature:'',token:null};
   var runtimeEnv=null;
+  function q(selector){ return document.querySelector(selector); }
+  function qa(selector){ return Array.prototype.slice.call(document.querySelectorAll(selector)); }
 
   function settings(env){
     var first=(env.selected&&env.selected.lessonId)||(env.packs[0]&&env.packs[0].lessonId)||'';
@@ -126,15 +128,15 @@
     if(!runtimeEnv||!session.items.length) return;
     if(session.index>=session.items.length) session.index=0;
     var item=session.items[session.index];
-    var el=runtimeEnv.$('#vocabListenPhrase');if(el) el.textContent=item.baseEn||'';
-    el=runtimeEnv.$('#vocabListenMeaning');if(el) el.textContent=item.baseVi||'';
-    el=runtimeEnv.$('#vocabListenLesson');if(el) el.textContent='Mẫu '+String(item.order).padStart(2,'0')+' · '+(item.pattern||'');
-    el=runtimeEnv.$('#vocabListenCounter');if(el) el.textContent=(session.index+1)+'/'+session.items.length;
-    el=runtimeEnv.$('#vocabListenProgress');if(el) el.style.width=Math.round(((session.index+1)/session.items.length)*100)+'%';
-    el=runtimeEnv.$('#vocabListenStatus');if(el) el.textContent=statusText||(session.playing?'Đang phát':session.paused?'Đã tạm dừng':'Sẵn sàng');
-    var play=runtimeEnv.$('#vocabListenPlay');
+    var el=q('#vocabListenPhrase');if(el) el.textContent=item.baseEn||'';
+    el=q('#vocabListenMeaning');if(el) el.textContent=item.baseVi||'';
+    el=q('#vocabListenLesson');if(el) el.textContent='Mẫu '+String(item.order).padStart(2,'0')+' · '+(item.pattern||'');
+    el=q('#vocabListenCounter');if(el) el.textContent=(session.index+1)+'/'+session.items.length;
+    el=q('#vocabListenProgress');if(el) el.style.width=Math.round(((session.index+1)/session.items.length)*100)+'%';
+    el=q('#vocabListenStatus');if(el) el.textContent=statusText||(session.playing?'Đang phát':session.paused?'Đã tạm dừng':'Sẵn sàng');
+    var play=q('#vocabListenPlay');
     if(play) play.innerHTML=icon(session.playing?'pause':'play')+'<span>'+(session.playing?'Tạm dừng':session.paused?'Tiếp tục':'Bắt đầu nghe')+'</span>';
-    runtimeEnv.$$('[data-listen-index]').forEach(function(btn){btn.classList.toggle('active',Number(btn.dataset.listenIndex)===session.index);});
+    qa('[data-listen-index]').forEach(function(btn){btn.classList.toggle('active',Number(btn.dataset.listenIndex)===session.index);});
     if('mediaSession' in navigator&&'MediaMetadata' in window){
       try{navigator.mediaSession.metadata=new MediaMetadata({title:item.baseEn||'Language Studio',artist:item.baseVi||'Cụm chủ động',album:'Language Studio · Audio Loop'});}catch(error){}
     }
@@ -219,11 +221,11 @@
     runtimeEnv=env;
     var s=settings(env);
 
-    var play=env.$('#vocabListenPlay');
+    var play=q('#vocabListenPlay');
     if(play) play.addEventListener('click',function(){if(session.playing) pause();else start();});
-    var prev=env.$('#vocabListenPrev');if(prev) prev.addEventListener('click',function(){move(-1);});
-    var next=env.$('#vocabListenNext');if(next) next.addEventListener('click',function(){move(1);});
-    env.$$('[data-listen-index]').forEach(function(btn){
+    var prev=q('#vocabListenPrev');if(prev) prev.addEventListener('click',function(){move(-1);});
+    var next=q('#vocabListenNext');if(next) next.addEventListener('click',function(){move(1);});
+    qa('[data-listen-index]').forEach(function(btn){
       btn.addEventListener('click',function(){
         if(session.playing) pause();
         session.index=Math.max(0,Number(btn.dataset.listenIndex)||0);
@@ -240,7 +242,7 @@
       ['vocabListenGap','gap',Number],
       ['vocabListenOrder','order',String]
     ].forEach(function(row){
-      var node=env.$('#'+row[0]);
+      var node=q('#'+row[0]);
       if(!node) return;
       node.addEventListener('change',function(){
         env.state.vocabListenSettings=Object.assign({},env.state.vocabListenSettings);
@@ -250,7 +252,7 @@
         env.renderVocab();
       });
     });
-    var loop=env.$('#vocabListenLoop');
+    var loop=q('#vocabListenLoop');
     if(loop) loop.addEventListener('change',function(){
       env.state.vocabListenSettings=Object.assign({},env.state.vocabListenSettings,{loop:!!loop.checked});
       resetQueue();
