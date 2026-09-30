@@ -431,6 +431,7 @@
       document.documentElement.classList.remove('vocab-trainer-open');
     }
     stopSpeech();
+    window.ChunkListener?.stop?.(true);
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
@@ -1256,6 +1257,8 @@
     }
   }
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  function beginAudioSequence(){ const token=++sequenceRun; stopSpeech(false); return token; }
+  function audioSequenceActive(token){ return token===sequenceRun; }
 
   function bindLessonEvents(){
     $$('[data-learn]').forEach(cb=>cb.onchange=()=>{state.learned[cb.dataset.learn]=cb.checked;saveState();});
@@ -1859,6 +1862,7 @@
     function hubNav(){
       const tabs=[
         ['today','Hôm nay','clipboard-check'],
+        ['listen','Nghe','headphones'],
         ['lessons','Bài học','book-open'],
         ['practice','Luyện tập','play'],
         ['library','Kho cụm','bookmark']
@@ -1917,6 +1921,7 @@
         </section>`:''}
   
         <section class="vocab-today-mini">
+          <button data-vocab-screen="listen" type="button"><span>${uiIcon('headphones')}</span><div><b>Nghe khi di chuyển</b><small>Playlist cụm đáng học, tự lặp và chuyển cụm</small></div>${uiIcon('arrow-right')}</button>
           <button data-vocab-screen="practice" type="button"><span>${uiIcon('keyboard')}</span><div><b>Tập viết nhanh</b><small>Việt → chunk Anh khi có vài phút rảnh</small></div>${uiIcon('arrow-right')}</button>
           <button data-vocab-screen="library" type="button"><span>${uiIcon('bookmark')}</span><div><b>Mở kho cụm</b><small>Tìm cụm đã học, cụm yếu hoặc đã lưu</small></div>${uiIcon('arrow-right')}</button>
         </section>
@@ -1988,6 +1993,7 @@
   
         <div class="vocab-detail-actions">
           <button id="startLessonChunks" class="primary-button" type="button">Học 5 cụm ${uiIcon('arrow-right')}</button>
+          <button id="listenThisLesson" class="secondary-button" type="button">${uiIcon('headphones')} Nghe cụm của bài</button>
           <button id="practiceThisLesson" class="secondary-button" type="button">Chọn cách luyện</button>
         </div>
       `,`Mẫu ${String(pack.order).padStart(2,'0')}`,'Một màn hình chỉ để xem và bắt đầu học cụm của bài này.');
@@ -2071,6 +2077,7 @@
   
     let content='';
     if(view==='today') content=todayScreen();
+    else if(view==='listen') content=window.ChunkListener?.screen?.({state,packs,selected,shell,esc,uiIcon}) || shell('<div class="vocab-empty-state"><b>Không tải được trình nghe</b></div>','Nghe','Audio Loop');
     else if(view==='lessons') content=lessonsScreen();
     else if(view==='lesson') content=lessonDetailScreen();
     else if(view==='practice') content=practiceScreen();
@@ -2078,8 +2085,10 @@
     else { state.vocabHubView='today'; content=todayScreen(); }
   
     $('#mainView').innerHTML=content;
+    if(view==='listen') window.ChunkListener?.bind?.({state,packs,selected,$,$,speak,stopSpeech,beginAudioSequence,audioSequenceActive,wait,toast,saveState,renderVocab,esc,uiIcon});
   
     function setHubView(next){
+      if(view==='listen' && next!=='listen') window.ChunkListener?.stop?.(true);
       state.vocabHubView=next;
       saveState();
       renderVocab();
@@ -2122,6 +2131,13 @@
       state.vocabTrainerSettings={...trainerSettings,lessonId:selected.lessonId,mode:'learn',size:'5',priority:'all'};
       saveState();
       renderFlashcards([], {lessonId:selected.lessonId,mode:'learn',size:'5',priority:'all'});
+    });
+  
+    $('#listenThisLesson')?.addEventListener('click',()=>{
+      if(!selected) return;
+      window.ChunkListener?.setLesson?.(selected.lessonId,state);
+      saveState();
+      setHubView('listen');
     });
   
     $('#practiceThisLesson')?.addEventListener('click',()=>{
