@@ -180,5 +180,20 @@ window.CONTENT_INDEX = [
     route: "japanese",
     accent: "green",
     featured: true
+  },
+  {
+    id: "ja-n2-002",
+    language: "ja",
+    category: "n2-grammar",
+    order: 2,
+    title: "N2 文法 02｜～ことだから",
+    meaning: "Vì là… nên chắc / có lẽ…",
+    description: "Unit 01 · Suy đoán/phán đoán dựa trên tính cách, đặc điểm hoặc hoàn cảnh đã biết rõ",
+    status: "available",
+    renderer: "japanese-n2",
+    source: "./data/japanese/daily-life/002.js",
+    route: "japanese/lesson/2",
+    accent: "purple",
+    featured: true
   }
 ];
