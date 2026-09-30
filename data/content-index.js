@@ -195,5 +195,20 @@ window.CONTENT_INDEX = [
     route: "japanese/lesson/2",
     accent: "purple",
     featured: true
+  },
+  {
+    id: "ja-n2-003",
+    language: "ja",
+    category: "n2-grammar",
+    order: 3,
+    title: "N2 文法 03｜～ことに",
+    meaning: "Thật là… / Điều … là… / … thay",
+    description: "Unit 01 · Nói cảm xúc, đánh giá hoặc ấn tượng của người nói về một sự việc",
+    status: "available",
+    renderer: "japanese-n2",
+    source: "./data/japanese/daily-life/003.js",
+    route: "japanese/lesson/3",
+    accent: "yellow",
+    featured: true
   }
 ];
