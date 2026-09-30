@@ -585,7 +585,7 @@
       <div class="chunk-writing-actions">
         ${!correct?`<button id="chunkHint" class="secondary-button" type="button" ${session.hintLevel>=3?'disabled':''}>Gợi ý ${Math.min(3,session.hintLevel+1)}</button>`:''}
         ${!correct&&session.attempts>0?`<button id="showChunkAnswer" class="text-button" type="button">Hiện đáp án</button>`:''}
-        ${correct?`<button id="nextAfterWriting" class="primary-button" type="button">Tiếp tục →</button><small class="chunk-enter-hint">Nhấn Enter lần nữa để sang cụm tiếp theo</small>`:''}
+        ${correct?`<button id="nextAfterWriting" class="primary-button" type="button">Tiếp tục →</button>`:''}
       </div>
       ${session.revealed&&!correct?`
         <div class="chunk-revealed-answer"><span>Đáp án</span><b>${esc(spec.expected)}</b>${audioButtons(spec.expected)}
