@@ -3765,3 +3765,36 @@ html.vocab-keyboard-open .chunk-writing-box{
     margin-top:8px;
   }
 }
+
+.vocab-background-status{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  margin:0 0 14px;
+  padding:13px 15px;
+  border:1px solid #dce6c5;
+  border-radius:16px;
+  background:#f5f9ec;
+}
+.vocab-background-status .dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#7aa33b;
+  box-shadow:0 0 0 5px rgba(122,163,59,.12);
+  margin-top:5px;
+  flex:0 0 auto;
+}
+.vocab-background-status>div{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.vocab-background-status b{
+  font-size:13px;
+  color:#405524;
+}
+.vocab-background-status small{
+  color:#6d7b58;
+  line-height:1.45;
+}
