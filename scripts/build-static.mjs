@@ -169,6 +169,7 @@ const runtimeFiles = [
   "data/english/active-study-packs.js",
   "vocabulary-trainer.js",
   "shadowing-v2.js",
+  "chunk-listener.js",
   "app.js"
 ];
 
@@ -205,7 +206,7 @@ const runtimeSource = runtimeParts.join("\n");
 new vm.Script(runtimeSource, { filename: "language-studio-runtime.js" });
 
 await writeFile(join(dist, "runtime.js"), runtimeSource, "utf8");
-await writeFile(join(dist, "runtime-20260930-ios-viewport-lock-v26.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20260930-chunk-listen-v27.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
@@ -277,6 +278,25 @@ function addManifestAudio(text, kind, lessonId) {
 Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
   addManifestAudio(normalizeText(word), "word", "core-dictionary");
 });
+
+// The chunk trainer and commute player speak short active-study chunks directly.
+// Add every study chunk to the allow-list so mobile can generate/cache missing MP3s.
+{
+  const activeStudySource = await readFile(join(root, "data/english/active-study-packs.js"), "utf8");
+  vm.runInContext(activeStudySource, context, { filename: "data/english/active-study-packs.js" });
+  Object.values(context.window.ACTIVE_STUDY_PACKS || {}).forEach((pack) => {
+    const lessonId = String(pack.lessonId || "");
+    [
+      ...(pack.activeChunks || []),
+      ...(pack.recognitionChunks || []),
+      ...(pack.buildingBlocks || [])
+    ].forEach((row) => {
+      if (Array.isArray(row) && typeof row[0] === "string") {
+        addManifestAudio(row[0], "active-chunk", lessonId);
+      }
+    });
+  });
+}
 
 for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
   if (!lesson || lesson.language !== "en" || lesson.category !== "patterns") continue;
