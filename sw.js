@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v65-chunk-listen-fix2';
+const APP_CACHE='language-studio-v66-chunk-listen-defensive';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20260930-chunk-listen-v29.js',
+  './runtime-20260930-chunk-listen-v30.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
@@ -19,14 +19,19 @@ self.addEventListener('install',event=>{
 });
 
 self.addEventListener('activate',event=>{
-  event.waitUntil(
-    caches.keys().then(keys=>Promise.all(
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(
       keys
         .filter(key=>key.startsWith('language-studio-v') && key!==APP_CACHE)
         .map(key=>caches.delete(key))
-    ))
-  );
-  self.clients.claim();
+    );
+    await self.clients.claim();
+    const openClients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    await Promise.all(openClients.map(client=>{
+      try{return client.navigate(client.url);}catch(error){return Promise.resolve();}
+    }));
+  })());
 });
 
 function audioFileFromRequest(request){
@@ -110,6 +115,21 @@ self.addEventListener('fetch',event=>{
   const audioFile=audioFileFromRequest(event.request);
   if(audioFile){
     event.respondWith(serveAudio(event.request,audioFile));
+    return;
+  }
+
+  if(event.request.mode==='navigate'){
+    event.respondWith(
+      fetch(new Request(event.request,{cache:'no-store'}))
+        .then(response=>{
+          if(response && response.ok){
+            const copy=response.clone();
+            caches.open(APP_CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+          }
+          return response;
+        })
+        .catch(()=>caches.match(event.request).then(hit=>hit||caches.match('./index.html')))
+    );
     return;
   }
 
