@@ -400,7 +400,7 @@
     $('#sidebarProgressBar').style.width=pct+'%';
     const sentenceTotal=currentLessonSentenceTotal(lessonId);
     $('#sidebarProgressNote').textContent=pct>=100 ? `${meta?.title||'Bài học'} đã hoàn thành` : `${Math.min(sentenceTotal,learnedCount(lessonId))}/${sentenceTotal} câu đã đánh dấu thuộc`;
-    $('#savedCountBadge').textContent = savedCount();
+    if($('#savedCountBadge')) $('#savedCountBadge').textContent = savedCount();
     $('#globalRateSelect').value = String(state.rate);
     $('#hideViBtn').textContent = state.hideVi ? 'Hiện tiếng Việt' : 'Ẩn tiếng Việt';
     document.body.classList.toggle('hide-vietnamese', !!state.hideVi);
@@ -435,7 +435,7 @@
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive(r.name === 'lesson' ? 'patterns' : r.name);
+    setNavActive((r.name === 'lesson' || r.name === 'vocab') ? 'patterns' : r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
@@ -574,6 +574,10 @@
     setHeader('English','English Learning');
     $('#mainView').innerHTML = `
       <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>Học theo các mẫu câu tần suất cao, sau đó củng cố bằng ngữ pháp, từ vựng, luyện Việt → Anh và shadowing. Nội dung được tổ chức theo module để phù hợp với nhiều người học.</p></section>
+      <section class="english-grammar-entry english-vocab-entry">
+        <div><span class="eyebrow">ACTIVE CHUNKS</span><h2>Cụm chủ động</h2><p>Học các cụm dùng thật theo từng mẫu câu: nhận ra → gọi ra → dùng trong câu, kèm Flashcard, nghe lặp và luyện viết.</p></div>
+        <button class="primary-button" data-go="vocab">Mở Cụm chủ động →</button>
+      </section>
       <section class="english-grammar-entry">
         <div><span class="eyebrow">ENGLISH GRAMMAR</span><h2>Các thì trong tiếng Anh</h2><p>Hiểu bằng bản đồ 3 mốc thời gian × 4 cách nhìn, có công thức, ví dụ nghe được, lỗi hay gặp, cách phân biệt và bài luyện chọn thì.</p></div>
         <button class="primary-button" data-go="tenses">Mở trang các thì →</button>
@@ -1819,7 +1823,7 @@
   }
 
   function renderVocab(){
-    setHeader('Learning','Cụm từ');
+    setHeader('English › Cụm chủ động','Cụm chủ động',true);
   
     const packs=window.VocabularyTrainer?.packs?.()||window.ACTIVE_STUDY_PACK_LIST||[];
     const sync=vocabSyncStatus();
