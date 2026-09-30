@@ -210,5 +210,20 @@ window.CONTENT_INDEX = [
     route: "japanese/lesson/3",
     accent: "yellow",
     featured: true
+  },
+  {
+    id: "ja-n2-004",
+    language: "ja",
+    category: "n2-grammar",
+    order: 4,
+    title: "N2 文法 04｜～ことなく",
+    meaning: "Không… mà… / Không hề…",
+    description: "Unit 01 · Làm B mà không làm A · Vる + ことなく",
+    status: "available",
+    renderer: "japanese-n2",
+    source: "./data/japanese/daily-life/004.js",
+    route: "japanese/lesson/4",
+    accent: "orange",
+    featured: true
   }
 ];
