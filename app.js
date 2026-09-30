@@ -2778,7 +2778,7 @@
   if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
   if('serviceWorker' in navigator){
     if(location.protocol==='https:'){
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
     }else{
       navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>reg.unregister())).catch(()=>{});
       if('caches' in window) caches.keys().then(keys=>keys.forEach(key=>caches.delete(key))).catch(()=>{});
