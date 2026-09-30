@@ -505,10 +505,15 @@
     return words.slice(0,count).join(' ')+' …';
   }
 
-  function clozeSpec(card,variant){
+  function isGenericSlot(token=''){
+    const t=String(token).toLowerCase().replace(/[’]/g,"'");
+    return ['someone',"someone's",'somebody',"somebody's",'something','somewhere','somehow'].includes(t);
+  }
+
+  function contextualChunk(card,variant){
     const v=variant||session.variant||chooseVariant(card);
     const sentence=String(v?.en||card.modelEn||'').trim();
-    const contextualPhrase=String(
+    const phrase=String(
       v?.phraseEn||
       (sentence?stripEnglish(card.pack,sentence):'')||
       card.phraseEn||
@@ -516,20 +521,56 @@
       ''
     ).trim();
 
+    const base=String(card.baseEn||'').trim();
+    const baseTokens=tokens(base);
+    const phraseTokens=tokens(phrase);
+    const slotIndexes=baseTokens.map((token,index)=>isGenericSlot(token)?index:-1).filter(index=>index>=0);
+
+    if(!slotIndexes.length){
+      const at=phrase.toLowerCase().indexOf(base.toLowerCase());
+      return at>=0?phrase.slice(at,at+base.length):base||phrase;
+    }
+
+    // A generic slot is a variable, not a literal answer:
+    // get someone's opinion -> get your opinion
+    // get something done -> get this done
+    // go somewhere else -> go home / go somewhere else
+    const lastSlot=slotIndexes[slotIndexes.length-1];
+    const suffix=baseTokens.slice(lastSlot+1);
+
+    if(suffix.length&&phraseTokens.length){
+      const suffixStems=suffix.map(stem);
+      for(let start=0;start<=phraseTokens.length-suffix.length;start++){
+        const candidate=phraseTokens.slice(start,start+suffix.length).map(stem);
+        if(candidate.every((token,index)=>token===suffixStems[index])){
+          return phraseTokens.slice(0,start+suffix.length).join(' ');
+        }
+      }
+    }
+
+    // If the generic slot is at the end, the remaining contextual phrase is
+    // the concrete realization used by the example sentence.
+    return phrase||base;
+  }
+
+  function clozeSpec(card,variant){
+    const v=variant||session.variant||chooseVariant(card);
+    const sentence=String(v?.en||card.modelEn||'').trim();
+    const expected=contextualChunk(card,v);
     const lower=sentence.toLowerCase();
-    const needle=contextualPhrase.toLowerCase();
+    const needle=String(expected||'').toLowerCase();
     const at=needle?lower.indexOf(needle):-1;
 
     if(sentence&&at>=0){
       return {
-        prompt:sentence.slice(0,at)+'______'+sentence.slice(at+contextualPhrase.length),
-        expected:contextualPhrase
+        prompt:sentence.slice(0,at)+'______'+sentence.slice(at+expected.length),
+        expected
       };
     }
 
     return {
       prompt:`${prefixEn(card.pack)} ______${[6,7].includes(Number(card.pack.order))?'?':'.'}`,
-      expected:contextualPhrase||card.baseEn
+      expected:expected||card.baseEn
     };
   }
 
@@ -552,10 +593,10 @@
       return {
         eyebrow:'ĐIỀN CHUNK VÀO CÂU',
         prompt:cloze.prompt,
-        sub:card.modelVi||v.vi,
+        sub:v.vi||card.modelVi,
         expected:cloze.expected,
-        context:card.modelEn||v.en,
-        contextVi:card.modelVi||v.vi,
+        context:v.en||card.modelEn,
+        contextVi:v.vi||card.modelVi,
         placeholder:'Điền chunk còn thiếu…',
         skill:'recall',
         writing:true
