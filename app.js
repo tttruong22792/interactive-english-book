@@ -1609,15 +1609,40 @@
     }
 
     setHeader('Japanese','Japanese Learning');
-    $('#mainView').innerHTML=`
-      <section class="page-hero"><div class="eyebrow">JAPANESE LEARNING · JLPT N2</div><h1>Japanese theo cùng hệ thống với English</h1><p>Ngữ pháp N2, từ & cụm chủ động, luyện Việt → Nhật, audio, từ điển, Furigana và Shadowing dùng chung một lộ trình.</p></section>
-      <section class="english-grammar-entry english-vocab-entry"><div><span class="eyebrow">ACTIVE WORDS & CHUNKS</span><h2>Từ & cụm chủ động</h2><p>Học từ xuất hiện trong bài N2, chạm để tra nghĩa, nghe phát âm và ôn trong ngữ cảnh.</p></div><button class="primary-button" data-go="japanese/vocab">Mở Từ & cụm →</button></section>
-      <section class="english-grammar-entry"><div><span class="eyebrow">JLPT N2 GRAMMAR</span><h2>Ngữ pháp N2</h2><p>Học theo đúng thứ tự tài liệu: ý nghĩa → cấu trúc → sắc thái → câu thực tế → luyện phản xạ.</p></div><button class="primary-button" data-go="japanese/lesson">Mở bài N2 →</button></section>
-      <section class="english-grammar-entry shadowing-entry"><div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Lấy trực tiếp câu tiếng Nhật trong bài, giữ Furigana và audio để luyện nghe → nhại → shadowing.</p></div><button class="primary-button" data-go="japanese/shadowing">Mở Shadowing →</button></section>
-      <section class="english-grammar-entry english-practice-entry"><div><span class="eyebrow">PRACTICE CENTER</span><h2>Luyện tập tiếng Nhật</h2><p>Luyện Việt → Nhật bằng chính các câu đã học và kiểm tra lại đáp án có Furigana.</p></div><button class="primary-button" data-go="japanese/practice">Mở Luyện tập →</button></section>
-      <div class="search-row"><input id="jpLessonSearch" class="search-input" placeholder="Tìm bài N2..." /><button class="filter-chip active">Đã có bài</button></div>
-      <section class="card-grid">${metas.map((m,i)=>`<article class="pattern-card available"><span class="pattern-number">N2 · ${String(m.order||i+1).padStart(2,'0')}</span><span class="status-chip available">Đã có bài</span><h3>${esc(m.title)}</h3><p>${esc(m.meaning||m.description||'')}</p><div class="card-action"><button class="primary-button" data-go="japanese/lesson">Mở bài học</button></div></article>`).join('')}</section>`;
-    bindGenericRoutes();
+    const allJapanese=(STORE?.list({language:'ja'})||[]).sort((a,b)=>(a.order||0)-(b.order||0));
+    $('#mainView').innerHTML = `
+      <section class="page-hero"><div class="eyebrow">JAPANESE LEARNING</div><h1>Japanese cho giao tiếp thực tế & JLPT N2</h1><p>Học theo đúng cách trình bày của English: bài học chính, từ & cụm chủ động, luyện Việt → Nhật và Shadowing. Kanji luôn có Furigana, không dùng Romaji.</p></section>
+      <section class="english-grammar-entry english-vocab-entry">
+        <div><span class="eyebrow">ACTIVE CHUNKS</span><h2>Từ & cụm chủ động</h2><p>Học từ và cụm dùng thật theo từng bài: nhận ra → gọi ra → dùng trong câu, kèm nghe và tra nghĩa.</p></div>
+        <button class="primary-button" data-go="japanese/vocab">Mở Cụm chủ động →</button>
+      </section>
+      <section class="english-grammar-entry">
+        <div><span class="eyebrow">JAPANESE GRAMMAR</span><h2>Ngữ pháp JLPT N2</h2><p>Học theo từng mẫu ngữ pháp với ý nghĩa, cấu trúc, sắc thái, ví dụ thực tế và Furigana trên Kanji.</p></div>
+        <button class="primary-button" data-go="japanese/lesson">Mở trang ngữ pháp →</button>
+      </section>
+      <section class="english-grammar-entry shadowing-entry">
+        <div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn bài đã học, lấy trực tiếp câu trong bài và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
+        <button class="primary-button" data-go="japanese/shadowing">Mở Shadowing →</button>
+      </section>
+      <section class="english-grammar-entry english-practice-entry">
+        <div><span class="eyebrow">PRACTICE CENTER</span><h2>Luyện tập tiếng Nhật</h2><p>Luyện toàn bộ nội dung đã học theo từng bài: Việt → Nhật, tự nhớ lại câu và kiểm tra đáp án có Furigana.</p></div>
+        <button class="primary-button" data-go="japanese/practice">Mở Luyện tập →</button>
+      </section>
+      <div class="search-row"><input id="jpLessonSearch" class="search-input" placeholder="Tìm mẫu N2, ví dụ: ～ことだ..." /><button class="filter-chip active" data-jp-filter="all">Tất cả</button><button class="filter-chip" data-jp-filter="available">Đã có bài</button></div>
+      <section id="jpPatternsGrid" class="card-grid"></section>`;
+    let jpFilter='all';
+    const drawJapanese=()=>{
+      const q=String($('#jpLessonSearch')?.value||'').trim().toLowerCase();
+      const items=allJapanese.filter(item=>(jpFilter==='all'||item.status==='available')&&(!q||String(item.title+' '+(item.meaning||'')+' '+(item.description||'')).toLowerCase().includes(q)));
+      $('#jpPatternsGrid').innerHTML=items.map((m,i)=>{
+        const available=m.status==='available'&&m.source;
+        return `<article class="pattern-card ${available?'available':'locked'}"><span class="pattern-number">N2 ${String(m.order||i+1).padStart(2,'0')}</span><span class="status-chip ${available?'available':'locked'}">${available?'Đã có bài':'Đang chuẩn bị'}</span><h3>${esc(m.title)}</h3><p>${esc(m.meaning||m.description||'')}</p><div class="card-action">${available?'<button class="primary-button" data-go="japanese/lesson">Mở bài học</button>':'<button class="secondary-button" disabled>Chưa có nội dung</button>'}</div></article>`;
+      }).join('');
+      bindGenericRoutes();
+    };
+    $('#jpLessonSearch')?.addEventListener('input',drawJapanese);
+    $('[data-jp-filter]').forEach(btn=>btn.onclick=()=>{jpFilter=btn.dataset.jpFilter;$('[data-jp-filter]').forEach(x=>x.classList.toggle('active',x===btn));drawJapanese();});
+    drawJapanese();
   }
 
   function renderSettings(){
