@@ -2085,7 +2085,7 @@
     else { state.vocabHubView='today'; content=todayScreen(); }
   
     $('#mainView').innerHTML=content;
-    if(view==='listen') window.ChunkListener?.bind?.({state,packs,selected,$,$,speak,stopSpeech,beginAudioSequence,audioSequenceActive,wait,toast,saveState,renderVocab,esc,uiIcon});
+    if(view==='listen') window.ChunkListener?.bind?.({state,packs,selected,$,$:$,speak,stopSpeech,beginAudioSequence,audioSequenceActive,wait,toast,saveState,renderVocab,esc,uiIcon});
   
     function setHubView(next){
       if(view==='listen' && next!=='listen') window.ChunkListener?.stop?.(true);
