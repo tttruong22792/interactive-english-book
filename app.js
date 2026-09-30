@@ -416,6 +416,7 @@
       const parts=hash.split('/');
       return {name:'lesson', id:Number(parts[1])||1, view:parts[2]||'overview'};
     }
+    if (hash.startsWith('japanese/')){ const parts=hash.split('/'); return {name:'japanese', view:parts[1]||'home'}; }
     return {name:hash || 'home'};
   }
   function setNavActive(name){
@@ -440,7 +441,7 @@
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
       else if (r.name === 'tenses') renderTenses();
-      else if (r.name === 'japanese') await renderJapanese();
+      else if (r.name === 'japanese') await renderJapanese(r.view||'home');
       else if (r.name === 'lesson') await renderLesson(r.id,r.view);
       else if (r.name === 'vocab') renderVocab();
       else if (r.name === 'practice') await renderPracticeHub();
@@ -1530,65 +1531,93 @@
     r.start();
   }
 
-  async function renderJapanese(){
+  async function renderJapanese(view='home'){
     L=null;
-    setHeader('Japanese','N2 Grammar');
-    const modules=(STORE?.list({language:'ja'})||[]).filter(item=>item.status==='available'&&item.source);
-    const lesson=modules.length?await ensureContent(modules[0].id):null;
+    const metas=(STORE?.list({language:'ja'})||[]).filter(item=>item.status==='available'&&item.source).sort((a,b)=>(a.order||0)-(b.order||0));
+    const lessons=await Promise.all(metas.map(item=>ensureContent(item.id)));
+    const lesson=lessons[0]||null;
     if(!lesson){
-      $('#mainView').innerHTML='<section class="page-hero"><h1>Chưa có bài N2</h1></section>';
+      setHeader('Japanese','Japanese Learning');
+      $('#mainView').innerHTML='<section class="page-hero"><h1>Chưa có bài Japanese</h1></section>';
       return;
     }
-    const phrases=lesson.phrases||[];
-    const points=lesson.points||[];
-    const usage=lesson.usage||[];
-    $('#mainView').innerHTML=`
-      <section class="page-hero japanese-hero">
-        <div class="eyebrow">${esc(lesson.eyebrow||'N2 文法')}</div>
-        <h1>${esc(lesson.title)} <span style="font-size:.55em;font-weight:700">= ${esc(lesson.meaning)}</span></h1>
-        <p>${lesson.leadHtml||esc(lesson.description||'')}</p>
-        <div class="hero-actions"><button class="primary-button" data-jp-jump="examples">Học bài này</button><button class="secondary-button" data-jp-jump="practice">Luyện tập</button></div>
-      </section>
 
-      <section class="book-section">
-        <div class="section-title-row"><div><div class="eyebrow">01 · Ý NGHĨA & CẤU TRÚC</div><h2>${esc(lesson.meaningTitle||lesson.title)}</h2><p>${esc(lesson.description||'')}</p></div></div>
-        <div class="formula-card"><strong>${esc((lesson.formula||[])[0]||'')}</strong><span>${esc((lesson.formula||[])[1]||'')}</span></div>
-        <div class="green-box">${lesson.note||''}</div>
-      </section>
-
-      <section class="book-section">
-        <div class="section-title-row"><div><div class="eyebrow">02 · HIỂU CÁCH DÙNG</div><h2>Khi nào dùng ～ことだ?</h2><p>Hiểu sắc thái trước, sau đó mới học câu ví dụ.</p></div></div>
-        <div class="jp-intro-grid">${points.map((x,i)=>`<article class="jp-plan accent-${['green','purple','yellow','orange'][i%4]}"><span>${String(i+1).padStart(2,'0')}</span><h3>${esc(x[0])}</h3><p>${esc(x[1])}</p></article>`).join('')}</div>
-      </section>
-
-      <section class="book-section">
-        <div class="section-title-row"><div><div class="eyebrow">03 · MẪU CƠ BẢN</div><h2>Nhìn hai dạng đối lập</h2><p>Một dạng khuyên nên làm và một dạng khuyên không nên làm.</p></div></div>
-        <div class="jp-list">${usage.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button><div><small>${esc(x[0])}</small><strong class="jp-text">${x[3]||esc(x[1])}</strong><span data-vi-only>${esc(x[2])}</span></div></div>`).join('')}</div>
-      </section>
-
-      <section class="book-section" id="jpExamples">
-        <div class="section-title-row"><div><div class="eyebrow">04 · CÂU THỰC TẾ</div><h2>${phrases.length} câu N2 nên luyện</h2><p>Ưu tiên câu có thể gặp trong đời sống, công việc và học tập. Bấm loa để nghe tiếng Nhật.</p></div></div>
-        <div class="jp-list">${phrases.map((x,i)=>`<div class="jp-row"><span style="min-width:28px;font-weight:800;color:var(--muted)">${String(i+1).padStart(2,'0')}</span><button class="speaker" data-speak="${escAttr(x[0])}">${uiIcon('volume-2')}</button><div><strong class="jp-text">${x[1]||esc(x[0])}</strong><small data-vi-only>${esc(x[2])}</small></div></div>`).join('')}</div>
-      </section>
-
-      <section class="book-section" id="jpPractice">
-        <div class="section-title-row"><div><div class="eyebrow">05 · LUYỆN PHẢN XẠ</div><h2>Tự nói trước khi xem đáp án</h2><p>Đọc tiếng Việt, tự tạo câu với ～ことだ, sau đó mở đáp án để kiểm tra.</p></div></div>
-        <div class="jp-list">${(lesson.practice||[]).map((x,i)=>`<div class="jp-row"><div style="width:100%"><small data-vi-only>${esc(x[0])}</small><details><summary style="cursor:pointer;font-weight:800;margin-top:8px">Xem đáp án ${i+1}</summary><div style="margin-top:10px"><strong class="jp-text">${x[2]||esc(x[1])}</strong> <button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button></div></details></div></div>`).join('')}</div>
-        <div class="green-box"><b>Điểm cần nhớ:</b> Vる + ことだ = nên làm · Vない + ことだ = không nên làm.</div>
-      </section>
-
-      <section class="book-section">
-        <div class="section-title-row"><div><div class="eyebrow">N2 GRAMMAR ROADMAP</div><h2>Các bài trong giáo trình</h2><p>Bài 01 đã sẵn sàng. Các mẫu tiếp theo sẽ được thêm lần lượt theo đúng thứ tự tài liệu.</p></div></div>
-        <div class="jp-intro-grid">${modules.map((item,i)=>`<article class="jp-plan accent-${esc(item.accent||['green','purple','yellow'][i%3])}"><span>${String(item.order||i+1).padStart(2,'0')}</span><h3>${esc(item.title)}</h3><p>${esc(item.meaning||item.description||'')}</p><small>N2 Grammar</small></article>`).join('')}</div>
-      </section>
-    `;
-    hydrateSentences($('#mainView'));
+    const jpPlain=(html='')=>{const box=document.createElement('div');box.innerHTML=String(html);box.querySelectorAll('rt').forEach(x=>x.remove());return box.textContent||'';};
+    const jpItems=(one)=>((one?.phrases||[]).map(x=>({ja:x[0],ruby:x[1]||esc(x[0]),vi:x[2]||''})));
+    const allItems=lessons.flatMap(jpItems);
+    const dictionary=Object.assign({},...lessons.map(x=>x.dictionary||{}));
     L=lesson;
-    bindJapaneseDictionary($('#mainView'));
-    $$('[data-jp-jump]').forEach(btn=>btn.onclick=()=>{
-      const target=btn.dataset.jpJump==='practice'?'#jpPractice':'#jpExamples';
-      $(target)?.scrollIntoView({behavior:'smooth',block:'start'});
-    });
+
+    const sentenceCard=(item,i)=>`<article class="sentence-card jp-study-card">
+      <span class="sentence-number">${String(i+1).padStart(2,'0')}</span>
+      <div class="en-wrap"><button class="speaker" data-speak="${escAttr(item.ja)}">${uiIcon('volume-2')}</button><div class="jp-text">${item.ruby}</div></div>
+      <div class="vi" data-vi-only>${esc(item.vi)}</div>
+    </article>`;
+
+    const bindJP=()=>{
+      bindGenericRoutes();
+      hydrateSentences($('#mainView'));
+      bindJapaneseDictionary($('#mainView'));
+    };
+
+    if(view==='lesson'){
+      setHeader('Japanese › N2 › 01',lesson.title||'N2 Grammar',true);
+      const phrases=jpItems(lesson), points=lesson.points||[], usage=lesson.usage||[];
+      $('#mainView').innerHTML=`
+        <section class="page-hero japanese-hero"><div class="eyebrow">${esc(lesson.eyebrow||'N2 文法')}</div><h1>${esc(lesson.title)} <span style="font-size:.55em;font-weight:700">= ${esc(lesson.meaning)}</span></h1><p>${lesson.leadHtml||esc(lesson.description||'')}</p></section>
+        <div class="lesson-action-panel lesson-action-panel-top">
+          <div class="lesson-action-copy"><span class="lesson-action-kicker">LEARN · PRACTICE</span><h2>Học & luyện toàn bộ bài</h2><p>Cấu trúc giống English: học toàn bộ câu hoặc luyện phản xạ Việt → Nhật.</p></div>
+          <div class="lesson-action-buttons">
+            <button class="lesson-action-card learn" data-go="japanese/sentences"><span class="lesson-action-icon">${uiIcon('book-open')}</span><span class="lesson-action-text"><strong>Toàn bộ câu trong bài</strong><small>${phrases.length} câu · nghe từng câu</small></span><span class="lesson-action-arrow">${uiIcon('arrow-right')}</span></button>
+            <button class="lesson-action-card practice" data-go="japanese/practice"><span class="lesson-action-icon">${uiIcon('clipboard-check')}</span><span class="lesson-action-text"><strong>Luyện toàn bộ câu</strong><small>Việt → Nhật · tự kiểm tra đáp án</small></span><span class="lesson-action-arrow">${uiIcon('arrow-right')}</span></button>
+          </div>
+        </div>
+        <section class="book-section"><div class="eyebrow">01 · Ý NGHĨA & CẤU TRÚC</div><h2>${esc(lesson.meaningTitle||lesson.title)}</h2><p>${esc(lesson.description||'')}</p><div class="formula-card"><strong>${esc((lesson.formula||[])[0]||'')}</strong><span>${esc((lesson.formula||[])[1]||'')}</span></div><div class="green-box">${lesson.note||''}</div></section>
+        <section class="book-section"><div class="eyebrow">02 · HIỂU CÁCH DÙNG</div><h2>Khi nào dùng ${esc(lesson.title)}?</h2><div class="jp-intro-grid">${points.map((x,i)=>`<article class="jp-plan accent-${['green','purple','yellow','orange'][i%4]}"><span>${String(i+1).padStart(2,'0')}</span><h3>${esc(x[0])}</h3><p>${esc(x[1])}</p></article>`).join('')}</div></section>
+        <section class="book-section"><div class="eyebrow">03 · MẪU CƠ BẢN</div><h2>Nhìn hai dạng đối lập</h2><div class="jp-list">${usage.map(x=>`<div class="jp-row"><button class="speaker" data-speak="${escAttr(x[1])}">${uiIcon('volume-2')}</button><div><small>${esc(x[0])}</small><strong class="jp-text">${x[3]||esc(x[1])}</strong><span data-vi-only>${esc(x[2])}</span></div></div>`).join('')}</div></section>
+        <section class="book-section"><div class="eyebrow">04 · CÂU THỰC TẾ</div><h2>${phrases.length} câu nên luyện</h2><div class="sentence-list">${phrases.map(sentenceCard).join('')}</div></section>
+        <section class="book-section"><div class="hero-actions"><button class="primary-button" data-go="japanese/shadowing">Shadowing bài này</button><button class="secondary-button" data-go="japanese">Quay lại Japanese</button></div></section>`;
+      bindJP(); return;
+    }
+
+    if(view==='sentences'){
+      const items=jpItems(lesson);
+      setHeader('Japanese › N2 › Sentences','Toàn bộ câu · '+lesson.title,true);
+      $('#mainView').innerHTML=`<section class="subpage-hero"><button class="text-button subpage-back" data-go="japanese/lesson">← Quay lại bài học</button><div class="eyebrow">ALL SENTENCES</div><h1>Toàn bộ câu trong bài</h1><p>Nghe từng câu, đọc Furigana và chạm Kanji để tra nghĩa.</p></section><section class="book-section"><div class="sentence-list">${items.map(sentenceCard).join('')}</div></section>`;
+      bindJP(); return;
+    }
+
+    if(view==='practice'){
+      const items=jpItems(lesson);
+      setHeader('Japanese › Practice','Luyện Việt → Nhật',true);
+      $('#mainView').innerHTML=`<section class="subpage-hero"><button class="text-button subpage-back" data-go="japanese/lesson">← Quay lại bài học</button><div class="eyebrow">PRACTICE CENTER</div><h1>Luyện toàn bộ câu</h1><p>Đọc tiếng Việt, tự nói hoặc viết câu tiếng Nhật trước khi mở đáp án.</p></section><section class="book-section"><div class="jp-list">${items.map((x,i)=>`<div class="jp-row"><div style="width:100%"><b>${i+1}. <span data-vi-only>${esc(x.vi)}</span></b><details><summary style="cursor:pointer;font-weight:800;margin-top:10px">Kiểm tra đáp án</summary><div style="margin-top:12px"><button class="speaker" data-speak="${escAttr(x.ja)}">${uiIcon('volume-2')}</button> <strong class="jp-text">${x.ruby}</strong></div></details></div></div>`).join('')}</div></section>`;
+      bindJP(); return;
+    }
+
+    if(view==='shadowing'){
+      const items=jpItems(lesson);
+      setHeader('Japanese › Shadowing','Shadowing tiếng Nhật',true);
+      $('#mainView').innerHTML=`<section class="page-hero shadowing-hero"><div class="eyebrow">LISTEN · SPEAK · MATCH THE RHYTHM</div><h1>Shadowing theo chính bài N2 đang học</h1><p>Giống English: dùng lại câu trong bài, nghe → nhại → shadow có chữ → không chữ.</p></section><section class="book-section shadow-method"><div class="shadow-method-grid"><div><b>1</b><strong>Nghe & nhại</strong><span>Nghe hết câu rồi nói lại.</span></div><div><b>2</b><strong>Shadow có chữ</strong><span>Nhìn câu có Furigana và nói gần đồng thời.</span></div><div><b>3</b><strong>Shadow không chữ</strong><span>Chỉ nghe và nói theo để kiểm tra phản xạ.</span></div></div></section><section class="book-section"><h2>Câu luyện Shadowing</h2><div class="sentence-list">${items.map(sentenceCard).join('')}</div></section>`;
+      bindJP(); return;
+    }
+
+    if(view==='vocab'){
+      setHeader('Japanese › Vocabulary','Từ & cụm chủ động',true);
+      const rows=Object.entries(dictionary);
+      $('#mainView').innerHTML=`<section class="page-hero"><div class="eyebrow">ACTIVE JAPANESE</div><h1>Từ & cụm chủ động</h1><p>Tương tự Cụm chủ động bên English: học từ trong chính các bài N2, nghe, đọc, hiểu và dùng lại trong câu.</p></section><section class="book-section"><div class="vocab-detail-list">${rows.map(([word,x])=>`<article class="vocab-detail-row"><button class="vocab-detail-audio speaker" data-speak="${escAttr(word)}">${uiIcon('volume-2')}</button><div><strong class="jp-text word-token jp-word-token" data-word="${escAttr(word)}">${esc(word)}</strong><span>${esc(x[0]||'')} · ${esc(x[1]||'')}</span><small>${esc(x[2]||'')}</small></div></article>`).join('')}</div></section>`;
+      bindJP(); return;
+    }
+
+    setHeader('Japanese','Japanese Learning');
+    $('#mainView').innerHTML=`
+      <section class="page-hero"><div class="eyebrow">JAPANESE LEARNING · JLPT N2</div><h1>Japanese theo cùng hệ thống với English</h1><p>Ngữ pháp N2, từ & cụm chủ động, luyện Việt → Nhật, audio, từ điển, Furigana và Shadowing dùng chung một lộ trình.</p></section>
+      <section class="english-grammar-entry english-vocab-entry"><div><span class="eyebrow">ACTIVE WORDS & CHUNKS</span><h2>Từ & cụm chủ động</h2><p>Học từ xuất hiện trong bài N2, chạm để tra nghĩa, nghe phát âm và ôn trong ngữ cảnh.</p></div><button class="primary-button" data-go="japanese/vocab">Mở Từ & cụm →</button></section>
+      <section class="english-grammar-entry"><div><span class="eyebrow">JLPT N2 GRAMMAR</span><h2>Ngữ pháp N2</h2><p>Học theo đúng thứ tự tài liệu: ý nghĩa → cấu trúc → sắc thái → câu thực tế → luyện phản xạ.</p></div><button class="primary-button" data-go="japanese/lesson">Mở bài N2 →</button></section>
+      <section class="english-grammar-entry shadowing-entry"><div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Lấy trực tiếp câu tiếng Nhật trong bài, giữ Furigana và audio để luyện nghe → nhại → shadowing.</p></div><button class="primary-button" data-go="japanese/shadowing">Mở Shadowing →</button></section>
+      <section class="english-grammar-entry english-practice-entry"><div><span class="eyebrow">PRACTICE CENTER</span><h2>Luyện tập tiếng Nhật</h2><p>Luyện Việt → Nhật bằng chính các câu đã học và kiểm tra lại đáp án có Furigana.</p></div><button class="primary-button" data-go="japanese/practice">Mở Luyện tập →</button></section>
+      <div class="search-row"><input id="jpLessonSearch" class="search-input" placeholder="Tìm bài N2..." /><button class="filter-chip active">Đã có bài</button></div>
+      <section class="card-grid">${metas.map((m,i)=>`<article class="pattern-card available"><span class="pattern-number">N2 · ${String(m.order||i+1).padStart(2,'0')}</span><span class="status-chip available">Đã có bài</span><h3>${esc(m.title)}</h3><p>${esc(m.meaning||m.description||'')}</p><div class="card-action"><button class="primary-button" data-go="japanese/lesson">Mở bài học</button></div></article>`).join('')}</section>`;
+    bindGenericRoutes();
   }
 
   function renderSettings(){
