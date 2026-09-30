@@ -435,7 +435,7 @@
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive((r.name === 'lesson' || r.name === 'vocab') ? 'patterns' : r.name);
+    setNavActive(['lesson','vocab','tenses','shadowing','practice'].includes(r.name) ? 'patterns' : r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
@@ -585,6 +585,10 @@
       <section class="english-grammar-entry shadowing-entry">
         <div><span class="eyebrow">LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn một hoặc nhiều bài đã có, lấy trực tiếp câu trong bài và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
         <button class="primary-button" data-go="shadowing">Mở Shadowing →</button>
+      </section>
+      <section class="english-grammar-entry english-practice-entry">
+        <div><span class="eyebrow">PRACTICE CENTER</span><h2>Luyện tập tiếng Anh</h2><p>Luyện toàn bộ nội dung đã học theo từng bài hoặc nhiều bài: Việt → Anh, nhận diện câu, phản xạ và ôn lại những phần còn yếu.</p></div>
+        <button class="primary-button" data-go="practice">Mở Luyện tập →</button>
       </section>
       <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
       <section id="patternsGrid" class="card-grid"></section>`;
@@ -2588,7 +2592,7 @@
 
   async function renderPracticeHub(){
     L=null;
-    setHeader('Practice','Practice Center');
+    setHeader('English › Luyện tập','Luyện tập');
 
     const metas=(STORE?.list({language:'en',category:'patterns'})||[])
       .filter(item=>item.status==='available'&&item.source)
