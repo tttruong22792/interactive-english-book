@@ -279,8 +279,8 @@ Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
   addManifestAudio(normalizeText(word), "word", "core-dictionary");
 });
 
-// The chunk trainer and commute player speak short active-study chunks directly.
-// Add every study chunk to the allow-list so mobile can generate/cache missing MP3s.
+// The chunk trainer and commute player speak the exact Flashcard material.
+// Allow every chunk plus every full example sentence used by the active-study cards.
 {
   const activeStudySource = await readFile(join(root, "data/english/active-study-packs.js"), "utf8");
   vm.runInContext(activeStudySource, context, { filename: "data/english/active-study-packs.js" });
@@ -291,8 +291,13 @@ Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
       ...(pack.recognitionChunks || []),
       ...(pack.buildingBlocks || [])
     ].forEach((row) => {
+      if (!Array.isArray(row)) return;
+      if (typeof row[0] === "string") addManifestAudio(row[0], "active-chunk", lessonId);
+      if (typeof row[2] === "string") addManifestAudio(row[2], "flashcard-sentence", lessonId);
+    });
+    (pack.deepSentences || []).forEach((row) => {
       if (Array.isArray(row) && typeof row[0] === "string") {
-        addManifestAudio(row[0], "active-chunk", lessonId);
+        addManifestAudio(row[0], "flashcard-sentence", lessonId);
       }
     });
   });
