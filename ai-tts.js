@@ -219,6 +219,28 @@
     return statusCache;
   }
 
+  async function prepareAudioUrl(text,options){
+    options=options||{};
+    var language=options.language||detectLanguage(text);
+    var voice=options.voice||voiceFor(language);
+    var hash=cacheHash(text,language,voice);
+
+    if(isLocalHost() && knownLocal(hash)===true) return localAudioUrl(hash);
+
+    var url=cloudAudioUrl(hash);
+    try{
+      var ready=await fetch(url,{
+        method:"GET",
+        cache:"force-cache",
+        headers:{"Accept":"audio/mpeg"}
+      });
+      if(ready.ok) return url;
+    }catch(e){}
+
+    await ensureCloudAudio(hash);
+    return cloudAudioUrl(hash)+(cloudAudioUrl(hash).includes("?")?"&":"?")+"ready="+Date.now();
+  }
+
   async function ensureCloudAudio(hash){
     var response=await fetch(CLOUD_TTS_ENDPOINT,{
       method:"POST",
@@ -284,6 +306,7 @@
     masterPace:MASTER_PACE,
     cacheHash:cacheHash,
     staticAudioUrl:staticAudioUrl,
+    prepareAudioUrl:prepareAudioUrl,
     cloudAudioUrl:cloudAudioUrl,
     cloudEndpoint:CLOUD_TTS_ENDPOINT,
     clearStatusCache:function(){statusCache=null;statusAt=0;}
