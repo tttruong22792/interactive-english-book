@@ -573,7 +573,7 @@
       ${spec.sub?`<div class="chunk-writing-sub">${esc(spec.sub)}</div>`:''}
       ${hint?`<div class="chunk-hint-box"><b>Gợi ý ${session.hintLevel}</b><span>${esc(hint)}</span></div>`:''}
       <div class="chunk-writing-box ${session.result?.correct?'is-correct':session.result?'is-wrong':''}">
-        <input id="chunkAnswerInput" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(session.inputValue||'')}" placeholder="${esc(spec.placeholder)}" ${correct?'disabled':''}>
+        <input id="chunkAnswerInput" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(session.inputValue||'')}" placeholder="${esc(spec.placeholder)}" ${correct?'aria-readonly="true"':''}>
         ${!correct?`<button id="checkChunkAnswer" type="button">Kiểm tra</button>`:''}
       </div>
       ${session.result?`
@@ -585,7 +585,7 @@
       <div class="chunk-writing-actions">
         ${!correct?`<button id="chunkHint" class="secondary-button" type="button" ${session.hintLevel>=3?'disabled':''}>Gợi ý ${Math.min(3,session.hintLevel+1)}</button>`:''}
         ${!correct&&session.attempts>0?`<button id="showChunkAnswer" class="text-button" type="button">Hiện đáp án</button>`:''}
-        ${correct?`<button id="nextAfterWriting" class="primary-button" type="button">Tiếp tục →</button>`:''}
+        ${correct?`<button id="nextAfterWriting" class="primary-button" type="button">Tiếp tục →</button><small class="chunk-enter-hint">Nhấn Enter lần nữa để sang cụm tiếp theo</small>`:''}
       </div>
       ${session.revealed&&!correct?`
         <div class="chunk-revealed-answer"><span>Đáp án</span><b>${esc(spec.expected)}</b>${audioButtons(spec.expected)}
@@ -952,7 +952,16 @@
           }
         },80);
       });
-      input.oninput=()=>{session.inputValue=input.value;};
+      input.oninput=()=>{
+        if(session.result?.correct){
+          input.value=session.inputValue;
+          return;
+        }
+        session.inputValue=input.value;
+      };
+      input.addEventListener('beforeinput',e=>{
+        if(session.result?.correct && e.inputType!=='insertLineBreak') e.preventDefault();
+      });
       input.onkeydown=e=>{
         if(e.key==='Enter'){
           e.preventDefault();
