@@ -3798,3 +3798,12 @@ html.vocab-keyboard-open .chunk-writing-box{
   color:#6d7b58;
   line-height:1.45;
 }
+
+.chunk-enter-hint{
+  display:block;
+  margin-top:8px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+  text-align:center;
+}
