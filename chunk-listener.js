@@ -18,8 +18,11 @@
       order:'sequential',
       loop:true
     };
-    env.state.vocabListenSettings=Object.assign({},defaults,env.state.vocabListenSettings||{});
+    var previous=env.state.vocabListenSettings||{};
+    var hadContentMode=Object.prototype.hasOwnProperty.call(previous,'contentMode');
+    env.state.vocabListenSettings=Object.assign({},defaults,previous);
     var s=env.state.vocabListenSettings;
+    if(!hadContentMode) s.size='all';
     var valid=s.lessonId==='all'||env.packs.some(function(p){return p.lessonId===s.lessonId;});
     if(!valid) s.lessonId=first;
     if(['chunks','sentences','both'].indexOf(s.contentMode)<0) s.contentMode='chunks';
@@ -43,7 +46,6 @@
   }
 
   function collectChunkItems(env,s){
-    var seen={};
     var items=[];
     sourcePacks(env,s).forEach(function(pack){
       var cards=window.VocabularyTrainer&&window.VocabularyTrainer.studyChunks
@@ -51,9 +53,7 @@
         : [];
       cards.forEach(function(card){
         var text=String(card.baseEn||'').trim();
-        var key=text.toLowerCase();
-        if(!key||seen[key]) return;
-        seen[key]=true;
+        if(!text) return;
         items.push({
           baseEn:text,
           baseVi:card.baseVi||'',
@@ -101,7 +101,6 @@
   }
 
   function collectMixedItems(env,s){
-    var seenChunks={};
     var seenSentences={};
     var items=[];
     sourcePacks(env,s).forEach(function(pack){
@@ -110,9 +109,7 @@
         : [];
       cards.forEach(function(card){
         var chunk=String(card.baseEn||'').trim();
-        var chunkKey=chunk.toLowerCase();
-        if(chunk&&!seenChunks[chunkKey]){
-          seenChunks[chunkKey]=true;
+        if(chunk){
           items.push({
             baseEn:chunk,
             baseVi:card.baseVi||'',
