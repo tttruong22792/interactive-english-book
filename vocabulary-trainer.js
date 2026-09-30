@@ -505,20 +505,31 @@
     return words.slice(0,count).join(' ')+' …';
   }
 
-  function clozeSpec(card){
-    const sentence=String(card.modelEn||'');
+  function clozeSpec(card,variant){
+    const v=variant||session.variant||chooseVariant(card);
+    const sentence=String(v?.en||card.modelEn||'').trim();
+    const contextualPhrase=String(
+      v?.phraseEn||
+      (sentence?stripEnglish(card.pack,sentence):'')||
+      card.phraseEn||
+      card.baseEn||
+      ''
+    ).trim();
+
     const lower=sentence.toLowerCase();
-    const needle=String(card.baseEn||'').toLowerCase();
+    const needle=contextualPhrase.toLowerCase();
     const at=needle?lower.indexOf(needle):-1;
-    if(at>=0){
+
+    if(sentence&&at>=0){
       return {
-        prompt:sentence.slice(0,at)+'______'+sentence.slice(at+card.baseEn.length),
-        expected:card.baseEn
+        prompt:sentence.slice(0,at)+'______'+sentence.slice(at+contextualPhrase.length),
+        expected:contextualPhrase
       };
     }
+
     return {
       prompt:`${prefixEn(card.pack)} ______${[6,7].includes(Number(card.pack.order))?'?':'.'}`,
-      expected:card.baseEn
+      expected:contextualPhrase||card.baseEn
     };
   }
 
@@ -537,7 +548,7 @@
       };
     }
     if(mode==='cloze'){
-      const cloze=clozeSpec(card);
+      const cloze=clozeSpec(card,v);
       return {
         eyebrow:'ĐIỀN CHUNK VÀO CÂU',
         prompt:cloze.prompt,
