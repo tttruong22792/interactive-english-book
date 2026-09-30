@@ -1823,7 +1823,7 @@
   }
 
   function renderVocab(){
-    setHeader('English › Cụm chủ động','Cụm chủ động',true);
+    setHeader('English › Cụm chủ động','Cụm chủ động');
   
     const packs=window.VocabularyTrainer?.packs?.()||window.ACTIVE_STUDY_PACK_LIST||[];
     const sync=vocabSyncStatus();
