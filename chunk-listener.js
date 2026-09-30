@@ -267,6 +267,10 @@
   }
 
   function setMediaState(value){
+    if(navigator.audioSession && 'type' in navigator.audioSession){
+      try{navigator.audioSession.type='playback';}catch(error){}
+    }
+
     if('mediaSession' in navigator){
       try{navigator.mediaSession.playbackState=value;}catch(error){}
     }
