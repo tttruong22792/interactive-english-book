@@ -466,7 +466,10 @@
     var s=settings(env);
     var sig=signature(s);
     var preview=itemsFor(env,Object.assign({},s,{order:'sequential'}),false);
-    if(!session.items.length||(!session.playing&&!session.paused&&session.signature!==sig)){
+    // A source/content change must invalidate any previous playlist, even when
+    // the previous audio session was playing or paused.
+    if(session.signature&&session.signature!==sig) resetQueue();
+    if(!session.items.length){
       session.items=preview;
       session.index=0;
       session.signature=sig;
@@ -507,14 +510,14 @@
       '</div>'+
       '<section class="vocab-listen-player">'+
         '<div class="vocab-listen-player-top"><span class="vocab-listen-headphone">'+env.uiIcon('headphones')+'</span><div><span id="vocabListenStatus">'+status+'</span><small id="vocabListenCounter">'+(items.length?(session.index+1)+'/'+items.length:'0/0')+'</small></div></div>'+
-        '<div class="vocab-listen-now"><span class="eyebrow" id="vocabListenType">'+currentType+'</span><h2 id="vocabListenPhrase">'+env.esc(current?current.baseEn:'Chưa có nội dung để nghe')+'</h2><p id="vocabListenMeaning">'+env.esc(current?current.baseVi:'')+'</p><small id="vocabListenLesson">'+(current?'Mẫu '+String(current.order).padStart(2,'0')+' · '+env.esc(current.pattern):'')+'</small></div>'+
+        '<div class="vocab-listen-now"><span class="eyebrow" id="vocabListenType">'+currentType+'</span><h2 id="vocabListenPhrase">'+env.esc(current?current.baseEn:'Chưa có nội dung để nghe')+'</h2><p id="vocabListenMeaning">'+env.esc(current?current.baseVi:'')+'</p><small id="vocabListenCurrentLesson">'+(current?'Mẫu '+String(current.order).padStart(2,'0')+' · '+env.esc(current.pattern):'')+'</small></div>'+
         '<div class="vocab-listen-progress"><i id="vocabListenProgress" style="width:'+(items.length?Math.round(((session.index+1)/items.length)*100):0)+'%"></i></div>'+
         '<div class="vocab-listen-controls"><button id="vocabListenPrev" type="button" aria-label="Mục trước">'+icon('prev')+'</button><button id="vocabListenPlay" class="vocab-listen-play" type="button">'+icon(session.playing?'pause':'play')+'<span>'+playLabel+'</span></button><button id="vocabListenNext" type="button" aria-label="Mục sau">'+icon('next')+'</button></div>'+
         '<div class="vocab-listen-summary"><span>'+modeLabel(s.contentMode)+'</span><span>'+icon('repeat')+' '+Math.max(1,Number(s.repeat)||3)+' lần/'+itemNoun(s.contentMode)+'</span><span>'+s.rate+'×</span><span>Nghỉ '+gapLabel+'</span><span>'+(s.loop?'Lặp danh sách':'Dừng cuối danh sách')+'</span></div>'+
       '</section>'+
       '<details class="vocab-listen-settings"><summary><span>'+env.uiIcon('settings')+'<b>Thiết lập playlist</b></span><small>Chọn bài, số lượng, tốc độ và số lần lặp</small></summary>'+
         '<div class="vocab-listen-settings-grid">'+
-          '<label><span>Nguồn bài</span><select id="vocabListenLesson">'+sourceOptions+'</select></label>'+
+          '<label><span>Nguồn bài</span><select id="vocabListenSourceLesson">'+sourceOptions+'</select></label>'+
           '<label><span>Số mục mỗi lượt</span><select id="vocabListenSize">'+option('5','5 mục',s.size)+option('10','10 mục',s.size)+option('20','20 mục',s.size)+option('30','30 mục',s.size)+option('all','Toàn bộ',s.size)+'</select></label>'+
           '<label><span>Lặp mỗi mục</span><select id="vocabListenRepeat">'+option(1,'1 lần',s.repeat)+option(2,'2 lần',s.repeat)+option(3,'3 lần',s.repeat)+option(5,'5 lần',s.repeat)+'</select></label>'+
           '<label><span>Tốc độ</span><select id="vocabListenRate">'+option(0.78,'Chậm · 0.78×',s.rate)+option(0.88,'Vừa · 0.88×',s.rate)+option(0.92,'Tự nhiên · 0.92×',s.rate)+option(1,'Nhanh · 1.0×',s.rate)+'</select></label>'+
@@ -535,7 +538,7 @@
     var item=session.items[session.index];
     var el=q('#vocabListenPhrase');if(el) el.textContent=item.baseEn||'';
     el=q('#vocabListenMeaning');if(el) el.textContent=item.baseVi||'';
-    el=q('#vocabListenLesson');if(el) el.textContent='Mẫu '+String(item.order).padStart(2,'0')+' · '+(item.pattern||'');
+    el=q('#vocabListenCurrentLesson');if(el) el.textContent='Mẫu '+String(item.order).padStart(2,'0')+' · '+(item.pattern||'');
     el=q('#vocabListenType');if(el) el.textContent=item.itemType==='sentence'?'CÂU HOÀN CHỈNH':String(item.category||'CỤM').toUpperCase();
     el=q('#vocabListenCounter');if(el) el.textContent=(session.index+1)+'/'+session.items.length;
     el=q('#vocabListenProgress');if(el) el.style.width=Math.round(((session.index+1)/session.items.length)*100)+'%';
@@ -662,7 +665,7 @@
     });
 
     [
-      ['vocabListenLesson','lessonId',String],
+      ['vocabListenSourceLesson','lessonId',String],
       ['vocabListenSize','size',String],
       ['vocabListenRepeat','repeat',Number],
       ['vocabListenRate','rate',Number],
