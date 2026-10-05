@@ -279,6 +279,7 @@
       vary:Number(p.skills.vary||0)>=2,
       discriminate:Number(p.skills.discriminate||0)>=1,
       situation:Number(p.skills.situation||0)>=2,
+      use:Number(p.skills.use||0)>=2,
       spaced:dates.size>=3
     };
     return {automatic:Object.values(conditions).every(Boolean),conditions,days:dates.size};
