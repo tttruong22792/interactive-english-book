@@ -90,7 +90,7 @@
     };
     env.state.vocabTrainerSettings={...defaults,...(env.state.vocabTrainerSettings||{})};
     if(!packById(env.state.vocabTrainerSettings.lessonId)) env.state.vocabTrainerSettings.lessonId=first;
-    if(!['learn','write','cloze','sentence','guided'].includes(env.state.vocabTrainerSettings.mode)){
+    if(!['learn','write','fast','variation','mix','cloze','situation','sentence','guided'].includes(env.state.vocabTrainerSettings.mode)){
       env.state.vocabTrainerSettings.mode='write';
     }
     return env.state.vocabTrainerSettings;
@@ -226,32 +226,70 @@
     return {
       starred:false,
       mastered:false,
+      automatic:false,
       reviewCount:0,
       correctCount:0,
       wrongCount:0,
       lastReviewedAt:0,
       nextReviewAt:0,
       intervalDays:0,
+      reviewStep:0,
+      fastBestMs:0,
+      fastLastMs:0,
+      successDates:[],
       lastRating:'',
       lastMode:'',
       updatedAt:0,
-      skills:{recognize:0,recall:0,use:0,writing:0}
+      skills:{understand:0,recognize:0,recall:0,fast:0,vary:0,discriminate:0,situation:0,use:0,writing:0}
     };
   }
 
   function progressFor(card,saved=env?.state?.saved||{}){
     const raw=saved?.[card.key]?.trainer||{};
     const base=trainerDefaults();
-    return {
+    const next={
       ...base,
       ...raw,
+      successDates:Array.isArray(raw.successDates)?raw.successDates.slice(-12):[],
       skills:{...base.skills,...(raw.skills||{})}
     };
+    // Existing learners keep their old progress instead of being reset.
+    if(next.skills.recognize>=2) next.skills.understand=Math.max(2,Number(next.skills.understand||0));
+    if(next.skills.use>=2){
+      next.skills.vary=Math.max(1,Number(next.skills.vary||0));
+      next.skills.situation=Math.max(1,Number(next.skills.situation||0));
+    }
+    next.automatic=automaticStatus(next).automatic;
+    next.mastered=next.skills.recognize>=2&&next.skills.recall>=2&&next.skills.use>=2;
+    return next;
+  }
+
+  function dayStamp(ts=Date.now()){
+    const d=new Date(ts);
+    return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+  }
+
+  function automaticStatus(progress){
+    const p={...trainerDefaults(),...(progress||{}),skills:{...trainerDefaults().skills,...(progress?.skills||{})}};
+    const dates=new Set(Array.isArray(p.successDates)?p.successDates:[]);
+    const conditions={
+      understand:Number(p.skills.understand||0)>=2,
+      recall:Number(p.skills.recall||0)>=2,
+      fast:Number(p.skills.fast||0)>=2 && Number(p.fastBestMs||Infinity)<=1000,
+      vary:Number(p.skills.vary||0)>=2,
+      situation:Number(p.skills.situation||0)>=2,
+      spaced:dates.size>=3
+    };
+    return {automatic:Object.values(conditions).every(Boolean),conditions,days:dates.size};
   }
 
   function skillForMode(mode){
     if(mode==='learn') return 'recognize';
     if(mode==='write'||mode==='cloze') return 'recall';
+    if(mode==='fast') return 'fast';
+    if(mode==='variation') return 'vary';
+    if(mode==='mix') return 'discriminate';
+    if(mode==='situation') return 'situation';
     return 'use';
   }
 
@@ -266,7 +304,7 @@
       type:'study-card',
       lessonId:card.pack.lessonId,
       lessonOrder:card.pack.order,
-      studyLevel:Math.min(3,Math.max(1,Number(p.skills?.use>=2?3:p.skills?.recall>=2?2:1))),
+      studyLevel:p.automatic?4:Math.min(3,Math.max(1,Number(p.skills?.use>=2?3:p.skills?.recall>=2?2:1))),
       cardKind:'chunk-v2',
       savedAt:Number(env.state.saved?.[card.key]?.savedAt||Date.now()),
       trainer:{...trainerDefaults(),...p,skills:{...trainerDefaults().skills,...(p.skills||{})},updatedAt:Date.now()}
@@ -276,19 +314,27 @@
     env.queueVocabUpsert(item);
   }
 
-  function reviewInterval(p,rating){
-    const current=Math.max(0,Number(p.intervalDays)||0);
-    if(rating==='again') return 0;
-    if(rating==='hard') return 1;
-    const ladder=[1,3,7,14,30];
-    const next=ladder.find(day=>day>current);
-    return next||30;
+  function nextReviewSchedule(p,rating){
+    if(rating==='again') return {step:0,delay:10*MINUTE,days:0};
+    if(rating==='hard') return {step:Math.max(0,Number(p.reviewStep||0)),delay:DAY,days:1};
+    const ladder=[
+      {delay:10*MINUTE,days:0},
+      {delay:DAY,days:1},
+      {delay:3*DAY,days:3},
+      {delay:7*DAY,days:7},
+      {delay:14*DAY,days:14},
+      {delay:30*DAY,days:30}
+    ];
+    const step=Math.min(ladder.length-1,Math.max(0,Number(p.reviewStep||0)));
+    const next=ladder[step];
+    return {step:Math.min(ladder.length-1,step+1),delay:next.delay,days:next.days};
   }
 
-  function record(card,{rating='good',skill=skillForMode(session.options.mode),writing=false}={}){
+  function record(card,{rating='good',skill=skillForMode(session.options.mode),writing=false,latencyMs=0}={}){
     const p=progressFor(card);
+    const now=Date.now();
     p.reviewCount=Number(p.reviewCount||0)+1;
-    p.lastReviewedAt=Date.now();
+    p.lastReviewedAt=now;
     p.lastRating=rating;
     p.lastMode=session.options.mode;
     p.skills={...trainerDefaults().skills,...(p.skills||{})};
@@ -296,19 +342,33 @@
     if(rating==='again'){
       p.wrongCount=Number(p.wrongCount||0)+1;
       p.skills[skill]=Math.max(0,Number(p.skills[skill]||0)-1);
+      p.reviewStep=Math.max(0,Number(p.reviewStep||0)-1);
       p.intervalDays=0;
-      p.nextReviewAt=Date.now()+10*MINUTE;
+      p.nextReviewAt=now+10*MINUTE;
       p.mastered=false;
+      p.automatic=false;
       session.stats.wrong++;
       requeueCurrent(card);
     }else{
       p.correctCount=Number(p.correctCount||0)+1;
       const gain=rating==='easy'?2:1;
       p.skills[skill]=Math.min(3,Number(p.skills[skill]||0)+gain);
+      if(skill==='recognize') p.skills.understand=Math.max(2,Number(p.skills.understand||0));
       if(writing) p.skills.writing=Math.min(3,Number(p.skills.writing||0)+gain);
-      p.intervalDays=reviewInterval(p,rating);
-      p.nextReviewAt=Date.now()+p.intervalDays*DAY;
+      if(latencyMs>0){
+        p.fastLastMs=Math.round(latencyMs);
+        p.fastBestMs=p.fastBestMs?Math.min(Number(p.fastBestMs),Math.round(latencyMs)):Math.round(latencyMs);
+        if(latencyMs<=1000) p.skills.fast=Math.max(2,Number(p.skills.fast||0));
+        else if(latencyMs<=2000) p.skills.fast=Math.max(1,Number(p.skills.fast||0));
+      }
+      const stamp=dayStamp(now);
+      p.successDates=[...new Set([...(p.successDates||[]),stamp])].slice(-12);
+      const schedule=nextReviewSchedule(p,rating);
+      p.reviewStep=schedule.step;
+      p.intervalDays=schedule.days;
+      p.nextReviewAt=now+schedule.delay;
       p.mastered=p.skills.recognize>=2&&p.skills.recall>=2&&p.skills.use>=2;
+      p.automatic=automaticStatus(p).automatic;
       session.stats.correct++;
     }
     persist(card,p);
