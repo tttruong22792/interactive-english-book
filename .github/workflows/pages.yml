@@ -54,6 +54,7 @@ jobs:
           node --check chunk-listener.js
           node --check scripts/test-chunk-listener.mjs
           node --check scripts/test-chunk-usage-examples.mjs
+          node --check scripts/test-active-path.mjs
           node --check data/english/active-study-packs.js
           node --check cloud-sync.js
 
@@ -64,6 +65,10 @@ jobs:
       - name: Test five-use chunk examples
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-chunk-usage-examples.mjs
+
+      - name: Test Active Path progression
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-active-path.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
