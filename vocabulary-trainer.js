@@ -430,7 +430,13 @@
     const isReview=!!s.reviewToday;
     const pack=packById(s.lessonId);
     let cards=isReview?reviewCandidates():studyChunks(pack);
-    if(!isReview&&s.mode==='guided') cards=cards.filter(x=>x.kind!=='building');
+
+    if(!isReview&&s.mode==='mix'){
+      cards=allStudyChunks().filter(x=>x.kind!=='building');
+    }else if(!isReview&&['guided','fast','variation','situation'].includes(s.mode)){
+      cards=cards.filter(x=>x.kind!=='building');
+    }
+
     if(!isReview&&s.priority==='core') cards=cards.filter(x=>x.priority==='core');
 
     if(s.order==='random') cards=[...cards].sort(()=>Math.random()-.5);
@@ -458,7 +464,13 @@
       guidedAnswer:[],
       stats:{correct:0,wrong:0},
       history:[],
-      retryCounts:{}
+      retryCounts:{},
+      cardStartedAt:0,
+      fastStarted:false,
+      fastListening:false,
+      fastReactionMs:0,
+      fastTranscript:'',
+      fastResult:null
     };
     prepareCard();
   }
@@ -479,6 +491,12 @@
     session.guidedStep=0;
     session.guidedAnswer=[];
     session.variant=chooseVariant(card);
+    session.cardStartedAt=performance.now();
+    session.fastStarted=false;
+    session.fastListening=false;
+    session.fastReactionMs=0;
+    session.fastTranscript='';
+    session.fastResult=null;
   }
 
   function nextCard(){
@@ -506,21 +524,28 @@
 
   function modeInfo(mode){
     return {
-      learn:{name:'HỌC CỤM',title:'Nghe · hiểu · gặp trong câu',skill:'Nhận ra'},
-      write:{name:'TẬP VIẾT VI → ANH',title:'Tự gõ cụm tiếng Anh',skill:'Gọi ra'},
-      cloze:{name:'ĐIỀN CỤM',title:'Điền cụm vào mẫu câu',skill:'Gọi ra'},
-      sentence:{name:'VIỆT → CÂU ANH',title:'Tự viết cả câu đã học',skill:'Dùng trong câu'},
-      guided:{name:'GHÉP & DÙNG CỤM',title:'Chunk nhỏ → mở rộng → ghép → câu → tình huống',skill:'Dùng tự động'}
-    }[mode]||{name:'FLASHCARD',title:'Luyện cụm',skill:'Ôn'};
+      learn:{name:'HIỂU & NHẬN RA',title:'Nghe · hiểu · 5 cách dùng',skill:'Learn'},
+      write:{name:'ACTIVE RECALL',title:'Ý tiếng Việt → tự gọi chunk',skill:'Recall'},
+      fast:{name:'FAST RECALL',title:'Bật chunk ra bằng giọng nói thật nhanh',skill:'Speed'},
+      variation:{name:'BIẾN ĐỔI',title:'Giữ chunk cố định · thay phần có thể thay',skill:'Variation'},
+      mix:{name:'CONFUSION TRAINING',title:'Trộn các cụm dễ nhầm trên toàn hệ thống',skill:'Discrimination'},
+      cloze:{name:'ĐIỀN CỤM',title:'Điền chunk theo ngữ cảnh thật',skill:'Recall'},
+      situation:{name:'TÌNH HUỐNG',title:'Từ ý định → tự tạo câu tiếng Anh',skill:'Transfer'},
+      sentence:{name:'VIỆT → CÂU ANH',title:'Tự viết cả câu đã học',skill:'Use'},
+      guided:{name:'GHÉP & DÙNG CỤM',title:'Chunk → biến đổi → câu → tình huống',skill:'Use'}
+    }[mode]||{name:'ACTIVE CHUNK',title:'Luyện cụm',skill:'Review'};
   }
 
   function skillPills(card){
     const p=progressFor(card);
     const s=p.skills||{};
+    const auto=automaticStatus(p).automatic;
     return `<div class="chunk-skill-pills">
       <span class="${s.recognize>=2?'done':''}">1 · Nhận ra</span>
       <span class="${s.recall>=2?'done':''}">2 · Gọi ra</span>
-      <span class="${s.use>=2?'done':''}">3 · Dùng</span>
+      <span class="${s.fast>=2?'done':''}">3 · Nhanh</span>
+      <span class="${s.vary>=2&&s.situation>=2?'done':''}">4 · Linh hoạt</span>
+      <span class="${auto?'done automatic':''}">5 · Automatic</span>
     </div>`;
   }
 
