@@ -3808,3 +3808,169 @@ html.vocab-keyboard-open .chunk-writing-box{
   border-color:#eadb9c;
   background:linear-gradient(135deg,#fff8d9,#fffdf8 62%,#e8f8f0);
 }
+
+.chunk-usage-examples{
+  width:min(620px,100%);
+  display:grid;
+  gap:8px;
+}
+.chunk-usage-head{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+}
+.chunk-usage-head>span{
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:var(--purple);
+}
+.chunk-usage-head>small{
+  font-size:9px;
+  color:var(--muted);
+}
+.chunk-usage-list{
+  display:grid;
+  gap:6px;
+}
+.chunk-usage-list article{
+  display:grid;
+  grid-template-columns:24px 1fr 30px;
+  align-items:center;
+  gap:9px;
+  min-height:42px;
+  padding:7px 8px;
+  border:1px solid #e8e6ee;
+  border-radius:12px;
+  background:#fbfbfd;
+}
+.chunk-usage-list article>em{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#eeeaff;
+  color:#6656c8;
+  font-size:9px;
+  font-weight:900;
+  font-style:normal;
+}
+.chunk-usage-list article>div{
+  font-size:13px;
+  line-height:1.45;
+  color:var(--navy);
+}
+.chunk-usage-list article>div span{
+  font-weight:650;
+}
+.chunk-usage-list article>div strong{
+  font-weight:900;
+  color:#5e4fc3;
+}
+.chunk-usage-list article>button{
+  width:30px;
+  height:30px;
+  border:0;
+  border-radius:50%;
+  background:#fff;
+  color:#687086;
+  display:grid;
+  place-items:center;
+}
+.chunk-usage-list .ui-icon{
+  width:15px;
+  height:15px;
+}
+
+.vocab-detail-usage{
+  grid-column:1/-1;
+  margin:3px 0 2px 44px;
+  border:1px solid #ebe8f4;
+  border-radius:12px;
+  background:#faf9ff;
+  overflow:hidden;
+}
+.vocab-detail-usage summary{
+  list-style:none;
+  cursor:pointer;
+  padding:9px 11px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.vocab-detail-usage summary::-webkit-details-marker{display:none}
+.vocab-detail-usage summary span{
+  color:#6254c4;
+  font-size:10px;
+  font-weight:900;
+}
+.vocab-detail-usage summary small{
+  color:var(--muted);
+  font-size:9px;
+}
+.vocab-detail-usage-list{
+  display:grid!important;
+  gap:0!important;
+  border-top:1px solid #ebe8f4;
+}
+.vocab-detail-usage-list>div{
+  display:grid;
+  grid-template-columns:22px 1fr 28px;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+  border-top:1px solid #efedf5;
+}
+.vocab-detail-usage-list>div:first-child{border-top:0}
+.vocab-detail-usage-list em{
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  padding:0!important;
+  border-radius:50%!important;
+  background:#eeeaff!important;
+  color:#6656c8!important;
+  font-size:8px!important;
+}
+.vocab-detail-usage-list p{
+  margin:0;
+  color:var(--navy);
+  font-size:11px;
+  line-height:1.45;
+}
+.vocab-detail-usage-list p span{font-weight:650;color:var(--navy)}
+.vocab-detail-usage-list p strong{font-weight:900;color:#5e4fc3}
+.vocab-detail-usage-list button{
+  width:28px;
+  height:28px;
+  border:0;
+  border-radius:50%;
+  background:#fff;
+  color:#687086;
+  display:grid;
+  place-items:center;
+}
+.vocab-detail-usage-list .ui-icon{width:14px;height:14px}
+
+@media(max-width:680px){
+  .chunk-usage-head{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:2px;
+  }
+  .chunk-usage-list article{
+    grid-template-columns:22px 1fr 28px;
+    gap:7px;
+  }
+  .chunk-usage-list article>div{font-size:12px}
+  .vocab-detail-usage{margin-left:0}
+  .vocab-detail-usage summary{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:2px;
+  }
+}
