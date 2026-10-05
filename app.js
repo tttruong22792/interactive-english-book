@@ -2130,12 +2130,16 @@
         const usage=card.usageExamples||[];
         const usageHTML=usage.length?`<details class="vocab-detail-usage">
           <summary><span>5 cách dùng thường gặp</span><small>Giữ chunk cố định · thay phần in đậm</small></summary>
-          <div class="vocab-detail-usage-list">${usage.map((example,index)=>`
+          <div class="vocab-detail-usage-list">${usage.map((example,index)=>{
+            const en=typeof example==='string'?example:String(example?.en||'');
+            const vi=typeof example==='string'?'':String(example?.vi||'');
+            return `
             <div>
               <em>${index+1}</em>
-              <p>${window.VocabularyTrainer?.usageExampleMarkup?.(card,example)||esc(example)}</p>
-              <button data-active-speak="${escAttr(example)}" type="button" aria-label="Nghe cách dùng ${index+1}">${uiIcon('volume-2')}</button>
-            </div>`).join('')}</div>
+              <p><span class="vocab-detail-usage-en">${window.VocabularyTrainer?.usageExampleMarkup?.(card,en)||esc(en)}</span>${vi?`<small>${esc(vi)}</small>`:''}</p>
+              <button data-active-speak="${escAttr(en)}" type="button" aria-label="Nghe cách dùng ${index+1}">${uiIcon('volume-2')}</button>
+            </div>`;
+          }).join('')}</div>
         </details>`:''; 
         return `<article class="vocab-detail-row">
           <button class="vocab-detail-audio" data-active-speak="${escAttr(card.baseEn)}" type="button">${uiIcon('volume-2')}</button>
