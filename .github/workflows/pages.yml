@@ -55,6 +55,8 @@ jobs:
           node --check scripts/test-chunk-listener.mjs
           node --check scripts/test-chunk-usage-examples.mjs
           node --check scripts/test-active-path.mjs
+          node --check english-challenge.js
+          node --check scripts/test-english-challenge.mjs
           node --check data/english/active-study-packs.js
           node --check data/english/chunk-usage-vi.js
           node --check cloud-sync.js
@@ -70,6 +72,10 @@ jobs:
       - name: Test Active Path progression
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-active-path.mjs
+
+      - name: Test full English Challenge coverage
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-english-challenge.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
