@@ -192,6 +192,19 @@ if (badSingleSelectorCalls.length) {
   );
 }
 
+// Guard the selector helper itself. A typo such as $$() crashes the app at startup.
+const badSelectorAliases = [];
+for (const relative of uniqueFiles) {
+  const source = await readFile(join(root, relative), "utf8");
+  if (source.includes("$$(")) badSelectorAliases.push(relative + ": contains $$(");
+}
+if (badSelectorAliases.length) {
+  throw new Error(
+    "Invalid selector helper alias detected. Use $() for one element or $() for a collection:\n" +
+    badSelectorAliases.join("\n")
+  );
+}
+
 const runtimeParts = [
   "window.__LS_RUNTIME_STARTED = true;",
   "window.LS_AUDIO_CACHE = new Set([]);"
