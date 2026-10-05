@@ -2155,11 +2155,11 @@
       `,`Mẫu ${String(pack.order).padStart(2,'0')}`,'Một màn hình chỉ để xem và bắt đầu học cụm của bài này.');
     }
   
-    function practiceScreen(){
+    function automateScreen(){
       const pack=selected||packs[0];
       const size=String(trainerSettings.size||'5');
       return shell(`
-        <div class="vocab-screen-title"><div><span class="eyebrow">LUYỆN TẬP</span><h2>Chọn một kỹ năng</h2><p>Mỗi lần chỉ tập trung vào một kiểu phản xạ.</p></div></div>
+        <div class="vocab-screen-title"><div><span class="eyebrow">AUTOMATE</span><h2>Biến cụm đã học thành phản xạ</h2><p>Không đọc lại. Mỗi lần hệ thống buộc bạn tự gọi ra, gọi nhanh, biến đổi hoặc dùng trong tình huống.</p></div></div>
   
         <div class="vocab-practice-context">
           <label><span>Bài đang luyện</span><select id="vocabPracticeLesson">${packs.map(p=>`<option value="${p.lessonId}" ${p.lessonId===pack?.lessonId?'selected':''}>#${p.order} · ${esc(p.pattern)}</option>`).join('')}</select></label>
@@ -2173,7 +2173,37 @@
             ${uiIcon('arrow-right')}
           </button>`).join('')}
         </div>
-      `,'Luyện tập','Chọn đúng kỹ năng bạn muốn rèn, rồi vào trainer toàn màn hình.');
+      `,'Automate','Trái tim của hệ thống: Recall → Speed → Variation → Discrimination → Situation → Spaced Review.');
+    }
+
+    function useScreen(){
+      const pack=selected||packs[0];
+      return shell(`
+        <div class="vocab-screen-title"><div><span class="eyebrow">USE</span><h2>Dùng English để tạo câu và giao tiếp</h2><p>Shadowing chỉ mở miệng và nhịp nói. Sau đó phải tắt mẫu, tự nói lại và tạo câu mới của chính bạn.</p></div></div>
+        <div class="active-use-grid">
+          <button data-go="shadowing" type="button">
+            <span class="vocab-mode-icon">${uiIcon('headphones')}</span>
+            <div><em>SHADOW → RETRIEVAL</em><h3>Shadowing chủ động</h3><p>Hiểu → tách cụm → shadow → biến đổi → tự nói không nhìn đáp án.</p></div>
+            ${uiIcon('arrow-right')}
+          </button>
+          <button data-use-mode="sentence" type="button">
+            <span class="vocab-mode-icon">${uiIcon('book-open')}</span>
+            <div><em>SENTENCE</em><h3>Ý → câu hoàn chỉnh</h3><p>Không chỉ gọi chunk; tự viết cả câu đã học bằng mẫu câu hiện tại.</p></div>
+            ${uiIcon('arrow-right')}
+          </button>
+          <button data-use-mode="guided" type="button">
+            <span class="vocab-mode-icon">${uiIcon('play')}</span>
+            <div><em>TRANSFER</em><h3>Ghép & dùng cụm</h3><p>Chunk nhỏ → phần mở rộng → câu → tình huống. Mục tiêu là chuyển giao, không học thuộc câu chết.</p></div>
+            ${uiIcon('arrow-right')}
+          </button>
+          <button data-go="practice" type="button">
+            <span class="vocab-mode-icon">${uiIcon('mic')}</span>
+            <div><em>FREE PRACTICE</em><h3>Luyện toàn bộ câu</h3><p>Trộn nhiều bài và tự sản xuất câu tiếng Anh từ ý muốn nói.</p></div>
+            ${uiIcon('arrow-right')}
+          </button>
+        </div>
+        <div class="active-use-rule"><b>Quy tắc USE</b><span>Nghe/Shadowing → tắt audio → tự gọi lại → biến đổi → nói một câu mới.</span></div>
+      `,'Use',pack?`Đang dùng cụm của Mẫu ${String(pack.order).padStart(2,'0')} · ${pack.pattern}`:'Dùng những gì đã học trong câu thật.');
     }
   
     function libraryScreen(){
@@ -2189,24 +2219,28 @@
         const skills={
           recognize:Math.max(0,...progresses.map(p=>Number(p.skills?.recognize||0))),
           recall:Math.max(0,...progresses.map(p=>Number(p.skills?.recall||0))),
+          fast:Math.max(0,...progresses.map(p=>Number(p.skills?.fast||0))),
+          vary:Math.max(0,...progresses.map(p=>Number(p.skills?.vary||0))),
+          situation:Math.max(0,...progresses.map(p=>Number(p.skills?.situation||0))),
           use:Math.max(0,...progresses.map(p=>Number(p.skills?.use||0)))
         };
         const reviewed=progresses.some(p=>Number(p.reviewCount||0)>0);
         const starred=progresses.some(p=>!!p.starred);
         const weak=progresses.some(p=>p.lastRating==='again'||Number(p.wrongCount||0)>Number(p.correctCount||0))||(reviewed&&skills.recall<2);
         const mastered=skills.recognize>=2&&skills.recall>=2&&skills.use>=2;
-        return {...entry,skills,reviewed,starred,weak,mastered,lessonId:entry.cards[0]?.pack?.lessonId||''};
+        const automatic=progresses.some(p=>window.VocabularyTrainer?.automaticStatus?.(p)?.automatic);
+        return {...entry,skills,reviewed,starred,weak,mastered,automatic,lessonId:entry.cards[0]?.pack?.lessonId||''};
       });
   
       const personal=Object.values(state.saved||{}).filter(x=>x?.type==='phrase').map(item=>({
-        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],skills:{recognize:0,recall:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,lessonId:'',personal:true
+        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,lessonId:'',personal:true
       }));
   
       const filter=state.vocabLibraryFilter||'all';
       let filtered=[...entries,...personal];
       if(filter==='learning') filtered=filtered.filter(x=>x.reviewed&&!x.mastered&&!x.personal);
       if(filter==='weak') filtered=filtered.filter(x=>x.weak&&!x.personal);
-      if(filter==='mastered') filtered=filtered.filter(x=>x.mastered&&!x.personal);
+      if(filter==='mastered') filtered=filtered.filter(x=>x.automatic&&!x.personal);
       if(filter==='saved') filtered=filtered.filter(x=>x.starred||x.personal);
   
       return shell(`
@@ -2224,7 +2258,7 @@
           ${filtered.map(entry=>`<article data-library-row data-search="${escAttr((entry.baseEn+' '+entry.baseVi).toLowerCase())}">
             <button class="vocab-library-audio" data-active-speak="${escAttr(entry.baseEn)}" type="button">${uiIcon('volume-2')}</button>
             <div class="vocab-library-copy"><strong>${esc(entry.baseEn)}</strong><span>${esc(entry.baseVi)}</span>${entry.cards.length>1?`<small>Xuất hiện trong ${entry.cards.length} bài</small>`:entry.personal?'<small>Cụm cá nhân</small>':''}</div>
-            ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recognize>=2?'done':''}" title="Nhận ra">1</i><i class="${entry.skills.recall>=2?'done':''}" title="Gọi ra">2</i><i class="${entry.skills.use>=2?'done':''}" title="Dùng">3</i></div>`}
+            ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recognize>=2?'done':''}" title="Nhận ra">1</i><i class="${entry.skills.recall>=2?'done':''}" title="Recall">2</i><i class="${entry.skills.fast>=2?'done':''}" title="Fast Recall">3</i><i class="${entry.skills.vary>=2&&entry.skills.situation>=2?'done':''}" title="Linh hoạt">4</i><i class="${entry.automatic?'done automatic':''}" title="Automatic">5</i></div>`}
             ${entry.lessonId?`<button class="vocab-library-practice" data-library-practice="${escAttr(entry.lessonId)}" type="button">Luyện</button>`:''}
           </article>`).join('')||'<div class="vocab-empty-state"><b>Không có cụm phù hợp</b><span>Thử từ khóa hoặc bộ lọc khác.</span></div>'}
         </div>
@@ -2232,19 +2266,20 @@
     }
   
     let content='';
-    if(view==='today') content=todayScreen();
-    else if(view==='listen') content=window.ChunkListener?.screen?.({state,packs,selected,shell,esc,uiIcon}) || shell('<div class="vocab-empty-state"><b>Không tải được trình nghe</b></div>','Nghe','Audio Loop');
-    else if(view==='lessons') content=lessonsScreen();
-    else if(view==='lesson') content=lessonDetailScreen();
-    else if(view==='practice') content=practiceScreen();
-    else if(view==='library') content=libraryScreen();
+    if(normalizedView==='today') content=todayScreen();
+    else if(normalizedView==='listen') content=window.ChunkListener?.screen?.({state,packs,selected,shell,esc,uiIcon}) || shell('<div class="vocab-empty-state"><b>Không tải được trình nghe</b></div>','Nghe','Audio Loop');
+    else if(normalizedView==='learn') content=lessonsScreen();
+    else if(normalizedView==='lesson') content=lessonDetailScreen();
+    else if(normalizedView==='automate') content=automateScreen();
+    else if(normalizedView==='use') content=useScreen();
+    else if(normalizedView==='library') content=libraryScreen();
     else { state.vocabHubView='today'; content=todayScreen(); }
   
     $('#mainView').innerHTML=content;
-    if(view==='listen') window.ChunkListener?.bind?.({state,packs,selected,speak,stopSpeech,beginAudioSequence,audioSequenceActive,wait,toast,saveState,renderVocab,esc,uiIcon});
+    if(normalizedView==='listen') window.ChunkListener?.bind?.({state,packs,selected,speak,stopSpeech,beginAudioSequence,audioSequenceActive,wait,toast,saveState,renderVocab,esc,uiIcon});
   
     function setHubView(next){
-      if(view==='listen' && next!=='listen') window.ChunkListener?.stop?.(true);
+      if(normalizedView==='listen' && next!=='listen') window.ChunkListener?.stop?.(true);
       state.vocabHubView=next;
       saveState();
       renderVocab();
@@ -2280,7 +2315,7 @@
       setHubView('lesson');
     });
   
-    $('#backToVocabLessons')?.addEventListener('click',()=>setHubView('lessons'));
+    $('#backToVocabLessons')?.addEventListener('click',()=>setHubView('learn'));
   
     $('#startLessonChunks')?.addEventListener('click',()=>{
       if(!selected) return;
@@ -2301,7 +2336,7 @@
         state.vocabTrainerSettings={...trainerSettings,lessonId:selected.lessonId};
         state.vocabHubLessonId=selected.lessonId;
       }
-      setHubView('practice');
+      setHubView('automate');
     });
   
     $('#vocabPracticeLesson')?.addEventListener('change',e=>{
@@ -2314,7 +2349,7 @@
       saveState();
     });
   
-    $$('[data-start-practice]').forEach(btn=>btn.onclick=()=>{
+    $('[data-start-practice]').forEach(btn=>btn.onclick=()=>{
       const lessonId=$('#vocabPracticeLesson')?.value||selected?.lessonId||packs[0]?.lessonId;
       const size=$('#vocabPracticeSize')?.value||'5';
       const mode=btn.dataset.startPractice;
@@ -2323,6 +2358,17 @@
       saveState();
       renderFlashcards([], {lessonId,mode,size,priority:'all'});
     });
+
+    $('[data-use-mode]').forEach(btn=>btn.onclick=()=>{
+      const lessonId=selected?.lessonId||trainerSettings.lessonId||packs[0]?.lessonId;
+      const mode=btn.dataset.useMode;
+      state.vocabTrainerSettings={...state.vocabTrainerSettings,lessonId,mode,size:'5',priority:'all'};
+      state.vocabHubLessonId=lessonId;
+      saveState();
+      renderFlashcards([], {lessonId,mode,size:'5',priority:'all'});
+    });
+
+    $('[data-go]').forEach(btn=>btn.onclick=()=>routeTo(btn.dataset.go));
   
     $$('[data-active-speak]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();speak(btn.dataset.activeSpeak);});
   
