@@ -56,6 +56,7 @@ jobs:
           node --check scripts/test-chunk-usage-examples.mjs
           node --check scripts/test-active-path.mjs
           node --check data/english/active-study-packs.js
+          node --check data/english/chunk-usage-vi.js
           node --check cloud-sync.js
 
       - name: Test listening lesson switching
