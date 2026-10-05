@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v79-active-learning-system';
+const APP_CACHE='language-studio-v80-startup-fix';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261005-active-learning-system-v43.js',
+  './runtime-20261005-startup-fix-v44.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
