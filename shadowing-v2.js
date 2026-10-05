@@ -1251,13 +1251,19 @@
       }
     }
 
-    return {render:render};
+    return {
+      render:render,
+      challengeItems:function(lesson){return lessonPool(lesson);}
+    };
   }
 
   window.ShadowingV2={
     render:function(env){
       if(!window.ShadowingV2.__renderer) window.ShadowingV2.__renderer=createRenderer(env);
       return window.ShadowingV2.__renderer.render(env);
+    },
+    collectChallengeItems:function(env,lesson){
+      return createRenderer(env).challengeItems(lesson);
     }
   };
 })();
