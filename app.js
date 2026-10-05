@@ -2898,7 +2898,7 @@
     bindGenericRoutes();
   }
 
-  function bindGenericRoutes(){ $$$('[data-go]').forEach(b=>b.onclick=()=>routeTo(b.dataset.go)); }
+  function bindGenericRoutes(){ $('[data-go]').forEach(b=>b.onclick=()=>routeTo(b.dataset.go)); }
 
   function lookupData(term,type='word'){
     const normalized=normalizeText(term);
