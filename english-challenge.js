@@ -243,11 +243,9 @@
       out=out.filter(function(item){return item.modules.indexOf(settings.source)>=0;});
     }
 
-    if(settings.lessonId && settings.lessonId!=='all'){
+    if(settings.lessonId && settings.lessonId!=='all' && settings.source!=='tenses'){
       out=out.filter(function(item){return item.lessonIds.indexOf(settings.lessonId)>=0;});
-    }
-
-    if(settings.scope==='current'){
+    }else if(settings.scope==='current'){
       var id=currentLessonId(env);
       out=out.filter(function(item){return id && item.lessonIds.indexOf(id)>=0;});
     }else if(settings.scope==='opened'){
