@@ -2371,7 +2371,7 @@
       saveState();
     });
   
-    $('[data-start-practice]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-start-practice]').forEach(btn=>btn.onclick=()=>{
       const lessonId=$('#vocabPracticeLesson')?.value||selected?.lessonId||packs[0]?.lessonId;
       const size=$('#vocabPracticeSize')?.value||'5';
       const mode=btn.dataset.startPractice;
@@ -2381,7 +2381,7 @@
       renderFlashcards([], {lessonId,mode,size,priority:'all'});
     });
 
-    $('[data-use-mode]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-use-mode]').forEach(btn=>btn.onclick=()=>{
       const lessonId=selected?.lessonId||trainerSettings.lessonId||packs[0]?.lessonId;
       const mode=btn.dataset.useMode;
       state.vocabTrainerSettings={...state.vocabTrainerSettings,lessonId,mode,size:'5',priority:'all'};
@@ -2390,7 +2390,7 @@
       renderFlashcards([], {lessonId,mode,size:'5',priority:'all'});
     });
 
-    $('[data-go]').forEach(btn=>btn.onclick=()=>routeTo(btn.dataset.go));
+    $$('[data-go]').forEach(btn=>btn.onclick=()=>routeTo(btn.dataset.go));
   
     $$('[data-active-speak]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();speak(btn.dataset.activeSpeak);});
   
@@ -2898,7 +2898,7 @@
     bindGenericRoutes();
   }
 
-  function bindGenericRoutes(){ $$('[data-go]').forEach(b=>b.onclick=()=>routeTo(b.dataset.go)); }
+  function bindGenericRoutes(){ $$$('[data-go]').forEach(b=>b.onclick=()=>routeTo(b.dataset.go)); }
 
   function lookupData(term,type='word'){
     const normalized=normalizeText(term);
