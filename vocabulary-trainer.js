@@ -659,6 +659,81 @@
     return phrase||base;
   }
 
+  function variablePart(card,text=''){
+    const fixed=tokens(card?.baseEn||'').filter(token=>!isGenericSlot(token)).map(stem);
+    const words=String(text||'').replace(/[?.!]+$/,'').split(/\s+/).filter(Boolean);
+    let cursor=0;
+    const variable=[];
+    words.forEach(word=>{
+      const key=stem(normalize(word));
+      if(cursor<fixed.length&&key===fixed[cursor]) cursor++;
+      else variable.push(word);
+    });
+    return variable.join(' ').trim();
+  }
+
+  function variationSpec(card){
+    const list=card.usageExamples?.length?card.usageExamples:[card.modelEn||card.baseEn];
+    const p=progressFor(card);
+    const target=String(list[(Number(p.reviewCount||0)+card.index)%list.length]||list[0]||card.baseEn);
+    const variable=variablePart(card,target);
+    return {
+      eyebrow:'BIẾN ĐỔI CHUNK',
+      prompt:variable?('Ghép với: '+variable):card.baseVi,
+      sub:card.baseVi,
+      expected:target,
+      context:target,
+      contextVi:'',
+      placeholder:'Gõ cả cụm đã biến đổi…',
+      skill:'vary',
+      writing:true
+    };
+  }
+
+  function situationSpec(card){
+    const v=session.variant||chooseVariant(card);
+    return {
+      eyebrow:'TÌNH HUỐNG → ENGLISH',
+      prompt:v.vi||card.modelVi||card.baseVi,
+      sub:'Không dịch từng chữ. Hãy bật ra một câu tự nhiên cho tình huống này.',
+      expected:v.en||card.modelEn,
+      context:v.en||card.modelEn,
+      contextVi:v.vi||card.modelVi,
+      placeholder:'Tự nói hoặc gõ câu tiếng Anh…',
+      skill:'situation',
+      writing:true
+    };
+  }
+
+  function confusionPeers(card){
+    const head=tokens(card.baseEn)[0]||'';
+    const groups={
+      take:['take','make','get'],
+      make:['make','take','get'],
+      get:['get','make','take'],
+      go:['go','look','figure'],
+      look:['look','go','figure'],
+      figure:['figure','look','go'],
+      follow:['follow','get'],
+      work:['work','deal','take'],
+      deal:['deal','work','take']
+    };
+    const heads=groups[head]||[head];
+    return allStudyChunks()
+      .filter(x=>x.kind!=='building'&&x.key!==card.key&&heads.includes(tokens(x.baseEn)[0]))
+      .filter((x,i,arr)=>arr.findIndex(y=>normalize(y.baseEn)===normalize(x.baseEn))===i)
+      .slice(0,4);
+  }
+
+  function confusionHTML(card){
+    const peers=confusionPeers(card);
+    if(!peers.length) return '';
+    return `<div class="chunk-confusion-note">
+      <span>PHÂN BIỆT NHANH</span>
+      <div>${[card,...peers].slice(0,4).map(x=>`<b>${esc(x.baseEn)}</b>`).join('')}</div>
+    </div>`;
+  }
+
   function clozeSpec(card,variant){
     const v=variant||session.variant||chooseVariant(card);
     const sentence=String(v?.en||card.modelEn||'').trim();
@@ -682,18 +757,21 @@
 
   function typingSpec(card,mode=session.options.mode){
     const v=session.variant||chooseVariant(card);
-    if(mode==='write'){
+    if(mode==='write'||mode==='mix'){
       return {
-        eyebrow:card.kind==='building'?'VIỆT → KHỐI BỔ TRỢ':'VIỆT → CHUNK NHỎ',
+        eyebrow:mode==='mix'?'CONFUSION TRAINING':card.kind==='building'?'VIỆT → KHỐI BỔ TRỢ':'Ý → CHUNK',
         prompt:card.baseVi,
+        sub:mode==='mix'?'Các cụm được trộn trên toàn hệ thống. Không đoán động từ; hãy gọi cả chunk như một khối.':'',
         expected:card.baseEn,
         context:card.modelEn||v.en,
         contextVi:card.modelVi||v.vi,
         placeholder:'Gõ cụm tiếng Anh…',
-        skill:'recall',
+        skill:mode==='mix'?'discriminate':'recall',
         writing:true
       };
     }
+    if(mode==='variation') return variationSpec(card);
+    if(mode==='situation') return situationSpec(card);
     if(mode==='cloze'){
       const cloze=clozeSpec(card,v);
       return {
@@ -739,6 +817,7 @@
           <strong>${correct?'✓ Đúng rồi':'Chưa đúng. Sửa lại rồi thử lần nữa.'}</strong>
           ${correct?`<div class="chunk-correct-answer">${esc(spec.expected)}</div>`:diffHTML(spec.expected,session.inputValue)}
           ${correct?`<div class="chunk-context-after"><b>${esc(spec.context)}</b><span>${esc(spec.contextVi)}</span>${audioButtons(spec.context)}</div>`:''}
+          ${!correct&&mode==='mix'?confusionHTML(card):''}
         </div>`:''}
       <div class="chunk-writing-actions">
         ${!correct?`<button id="chunkHint" class="secondary-button" type="button" ${session.hintLevel>=3?'disabled':''}>Gợi ý ${Math.min(3,session.hintLevel+1)}</button>`:''}
