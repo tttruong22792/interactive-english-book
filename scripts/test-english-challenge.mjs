@@ -94,6 +94,8 @@ for(const [en] of tensePairs){
 
 const current=challenge.scopedItems(env,items,{source:'all',scope:'current'});
 assert.ok(current.some(item=>item.modules.includes('patterns')),'Current lesson scope includes pattern examples');
-assert.ok(current.some(item=>item.modules.includes('chunks'))===false || true,'Current scope is valid with dynamic lesson IDs');
+assert.ok(current.some(item=>item.modules.includes('practice')),'Current lesson scope includes Practice examples');
+assert.ok(current.some(item=>item.modules.includes('shadowing')),'Current lesson scope includes Shadowing examples');
+assert.ok(!current.some(item=>item.modules.includes('tenses')&&item.lessonIds.length===0),'Current pattern scope does not pull unrelated tense-only examples');
 
 console.log('PASS: Challenge aggregates Patterns + Active Chunks + Tenses + Shadowing + Practice, including all 470 chunk-use examples and 54 tense examples.');
