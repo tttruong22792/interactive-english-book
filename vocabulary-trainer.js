@@ -831,6 +831,123 @@
     </div>`;
   }
 
+  function fastLabel(ms){
+    const n=Number(ms||0);
+    if(!n) return '';
+    if(n<800) return 'Candidate Automatic';
+    if(n<=1000) return 'Rất nhanh';
+    if(n<=2000) return 'Khá tốt';
+    if(n<=3000) return 'Đang nhớ';
+    return 'Chưa chủ động';
+  }
+
+  function fastHTML(card){
+    const result=session.fastResult;
+    const listening=session.fastListening;
+    const started=session.fastStarted;
+    const p=progressFor(card);
+    return `<div class="chunk-study-card chunk-fast-card">
+      <div class="chunk-card-head">${skillPills(card)}<button id="chunkStar" class="chunk-star ${p.starred?'active':''}" type="button">★</button></div>
+      <span class="chunk-priority">FAST RECALL · Ý → ENGLISH</span>
+      ${!started?`
+        <div class="fast-recall-ready">
+          <h2>Không nhìn English trước.</h2>
+          <p>Khi bấm bắt đầu, ý tiếng Việt xuất hiện và mic mở ngay. Hãy nói chunk đầu tiên bật ra trong đầu.</p>
+          <button id="startFastRecall" class="chunk-primary-action" type="button">Bắt đầu phản xạ</button>
+        </div>
+      `:`
+        <div class="fast-recall-prompt">
+          <span>Ý cần bật ra</span>
+          <h2>${esc(card.baseVi)}</h2>
+          <div class="fast-recall-live ${listening?'is-listening':''}">
+            <i></i><b>${listening?'Đang nghe · nói ngay':'Đã nhận câu trả lời'}</b>
+          </div>
+        </div>
+        ${result?`
+          <div class="fast-recall-result ${result.correct?'correct':'wrong'}">
+            <strong>${result.correct?'✓ Đúng chunk':'Chưa đúng chunk'}</strong>
+            <div class="fast-recall-transcript">Bạn nói: <b>${esc(result.transcript||'—')}</b></div>
+            ${result.correct?`
+              <div class="fast-recall-speed"><b>${(Number(result.latencyMs||0)/1000).toFixed(2)}s</b><span>${fastLabel(result.latencyMs)}</span></div>
+              <div class="chunk-correct-answer">${esc(card.baseEn)}</div>
+              ${audioButtons(card.baseEn)}
+            `:`
+              ${diffHTML(card.baseEn,result.transcript||'')}
+              ${session.revealed?`<div class="chunk-revealed-answer"><span>Đáp án</span><b>${esc(card.baseEn)}</b>${audioButtons(card.baseEn)}</div>`:''}
+            `}
+          </div>
+          <div class="chunk-writing-actions">
+            ${result.correct?'<button id="nextFastRecall" class="primary-button" type="button">Tiếp tục →</button>':'<button id="retryFastRecall" class="primary-button" type="button">Nói lại</button><button id="showFastAnswer" class="text-button" type="button">Hiện đáp án</button>'}
+          </div>
+        `:''}
+      `}
+    </div>`;
+  }
+
+  function startFastRecognition(card){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){
+      env.toast('Thiết bị này chưa hỗ trợ Fast Recall bằng giọng nói. Chuyển sang Active Recall.');
+      session.options.mode='write';
+      renderCard();
+      return;
+    }
+    session.fastStarted=true;
+    session.fastListening=true;
+    session.fastResult=null;
+    session.revealed=false;
+    session.failureRecorded=false;
+    session.fastStartAt=performance.now();
+    session.fastReactionMs=0;
+    renderCard();
+
+    const r=new SR();
+    r.lang='en-US';
+    r.interimResults=false;
+    r.maxAlternatives=1;
+    r.onspeechstart=()=>{
+      session.fastReactionMs=Math.max(1,performance.now()-session.fastStartAt);
+    };
+    r.onresult=e=>{
+      const transcript=String(e.results?.[0]?.[0]?.transcript||'').trim();
+      const latency=Math.max(1,session.fastReactionMs||performance.now()-session.fastStartAt);
+      const correct=normalize(transcript)===normalize(card.baseEn);
+      session.fastListening=false;
+      session.fastTranscript=transcript;
+      session.fastReactionMs=latency;
+      session.fastResult={correct,transcript,latencyMs:latency};
+      if(correct){
+        const rating=latency<=1000?'easy':latency<=3000?'good':'hard';
+        record(card,{rating,skill:'fast',latencyMs:latency});
+      }else if(!session.failureRecorded){
+        record(card,{rating:'again',skill:'fast'});
+        session.failureRecorded=true;
+      }
+      renderCard();
+    };
+    r.onerror=()=>{
+      session.fastListening=false;
+      session.fastResult={correct:false,transcript:'',latencyMs:0,error:true};
+      renderCard();
+      env.toast('Không nhận được giọng nói. Hãy thử lại.');
+    };
+    try{r.start();}catch(error){
+      session.fastListening=false;
+      session.fastResult={correct:false,transcript:'',latencyMs:0,error:true};
+      renderCard();
+    }
+  }
+
+  function bindFast(card){
+    $('#startFastRecall')?.addEventListener('click',()=>startFastRecognition(card));
+    $('#retryFastRecall')?.addEventListener('click',()=>startFastRecognition(card));
+    $('#showFastAnswer')?.addEventListener('click',()=>{
+      session.revealed=true;
+      renderCard();
+    });
+    $('#nextFastRecall')?.addEventListener('click',nextCard);
+  }
+
   function guidedSteps(){
     return [
       ['1','Chunk nhỏ'],
@@ -1020,7 +1137,7 @@
       <div class="vocab-trainer-progress"><i style="width:${Math.round(((session.index+1)/Math.max(1,session.cards.length))*100)}%"></i></div>
       <div class="chunk-mode-intro"><span>${esc(info.name)}</span><strong>${esc(info.title)}</strong><p>Mục tiêu hiện tại: ${esc(info.skill)}</p></div>
       <div class="vocab-trainer-stage">
-        ${mode==='learn'?learnHTML(card):mode==='guided'?guidedHTML(card):typingHTML(card,mode)}
+        ${mode==='learn'?learnHTML(card):mode==='fast'?fastHTML(card):mode==='guided'?guidedHTML(card):typingHTML(card,mode)}
       </div>
       <div class="vocab-trainer-bottom">
         <button id="vocabPrev" class="vocab-bottom-text" type="button" ${session.index<=0?'disabled':''}>← Trước</button>
@@ -1355,6 +1472,8 @@
         record(card,{rating:btn.dataset.learnRate,skill:'recognize'});
         nextCard();
       });
+    }else if(mode==='fast'){
+      bindFast(card);
     }else if(mode==='guided'){
       bindGuided(card);
     }else{
