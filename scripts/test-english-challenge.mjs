@@ -92,10 +92,24 @@ for(const [en] of tensePairs){
   assert.ok(item.modules.includes('tenses'),'Tenses source tag missing: '+en);
 }
 
-const current=challenge.scopedItems(env,items,{source:'all',scope:'current'});
+const current=challenge.scopedItems(env,items,{source:'all',lessonId:'all',scope:'current'});
 assert.ok(current.some(item=>item.modules.includes('patterns')),'Current lesson scope includes pattern examples');
 assert.ok(current.some(item=>item.modules.includes('practice')),'Current lesson scope includes Practice examples');
 assert.ok(current.some(item=>item.modules.includes('shadowing')),'Current lesson scope includes Shadowing examples');
 assert.ok(!current.some(item=>item.modules.includes('tenses')&&item.lessonIds.length===0),'Current pattern scope does not pull unrelated tense-only examples');
 
-console.log('PASS: Challenge aggregates Patterns + Active Chunks + Tenses + Shadowing + Practice, including all 470 chunk-use examples and 54 tense examples.');
+const pattern1=challenge.scopedItems(env,items,{source:'all',lessonId:'en-pattern-001',scope:'all'});
+assert.ok(pattern1.length>0,'Pattern #1 filter returns content');
+assert.ok(pattern1.every(item=>item.lessonIds.includes('en-pattern-001')),'Pattern #1 filter keeps only lesson #1 content');
+assert.ok(pattern1.some(item=>item.modules.includes('chunks')),'Pattern #1 filter includes Active Chunk examples');
+
+const pattern2Chunks=challenge.scopedItems(env,items,{source:'chunks',lessonId:'en-pattern-002',scope:'all'});
+assert.ok(pattern2Chunks.length>0,'Pattern #2 chunk filter returns content');
+assert.ok(pattern2Chunks.every(item=>item.modules.includes('chunks')),'Pattern #2 + chunks keeps chunk source only');
+assert.ok(pattern2Chunks.every(item=>item.lessonIds.includes('en-pattern-002')),'Pattern #2 + chunks keeps lesson #2 only');
+
+const tenseIgnoresPattern=challenge.scopedItems(env,items,{source:'tenses',lessonId:'en-pattern-002',scope:'all'});
+assert.ok(tenseIgnoresPattern.length>0,'Tenses remains available when a pattern filter was previously selected');
+assert.ok(tenseIgnoresPattern.every(item=>item.modules.includes('tenses')),'Tenses source remains independent of pattern lessons');
+
+console.log('PASS: Challenge aggregates all module examples and supports exact pattern filters such as I\'d like to… / I\'m going to….');
