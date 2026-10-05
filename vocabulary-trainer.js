@@ -1491,11 +1491,15 @@
         </label>
         <label class="vocab-settings-row"><span><b>Cách luyện</b><small>Đổi giữa flashcard, viết và ứng dụng</small></span>
           <select id="vocabModeSelect">
-            <option value="learn" ${s.mode==='learn'?'selected':''}>Học cụm · Nhận ra</option>
-            <option value="write" ${s.mode==='write'?'selected':''}>Tập viết Việt → cụm Anh</option>
-            <option value="cloze" ${s.mode==='cloze'?'selected':''}>Điền cụm vào câu</option>
+            <option value="learn" ${s.mode==='learn'?'selected':''}>1 · Hiểu & Nhận ra</option>
+            <option value="write" ${s.mode==='write'?'selected':''}>2 · Active Recall</option>
+            <option value="fast" ${s.mode==='fast'?'selected':''}>3 · Fast Recall bằng giọng nói</option>
+            <option value="variation" ${s.mode==='variation'?'selected':''}>4 · Biến đổi chunk</option>
+            <option value="mix" ${s.mode==='mix'?'selected':''}>5 · Confusion Training</option>
+            <option value="situation" ${s.mode==='situation'?'selected':''}>6 · Tình huống → English</option>
+            <option value="cloze" ${s.mode==='cloze'?'selected':''}>Điền chunk vào câu</option>
             <option value="sentence" ${s.mode==='sentence'?'selected':''}>Việt → câu Anh</option>
-            <option value="guided" ${s.mode==='guided'?'selected':''}>Ghép & dùng: chunk → câu → tình huống</option>
+            <option value="guided" ${s.mode==='guided'?'selected':''}>Use · Ghép → câu → tình huống</option>
           </select>
         </label>
         <label class="vocab-settings-row"><span><b>Số cụm</b><small>Phù hợp để tranh thủ học khi rảnh</small></span>
@@ -1551,14 +1555,14 @@
     $('#vocabTrainerRoot').innerHTML=`<div class="vocab-trainer-summary">
       <span class="eyebrow">SESSION COMPLETE</span>
       <h1>Hoàn thành ${esc(modeInfo(session.options.mode).name.toLowerCase())}</h1>
-      <p>Bạn vừa luyện ${total} cụm. Cụm chưa vững sẽ tự quay lại sớm hơn qua SRS.</p>
+      <p>Bạn vừa luyện ${total} cụm. Hệ thống sẽ tự đưa lại cụm chưa chắc sau 10 phút, rồi 1 → 3 → 7 → 14 → 30 ngày.</p>
       <div class="vocab-trainer-summary-grid">
         <div><b>${session.stats.correct}</b><span>Đạt</span></div>
         <div><b>${session.stats.wrong}</b><span>Cần ôn lại</span></div>
-        <div><b>${(session.options.reviewToday?allStudyChunks():studyChunks(session.pack)).filter(x=>progressFor(x).skills?.recall>=2).length}</b><span>Gọi ra tốt</span></div>
-        <div><b>${(session.options.reviewToday?allStudyChunks():studyChunks(session.pack)).filter(x=>progressFor(x).skills?.use>=2).length}</b><span>Dùng trong câu</span></div>
+        <div><b>${(session.options.reviewToday?allStudyChunks():studyChunks(session.pack)).filter(x=>progressFor(x).skills?.fast>=2).length}</b><span>Gọi nhanh</span></div>
+        <div><b>${(session.options.reviewToday?allStudyChunks():studyChunks(session.pack)).filter(x=>automaticStatus(progressFor(x)).automatic).length}</b><span>Automatic</span></div>
       </div>
-      <div class="active-chunk-summary-note">Đường học đúng: <b>được cung cấp → hiểu → bắt chước → nhớ lại → viết lại → biến đổi → sử dụng.</b></div>
+      <div class="active-chunk-summary-note">Đường học chung: <b>Hiểu → Recall → Fast Recall → Biến đổi → Phân biệt → Tình huống → Use → Spaced Review.</b></div>
       <div class="vocab-trainer-summary-actions">
         <button id="repeatChunkSession" class="primary-button" type="button">Ôn tiếp</button>
         <button id="vocabSummaryClose" class="secondary-button" type="button">Về Cụm chủ động</button>
@@ -1581,7 +1585,7 @@
   }
 
   function curriculumSummary(saved={}){
-    const data={packs:packs().length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,due:0};
+    const data={packs:packs().length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,fast:0,vary:0,situation:0,automatic:0,due:0};
     packs().forEach(pack=>{
       const chunks=studyChunks(pack);
       data.chunks+=chunks.length;
@@ -1591,6 +1595,10 @@
         if(p.skills.recognize>=2) data.mastered1++;
         if(p.skills.recall>=2) data.mastered2++;
         if(p.skills.use>=2) data.mastered3++;
+        if(p.skills.fast>=2) data.fast++;
+        if(p.skills.vary>=2) data.vary++;
+        if(p.skills.situation>=2) data.situation++;
+        if(automaticStatus(p).automatic) data.automatic++;
         if(p.reviewCount&&p.nextReviewAt<=Date.now()) data.due++;
       });
     });
@@ -1599,12 +1607,16 @@
 
   function packSummary(pack,saved={}){
     const chunks=studyChunks(pack);
-    const result={level1:0,level2:0,level3:0,total1:chunks.length,total2:chunks.length,total3:chunks.length};
+    const result={level1:0,level2:0,level3:0,fast:0,vary:0,situation:0,automatic:0,total1:chunks.length,total2:chunks.length,total3:chunks.length};
     chunks.forEach(card=>{
       const p=progressFor(card,saved);
       if(p.skills.recognize>=2) result.level1++;
       if(p.skills.recall>=2) result.level2++;
       if(p.skills.use>=2) result.level3++;
+      if(p.skills.fast>=2) result.fast++;
+      if(p.skills.vary>=2) result.vary++;
+      if(p.skills.situation>=2) result.situation++;
+      if(automaticStatus(p).automatic) result.automatic++;
     });
     return result;
   }
@@ -1635,6 +1647,7 @@
     packs,
     studyChunks,
     usageExampleMarkup,
+    automaticStatus,
     reviewCount,
     isOpen,
     onRemoteSync
