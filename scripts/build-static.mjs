@@ -171,6 +171,7 @@ const runtimeFiles = [
   "vocabulary-trainer.js",
   "shadowing-v2.js",
   "chunk-listener.js",
+  "english-challenge.js",
   "app.js"
 ];
 
