@@ -217,7 +217,10 @@
         examples:examples.length?examples:[primary],
         usageExamples:kind==='building'
           ? []
-          : [...(window.CHUNK_USAGE_EXAMPLES?.[String(baseEn||'').toLowerCase()]||[])]
+          : (window.CHUNK_USAGE_EXAMPLES?.[String(baseEn||'').toLowerCase()]||[]).map((en,i)=>({
+              en,
+              vi:String(window.CHUNK_USAGE_EXAMPLE_VI?.[String(baseEn||'').toLowerCase()]?.[i]||'')
+            }))
       };
     });
   }
@@ -646,7 +649,8 @@
     </div>`;
   }
 
-  function usageExampleMarkup(card,text=''){
+  function usageExampleMarkup(card,example=''){
+    const text=typeof example==='string'?example:String(example?.en||'');
     const fixed=new Set(
       tokens(card?.baseEn||'')
         .filter(token=>!isGenericSlot(token))
@@ -664,12 +668,19 @@
     if(!list.length) return '';
     return `<section class="chunk-usage-examples">
       <div class="chunk-usage-head"><span>5 CÁCH DÙNG THƯỜNG GẶP</span><small>Giữ chunk cố định · thay phần in đậm</small></div>
-      <div class="chunk-usage-list">${list.map((text,i)=>`
+      <div class="chunk-usage-list">${list.map((example,i)=>{
+        const en=typeof example==='string'?example:String(example?.en||'');
+        const vi=typeof example==='string'?'':String(example?.vi||'');
+        return `
         <article>
           <em>${i+1}</em>
-          <div>${usageExampleMarkup(card,text)}</div>
-          <button data-chunk-speak="${esc(text)}" data-rate="0.92" type="button" aria-label="Nghe cách dùng ${i+1}">${env.uiIcon('volume-2')}</button>
-        </article>`).join('')}</div>
+          <div class="chunk-usage-copy">
+            <div class="chunk-usage-en">${usageExampleMarkup(card,en)}</div>
+            ${vi?`<small class="chunk-usage-vi">${esc(vi)}</small>`:''}
+          </div>
+          <button data-chunk-speak="${esc(en)}" data-rate="0.92" type="button" aria-label="Nghe cách dùng ${i+1}">${env.uiIcon('volume-2')}</button>
+        </article>`;
+      }).join('')}</div>
     </section>`;
   }
 
