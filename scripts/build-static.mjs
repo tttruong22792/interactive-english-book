@@ -192,15 +192,16 @@ if (badSingleSelectorCalls.length) {
   );
 }
 
-// Guard the selector helper itself. A typo such as $$() crashes the app at startup.
+// Guard the selector helper itself. Three dollar signs before "(" is always a typo.
 const badSelectorAliases = [];
+const invalidSelectorAlias = String.fromCharCode(36, 36, 36) + "(";
 for (const relative of uniqueFiles) {
   const source = await readFile(join(root, relative), "utf8");
-  if (source.includes("$$(")) badSelectorAliases.push(relative + ": contains $$(");
+  if (source.includes(invalidSelectorAlias)) badSelectorAliases.push(relative + ": invalid three-dollar selector");
 }
 if (badSelectorAliases.length) {
   throw new Error(
-    "Invalid selector helper alias detected. Use $() for one element or $() for a collection:\n" +
+    "Invalid selector helper alias detected. Use the one-element or collection selector helper correctly:\n" +
     badSelectorAliases.join("\n")
   );
 }
