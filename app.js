@@ -436,7 +436,7 @@
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive(['lesson','vocab','tenses','shadowing','practice'].includes(r.name) ? 'patterns' : r.name);
+    setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge'].includes(r.name) ? 'patterns' : r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
@@ -445,6 +445,7 @@
       else if (r.name === 'lesson') await renderLesson(r.id,r.view);
       else if (r.name === 'vocab') renderVocab();
       else if (r.name === 'practice') await renderPracticeHub();
+      else if (r.name === 'challenge') await renderChallenge();
       else if (r.name === 'shadowing') await renderShadowing();
       else if (r.name === 'progress') await renderProgress();
       else if (r.name === 'settings') renderSettings();
@@ -599,6 +600,10 @@
       <section class="english-grammar-entry english-practice-entry">
         <div><span class="eyebrow">USE · PRODUCTIVE PRACTICE</span><h2>Luyện tập tiếng Anh</h2><p>Luyện toàn bộ nội dung đã học theo từng bài hoặc nhiều bài: Việt → Anh, nhận diện câu, phản xạ và ôn lại những phần còn yếu.</p></div>
         <button class="primary-button" data-go="practice">Mở Luyện tập →</button>
+      </section>
+      <section class="english-grammar-entry english-challenge-entry">
+        <div><span class="eyebrow">FINAL RETRIEVAL</span><h2>Thử thách</h2><p>Gom toàn bộ câu ví dụ đang dùng trong Mẫu câu, Cụm chủ động, Các thì, Shadowing và Luyện tập để kiểm tra Việt → English.</p></div>
+        <button class="primary-button" data-go="challenge">Mở Thử thách →</button>
       </section>
       <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
       <section id="patternsGrid" class="card-grid"></section>`;
@@ -2638,6 +2643,60 @@
       updateShadowPlayer();
       toast('Hoàn thành buổi shadowing.');
     }
+  }
+
+  async function renderChallenge(){
+    L=null;
+    if(!window.EnglishChallenge?.render) throw new Error('English Challenge is not available.');
+
+    const metas=(STORE?.list({language:'en',category:'patterns'})||[])
+      .filter(item=>item.status==='available'&&item.source)
+      .sort((a,b)=>(a.order||0)-(b.order||0));
+    const lessons=await Promise.all(metas.map(item=>ensureContent(item.id)));
+
+    const shadowEnv={
+      STORE,
+      state,
+      main:$('#mainView'),
+      ensureContent,
+      collectLessonSentences,
+      setHeader,
+      setLesson:(lesson)=>{L=lesson;},
+      saveState,
+      speak,
+      startRecognition,
+      hydrateSentences,
+      bestQuizAnswerDiff,
+      quizWordDiffHTML,
+      normalizeText,
+      uiIcon,
+      esc,
+      escAttr,
+      toast
+    };
+
+    window.EnglishChallenge.render({
+      state,
+      main:$('#mainView'),
+      lessons,
+      collectLessonSentences,
+      shadowItemsFromLessons,
+      shadowChallengeItems:(lesson)=>{
+        if(window.ShadowingV2?.collectChallengeItems){
+          return window.ShadowingV2.collectChallengeItems(shadowEnv,lesson);
+        }
+        return shadowItemsFromLessons([lesson]);
+      },
+      setHeader,
+      saveState,
+      speak,
+      bestQuizAnswerDiff,
+      quizWordDiffHTML,
+      uiIcon,
+      esc,
+      escAttr,
+      toast
+    });
   }
 
   async function renderShadowing(){
