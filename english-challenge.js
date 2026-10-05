@@ -363,7 +363,7 @@
       '<div class="challenge-setup-head"><div><span class="eyebrow">CHALLENGE SETUP</span><h2>Chọn phạm vi kiểm tra</h2><p>Mặc định ưu tiên các câu chưa gặp, từng sai, dùng gợi ý hoặc phản hồi chậm.</p></div><strong>'+available+' câu phù hợp</strong></div>'+
       '<div class="challenge-config-grid">'+
         '<label><span>Nguồn câu</span><select id="challengeSource">'+
-          Object.keys(MODULES).map(function(id){return '<option value="'+id+'" '+(s.source===id?'selected':'')+'>'+esc(MODULES[id].label)+' · '+countByModule(all,id)+'</option>';}).join('')+
+          Object.keys(MODULES).map(function(id){var count=id==='all'?all.length:countByModule(all,id);return '<option value="'+id+'" '+(s.source===id?'selected':'')+'>'+esc(MODULES[id].label)+' · '+count+'</option>';}).join('')+
         '</select></label>'+
         '<label><span>Phạm vi</span><select id="challengeScope">'+
           '<option value="all" '+(s.scope==='all'?'selected':'')+'>Toàn bộ English</option>'+
