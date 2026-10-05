@@ -167,6 +167,7 @@ const runtimeFiles = [
   "ai-coach.js",
   "personalization-engine.js",
   "data/english/active-study-packs.js",
+  "data/english/chunk-usage-vi.js",
   "vocabulary-trainer.js",
   "shadowing-v2.js",
   "chunk-listener.js",
