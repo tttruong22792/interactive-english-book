@@ -53,12 +53,17 @@ jobs:
           node --check vocabulary-trainer.js
           node --check chunk-listener.js
           node --check scripts/test-chunk-listener.mjs
+          node --check scripts/test-chunk-usage-examples.mjs
           node --check data/english/active-study-packs.js
           node --check cloud-sync.js
 
       - name: Test listening lesson switching
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-chunk-listener.mjs
+
+      - name: Test five-use chunk examples
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-chunk-usage-examples.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
