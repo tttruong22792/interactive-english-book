@@ -301,6 +301,14 @@ Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
       }
     });
   });
+
+  Object.values(context.window.CHUNK_USAGE_EXAMPLES || {}).forEach((examples) => {
+    (Array.isArray(examples) ? examples : []).forEach((text) => {
+      if (typeof text === "string" && text.trim()) {
+        addManifestAudio(text, "chunk-usage-example", "english-active-chunks");
+      }
+    });
+  });
 }
 
 for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
