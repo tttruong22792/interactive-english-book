@@ -277,6 +277,7 @@
       recall:Number(p.skills.recall||0)>=2,
       fast:Number(p.skills.fast||0)>=2 && Number(p.fastBestMs||Infinity)<=1000,
       vary:Number(p.skills.vary||0)>=2,
+      discriminate:Number(p.skills.discriminate||0)>=1,
       situation:Number(p.skills.situation||0)>=2,
       spaced:dates.size>=3
     };
@@ -420,40 +421,126 @@
     return list[idx]||list[0];
   }
 
+  function importantChunks(pack=null){
+    const list=pack?studyChunks(pack):allStudyChunks();
+    return list.filter(card=>card.kind!=='building');
+  }
+
+  function nextModeForProgress(p){
+    const skills=p.skills||{};
+    if(Number(p.reviewCount||0)===0 || Number(skills.recognize||0)<2) return 'learn';
+    if(Number(skills.recall||0)<2) return 'write';
+    if(Number(skills.fast||0)<2 || Number(p.fastBestMs||Infinity)>1000) return 'fast';
+    if(Number(skills.vary||0)<2) return 'variation';
+    if(Number(skills.discriminate||0)<1) return 'mix';
+    if(Number(skills.situation||0)<2) return 'situation';
+    if(Number(skills.use||0)<2) return 'sentence';
+    return 'write';
+  }
+
+  function pathStageMeta(mode){
+    return {
+      learn:{eyebrow:'LEARN',title:'Hiểu sâu 5 cụm mới',reason:'Hiểu nghĩa như một khối, nghe đúng âm và nhìn 5 cách dùng thường gặp.'},
+      write:{eyebrow:'AUTOMATE · RECALL',title:'Ý → gọi cụm tiếng Anh',reason:'Không nhìn đáp án trước. Tự kéo cả chunk ra khỏi trí nhớ.'},
+      fast:{eyebrow:'AUTOMATE · SPEED',title:'Gọi cụm trong khoảng 1 giây',reason:'Đo phản xạ để loại bỏ bước dịch từng từ trong đầu.'},
+      variation:{eyebrow:'AUTOMATE · VARIATION',title:'Biến đổi cùng một chunk',reason:'Giữ phần cố định, thay người/vật/tình huống để tránh học một câu chết.'},
+      mix:{eyebrow:'AUTOMATE · MIX',title:'Phân biệt cụm dễ nhầm',reason:'Trộn take / make / get và các cụm gần nhau để buộc não chọn đúng khối.'},
+      situation:{eyebrow:'AUTOMATE · SITUATION',title:'Tình huống → câu tiếng Anh',reason:'Bỏ cách học từ đơn, chuyển sang ý định rồi tự tạo câu.'},
+      sentence:{eyebrow:'USE',title:'Ý → câu hoàn chỉnh',reason:'Dùng chunk trong câu thật, không dừng ở mức biết nghĩa.'}
+    }[mode]||{eyebrow:'ACTIVE CHUNK',title:'Ôn cụm chủ động',reason:'Tiếp tục củng cố cụm cần luyện.'};
+  }
+
+  function nextPathStep(saved=env?.state?.saved||{},lessonId=''){
+    const preferred=packById(lessonId)||packs()[0]||null;
+    const preferredCards=importantChunks(preferred);
+    const allImportant=importantChunks();
+
+    const due=allImportant
+      .filter(card=>{
+        const p=progressFor(card,saved);
+        return Number(p.reviewCount||0)>0 && Number(p.nextReviewAt||0)<=Date.now() && !automaticStatus(p).automatic;
+      })
+      .sort((a,b)=>Number(progressFor(a,saved).nextReviewAt||0)-Number(progressFor(b,saved).nextReviewAt||0));
+
+    const chooseGroup=(pool)=>{
+      if(!pool.length) return null;
+      const first=pool[0];
+      const mode=nextModeForProgress(progressFor(first,saved));
+      const same=pool.filter(card=>nextModeForProgress(progressFor(card,saved))===mode).slice(0,5);
+      return {mode,lessonId:first.pack.lessonId,cardKeys:same.map(card=>card.key),count:same.length,due:pool===due,...pathStageMeta(mode)};
+    };
+
+    const dueStep=chooseGroup(due);
+    if(dueStep) return dueStep;
+
+    const unseen=preferredCards.filter(card=>Number(progressFor(card,saved).reviewCount||0)===0).slice(0,5);
+    if(unseen.length){
+      return {mode:'learn',lessonId:preferred?.lessonId||unseen[0].pack.lessonId,cardKeys:unseen.map(card=>card.key),count:unseen.length,due:false,...pathStageMeta('learn')};
+    }
+
+    const incompletePreferred=preferredCards
+      .filter(card=>!automaticStatus(progressFor(card,saved)).automatic)
+      .sort((a,b)=>Number(progressFor(a,saved).lastReviewedAt||0)-Number(progressFor(b,saved).lastReviewedAt||0));
+    const preferredStep=chooseGroup(incompletePreferred);
+    if(preferredStep) return preferredStep;
+
+    const incompleteGlobal=allImportant
+      .filter(card=>!automaticStatus(progressFor(card,saved)).automatic)
+      .sort((a,b)=>Number(progressFor(a,saved).lastReviewedAt||0)-Number(progressFor(b,saved).lastReviewedAt||0));
+    const globalStep=chooseGroup(incompleteGlobal);
+    if(globalStep) return globalStep;
+
+    const oldest=allImportant.slice().sort((a,b)=>Number(progressFor(a,saved).lastReviewedAt||0)-Number(progressFor(b,saved).lastReviewedAt||0)).slice(0,5);
+    return {mode:'situation',lessonId:oldest[0]?.pack?.lessonId||preferred?.lessonId||'',cardKeys:oldest.map(card=>card.key),count:oldest.length,due:false,complete:true,...pathStageMeta('situation'),title:'Duy trì phản xạ Automatic',reason:'Các cụm chính đã đạt chuẩn; tiếp tục dùng chúng trong tình huống mới để không bị rơi.'};
+  }
+
   function buildSession(overrides={}){
     const stored=settings();
     const persistentOverrides={...(overrides||{})};
     delete persistentOverrides.reviewToday;
+    delete persistentOverrides.autoPath;
+    delete persistentOverrides.cardKeys;
     Object.assign(stored,persistentOverrides);
+
+    let pathStep=null;
+    if(overrides.autoPath){
+      pathStep=nextPathStep(env.state.saved||{},overrides.lessonId||stored.lessonId);
+      overrides={...overrides,mode:pathStep.mode,lessonId:pathStep.lessonId||overrides.lessonId||stored.lessonId,size:String(Math.max(1,pathStep.count||5)),cardKeys:pathStep.cardKeys};
+    }
+
     env.saveState();
     const s={...stored,...(overrides||{})};
     const isReview=!!s.reviewToday;
     const pack=packById(s.lessonId);
     let cards=isReview?reviewCandidates():studyChunks(pack);
 
-    if(!isReview&&s.mode==='mix'){
+    if(Array.isArray(s.cardKeys)&&s.cardKeys.length){
+      const wanted=new Set(s.cardKeys);
+      cards=allStudyChunks().filter(card=>wanted.has(card.key));
+    }else if(!isReview&&s.mode==='mix'){
       cards=allStudyChunks().filter(x=>x.kind!=='building');
     }else if(!isReview&&['guided','fast','variation','situation'].includes(s.mode)){
       cards=cards.filter(x=>x.kind!=='building');
     }
 
-    if(!isReview&&s.priority==='core') cards=cards.filter(x=>x.priority==='core');
+    if(!isReview&&s.priority==='core'&&!Array.isArray(s.cardKeys)) cards=cards.filter(x=>x.priority==='core');
 
-    if(s.order==='random') cards=[...cards].sort(()=>Math.random()-.5);
-    else if(!isReview) cards=[...cards].sort((a,b)=>{
+    if(s.order==='random'&&!Array.isArray(s.cardKeys)) cards=[...cards].sort(()=>Math.random()-.5);
+    else if(!isReview&&!Array.isArray(s.cardKeys)) cards=[...cards].sort((a,b)=>{
       const ar=dueRank(a),br=dueRank(b);
       if(ar!==br) return ar-br;
       return Number(progressFor(a).nextReviewAt||0)-Number(progressFor(b).nextReviewAt||0);
     });
 
-    const n=s.size==='all'?cards.length:Math.max(1,Number(s.size)||10);
+    const n=Array.isArray(s.cardKeys)?cards.length:(s.size==='all'?cards.length:Math.max(1,Number(s.size)||10));
     cards=cards.slice(0,n);
 
     session={
       pack,
       cards,
       index:0,
-      options:{...s,reviewToday:isReview},
+      options:{...s,reviewToday:isReview,autoPath:!!overrides.autoPath},
+      pathStep,
       revealed:false,
       hintLevel:0,
       attempts:0,
@@ -544,8 +631,10 @@
       <span class="${s.recognize>=2?'done':''}">1 · Nhận ra</span>
       <span class="${s.recall>=2?'done':''}">2 · Gọi ra</span>
       <span class="${s.fast>=2?'done':''}">3 · Nhanh</span>
-      <span class="${s.vary>=2&&s.situation>=2?'done':''}">4 · Linh hoạt</span>
-      <span class="${auto?'done automatic':''}">5 · Automatic</span>
+      <span class="${s.vary>=2?'done':''}">4 · Biến đổi</span>
+      <span class="${s.discriminate>=1?'done':''}">5 · Phân biệt</span>
+      <span class="${s.situation>=2?'done':''}">6 · Tình huống</span>
+      <span class="${auto?'done automatic':''}">7 · Automatic</span>
     </div>`;
   }
 
@@ -1564,11 +1653,15 @@
       </div>
       <div class="active-chunk-summary-note">Đường học chung: <b>Hiểu → Recall → Fast Recall → Biến đổi → Phân biệt → Tình huống → Use → Spaced Review.</b></div>
       <div class="vocab-trainer-summary-actions">
-        <button id="repeatChunkSession" class="primary-button" type="button">Ôn tiếp</button>
+        ${session.options.autoPath?'<button id="continueActivePath" class="primary-button" type="button">Tiếp tục bước phù hợp tiếp theo →</button>':'<button id="repeatChunkSession" class="primary-button" type="button">Ôn tiếp</button>'}
         <button id="vocabSummaryClose" class="secondary-button" type="button">Về Cụm chủ động</button>
       </div>
     </div>`;
-    $('#repeatChunkSession').onclick=()=>{buildSession();render();};
+    $('#repeatChunkSession')?.addEventListener('click',()=>{buildSession();render();});
+    $('#continueActivePath')?.addEventListener('click',()=>{
+      buildSession({autoPath:true,lessonId:session.pack?.lessonId||settings().lessonId});
+      render();
+    });
     $('#vocabSummaryClose').onclick=close;
   }
 
@@ -1585,21 +1678,23 @@
   }
 
   function curriculumSummary(saved={}){
-    const data={packs:packs().length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,fast:0,vary:0,situation:0,automatic:0,due:0};
+    const data={packs:packs().length,chunks:0,core:0,important:0,mastered1:0,mastered2:0,mastered3:0,fast:0,vary:0,discriminate:0,situation:0,automatic:0,due:0};
     packs().forEach(pack=>{
       const chunks=studyChunks(pack);
       data.chunks+=chunks.length;
       data.core+=chunks.filter(x=>x.priority==='core').length;
+      data.important+=chunks.filter(x=>x.kind!=='building').length;
       chunks.forEach(card=>{
         const p=progressFor(card,saved);
         if(p.skills.recognize>=2) data.mastered1++;
         if(p.skills.recall>=2) data.mastered2++;
         if(p.skills.use>=2) data.mastered3++;
-        if(p.skills.fast>=2) data.fast++;
-        if(p.skills.vary>=2) data.vary++;
-        if(p.skills.situation>=2) data.situation++;
-        if(automaticStatus(p).automatic) data.automatic++;
-        if(p.reviewCount&&p.nextReviewAt<=Date.now()) data.due++;
+        if(card.kind!=='building'&&p.skills.fast>=2) data.fast++;
+        if(card.kind!=='building'&&p.skills.vary>=2) data.vary++;
+        if(card.kind!=='building'&&p.skills.discriminate>=1) data.discriminate++;
+        if(card.kind!=='building'&&p.skills.situation>=2) data.situation++;
+        if(card.kind!=='building'&&automaticStatus(p).automatic) data.automatic++;
+        if(card.kind!=='building'&&p.reviewCount&&p.nextReviewAt<=Date.now()) data.due++;
       });
     });
     return data;
@@ -1607,16 +1702,18 @@
 
   function packSummary(pack,saved={}){
     const chunks=studyChunks(pack);
-    const result={level1:0,level2:0,level3:0,fast:0,vary:0,situation:0,automatic:0,total1:chunks.length,total2:chunks.length,total3:chunks.length};
+    const important=chunks.filter(x=>x.kind!=='building');
+    const result={level1:0,level2:0,level3:0,fast:0,vary:0,discriminate:0,situation:0,automatic:0,total1:chunks.length,total2:chunks.length,total3:chunks.length,totalImportant:important.length};
     chunks.forEach(card=>{
       const p=progressFor(card,saved);
       if(p.skills.recognize>=2) result.level1++;
       if(p.skills.recall>=2) result.level2++;
       if(p.skills.use>=2) result.level3++;
-      if(p.skills.fast>=2) result.fast++;
-      if(p.skills.vary>=2) result.vary++;
-      if(p.skills.situation>=2) result.situation++;
-      if(automaticStatus(p).automatic) result.automatic++;
+      if(card.kind!=='building'&&p.skills.fast>=2) result.fast++;
+      if(card.kind!=='building'&&p.skills.vary>=2) result.vary++;
+      if(card.kind!=='building'&&p.skills.discriminate>=1) result.discriminate++;
+      if(card.kind!=='building'&&p.skills.situation>=2) result.situation++;
+      if(card.kind!=='building'&&automaticStatus(p).automatic) result.automatic++;
     });
     return result;
   }
@@ -1624,7 +1721,7 @@
   function open(nextEnv,overrides={}){
     env=nextEnv;
     buildSession(overrides);
-    env.setHeader(overrides.reviewToday?'Learning › Ôn hôm nay':'Learning › Chunk Trainer','Cụm chủ động');
+    env.setHeader(overrides.autoPath?'English › Active Path':overrides.reviewToday?'English › Ôn hôm nay':'English › Chunk Trainer','Cụm chủ động');
     document.documentElement.classList.add('vocab-trainer-open');
     bindViewportTracking();
     env.main.innerHTML='<section id="vocabTrainerRoot" class="vocab-trainer-root"></section>';
@@ -1648,6 +1745,7 @@
     studyChunks,
     usageExampleMarkup,
     automaticStatus,
+    nextPathStep,
     reviewCount,
     isOpen,
     onRemoteSync
