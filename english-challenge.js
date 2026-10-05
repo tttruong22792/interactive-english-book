@@ -50,13 +50,13 @@
     if(!env.state.englishChallenge || typeof env.state.englishChallenge!=='object'){
       env.state.englishChallenge={
         version:1,
-        settings:{source:'all',scope:'all',size:'20',order:'weak'},
+        settings:{source:'all',lessonId:'all',scope:'all',size:'20',order:'weak'},
         progress:{},
         runs:[]
       };
     }
     var s=env.state.englishChallenge;
-    s.settings=Object.assign({source:'all',scope:'all',size:'20',order:'weak'},s.settings||{});
+    s.settings=Object.assign({source:'all',lessonId:'all',scope:'all',size:'20',order:'weak'},s.settings||{});
     s.progress=s.progress||{};
     s.runs=Array.isArray(s.runs)?s.runs:[];
     return s;
@@ -243,6 +243,10 @@
       out=out.filter(function(item){return item.modules.indexOf(settings.source)>=0;});
     }
 
+    if(settings.lessonId && settings.lessonId!=='all'){
+      out=out.filter(function(item){return item.lessonIds.indexOf(settings.lessonId)>=0;});
+    }
+
     if(settings.scope==='current'){
       var id=currentLessonId(env);
       out=out.filter(function(item){return id && item.lessonIds.indexOf(id)>=0;});
@@ -364,6 +368,12 @@
       '<div class="challenge-config-grid">'+
         '<label><span>Nguồn câu</span><select id="challengeSource">'+
           Object.keys(MODULES).map(function(id){var count=id==='all'?all.length:countByModule(all,id);return '<option value="'+id+'" '+(s.source===id?'selected':'')+'>'+esc(MODULES[id].label)+' · '+count+'</option>';}).join('')+
+        '</select></label>'+
+        '<label><span>Mẫu câu</span><select id="challengeLesson">'+
+          '<option value="all" '+(s.lessonId==='all'?'selected':'')+'>Tất cả mẫu câu</option>'+
+          (env.lessons||[]).map(function(lesson){
+            return '<option value="'+escAttr(lesson.id)+'" '+(s.lessonId===lesson.id?'selected':'')+'>#'+String(lesson.order||'').padStart(2,'0')+' · '+esc(lesson.title||'')+'</option>';
+          }).join('')+
         '</select></label>'+
         '<label><span>Phạm vi</span><select id="challengeScope">'+
           '<option value="all" '+(s.scope==='all'?'selected':'')+'>Toàn bộ English</option>'+
@@ -609,6 +619,7 @@
     var root=stateFor(env);
     [
       ['challengeSource','source'],
+      ['challengeLesson','lessonId'],
       ['challengeScope','scope'],
       ['challengeSize','size'],
       ['challengeOrder','order']
