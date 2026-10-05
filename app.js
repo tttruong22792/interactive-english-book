@@ -1955,32 +1955,33 @@
   
     const packs=window.VocabularyTrainer?.packs?.()||window.ACTIVE_STUDY_PACK_LIST||[];
     const sync=vocabSyncStatus();
-    const summary=window.VocabularyTrainer?.curriculumSummary?.(state.saved||{})||{packs:packs.length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,due:0};
+    const summary=window.VocabularyTrainer?.curriculumSummary?.(state.saved||{})||{packs:packs.length,chunks:0,core:0,mastered1:0,mastered2:0,mastered3:0,fast:0,vary:0,situation:0,automatic:0,due:0};
     const trainerSettings=state.vocabTrainerSettings||{lessonId:packs[0]?.lessonId||'en-pattern-001',mode:'write',size:'10',priority:'all'};
     const selected=window.VocabularyTrainer?.packById?.(state.vocabHubLessonId||trainerSettings.lessonId)||packs[0]||null;
     const reviewCount=window.VocabularyTrainer?.reviewCount?.(state.saved||{})||0;
     const allChunks=packs.flatMap(pack=>window.VocabularyTrainer?.studyChunks?.(pack)||[]);
     const view=state.vocabHubView||'today';
-    const mainView=view==='lesson'?'lessons':view;
+    const normalizedView=view==='lessons'?'learn':view==='practice'?'automate':view;
+    const mainView=normalizedView==='lesson'?'learn':normalizedView;
   
     const modes=[
-      ['learn','Học cụm','Nghe, hiểu và gặp cụm trong câu','Nhận ra','volume-2'],
-      ['write','Tập viết Việt → Anh','Tự gọi lại và gõ chunk tiếng Anh','Gọi ra','keyboard'],
-      ['cloze','Điền cụm','Điền đúng chunk vào câu thật','Gọi ra','clipboard-check'],
-      ['sentence','Việt → câu Anh','Viết lại cả câu đã được học','Dùng trong câu','book-open'],
-      ['guided','Ghép & dùng cụm','Chunk nhỏ → ghép → câu → tình huống','Dùng tự động','play']
+      ['write','Active Recall','Ý tiếng Việt → tự gọi cả chunk, không chọn A/B/C','RECALL','keyboard'],
+      ['fast','Fast Recall','Bật chunk ra bằng giọng nói; hệ thống đo thời gian bắt đầu nói','SPEED','mic'],
+      ['variation','Biến đổi','Giữ chunk cố định và thay slot bằng 5 cách dùng thực tế','VARIATION','book-open'],
+      ['mix','Confusion Training','Trộn các cụm trên toàn hệ thống để xử lý take/make/get…','DISCRIMINATION','clipboard-check'],
+      ['situation','Tình huống → English','Không nhìn chunk; từ ý định tự tạo câu hoàn chỉnh','TRANSFER','play']
     ];
   
     function trainerProgress(card){
       const raw=state.saved?.[card.key]?.trainer||{};
-      const skills={recognize:0,recall:0,use:0,writing:0,...(raw.skills||{})};
+      const skills={understand:0,recognize:0,recall:0,fast:0,vary:0,discriminate:0,situation:0,use:0,writing:0,...(raw.skills||{})};
       return {...raw,skills};
     }
   
     function packProgress(pack){
-      const p=window.VocabularyTrainer?.packSummary?.(pack,state.saved||{})||{level1:0,level2:0,level3:0,total1:1,total2:1,total3:1};
+      const p=window.VocabularyTrainer?.packSummary?.(pack,state.saved||{})||{level1:0,level2:0,level3:0,fast:0,vary:0,situation:0,automatic:0,total1:1,total2:1,total3:1};
       const total=Math.max(1,p.total1||1);
-      const percent=Math.round(((p.level1+p.level2+p.level3)/(total*3))*100);
+      const percent=Math.round(((p.level1+p.level2+p.fast+p.vary+p.situation+p.automatic)/(total*6))*100);
       return {...p,percent};
     }
   
@@ -1994,9 +1995,10 @@
     function hubNav(){
       const tabs=[
         ['today','Hôm nay','clipboard-check'],
+        ['learn','Learn','book-open'],
+        ['automate','Automate','mic'],
+        ['use','Use','play'],
         ['listen','Nghe','headphones'],
-        ['lessons','Bài học','book-open'],
-        ['practice','Luyện tập','play'],
         ['library','Kho cụm','bookmark']
       ];
       return `<nav class="vocab-hub-nav" aria-label="Điều hướng Cụm từ">
@@ -2052,10 +2054,19 @@
           </div>
         </section>`:''}
   
+        <section class="vocab-automaticity-strip">
+          <div><b>${summary.mastered2}</b><span>Recall</span></div>
+          <div><b>${summary.fast}</b><span>≤1s / Fast</span></div>
+          <div><b>${summary.vary}</b><span>Biến đổi</span></div>
+          <div><b>${summary.situation}</b><span>Tình huống</span></div>
+          <div class="is-auto"><b>${summary.automatic}</b><span>Automatic</span></div>
+        </section>
+
         <section class="vocab-today-mini">
-          <button data-vocab-screen="listen" type="button"><span>${uiIcon('headphones')}</span><div><b>Nghe khi di chuyển</b><small>Playlist cụm đáng học, tự lặp và chuyển cụm</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="practice" type="button"><span>${uiIcon('keyboard')}</span><div><b>Tập viết nhanh</b><small>Việt → chunk Anh khi có vài phút rảnh</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="library" type="button"><span>${uiIcon('bookmark')}</span><div><b>Mở kho cụm</b><small>Tìm cụm đã học, cụm yếu hoặc đã lưu</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="learn" type="button"><span>${uiIcon('book-open')}</span><div><b>Learn</b><small>5 cụm mới · hiểu + audio + 5 cách dùng</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="automate" type="button"><span>${uiIcon('mic')}</span><div><b>Automate</b><small>Recall → Fast → Variation → Mix → Situation</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="use" type="button"><span>${uiIcon('play')}</span><div><b>Use</b><small>Shadowing → tự nói → câu mới của chính bạn</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="listen" type="button"><span>${uiIcon('headphones')}</span><div><b>Nghe khi di chuyển</b><small>Ôn âm thanh các cụm và câu đã học</small></div>${uiIcon('arrow-right')}</button>
         </section>
       `,'Hôm nay','Mở ra là biết ngay nên học gì tiếp theo.');
     }
@@ -2078,7 +2089,7 @@
             </button>`;
           }).join('')}
         </div>
-      `,'Bài học','Học cụm theo từng mẫu câu, không trộn quá nhiều nội dung trên một màn hình.');
+      `,'Learn','Mỗi bài chỉ lấy các cụm giá trị cao; học sâu 5 cụm mới thay vì chạy theo số lượng.');
     }
   
     function lessonDetailScreen(){
@@ -2119,8 +2130,10 @@
           <p>${esc(pack.meaning)}</p>
           <div class="vocab-detail-progress">
             <div><b>${p.level1}/${p.total1}</b><span>Nhận ra</span></div>
-            <div><b>${p.level2}/${p.total2}</b><span>Gọi ra</span></div>
-            <div><b>${p.level3}/${p.total3}</b><span>Dùng</span></div>
+            <div><b>${p.level2}/${p.total2}</b><span>Recall</span></div>
+            <div><b>${p.fast}/${p.total1}</b><span>Fast</span></div>
+            <div><b>${Math.min(p.vary,p.situation)}/${p.total1}</b><span>Linh hoạt</span></div>
+            <div class="is-auto"><b>${p.automatic}/${p.total1}</b><span>Automatic</span></div>
           </div>
         </section>
   
@@ -2135,9 +2148,9 @@
         </section>`:''}
   
         <div class="vocab-detail-actions">
-          <button id="startLessonChunks" class="primary-button" type="button">Học 5 cụm ${uiIcon('arrow-right')}</button>
+          <button id="startLessonChunks" class="primary-button" type="button">Learn · 5 cụm mới ${uiIcon('arrow-right')}</button>
+          <button id="practiceThisLesson" class="secondary-button" type="button">Automate cụm của bài</button>
           <button id="listenThisLesson" class="secondary-button" type="button">${uiIcon('headphones')} Nghe cụm của bài</button>
-          <button id="practiceThisLesson" class="secondary-button" type="button">Chọn cách luyện</button>
         </div>
       `,`Mẫu ${String(pack.order).padStart(2,'0')}`,'Một màn hình chỉ để xem và bắt đầu học cụm của bài này.');
     }
