@@ -214,7 +214,10 @@
         modelVi:primary.vi,
         phraseEn:primary.phraseEn||baseEn,
         phraseVi:primary.phraseVi||baseVi,
-        examples:examples.length?examples:[primary]
+        examples:examples.length?examples:[primary],
+        usageExamples:kind==='building'
+          ? []
+          : [...(window.CHUNK_USAGE_EXAMPLES?.[String(baseEn||'').toLowerCase()]||[])]
       };
     });
   }
@@ -468,13 +471,31 @@
     </div>`;
   }
 
-  function examplesHTML(card){
-    return `<div class="chunk-example-list">${card.examples.map((x,i)=>`
-      <article>
-        <b>${esc(x.en)}</b>
-        <span>${esc(x.vi)}</span>
-        <button data-chunk-speak="${esc(x.en)}" data-rate="0.92" type="button" aria-label="Nghe ví dụ">${env.uiIcon('volume-2')}</button>
-      </article>`).join('')}</div>`;
+  function usageExampleMarkup(card,text=''){
+    const fixed=new Set(
+      tokens(card?.baseEn||'')
+        .filter(token=>!isGenericSlot(token))
+        .map(stem)
+    );
+    return String(text||'').split(/\s+/).filter(Boolean).map(word=>{
+      const key=stem(normalize(word));
+      const html=esc(word);
+      return key&&fixed.has(key)?`<span>${html}</span>`:`<strong>${html}</strong>`;
+    }).join(' ');
+  }
+
+  function usageExamplesHTML(card){
+    const list=card?.usageExamples||[];
+    if(!list.length) return '';
+    return `<section class="chunk-usage-examples">
+      <div class="chunk-usage-head"><span>5 CÁCH DÙNG THƯỜNG GẶP</span><small>Giữ chunk cố định · thay phần in đậm</small></div>
+      <div class="chunk-usage-list">${list.map((text,i)=>`
+        <article>
+          <em>${i+1}</em>
+          <div>${usageExampleMarkup(card,text)}</div>
+          <button data-chunk-speak="${esc(text)}" data-rate="0.92" type="button" aria-label="Nghe cách dùng ${i+1}">${env.uiIcon('volume-2')}</button>
+        </article>`).join('')}</div>
+    </section>`;
   }
 
   function learnHTML(card){
@@ -485,8 +506,8 @@
       ${audioButtons(card.baseEn)}
       ${session.revealed?`
         <div class="chunk-meaning"><strong>${esc(card.baseVi)}</strong></div>
-        <div class="chunk-in-context"><span>Ví dụ trong câu · không phải một chunk duy nhất</span><b>${esc(session.variant.en)}</b><small>${esc(session.variant.vi)}</small></div>
-        ${examplesHTML(card)}
+        ${usageExamplesHTML(card)}
+        <div class="chunk-in-context"><span>Ví dụ trong câu hoàn chỉnh</span><b>${esc(session.variant.en)}</b><small>${esc(session.variant.vi)}</small></div>
         <div class="chunk-rating-row">
           <button data-learn-rate="again" type="button"><b>Chưa nhớ</b><span>Đưa lại sớm</span></button>
           <button data-learn-rate="hard" type="button"><b>Nhận chậm</b><span>Phải nghĩ</span></button>
@@ -1330,6 +1351,7 @@
     packById,
     packs,
     studyChunks,
+    usageExampleMarkup,
     reviewCount,
     isOpen,
     onRemoteSync
