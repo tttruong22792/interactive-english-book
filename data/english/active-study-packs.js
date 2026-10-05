@@ -449,4 +449,666 @@ Object.values(window.ACTIVE_STUDY_PACKS).forEach(pack=>{
   pack.buildingBlocks=MICRO_BUILDING_BLOCKS[pack.order]||[];
 });
 
+
+window.CHUNK_USAGE_EXAMPLES = {
+  "be able to": [
+    "Be able to help.",
+    "Be able to join us.",
+    "Be able to finish on time.",
+    "Be able to explain it clearly.",
+    "Be able to come tomorrow."
+  ],
+  "build a solid foundation": [
+    "Build a solid foundation in English.",
+    "Build a solid foundation first.",
+    "Build a solid foundation for the future.",
+    "Build a solid foundation in the basics.",
+    "Build a solid foundation before moving on."
+  ],
+  "check it out": [
+    "Check it out when you have time.",
+    "Check it out later.",
+    "Check it out online.",
+    "Check it out for yourself.",
+    "Check it out before you decide."
+  ],
+  "come along": [
+    "Come along with us.",
+    "Come along to the meeting.",
+    "Come along this weekend.",
+    "Come along if you want.",
+    "Come along for the ride."
+  ],
+  "come with me": [
+    "Come with me to the store.",
+    "Come with me upstairs.",
+    "Come with me outside.",
+    "Come with me to the office.",
+    "Come with me for a minute."
+  ],
+  "cut back on something": [
+    "Cut back on sugar.",
+    "Cut back on coffee.",
+    "Cut back on screen time.",
+    "Cut back on overtime.",
+    "Cut back on unnecessary spending."
+  ],
+  "cut back on spending": [
+    "Cut back on spending this month.",
+    "Cut back on spending for a while.",
+    "Cut back on spending before the holidays.",
+    "Cut back on spending on eating out.",
+    "Cut back on spending to save more."
+  ],
+  "cut down on expenses": [
+    "Cut down on monthly expenses.",
+    "Cut down on unnecessary expenses.",
+    "Cut down on household expenses.",
+    "Cut down on business expenses.",
+    "Cut down on travel expenses."
+  ],
+  "deal with it later": [
+    "Deal with it later today.",
+    "Deal with it after lunch.",
+    "Deal with it tomorrow.",
+    "Deal with it when I have time.",
+    "Deal with it once I finish this."
+  ],
+  "do it myself": [
+    "Do it myself this time.",
+    "Do it myself instead.",
+    "Do it myself if necessary.",
+    "Do it myself from now on.",
+    "Do it myself without help."
+  ],
+  "double-check something": [
+    "Double-check the address.",
+    "Double-check the numbers.",
+    "Double-check the details.",
+    "Double-check the settings.",
+    "Double-check the schedule."
+  ],
+  "expand my vocabulary": [
+    "Expand my vocabulary every day.",
+    "Expand my vocabulary through reading.",
+    "Expand my vocabulary with useful phrases.",
+    "Expand my vocabulary for work.",
+    "Expand my vocabulary little by little."
+  ],
+  "figure it out together": [
+    "Figure it out together step by step.",
+    "Figure it out together after lunch.",
+    "Figure it out together tomorrow.",
+    "Figure it out together if it breaks.",
+    "Figure it out together before we decide."
+  ],
+  "figure out": [
+    "Figure out what happened.",
+    "Figure out how it works.",
+    "Figure out what to do.",
+    "Figure out where to go.",
+    "Figure out why it stopped."
+  ],
+  "figure out something": [
+    "Figure out the problem.",
+    "Figure out the cause.",
+    "Figure out a solution.",
+    "Figure out the best route.",
+    "Figure out what went wrong."
+  ],
+  "find a way to": [
+    "Find a way to fix this.",
+    "Find a way to save time.",
+    "Find a way to reduce costs.",
+    "Find a way to make it work.",
+    "Find a way to explain it clearly."
+  ],
+  "follow through": [
+    "Follow through with the plan.",
+    "Follow through on my promise.",
+    "Follow through with it.",
+    "Follow through until the end.",
+    "Follow through on what I started."
+  ],
+  "follow up on something": [
+    "Follow up on my request.",
+    "Follow up on the email.",
+    "Follow up on the order.",
+    "Follow up on the issue.",
+    "Follow up on our conversation."
+  ],
+  "follow up with someone": [
+    "Follow up with the customer.",
+    "Follow up with my manager.",
+    "Follow up with the supplier.",
+    "Follow up with the doctor.",
+    "Follow up with the team."
+  ],
+  "get a chance to": [
+    "Get a chance to practice.",
+    "Get a chance to talk to him.",
+    "Get a chance to try it.",
+    "Get a chance to visit.",
+    "Get a chance to rest."
+  ],
+  "get back into exercising": [
+    "Get back into exercising gradually.",
+    "Get back into exercising this week.",
+    "Get back into exercising after vacation.",
+    "Get back into exercising in the mornings.",
+    "Get back into exercising regularly."
+  ],
+  "get back into shape": [
+    "Get back into shape before summer.",
+    "Get back into shape gradually.",
+    "Get back into shape after the holidays.",
+    "Get back into shape by walking more.",
+    "Get back into shape without rushing."
+  ],
+  "get back to someone": [
+    "Get back to you later today.",
+    "Get back to him after the meeting.",
+    "Get back to her by email.",
+    "Get back to them tomorrow.",
+    "Get back to you as soon as I know more."
+  ],
+  "get better at something": [
+    "Get better at speaking English.",
+    "Get better at explaining things.",
+    "Get better at cooking.",
+    "Get better at managing time.",
+    "Get better at using the system."
+  ],
+  "get some rest": [
+    "Get some rest tonight.",
+    "Get some rest before work.",
+    "Get some rest after lunch.",
+    "Get some rest this weekend.",
+    "Get some rest while you can."
+  ],
+  "get someone's opinion": [
+    "Get your opinion.",
+    "Get my manager's opinion.",
+    "Get her opinion.",
+    "Get a second opinion.",
+    "Get the team's opinion."
+  ],
+  "get something done": [
+    "Get this done today.",
+    "Get the report done.",
+    "Get everything done.",
+    "Get the repair done.",
+    "Get it done before lunch."
+  ],
+  "get started": [
+    "Get started right away.",
+    "Get started after lunch.",
+    "Get started on this.",
+    "Get started with the basics.",
+    "Get started as soon as possible."
+  ],
+  "get used to": [
+    "Get used to the new schedule.",
+    "Get used to waking up early.",
+    "Get used to speaking English.",
+    "Get used to this system.",
+    "Get used to living here."
+  ],
+  "give it a try": [
+    "Give it a try once.",
+    "Give it a try first.",
+    "Give it a try yourself.",
+    "Give it a try before deciding.",
+    "Give it a try for a week."
+  ],
+  "give me a hand": [
+    "Give me a hand with this.",
+    "Give me a hand for a minute.",
+    "Give me a hand moving this.",
+    "Give me a hand carrying these.",
+    "Give me a hand setting this up."
+  ],
+  "go out": [
+    "Go out tonight.",
+    "Go out for dinner.",
+    "Go out after work.",
+    "Go out this weekend.",
+    "Go out for a walk."
+  ],
+  "go over it": [
+    "Go over it together.",
+    "Go over it one more time.",
+    "Go over it slowly.",
+    "Go over it before the meeting.",
+    "Go over it later."
+  ],
+  "go over something": [
+    "Go over the document.",
+    "Go over the plan.",
+    "Go over the details.",
+    "Go over the numbers.",
+    "Go over the schedule."
+  ],
+  "go somewhere else": [
+    "Go somewhere else for lunch.",
+    "Go somewhere else tonight.",
+    "Go somewhere else next time.",
+    "Go somewhere else if it's crowded.",
+    "Go somewhere else after this."
+  ],
+  "grab a coffee": [
+    "Grab a coffee after the meeting.",
+    "Grab a coffee together.",
+    "Grab a coffee before work.",
+    "Grab a coffee nearby.",
+    "Grab a coffee on the way."
+  ],
+  "grab something to eat": [
+    "Grab something to eat after work.",
+    "Grab something to eat before the train.",
+    "Grab something to eat nearby.",
+    "Grab something to eat quickly.",
+    "Grab something to eat on the way home."
+  ],
+  "hang out": [
+    "Hang out this weekend.",
+    "Hang out after work.",
+    "Hang out sometime.",
+    "Hang out at my place.",
+    "Hang out for a while."
+  ],
+  "have a seat": [
+    "Have a seat here.",
+    "Have a seat over there.",
+    "Have a seat for a moment.",
+    "Have a seat while you wait.",
+    "Have a seat next to me."
+  ],
+  "have more time to": [
+    "Have more time to practice.",
+    "Have more time to relax.",
+    "Have more time to think.",
+    "Have more time to finish it.",
+    "Have more time to spend with my family."
+  ],
+  "hear from someone": [
+    "Hear from you soon.",
+    "Hear from the company.",
+    "Hear from my manager.",
+    "Hear from the doctor.",
+    "Hear from them by Friday."
+  ],
+  "join us": [
+    "Join us for lunch.",
+    "Join us later.",
+    "Join us tonight.",
+    "Join us on the call.",
+    "Join us this weekend."
+  ],
+  "keep it simple": [
+    "Keep it simple for now.",
+    "Keep it simple at first.",
+    "Keep it simple as much as possible.",
+    "Keep it simple and clear.",
+    "Keep it simple this time."
+  ],
+  "keep my options open": [
+    "Keep my options open for now.",
+    "Keep my options open until I know more.",
+    "Keep my options open before deciding.",
+    "Keep my options open a little longer.",
+    "Keep my options open while I compare."
+  ],
+  "keep someone informed": [
+    "Keep you informed.",
+    "Keep my manager informed.",
+    "Keep the team informed.",
+    "Keep everyone informed.",
+    "Keep her informed."
+  ],
+  "keep track of something": [
+    "Keep track of expenses.",
+    "Keep track of changes.",
+    "Keep track of tasks.",
+    "Keep track of progress.",
+    "Keep track of appointments."
+  ],
+  "learn from my mistakes": [
+    "Learn from my mistakes and improve.",
+    "Learn from my mistakes instead of repeating them.",
+    "Learn from my mistakes at work.",
+    "Learn from my mistakes as I go.",
+    "Learn from my mistakes every time."
+  ],
+  "learn more about something": [
+    "Learn more about the project.",
+    "Learn more about the system.",
+    "Learn more about this job.",
+    "Learn more about the process.",
+    "Learn more about your experience."
+  ],
+  "leave it as it is": [
+    "Leave it as it is for now.",
+    "Leave it as it is until tomorrow.",
+    "Leave it as it is unless it causes problems.",
+    "Leave it as it is and check later.",
+    "Leave it as it is this time."
+  ],
+  "look for a better opportunity": [
+    "Look for a better opportunity next year.",
+    "Look for a better opportunity elsewhere.",
+    "Look for a better opportunity in IT.",
+    "Look for a better opportunity closer to home.",
+    "Look for a better opportunity with more flexibility."
+  ],
+  "look into a problem": [
+    "Look into the problem today.",
+    "Look into the problem more carefully.",
+    "Look into the problem before deciding.",
+    "Look into the problem with the team.",
+    "Look into the problem as soon as possible."
+  ],
+  "make a reservation": [
+    "Make a reservation for tonight.",
+    "Make a reservation for two.",
+    "Make a reservation online.",
+    "Make a reservation by phone.",
+    "Make a reservation for Saturday."
+  ],
+  "make better use of something": [
+    "Make better use of my free time.",
+    "Make better use of the space.",
+    "Make better use of the data.",
+    "Make better use of these tools.",
+    "Make better use of our time."
+  ],
+  "make progress": [
+    "Make progress every day.",
+    "Make progress little by little.",
+    "Make progress on this project.",
+    "Make progress with my English.",
+    "Make progress despite setbacks."
+  ],
+  "make some changes": [
+    "Make some changes to my routine.",
+    "Make some changes to the plan.",
+    "Make some changes to the settings.",
+    "Make some changes at home.",
+    "Make some changes before launch."
+  ],
+  "make sure": [
+    "Make sure it's correct.",
+    "Make sure everything is ready.",
+    "Make sure the door is locked.",
+    "Make sure I understand.",
+    "Make sure you have the right file."
+  ],
+  "meet in person": [
+    "Meet in person next week.",
+    "Meet in person before deciding.",
+    "Meet in person at the office.",
+    "Meet in person for the first time.",
+    "Meet in person if possible."
+  ],
+  "not rush things": [
+    "Not rush things at first.",
+    "Not rush things this time.",
+    "Not rush things with the decision.",
+    "Not rush things before we're ready.",
+    "Not rush things just because we're busy."
+  ],
+  "pay off a loan": [
+    "Pay off the loan early.",
+    "Pay off the loan as soon as possible.",
+    "Pay off the loan within five years.",
+    "Pay off the loan little by little.",
+    "Pay off the loan before buying another car."
+  ],
+  "pick up something": [
+    "Pick up some groceries.",
+    "Pick up the kids.",
+    "Pick up my package.",
+    "Pick up some medicine.",
+    "Pick up dinner on the way home."
+  ],
+  "play it safe": [
+    "Play it safe for now.",
+    "Play it safe this time.",
+    "Play it safe until we know more.",
+    "Play it safe with the weather.",
+    "Play it safe and wait."
+  ],
+  "put some money aside": [
+    "Put some money aside every month.",
+    "Put some money aside for emergencies.",
+    "Put some money aside for a trip.",
+    "Put some money aside for the kids.",
+    "Put some money aside whenever I can."
+  ],
+  "put something into practice": [
+    "Put what I learned into practice.",
+    "Put this advice into practice.",
+    "Put these ideas into practice.",
+    "Put the new process into practice.",
+    "Put my English into practice."
+  ],
+  "raise an issue": [
+    "Raise an issue at the meeting.",
+    "Raise an issue with my manager.",
+    "Raise an issue before launch.",
+    "Raise an issue as soon as possible.",
+    "Raise an issue politely."
+  ],
+  "see someone again": [
+    "See you again soon.",
+    "See my family again.",
+    "See the doctor again.",
+    "See my old friends again.",
+    "See everyone again next year."
+  ],
+  "see something through": [
+    "See this through to the end.",
+    "See it through even if it's difficult.",
+    "See this through before starting another task.",
+    "See it through this time.",
+    "See it through no matter what."
+  ],
+  "set aside some time": [
+    "Set aside some time this evening.",
+    "Set aside some time tomorrow morning.",
+    "Set aside some time for English.",
+    "Set aside some time to think.",
+    "Set aside some time for my family."
+  ],
+  "sort something out": [
+    "Sort this issue out.",
+    "Sort the schedule out.",
+    "Sort the payment out.",
+    "Sort the paperwork out.",
+    "Sort things out with the bank."
+  ],
+  "spend time with someone": [
+    "Spend time with my family.",
+    "Spend time with my kids.",
+    "Spend time with friends.",
+    "Spend time with my parents.",
+    "Spend time with the team."
+  ],
+  "stay home": [
+    "Stay home tonight.",
+    "Stay home this weekend.",
+    "Stay home if it rains.",
+    "Stay home and rest.",
+    "Stay home with the kids."
+  ],
+  "stay in touch": [
+    "Stay in touch with everyone.",
+    "Stay in touch after you leave.",
+    "Stay in touch by email.",
+    "Stay in touch regularly.",
+    "Stay in touch no matter where we live."
+  ],
+  "step outside my comfort zone": [
+    "Step outside my comfort zone a little.",
+    "Step outside my comfort zone more often.",
+    "Step outside my comfort zone at work.",
+    "Step outside my comfort zone by speaking up.",
+    "Step outside my comfort zone when learning new things."
+  ],
+  "stick to the plan": [
+    "Stick to the plan this week.",
+    "Stick to the plan unless something changes.",
+    "Stick to the plan as much as possible.",
+    "Stick to the plan for now.",
+    "Stick to the plan until Friday."
+  ],
+  "stop by": [
+    "Stop by the store.",
+    "Stop by my office.",
+    "Stop by on the way home.",
+    "Stop by after work.",
+    "Stop by for a few minutes."
+  ],
+  "take a break": [
+    "Take a break for five minutes.",
+    "Take a break after this.",
+    "Take a break before we continue.",
+    "Take a break from work.",
+    "Take a break and get some fresh air."
+  ],
+  "take a closer look": [
+    "Take a closer look at this.",
+    "Take a closer look at the problem.",
+    "Take a closer look at the data.",
+    "Take a closer look at the screen.",
+    "Take a closer look at the settings."
+  ],
+  "take a few days off": [
+    "Take a few days off next month.",
+    "Take a few days off after the project.",
+    "Take a few days off around New Year.",
+    "Take a few days off to rest.",
+    "Take a few days off if I can."
+  ],
+  "take a look": [
+    "Take a look at this.",
+    "Take a look at the menu.",
+    "Take a look at the report.",
+    "Take a look at the screen.",
+    "Take a look when you have time."
+  ],
+  "take care of": [
+    "Take care of this first.",
+    "Take care of the paperwork.",
+    "Take care of the kids.",
+    "Take care of a few things.",
+    "Take care of the problem."
+  ],
+  "take my time": [
+    "Take my time with this.",
+    "Take my time and do it properly.",
+    "Take my time before deciding.",
+    "Take my time to understand it.",
+    "Take my time instead of rushing."
+  ],
+  "take on responsibility": [
+    "Take on more responsibility gradually.",
+    "Take on responsibility for the project.",
+    "Take on more responsibility at work.",
+    "Take on responsibility when I'm ready.",
+    "Take on responsibility for the team."
+  ],
+  "take things more seriously": [
+    "Take things more seriously from now on.",
+    "Take work more seriously.",
+    "Take English more seriously.",
+    "Take this year more seriously.",
+    "Take things more seriously after what happened."
+  ],
+  "talk about it": [
+    "Talk about it later.",
+    "Talk about it after dinner.",
+    "Talk about it tomorrow.",
+    "Talk about it in private.",
+    "Talk about it when you're ready."
+  ],
+  "talk in person": [
+    "Talk in person tomorrow.",
+    "Talk in person about this.",
+    "Talk in person before deciding.",
+    "Talk in person if possible.",
+    "Talk in person instead of texting."
+  ],
+  "talk it over": [
+    "Talk it over first.",
+    "Talk it over together.",
+    "Talk it over tonight.",
+    "Talk it over with my wife.",
+    "Talk it over before making a decision."
+  ],
+  "think it over": [
+    "Think it over tonight.",
+    "Think it over before deciding.",
+    "Think it over for a day.",
+    "Think it over carefully.",
+    "Think it over and get back to me."
+  ],
+  "think something through": [
+    "Think this decision through.",
+    "Think the plan through.",
+    "Think the consequences through.",
+    "Think it through before acting.",
+    "Think it through carefully."
+  ],
+  "try something new": [
+    "Try something new this weekend.",
+    "Try something new at work.",
+    "Try something new for dinner.",
+    "Try something new every month.",
+    "Try something new even if it feels uncomfortable."
+  ],
+  "visit somewhere": [
+    "Visit Kyoto.",
+    "Visit the new office.",
+    "Visit my hometown.",
+    "Visit somewhere nearby.",
+    "Visit again next year."
+  ],
+  "wait and see": [
+    "Wait and see what happens.",
+    "Wait and see for a few days.",
+    "Wait and see how it goes.",
+    "Wait and see before deciding.",
+    "Wait and see if anything changes."
+  ],
+  "work on something": [
+    "Work on my pronunciation.",
+    "Work on this problem.",
+    "Work on my communication skills.",
+    "Work on the report.",
+    "Work on one thing at a time."
+  ],
+  "work out": [
+    "Work out in the end.",
+    "Work out somehow.",
+    "Work out better than expected.",
+    "Work out for everyone.",
+    "Work out if we stay flexible."
+  ],
+  "work together": [
+    "Work together on this.",
+    "Work together more closely.",
+    "Work together as a team.",
+    "Work together to solve it.",
+    "Work together again."
+  ],
+  "work with someone": [
+    "Work with you.",
+    "Work with the new team.",
+    "Work with my manager.",
+    "Work with an expert.",
+    "Work with different people."
+  ]
+};
+
 window.ACTIVE_STUDY_PACK_LIST = Object.values(window.ACTIVE_STUDY_PACKS).sort((a,b)=>a.order-b.order);
