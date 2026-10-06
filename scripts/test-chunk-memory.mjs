@@ -27,7 +27,18 @@ for(const pack of packs){
 
 assert.equal(important.length,110,'Expected 110 important chunk occurrences across lessons');
 const unique=new Map(important.map(card=>[String(card.baseEn).toLowerCase(),card]));
-assert.equal(unique.size,94,'All-lessons memory deck should deduplicate to 94 chunks');
+assert.equal(unique.size,94,'All-lessons main deck should deduplicate to 94 chunks');
+
+const supplements=packs.flatMap(pack=>trainer.usageSupplementChunks(pack));
+assert.equal(supplements.length,508,'Expected all meaningful highlighted usage parts across lessons');
+const supplementUnique=new Map(supplements.map(card=>[String(card.baseEn).toLowerCase(),card]));
+assert.equal(supplementUnique.size,383,'Highlighted usage parts should deduplicate to 383 supplements');
+const combined=new Map([...important,...supplements].map(card=>[String(card.baseEn).toLowerCase(),card]));
+assert.equal(combined.size,476,'Main + supplement memory deck should have 476 unique learnable items');
+
+for(const expected of ['for five minutes','after this','before we continue','from work','and get some fresh air']){
+  assert.ok(supplementUnique.has(expected),'Missing highlighted supplement: '+expected);
+}
 
 const env={
   state:{saved:{}},
@@ -48,4 +59,11 @@ progress=env.state.saved[card.key].trainer;
 assert.ok(progress.wrongCount>=1,'Forgotten card records an error');
 assert.ok(progress.nextReviewAt>Date.now(),'Forgotten card is scheduled again soon');
 
-console.log('PASS: Memory deck = 110 lesson chunks / 94 unique all-lessons chunks; VI→EN ratings update Recall progress.');
+const supplementCard=supplementUnique.get('for five minutes');
+assert.equal(supplementCard.kind,'usage-addon');
+assert.equal(supplementCard.parentEn,'take a break');
+assert.match(supplementCard.contextEn,/Take a break for five minutes/i);
+trainer.recordMemory(env,supplementCard,true);
+assert.ok(env.state.saved[supplementCard.key].trainer.skills.recall>=1,'Supplement recall is tracked independently');
+
+console.log('PASS: Memory deck = 94 main + 383 highlighted supplements / 476 unique combined; VI→EN ratings update Recall progress.');
