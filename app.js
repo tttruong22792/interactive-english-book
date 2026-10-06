@@ -2403,11 +2403,24 @@
     }
   
     function libraryScreen(){
+      const supplementChunks=packs.flatMap(pack=>window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[]);
       const grouped=new Map();
-      allChunks.forEach(card=>{
+
+      [...allChunks,...supplementChunks].forEach(card=>{
         const key=String(card.baseEn||'').toLowerCase();
-        if(!grouped.has(key)) grouped.set(key,{baseEn:card.baseEn,baseVi:card.baseVi,cards:[]});
-        grouped.get(key).cards.push(card);
+        if(!key) return;
+        if(!grouped.has(key)) grouped.set(key,{baseEn:card.baseEn,baseVi:card.baseVi,cards:[],contexts:[]});
+        const entry=grouped.get(key);
+        entry.cards.push(card);
+        if(card.kind==='main'){
+          entry.baseEn=card.baseEn;
+          entry.baseVi=card.baseVi;
+        }
+        if(card.kind==='usage-addon'){
+          (card.contexts||[]).forEach(ctx=>{
+            if(!entry.contexts.some(x=>x.en===ctx.en&&x.parentEn===ctx.parentEn)) entry.contexts.push(ctx);
+          });
+        }
       });
   
       const entries=[...grouped.values()].map(entry=>{
@@ -2422,82 +2435,111 @@
         };
         const reviewed=progresses.some(p=>Number(p.reviewCount||0)>0);
         const starred=progresses.some(p=>!!p.starred);
+        const mainImportant=entry.cards.some(card=>card.kind==='main');
+        const supplemental=entry.cards.some(card=>card.kind==='usage-addon');
+        const learnable=mainImportant||supplemental;
         const weak=progresses.some(p=>p.lastRating==='again'||Number(p.wrongCount||0)>Number(p.correctCount||0))||(reviewed&&skills.recall<2);
-        const mastered=skills.recognize>=2&&skills.recall>=2&&skills.use>=2;
-        const automatic=progresses.some(p=>window.VocabularyTrainer?.automaticStatus?.(p)?.automatic);
-        const important=entry.cards.some(card=>card.kind!=='building');
-        const lessonIds=[...new Set(entry.cards.filter(card=>card.kind!=='building').map(card=>card.pack?.lessonId).filter(Boolean))];
+        const mainMastered=skills.recognize>=2&&skills.recall>=2&&skills.use>=2;
+        const mastered=supplemental&&!mainImportant?skills.recall>=2:mainMastered;
+        const automatic=mainImportant&&progresses.some(p=>window.VocabularyTrainer?.automaticStatus?.(p)?.automatic);
+        const lessonCards=entry.cards.filter(card=>card.kind==='main'||card.kind==='usage-addon');
+        const lessonIds=[...new Set(lessonCards.map(card=>card.pack?.lessonId).filter(Boolean))];
         const lessons=[...new Map(
-          entry.cards
-            .filter(card=>card.kind!=='building')
+          lessonCards
             .map(card=>[card.pack?.lessonId,{lessonId:card.pack?.lessonId,order:card.pack?.order,pattern:card.pack?.pattern}])
             .filter(([id])=>id)
         ).values()].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
-        return {...entry,skills,reviewed,starred,weak,mastered,automatic,important,lessonIds,lessons,lessonId:lessonIds[0]||entry.cards[0]?.pack?.lessonId||''};
+        return {
+          ...entry,skills,reviewed,starred,weak,mastered,automatic,learnable,mainImportant,supplemental,
+          lessonIds,lessons,lessonId:lessonIds[0]||entry.cards[0]?.pack?.lessonId||''
+        };
       });
   
       const personal=Object.values(state.saved||{}).filter(x=>x?.type==='phrase').map(item=>({
-        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,important:false,lessonIds:[],lessons:[],lessonId:'',personal:true
+        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],contexts:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,learnable:false,mainImportant:false,supplemental:false,lessonIds:[],lessons:[],lessonId:'',personal:true
       }));
   
       const filter=state.vocabLibraryFilter||'important';
       const lessonFilter=state.vocabLibraryLessonId||'all';
       let filtered=[...entries,...personal];
 
-      if(filter==='important') filtered=filtered.filter(x=>x.important&&!x.personal);
+      if(filter==='important') filtered=filtered.filter(x=>x.learnable&&!x.personal);
+      if(filter==='core') filtered=filtered.filter(x=>x.mainImportant&&!x.personal);
+      if(filter==='supplement') filtered=filtered.filter(x=>x.supplemental&&!x.personal);
       if(filter==='learning') filtered=filtered.filter(x=>x.reviewed&&!x.mastered&&!x.personal);
       if(filter==='weak') filtered=filtered.filter(x=>x.weak&&!x.personal);
-      if(filter==='mastered') filtered=filtered.filter(x=>x.automatic&&!x.personal);
+      if(filter==='mastered') filtered=filtered.filter(x=>x.mastered&&!x.personal);
       if(filter==='saved') filtered=filtered.filter(x=>x.starred||x.personal);
 
       if(lessonFilter!=='all'){
         filtered=filtered.filter(x=>x.lessonIds?.includes(lessonFilter));
       }
 
-      const importantCount=entries.filter(x=>x.important).length;
+      const learnableCount=entries.filter(x=>x.learnable).length;
+      const mainCount=entries.filter(x=>x.mainImportant).length;
+      const supplementCount=entries.filter(x=>x.supplemental).length;
       const selectedPack=packs.find(p=>p.lessonId===lessonFilter);
   
       return shell(`
-        <div class="vocab-screen-title"><div><span class="eyebrow">KHO CỤM</span><h2>Các cụm cần nhớ để xem lại lúc rảnh</h2><p>Mặc định chỉ hiện các cụm thực sự cần thuộc. Các mảnh phụ như <b>after work</b>, <b>next month</b> không nằm trong danh sách này.</p></div></div>
+        <div class="vocab-screen-title"><div><span class="eyebrow">KHO CỤM</span><h2>Các cụm cần nhớ để xem lại lúc rảnh</h2><p>Kho gồm cả <b>chunk chính</b> và những <b>phần in đậm hữu ích</b> được tách từ 5 cách dùng thường gặp.</p></div></div>
 
         <section class="vocab-library-important-summary">
-          <div><span class="eyebrow">CỤM CẦN NHỚ</span><h3>${importantCount} cụm không trùng</h3><p>Gộp từ toàn bộ ${packs.length} bài. Cùng một chunk xuất hiện ở nhiều bài chỉ hiện một lần trong Kho.</p></div>
+          <div><span class="eyebrow">TOÀN BỘ CẦN HỌC</span><h3>${learnableCount} mục không trùng</h3><p>${mainCount} cụm chính · ${supplementCount} cụm/từ bổ sung từ ví dụ. Cụm trùng chỉ hiện một lần.</p></div>
           <button id="studyImportantFromLibrary" class="primary-button" type="button">Nhìn Việt → bật English</button>
         </section>
   
         <div class="vocab-library-tools">
-          <input id="vocabLibrarySearch" type="search" autocomplete="off" placeholder="Tìm: figure out, make sure..." value="${escAttr(state.vocabLibraryQuery||'')}">
+          <input id="vocabLibrarySearch" type="search" autocomplete="off" placeholder="Tìm: for five minutes, make sure..." value="${escAttr(state.vocabLibraryQuery||'')}">
           <select id="vocabLibraryLesson" class="vocab-library-lesson-filter">
-            <option value="all" ${lessonFilter==='all'?'selected':''}>Tất cả bài · ${importantCount} cụm</option>
+            <option value="all" ${lessonFilter==='all'?'selected':''}>Tất cả bài · ${learnableCount} mục</option>
             ${packs.map(pack=>{
-              const count=entries.filter(x=>x.important&&x.lessonIds.includes(pack.lessonId)).length;
-              return `<option value="${pack.lessonId}" ${lessonFilter===pack.lessonId?'selected':''}>#${String(pack.order).padStart(2,'0')} · ${esc(pack.pattern)} · ${count} cụm</option>`;
+              const count=entries.filter(x=>x.learnable&&x.lessonIds.includes(pack.lessonId)).length;
+              return `<option value="${pack.lessonId}" ${lessonFilter===pack.lessonId?'selected':''}>#${String(pack.order).padStart(2,'0')} · ${esc(pack.pattern)} · ${count} mục</option>`;
             }).join('')}
           </select>
           <div class="vocab-library-filters">
-            ${[['important','Cụm cần nhớ'],['learning','Đang học'],['weak','Cần ôn'],['mastered','Đã vững'],['saved','Đã lưu'],['all','Tất cả']].map(([id,label])=>`<button data-library-filter="${id}" class="${filter===id?'active':''}" type="button">${label}</button>`).join('')}
+            ${[
+              ['important','Tất cả cần học'],
+              ['core','Cụm chính'],
+              ['supplement','Bổ sung từ ví dụ'],
+              ['learning','Đang học'],
+              ['weak','Cần ôn'],
+              ['mastered','Đã vững'],
+              ['saved','Đã lưu'],
+              ['all','Tất cả']
+            ].map(([id,label])=>`<button data-library-filter="${id}" class="${filter===id?'active':''}" type="button">${label}</button>`).join('')}
           </div>
         </div>
   
-        <div class="vocab-library-count"><b>${filtered.length}</b> cụm ${selectedPack?`· #${String(selectedPack.order).padStart(2,'0')} ${esc(selectedPack.pattern)}`:''}</div>
+        <div class="vocab-library-count"><b>${filtered.length}</b> mục ${selectedPack?`· #${String(selectedPack.order).padStart(2,'0')} ${esc(selectedPack.pattern)}`:''}</div>
         <div class="vocab-library-list">
-          ${filtered.map(entry=>`<article data-library-row data-search="${escAttr((entry.baseEn+' '+entry.baseVi+' '+entry.lessons.map(x=>x.pattern).join(' ')).toLowerCase())}" class="${entry.important?'is-important':''}">
-            <button class="vocab-library-audio" data-active-speak="${escAttr(entry.baseEn)}" type="button">${uiIcon('volume-2')}</button>
-            <div class="vocab-library-copy">
-              <div class="vocab-library-title-line"><strong>${esc(entry.baseEn)}</strong>${entry.important?'<em>CẦN NHỚ</em>':''}</div>
-              <span>${esc(entry.baseVi)}</span>
-              ${entry.personal
-                ? '<small>Cụm cá nhân</small>'
-                : entry.lessons.length
-                  ? `<small>${entry.lessons.map(x=>`#${String(x.order).padStart(2,'0')} ${esc(x.pattern)}`).join(' · ')}</small>`
-                  : ''
-              }
-            </div>
-            ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recognize>=2?'done':''}" title="Nhận ra">1</i><i class="${entry.skills.recall>=2?'done':''}" title="Recall">2</i><i class="${entry.skills.fast>=2?'done':''}" title="Fast Recall">3</i><i class="${entry.skills.vary>=2&&entry.skills.situation>=2?'done':''}" title="Linh hoạt">4</i><i class="${entry.automatic?'done automatic':''}" title="Automatic">5</i></div>`}
-            ${entry.lessonId?`<button class="vocab-library-practice" data-library-practice="${escAttr(entry.lessonId)}" type="button">Luyện</button>`:''}
-          </article>`).join('')||'<div class="vocab-empty-state"><b>Không có cụm phù hợp</b><span>Thử từ khóa, bài học hoặc bộ lọc khác.</span></div>'}
+          ${filtered.map(entry=>{
+            const ctx=entry.contexts?.[0];
+            const badges=[
+              entry.mainImportant?'<em class="library-kind-main">CỤM CHÍNH</em>':'',
+              entry.supplemental?'<em class="library-kind-supplement">BỔ SUNG</em>':''
+            ].filter(Boolean).join('');
+            const searchText=(entry.baseEn+' '+entry.baseVi+' '+(ctx?.vi||'')+' '+(ctx?.parentEn||'')+' '+entry.lessons.map(x=>x.pattern).join(' ')).toLowerCase();
+            return `<article data-library-row data-search="${escAttr(searchText)}" class="${entry.learnable?'is-important':''} ${entry.supplemental&&!entry.mainImportant?'is-supplement':''}">
+              <button class="vocab-library-audio" data-active-speak="${escAttr(entry.baseEn)}" type="button">${uiIcon('volume-2')}</button>
+              <div class="vocab-library-copy">
+                <div class="vocab-library-title-line"><strong>${esc(entry.baseEn)}</strong>${badges}</div>
+                ${entry.supplemental&&!entry.mainImportant&&ctx
+                  ? `<span>Trong câu Việt: ${esc(ctx.vi)}</span><small>Ghép với <b>${esc(ctx.parentEn)}</b> · ${esc(ctx.en)}</small>`
+                  : `<span>${esc(entry.baseVi)}</span>${entry.personal
+                      ? '<small>Cụm cá nhân</small>'
+                      : entry.lessons.length
+                        ? `<small>${entry.lessons.map(x=>`#${String(x.order).padStart(2,'0')} ${esc(x.pattern)}`).join(' · ')}</small>`
+                        : ''
+                    }`
+                }
+              </div>
+              ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recognize>=2?'done':''}" title="Nhận ra">1</i><i class="${entry.skills.recall>=2?'done':''}" title="Recall">2</i><i class="${entry.skills.fast>=2?'done':''}" title="Fast Recall">3</i><i class="${entry.skills.vary>=2&&entry.skills.situation>=2?'done':''}" title="Linh hoạt">4</i><i class="${entry.automatic||entry.supplemental&&entry.skills.recall>=2?'done automatic':''}" title="Đã vững">5</i></div>`}
+              ${entry.lessonId?`<button class="vocab-library-practice" data-library-practice="${escAttr(entry.lessonId)}" type="button">Luyện</button>`:''}
+            </article>`;
+          }).join('')||'<div class="vocab-empty-state"><b>Không có mục phù hợp</b><span>Thử từ khóa, bài học hoặc bộ lọc khác.</span></div>'}
         </div>
-      `,'Kho cụm','Nơi xem lại nhanh toàn bộ các cụm cần nhớ, có thể lọc theo từng bài.');
+      `,'Kho cụm','Nơi xem lại nhanh cả chunk chính và cụm bổ sung tách từ ví dụ.');
     }
 
     let content='';
@@ -2738,7 +2780,9 @@
     });
 
     $('#studyImportantFromLibrary')?.addEventListener('click',()=>{
-      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:state.vocabLibraryLessonId||'all'};
+      const libraryFilter=state.vocabLibraryFilter||'important';
+      const type=libraryFilter==='core'?'main':libraryFilter==='supplement'?'supplement':'all';
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:state.vocabLibraryLessonId||'all',type};
       chunkMemorySession=null;
       saveState();
       setHubView('remember');
