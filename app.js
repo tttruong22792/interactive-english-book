@@ -22,6 +22,7 @@
     chunkMemorySettings:{lessonId:'all',order:'sequential'},
     vocabLibraryFilter:'important',
     vocabLibraryLessonId:'all',
+    vocabLibraryImportantV1:false,
     vocabLibraryQuery:''
   };
   let state = loadState();
@@ -63,7 +64,14 @@
       if(next.quizBest && next.quizBestByLesson[CORE_LESSON_ID]==null) next.quizBestByLesson[CORE_LESSON_ID]=next.quizBest;
       if(next.quizRuns && next.quizRunsByLesson[CORE_LESSON_ID]==null) next.quizRunsByLesson[CORE_LESSON_ID]=next.quizRuns;
       if(next.lessonVisits && next.lessonVisitsByLesson[CORE_LESSON_ID]==null) next.lessonVisitsByLesson[CORE_LESSON_ID]=next.lessonVisits;
-      if(Object.keys(raw.saved||{}).length!==Object.keys(next.saved||{}).length){
+      let stateMigrated=Object.keys(raw.saved||{}).length!==Object.keys(next.saved||{}).length;
+      if(!raw.vocabLibraryImportantV1){
+        next.vocabLibraryFilter='important';
+        next.vocabLibraryLessonId='all';
+        next.vocabLibraryImportantV1=true;
+        stateMigrated=true;
+      }
+      if(stateMigrated){
         localStorage.setItem(KEY,JSON.stringify(next));
       }
       return next;
