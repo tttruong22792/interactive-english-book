@@ -4617,7 +4617,7 @@ html.vocab-keyboard-open .chunk-writing-box{
 }
 .chunk-memory-setup{
   display:grid;
-  grid-template-columns:minmax(220px,1.3fr) minmax(150px,.7fr) auto auto;
+  grid-template-columns:minmax(220px,1.3fr) minmax(180px,1fr) minmax(140px,.7fr) auto auto;
   gap:10px;
   align-items:end;
   margin-top:12px;
@@ -4949,4 +4949,77 @@ html.vocab-keyboard-open .chunk-writing-box{
 @media(max-width:760px){
   .vocab-library-important-summary{grid-template-columns:1fr}
   .vocab-library-important-summary .primary-button{width:100%}
+}
+
+.chunk-memory-parent{
+  margin-top:10px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:#f2efff;
+  color:#6254bd;
+  font-size:9px;
+  font-weight:800;
+}
+.chunk-memory-context-en{
+  display:block;
+  max-width:620px;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+  font-weight:600;
+}
+.vocab-detail-supplement-entry{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;
+  align-items:center;
+  margin:12px 0;
+  padding:15px;
+  border:1px solid #ddd6ff;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f6f3ff,#fff 68%,#eef9f3);
+}
+.vocab-detail-supplement-entry h3{
+  margin:4px 0 4px;
+  color:var(--navy);
+  font-size:15px;
+}
+.vocab-detail-supplement-entry p{
+  margin:0;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.5;
+}
+.library-kind-main,
+.library-kind-supplement{
+  padding:3px 5px;
+  border-radius:999px;
+  font-size:7px;
+  font-style:normal;
+  font-weight:900;
+  letter-spacing:.05em;
+}
+.library-kind-main{
+  background:#e9f6ef;
+  color:#287452;
+}
+.library-kind-supplement{
+  background:#eeeaff;
+  color:#6655c8;
+}
+.vocab-library-list>article.is-supplement{
+  background:linear-gradient(90deg,#fbfaff,#fff);
+}
+.vocab-library-list>article.is-supplement .vocab-library-copy>span{
+  color:#5f6475;
+}
+@media(max-width:900px){
+  .chunk-memory-setup{grid-template-columns:1fr 1fr}
+  .chunk-memory-stats,
+  .chunk-memory-setup>.primary-button{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .vocab-detail-supplement-entry{grid-template-columns:1fr}
+  .vocab-detail-supplement-entry button{width:100%}
 }
