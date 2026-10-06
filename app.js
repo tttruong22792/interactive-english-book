@@ -2287,6 +2287,7 @@
       const chunks=window.VocabularyTrainer?.studyChunks?.(pack)||[];
       const main=chunks.filter(x=>x.kind!=='building');
       const building=chunks.filter(x=>x.kind==='building');
+      const usageSupplements=window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[];
       const p=packProgress(pack);
   
       const rows=(items,type)=>items.map(card=>{
@@ -2294,7 +2295,7 @@
         const status=prog.skills?.use>=2?'Dùng được':prog.skills?.recall>=2?'Gọi ra':prog.skills?.recognize>=2?'Nhận ra':'Mới';
         const usage=card.usageExamples||[];
         const usageHTML=usage.length?`<details class="vocab-detail-usage">
-          <summary><span>5 cách dùng thường gặp</span><small>Giữ chunk cố định · thay phần in đậm</small></summary>
+          <summary><span>5 cách dùng thường gặp</span><small>Phần in đậm đã được đưa vào Cụm bổ sung</small></summary>
           <div class="vocab-detail-usage-list">${usage.map((example,index)=>{
             const en=typeof example==='string'?example:String(example?.en||'');
             const vi=typeof example==='string'?'':String(example?.vi||'');
@@ -2342,6 +2343,11 @@
           <div class="vocab-detail-list">${rows(building,'building')}</div>
         </section>`:''}
   
+        <section class="vocab-detail-supplement-entry">
+          <div><span class="eyebrow">BỔ SUNG TỪ 5 VÍ DỤ</span><h3>${usageSupplements.length} từ/cụm đã được tách ra để học</h3><p>Ví dụ: for five minutes, before we continue, get some fresh air… Không tính vào chuẩn Automatic của chunk chính.</p></div>
+          <button id="rememberSupplementThisLesson" class="secondary-button" type="button">Học cụm bổ sung →</button>
+        </section>
+
         <div class="vocab-detail-actions">
           <button id="startLessonChunks" class="primary-button" type="button">Learn · 5 cụm mới ${uiIcon('arrow-right')}</button>
           <button id="rememberThisLesson" class="secondary-button" type="button">Nhìn Việt → bật English</button>
@@ -2714,6 +2720,14 @@
     $('#rememberThisLesson')?.addEventListener('click',()=>{
       if(!selected) return;
       state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:selected.lessonId,type:'all'};
+      chunkMemorySession=null;
+      saveState();
+      setHubView('remember');
+    });
+
+    $('#rememberSupplementThisLesson')?.addEventListener('click',()=>{
+      if(!selected) return;
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:selected.lessonId,type:'supplement'};
       chunkMemorySession=null;
       saveState();
       setHubView('remember');
