@@ -325,6 +325,18 @@ Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
       }
     });
   });
+
+  const usageViSource = await readFile(join(root, "data/english/chunk-usage-vi.js"), "utf8");
+  vm.runInContext(usageViSource, context, { filename: "data/english/chunk-usage-vi.js" });
+  const trainerSource = await readFile(join(root, "vocabulary-trainer.js"), "utf8");
+  vm.runInContext(trainerSource, context, { filename: "vocabulary-trainer.js" });
+  Object.values(context.window.ACTIVE_STUDY_PACKS || {}).forEach((pack) => {
+    (context.window.VocabularyTrainer?.usageSupplementChunks?.(pack) || []).forEach((card) => {
+      if (typeof card?.baseEn === "string" && card.baseEn.trim()) {
+        addManifestAudio(card.baseEn, "usage-supplement", String(pack.lessonId || ""));
+      }
+    });
+  });
 }
 
 for (const lesson of Object.values(context.window.CONTENT_REGISTRY || {})) {
