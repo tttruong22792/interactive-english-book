@@ -225,6 +225,108 @@
     });
   }
 
+  function usageWordTokens(text=''){
+    return (String(text||'').match(/[A-Za-z0-9]+(?:['’][A-Za-z0-9]+)?/g)||[]).map(raw=>({
+      raw,
+      norm:String(raw).toLowerCase().replace(/[’]/g,"'")
+    }));
+  }
+
+  function usageVariablePart(baseEn='',sentence=''){
+    const base=usageWordTokens(baseEn)
+      .filter(x=>!isGenericSlot(x.norm))
+      .map(x=>stem(x.norm));
+    const words=usageWordTokens(sentence);
+    const actual=words.map(x=>stem(x.norm));
+    const m=base.length,n=actual.length;
+    if(!n) return '';
+    const dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
+    for(let i=m-1;i>=0;i--){
+      for(let j=n-1;j>=0;j--){
+        dp[i][j]=base[i]===actual[j]?1+dp[i+1][j+1]:Math.max(dp[i+1][j],dp[i][j+1]);
+      }
+    }
+    const matched=new Set();
+    let i=0,j=0;
+    while(i<m&&j<n){
+      if(base[i]===actual[j]){matched.add(j);i++;j++;continue;}
+      if(dp[i+1][j]>=dp[i][j+1]) i++;
+      else j++;
+    }
+    return words.filter((_,idx)=>!matched.has(idx)).map(x=>x.raw).join(' ').trim();
+  }
+
+  function usefulUsageSupplement(text=''){
+    const list=tokens(text);
+    if(!list.length) return false;
+    const trivial=new Set(['a','an','the','my','your','his','her','our','their','this','that','it','me','you','him','us','them','someone','somebody','something','somewhere']);
+    if(list.length===1&&trivial.has(list[0])) return false;
+    if(list.length===2&&list.every(x=>trivial.has(x))) return false;
+    return true;
+  }
+
+  function vietnameseUsageCue(baseVi='',fullVi=''){
+    const clean=value=>String(value||'').replace(/[.!?]+$/,'').trim();
+    const a=clean(baseVi).split(/\s+/).filter(Boolean);
+    const b=clean(fullVi).split(/\s+/).filter(Boolean);
+    let i=0;
+    while(i<a.length&&i<b.length&&a[i].toLowerCase()===b[i].toLowerCase()) i++;
+    const rest=b.slice(i).join(' ').trim();
+    return rest||clean(fullVi);
+  }
+
+  function usageSupplementChunks(pack){
+    if(!pack) return [];
+    const parents=studyChunks(pack).filter(card=>card.kind!=='building');
+    const grouped=new Map();
+
+    parents.forEach(parent=>{
+      (parent.usageExamples||[]).forEach((example,index)=>{
+        const en=typeof example==='string'?example:String(example?.en||'');
+        const vi=typeof example==='string'?'':String(example?.vi||'');
+        const part=usageVariablePart(parent.baseEn,en);
+        if(!usefulUsageSupplement(part)) return;
+        const key=normalize(part);
+        if(!key) return;
+
+        if(!grouped.has(key)){
+          grouped.set(key,{
+            id:`usage-addon:${pack.lessonId}:${slug(part)}`,
+            key:`usage-addon:${pack.lessonId}:${slug(part)}`,
+            pack,
+            index:grouped.size,
+            priority:'supplement',
+            kind:'usage-addon',
+            baseEn:part,
+            baseVi:vietnameseUsageCue(parent.baseVi,vi),
+            modelEn:part,
+            modelVi:vietnameseUsageCue(parent.baseVi,vi),
+            phraseEn:part,
+            phraseVi:vietnameseUsageCue(parent.baseVi,vi),
+            examples:[],
+            usageExamples:[],
+            parentEn:parent.baseEn,
+            parentVi:parent.baseVi,
+            contextEn:en,
+            contextVi:vi,
+            contexts:[]
+          });
+        }
+        const card=grouped.get(key);
+        card.contexts.push({
+          parentEn:parent.baseEn,
+          parentVi:parent.baseVi,
+          en,
+          vi,
+          cueVi:vietnameseUsageCue(parent.baseVi,vi),
+          exampleIndex:index
+        });
+      });
+    });
+
+    return [...grouped.values()];
+  }
+
   function trainerDefaults(){
     return {
       starred:false,
@@ -703,7 +805,7 @@
     const list=card?.usageExamples||[];
     if(!list.length) return '';
     return `<section class="chunk-usage-examples">
-      <div class="chunk-usage-head"><span>5 CÁCH DÙNG THƯỜNG GẶP</span><small>Giữ chunk cố định · thay phần in đậm</small></div>
+      <div class="chunk-usage-head"><span>5 CÁCH DÙNG THƯỜNG GẶP</span><small>Phần in đậm được đưa vào Cụm bổ sung để học</small></div>
       <div class="chunk-usage-list">${list.map((example,i)=>{
         const en=typeof example==='string'?example:String(example?.en||'');
         const vi=typeof example==='string'?'':String(example?.vi||'');
@@ -812,7 +914,8 @@
   function variationSpec(card){
     const list=card.usageExamples?.length?card.usageExamples:[card.modelEn||card.baseEn];
     const p=progressFor(card);
-    const target=String(list[(Number(p.reviewCount||0)+card.index)%list.length]||list[0]||card.baseEn);
+    const picked=list[(Number(p.reviewCount||0)+card.index)%list.length]||list[0]||card.baseEn;
+    const target=typeof picked==='string'?picked:String(picked?.en||card.baseEn);
     const variable=variablePart(card,target);
     return {
       eyebrow:'BIẾN ĐỔI CHUNK',
@@ -1791,6 +1894,8 @@
     packById,
     packs,
     studyChunks,
+    usageSupplementChunks,
+    usageVariablePart,
     recordMemory,
     usageExampleMarkup,
     automaticStatus,
