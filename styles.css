@@ -4888,3 +4888,65 @@ html.vocab-keyboard-open .chunk-writing-box{
   .chunk-memory-actions{grid-template-columns:1fr 1fr}
   .chunk-memory-summary-grid{grid-template-columns:1fr 1fr}
 }
+
+.vocab-library-important-summary{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;
+  align-items:center;
+  margin-bottom:12px;
+  padding:17px;
+  border:1px solid #d8d0ff;
+  border-radius:17px;
+  background:linear-gradient(135deg,#f4f1ff,#fff 62%,#eef9f3);
+}
+.vocab-library-important-summary h3{
+  margin:4px 0 4px;
+  color:var(--navy);
+  font-size:20px;
+}
+.vocab-library-important-summary p{
+  margin:0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.5;
+}
+.vocab-library-lesson-filter{
+  width:100%;
+  min-height:42px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#fff;
+  color:var(--navy);
+  padding:0 12px;
+  font:inherit;
+  font-size:11px;
+  outline:none;
+}
+.vocab-library-lesson-filter:focus{
+  border-color:#bdb4f0;
+  box-shadow:0 0 0 3px rgba(112,88,218,.07);
+}
+.vocab-library-list>article.is-important{
+  background:linear-gradient(90deg,#fff 0%,#fdfcff 100%);
+}
+.vocab-library-title-line{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.vocab-library-title-line>em{
+  padding:3px 5px;
+  border-radius:999px;
+  background:#eeeaff;
+  color:#6655c8;
+  font-size:7px;
+  font-style:normal;
+  font-weight:900;
+  letter-spacing:.05em;
+}
+@media(max-width:760px){
+  .vocab-library-important-summary{grid-template-columns:1fr}
+  .vocab-library-important-summary .primary-button{width:100%}
+}
