@@ -19,7 +19,7 @@
     lessonVisits:0, lessonVisitsByLesson:{},
     vocabHubView:'today',
     vocabHubLessonId:'',
-    chunkMemorySettings:{lessonId:'all',order:'sequential'},
+    chunkMemorySettings:{lessonId:'all',type:'all',order:'sequential'},
     vocabLibraryFilter:'important',
     vocabLibraryLessonId:'all',
     vocabLibraryImportantV1:false,
@@ -2114,28 +2114,48 @@
     }
 
     function chunkMemorySettings(){
-      state.chunkMemorySettings={lessonId:'all',order:'sequential',...(state.chunkMemorySettings||{})};
+      state.chunkMemorySettings={lessonId:'all',type:'all',order:'sequential',...(state.chunkMemorySettings||{})};
       const valid=state.chunkMemorySettings.lessonId==='all'||packs.some(p=>p.lessonId===state.chunkMemorySettings.lessonId);
       if(!valid) state.chunkMemorySettings.lessonId='all';
       return state.chunkMemorySettings;
     }
 
-    function chunkMemoryGroups(lessonId='all',order='sequential'){
+    function chunkMemoryGroups(lessonId='all',order='sequential',type='all'){
       const source=lessonId==='all'?packs:packs.filter(p=>p.lessonId===lessonId);
       const map=new Map();
       source.forEach(pack=>{
-        (window.VocabularyTrainer?.studyChunks?.(pack)||[])
-          .filter(card=>card.kind!=='building')
-          .forEach(card=>{
-            const key=String(card.baseEn||'').trim().toLowerCase();
-            if(!key) return;
-            if(!map.has(key)) map.set(key,{key,baseEn:card.baseEn,baseVi:card.baseVi,cards:[],lessons:[]});
-            const item=map.get(key);
-            item.cards.push(card);
-            if(!item.lessons.some(x=>x.lessonId===pack.lessonId)) item.lessons.push({lessonId:pack.lessonId,order:pack.order,pattern:pack.pattern});
-          });
+        const main=(window.VocabularyTrainer?.studyChunks?.(pack)||[]).filter(card=>card.kind!=='building');
+        const supplements=window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[];
+        const cards=type==='main'?main:type==='supplement'?supplements:[...main,...supplements];
+
+        cards.forEach(card=>{
+          const key=String(card.baseEn||'').trim().toLowerCase();
+          if(!key) return;
+          if(!map.has(key)){
+            map.set(key,{key,baseEn:card.baseEn,baseVi:card.baseVi,cards:[],lessons:[],types:[],contexts:[]});
+          }
+          const item=map.get(key);
+          item.cards.push(card);
+          const sourceType=card.kind==='usage-addon'?'supplement':'main';
+          if(!item.types.includes(sourceType)) item.types.push(sourceType);
+          if(sourceType==='main'){
+            item.baseEn=card.baseEn;
+            item.baseVi=card.baseVi;
+          }
+          if(card.kind==='usage-addon'){
+            (card.contexts||[]).forEach(ctx=>{
+              if(!item.contexts.some(x=>x.en===ctx.en&&x.parentEn===ctx.parentEn)) item.contexts.push(ctx);
+            });
+          }
+          if(!item.lessons.some(x=>x.lessonId===pack.lessonId)) item.lessons.push({lessonId:pack.lessonId,order:pack.order,pattern:pack.pattern});
+        });
       });
-      let arr=[...map.values()];
+      let arr=[...map.values()].map(item=>({
+        ...item,
+        isMain:item.types.includes('main'),
+        isSupplement:item.types.includes('supplement'),
+        isSupplementOnly:item.types.includes('supplement')&&!item.types.includes('main')
+      }));
       if(order==='random') arr=arr.sort(()=>Math.random()-.5);
       return arr;
     }
@@ -2146,7 +2166,7 @@
 
     function chunkMemoryScreen(){
       const cfg=chunkMemorySettings();
-      const baseGroups=chunkMemoryGroups(cfg.lessonId,'sequential');
+      const baseGroups=chunkMemoryGroups(cfg.lessonId,'sequential',cfg.type);
       const recalled=baseGroups.filter(group=>chunkMemoryRecall(group)>=2).length;
       const currentPack=packs.find(p=>p.lessonId===cfg.lessonId);
 
@@ -2180,17 +2200,22 @@
         const pct=Math.round(((chunkMemorySession.index+1)/Math.max(1,chunkMemorySession.items.length))*100);
         const level=chunkMemoryRecall(item);
         const lessonText=item.lessons.map(x=>`#${String(x.order).padStart(2,'0')} ${x.pattern}`).join(' · ');
+        const addonContext=item.contexts?.[0]||null;
+        const memoryPrompt=item.isSupplementOnly?(addonContext?.vi||item.baseVi):item.baseVi;
+        const parentPrompt=item.isSupplementOnly&&addonContext?.parentEn?`Chunk chính đã biết: ${addonContext.parentEn}`:'';
+        const contextAnswer=item.isSupplementOnly?(addonContext?.en||''):'';
         return shell(`
           <section class="chunk-memory-session">
             <div class="chunk-memory-session-top"><button id="exitChunkMemory" class="text-button" type="button">← Cụm cần nhớ</button><strong>${chunkMemorySession.index+1}/${chunkMemorySession.items.length}</strong></div>
             <div class="chunk-memory-progress"><i style="width:${pct}%"></i></div>
             <article id="chunkMemoryCard" class="chunk-memory-card ${chunkMemorySession.revealed?'is-revealed':''}" tabindex="0">
-              <span class="eyebrow">VIỆT → ENGLISH</span>
-              <div class="chunk-memory-vi">${esc(item.baseVi)}</div>
+              <span class="eyebrow">${item.isSupplementOnly?'CỤM BỔ SUNG · VI → EN':'VIỆT → ENGLISH'}</span>
+              <div class="chunk-memory-vi">${esc(memoryPrompt)}</div>
+              ${parentPrompt?`<div class="chunk-memory-parent">${esc(parentPrompt)}</div>`:''}
               <small>${esc(lessonText)}</small>
               <div class="chunk-memory-divider"></div>
               ${chunkMemorySession.revealed?`
-                <div class="chunk-memory-answer"><span>ENGLISH</span><h2>${esc(item.baseEn)}</h2><button id="chunkMemorySpeak" type="button">${uiIcon('volume-2')} Nghe</button></div>
+                <div class="chunk-memory-answer"><span>${item.isSupplementOnly?'PHẦN BỔ SUNG':'ENGLISH'}</span><h2>${esc(item.baseEn)}</h2>${contextAnswer?`<small class="chunk-memory-context-en">${esc(contextAnswer)}</small>`:''}<button id="chunkMemorySpeak" type="button">${uiIcon('volume-2')} Nghe</button></div>
               `:`<button id="chunkMemoryReveal" class="chunk-memory-reveal" type="button">Bật English</button>`}
             </article>
             <div class="chunk-memory-skill"><span>Mức Recall hiện tại</span><b>${level>=2?'Đã gọi ra được':level===1?'Đang hình thành':'Chưa vững'}</b></div>
@@ -2201,20 +2226,27 @@
         `,'Cụm cần nhớ','Chỉ mở English sau khi đã tự cố nhớ cả cụm.');
       }
 
-      const allUnique=chunkMemoryGroups('all','sequential').length;
+      const allUnique=chunkMemoryGroups('all','sequential',cfg.type).length;
+      const mainUnique=chunkMemoryGroups('all','sequential','main').length;
+      const supplementUnique=chunkMemoryGroups('all','sequential','supplement').length;
       return shell(`
         <section class="chunk-memory-hero">
-          <div><span class="eyebrow">ACTIVE RECALL · VI → EN</span><h2>Học toàn bộ cụm cần nhớ</h2><p>Chỉ nhìn tiếng Việt. Tự bật cả cụm English trong đầu rồi mới mở đáp án.</p></div>
-          <div class="chunk-memory-count"><b>${baseGroups.length}</b><span>cụm cần nhớ</span></div>
+          <div><span class="eyebrow">ACTIVE RECALL · VI → EN</span><h2>Học toàn bộ cụm cần nhớ</h2><p>Gồm cả chunk chính và phần in đậm hữu ích được tách từ 5 cách dùng thường gặp.</p></div>
+          <div class="chunk-memory-count"><b>${baseGroups.length}</b><span>mục đang chọn</span></div>
         </section>
         <section class="chunk-memory-setup">
           <label><span>Chọn bài</span><select id="chunkMemoryLesson">
-            <option value="all" ${cfg.lessonId==='all'?'selected':''}>Tất cả bài · ${allUnique} cụm không trùng</option>
-            ${packs.map(pack=>`<option value="${pack.lessonId}" ${cfg.lessonId===pack.lessonId?'selected':''}>#${String(pack.order).padStart(2,'0')} · ${esc(pack.pattern)} · ${chunkMemoryGroups(pack.lessonId,'sequential').length} cụm</option>`).join('')}
+            <option value="all" ${cfg.lessonId==='all'?'selected':''}>Tất cả bài · ${allUnique} mục</option>
+            ${packs.map(pack=>`<option value="${pack.lessonId}" ${cfg.lessonId===pack.lessonId?'selected':''}>#${String(pack.order).padStart(2,'0')} · ${esc(pack.pattern)} · ${chunkMemoryGroups(pack.lessonId,'sequential',cfg.type).length} mục</option>`).join('')}
+          </select></label>
+          <label><span>Loại cần học</span><select id="chunkMemoryType">
+            <option value="all" ${cfg.type==='all'?'selected':''}>Tất cả · ${chunkMemoryGroups('all','sequential','all').length}</option>
+            <option value="main" ${cfg.type==='main'?'selected':''}>Cụm chính · ${mainUnique}</option>
+            <option value="supplement" ${cfg.type==='supplement'?'selected':''}>Bổ sung từ ví dụ · ${supplementUnique}</option>
           </select></label>
           <label><span>Thứ tự</span><select id="chunkMemoryOrder"><option value="sequential" ${cfg.order==='sequential'?'selected':''}>Theo thứ tự</option><option value="random" ${cfg.order==='random'?'selected':''}>Trộn ngẫu nhiên</option></select></label>
           <div class="chunk-memory-stats"><span><b>${recalled}</b> đã gọi ra</span><span><b>${baseGroups.length-recalled}</b> đang học</span></div>
-          <button id="startChunkMemory" class="primary-button" type="button">Bắt đầu học ${baseGroups.length} cụm →</button>
+          <button id="startChunkMemory" class="primary-button" type="button">Bắt đầu học ${baseGroups.length} mục →</button>
         </section>
         <section class="chunk-memory-rule">
           <div><b>1</b><span>Nhìn tiếng Việt</span></div><div><b>2</b><span>Tự nhớ English</span></div><div><b>3</b><span>Bật đáp án</span></div><div><b>4</b><span>Chưa nhớ / Nhớ được</span></div>
@@ -2224,7 +2256,7 @@
     }
 
     function lessonsScreen(){
-      const allMemoryCount=chunkMemoryGroups('all','sequential').length;
+      const allMemoryCount=chunkMemoryGroups('all','sequential','all').length;
       return shell(`
         <section class="chunk-memory-entry">
           <div><span class="eyebrow">VI → EN ACTIVE RECALL</span><h2>Học toàn bộ cụm cần nhớ</h2><p>Nhìn tiếng Việt → tự bật English. Chọn tất cả bài hoặc học riêng từng mẫu câu.</p></div>
@@ -2510,13 +2542,20 @@
     });
   
     $('#openAllChunkMemory')?.addEventListener('click',()=>{
-      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:'all'};
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:'all',type:'all'};
       chunkMemorySession=null;
       setHubView('remember');
     });
 
     $('#chunkMemoryLesson')?.addEventListener('change',e=>{
       state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:e.target.value};
+      chunkMemorySession=null;
+      saveState();
+      renderVocab();
+    });
+
+    $('#chunkMemoryType')?.addEventListener('change',e=>{
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),type:e.target.value};
       chunkMemorySession=null;
       saveState();
       renderVocab();
@@ -2531,7 +2570,7 @@
 
     $('#startChunkMemory')?.addEventListener('click',()=>{
       const cfg=chunkMemorySettings();
-      const items=chunkMemoryGroups(cfg.lessonId,cfg.order);
+      const items=chunkMemoryGroups(cfg.lessonId,cfg.order,cfg.type);
       chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:new Set(items.map(x=>x.key)).size,lessonId:cfg.lessonId,order:cfg.order,done:false};
       renderVocab();
     });
@@ -2605,7 +2644,7 @@
 
     $('#restartChunkMemory')?.addEventListener('click',()=>{
       const cfg=chunkMemorySettings();
-      const items=chunkMemoryGroups(cfg.lessonId,cfg.order);
+      const items=chunkMemoryGroups(cfg.lessonId,cfg.order,cfg.type);
       chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:new Set(items.map(x=>x.key)).size,lessonId:cfg.lessonId,order:cfg.order,done:false};
       renderVocab();
     });
@@ -2632,7 +2671,7 @@
   
     $('#rememberThisLesson')?.addEventListener('click',()=>{
       if(!selected) return;
-      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:selected.lessonId};
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:selected.lessonId,type:'all'};
       chunkMemorySession=null;
       saveState();
       setHubView('remember');
