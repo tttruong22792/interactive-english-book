@@ -2567,7 +2567,7 @@
       setHubView('remember');
     });
 
-    $('[data-vocab-lesson]').forEach(btn=>btn.onclick=()=>{
+    document.querySelectorAll('[data-vocab-lesson]').forEach(btn=>btn.onclick=()=>{
       state.vocabHubLessonId=btn.dataset.vocabLesson;
       state.vocabTrainerSettings={...trainerSettings,lessonId:btn.dataset.vocabLesson};
       setHubView('lesson');
