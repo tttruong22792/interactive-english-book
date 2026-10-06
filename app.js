@@ -2202,7 +2202,6 @@
         const lessonText=item.lessons.map(x=>`#${String(x.order).padStart(2,'0')} ${x.pattern}`).join(' · ');
         const addonContext=item.contexts?.[0]||null;
         const memoryPrompt=item.isSupplementOnly?(addonContext?.vi||item.baseVi):item.baseVi;
-        const parentPrompt=item.isSupplementOnly&&addonContext?.parentEn?`Chunk chính đã biết: ${addonContext.parentEn}`:'';
         const contextAnswer=item.isSupplementOnly?(addonContext?.en||''):'';
         return shell(`
           <section class="chunk-memory-session">
@@ -2211,7 +2210,6 @@
             <article id="chunkMemoryCard" class="chunk-memory-card ${chunkMemorySession.revealed?'is-revealed':''}" tabindex="0">
               <span class="eyebrow">${item.isSupplementOnly?'CỤM BỔ SUNG · VI → EN':'VIỆT → ENGLISH'}</span>
               <div class="chunk-memory-vi">${esc(memoryPrompt)}</div>
-              ${parentPrompt?`<div class="chunk-memory-parent">${esc(parentPrompt)}</div>`:''}
               <small>${esc(lessonText)}</small>
               <div class="chunk-memory-divider"></div>
               ${chunkMemorySession.revealed?`
