@@ -380,6 +380,42 @@
     return p;
   }
 
+  function recordMemory(nextEnv,card,remembered=true){
+    env=nextEnv||env;
+    if(!env||!card) return null;
+    const p=progressFor(card);
+    const now=Date.now();
+    p.reviewCount=Number(p.reviewCount||0)+1;
+    p.lastReviewedAt=now;
+    p.lastMode='memory-recall';
+    p.lastRating=remembered?'good':'again';
+    p.skills={...trainerDefaults().skills,...(p.skills||{})};
+
+    if(remembered){
+      p.correctCount=Number(p.correctCount||0)+1;
+      p.skills.understand=Math.max(2,Number(p.skills.understand||0));
+      p.skills.recognize=Math.max(2,Number(p.skills.recognize||0));
+      p.skills.recall=Math.min(3,Number(p.skills.recall||0)+1);
+      const stamp=dayStamp(now);
+      p.successDates=[...new Set([...(p.successDates||[]),stamp])].slice(-12);
+      const schedule=nextReviewSchedule(p,'good');
+      p.reviewStep=schedule.step;
+      p.intervalDays=schedule.days;
+      p.nextReviewAt=now+schedule.delay;
+    }else{
+      p.wrongCount=Number(p.wrongCount||0)+1;
+      p.skills.recall=Math.max(0,Number(p.skills.recall||0)-1);
+      p.reviewStep=Math.max(0,Number(p.reviewStep||0)-1);
+      p.intervalDays=0;
+      p.nextReviewAt=now+10*MINUTE;
+    }
+
+    p.mastered=p.skills.recognize>=2&&p.skills.recall>=2&&p.skills.use>=2;
+    p.automatic=automaticStatus(p).automatic;
+    persist(card,p);
+    return p;
+  }
+
   function dueRank(card){
     const p=progressFor(card);
     if(p.reviewCount&&p.nextReviewAt&&p.nextReviewAt<=Date.now()) return 0;
@@ -1755,6 +1791,7 @@
     packById,
     packs,
     studyChunks,
+    recordMemory,
     usageExampleMarkup,
     automaticStatus,
     nextPathStep,
