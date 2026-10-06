@@ -2686,7 +2686,7 @@
   
     $$('[data-active-speak]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();speak(btn.dataset.activeSpeak);});
   
-    $('[data-library-filter]').forEach(btn=>btn.onclick=()=>{
+    document.querySelectorAll('[data-library-filter]').forEach(btn=>btn.onclick=()=>{
       state.vocabLibraryFilter=btn.dataset.libraryFilter;
       saveState();
       renderVocab();
