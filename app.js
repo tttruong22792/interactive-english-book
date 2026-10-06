@@ -1980,7 +1980,7 @@
     const nextPath=window.VocabularyTrainer?.nextPathStep?.(state.saved||{},selected?.lessonId||trainerSettings.lessonId)||null;
     const view=state.vocabHubView||'today';
     const normalizedView=view==='lessons'?'learn':view==='practice'?'automate':view;
-    const mainView=normalizedView==='lesson'?'learn':normalizedView;
+    const mainView=['lesson','remember'].includes(normalizedView)?'learn':normalizedView;
   
     const modes=[
       ['write','Active Recall','Ý tiếng Việt → tự gọi cả chunk, không chọn A/B/C','RECALL','keyboard'],
@@ -2096,6 +2096,7 @@
 
         <section class="vocab-today-mini">
           <button data-vocab-screen="learn" type="button"><span>${uiIcon('book-open')}</span><div><b>Learn</b><small>Hiểu + nghe + 5 biến thể thực tế</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="remember" type="button"><span>${uiIcon('check-circle')}</span><div><b>Cụm cần nhớ</b><small>Nhìn Việt → tự bật English</small></div>${uiIcon('arrow-right')}</button>
           <button data-vocab-screen="automate" type="button"><span>${uiIcon('mic')}</span><div><b>Automate</b><small>Recall → Fast → Variation → Mix → Situation</small></div>${uiIcon('arrow-right')}</button>
           <button data-vocab-screen="use" type="button"><span>${uiIcon('play')}</span><div><b>Use</b><small>Shadowing → tự nói → câu mới</small></div>${uiIcon('arrow-right')}</button>
           <button data-vocab-screen="listen" type="button"><span>${uiIcon('headphones')}</span><div><b>Nghe khi di chuyển</b><small>Củng cố âm thanh, không thay cho retrieval</small></div>${uiIcon('arrow-right')}</button>
@@ -2214,7 +2215,12 @@
     }
 
     function lessonsScreen(){
+      const allMemoryCount=chunkMemoryGroups('all','sequential').length;
       return shell(`
+        <section class="chunk-memory-entry">
+          <div><span class="eyebrow">VI → EN ACTIVE RECALL</span><h2>Học toàn bộ cụm cần nhớ</h2><p>Nhìn tiếng Việt → tự bật English. Chọn tất cả bài hoặc học riêng từng mẫu câu.</p></div>
+          <div class="chunk-memory-entry-side"><b>${allMemoryCount}</b><span>cụm không trùng</span><button id="openAllChunkMemory" class="primary-button" type="button">Mở Cụm cần nhớ →</button></div>
+        </section>
         <div class="vocab-screen-title"><div><span class="eyebrow">BÀI HỌC</span><h2>Chọn một mẫu câu</h2><p>Mỗi bài chỉ hiện tiến độ. Chạm vào bài mới xem các chunk bên trong.</p></div></div>
         <div class="vocab-lesson-grid">
           ${packs.map(pack=>{
@@ -2297,6 +2303,7 @@
   
         <div class="vocab-detail-actions">
           <button id="startLessonChunks" class="primary-button" type="button">Learn · 5 cụm mới ${uiIcon('arrow-right')}</button>
+          <button id="rememberThisLesson" class="secondary-button" type="button">Nhìn Việt → bật English</button>
           <button id="practiceThisLesson" class="secondary-button" type="button">Automate cụm của bài</button>
           <button id="listenThisLesson" class="secondary-button" type="button">${uiIcon('headphones')} Nghe cụm của bài</button>
         </div>
@@ -2417,6 +2424,7 @@
     if(normalizedView==='today') content=todayScreen();
     else if(normalizedView==='listen') content=window.ChunkListener?.screen?.({state,packs,selected,shell,esc,uiIcon}) || shell('<div class="vocab-empty-state"><b>Không tải được trình nghe</b></div>','Nghe','Audio Loop');
     else if(normalizedView==='learn') content=lessonsScreen();
+    else if(normalizedView==='remember') content=chunkMemoryScreen();
     else if(normalizedView==='lesson') content=lessonDetailScreen();
     else if(normalizedView==='automate') content=automateScreen();
     else if(normalizedView==='use') content=useScreen();
@@ -2453,7 +2461,113 @@
       setHubView('lesson');
     });
   
-    $$('[data-vocab-lesson]').forEach(btn=>btn.onclick=()=>{
+    $('#openAllChunkMemory')?.addEventListener('click',()=>{
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:'all'};
+      chunkMemorySession=null;
+      setHubView('remember');
+    });
+
+    $('#chunkMemoryLesson')?.addEventListener('change',e=>{
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:e.target.value};
+      chunkMemorySession=null;
+      saveState();
+      renderVocab();
+    });
+
+    $('#chunkMemoryOrder')?.addEventListener('change',e=>{
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),order:e.target.value};
+      chunkMemorySession=null;
+      saveState();
+      renderVocab();
+    });
+
+    $('#startChunkMemory')?.addEventListener('click',()=>{
+      const cfg=chunkMemorySettings();
+      const items=chunkMemoryGroups(cfg.lessonId,cfg.order);
+      chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:new Set(items.map(x=>x.key)).size,lessonId:cfg.lessonId,order:cfg.order,done:false};
+      renderVocab();
+    });
+
+    const revealChunkMemory=()=>{
+      if(!chunkMemorySession) return;
+      chunkMemorySession.revealed=true;
+      renderVocab();
+    };
+    $('#chunkMemoryReveal')?.addEventListener('click',revealChunkMemory);
+    $('#chunkMemoryCard')?.addEventListener('click',e=>{
+      if(chunkMemorySession?.revealed) return;
+      if(e.target.closest('button')) return;
+      revealChunkMemory();
+    });
+
+    const rateChunkMemory=(remembered)=>{
+      if(!chunkMemorySession) return;
+      const item=chunkMemorySession.items[chunkMemorySession.index];
+      if(!item) return;
+      const trainerEnv={state,saveState,queueVocabUpsert,speak,uiIcon,esc,escAttr,toast,main:$('#mainView')};
+      item.cards.forEach(card=>window.VocabularyTrainer?.recordMemory?.(trainerEnv,card,remembered));
+      if(remembered) chunkMemorySession.remembered++;
+      else{
+        chunkMemorySession.forgot++;
+        chunkMemorySession.forgottenKeys.add(item.key);
+        const count=Number(chunkMemorySession.retries[item.key]||0);
+        if(count<1){
+          chunkMemorySession.retries[item.key]=count+1;
+          const insertAt=Math.min(chunkMemorySession.items.length,chunkMemorySession.index+3);
+          chunkMemorySession.items.splice(insertAt,0,item);
+        }
+      }
+      chunkMemorySession.index++;
+      chunkMemorySession.revealed=false;
+      if(chunkMemorySession.index>=chunkMemorySession.items.length) chunkMemorySession.done=true;
+      renderVocab();
+    };
+
+    $('#chunkMemoryForgot')?.addEventListener('click',()=>rateChunkMemory(false));
+    $('#chunkMemoryKnow')?.addEventListener('click',()=>rateChunkMemory(true));
+    $('#chunkMemorySpeak')?.addEventListener('click',e=>{
+      e.stopPropagation();
+      const item=chunkMemorySession?.items?.[chunkMemorySession.index];
+      if(item) speak(item.baseEn);
+    });
+
+    const memoryCard=$('#chunkMemoryCard');
+    if(memoryCard){
+      memoryCard.addEventListener('keydown',e=>{
+        if(!['Enter',' '].includes(e.key)) return;
+        e.preventDefault();
+        if(!chunkMemorySession?.revealed) revealChunkMemory();
+        else if(e.key==='Enter') rateChunkMemory(true);
+      });
+      setTimeout(()=>memoryCard.focus({preventScroll:true}),20);
+    }
+
+    $('#repeatForgottenChunks')?.addEventListener('click',()=>{
+      if(!chunkMemorySession) return;
+      const forgotten=chunkMemorySession.forgottenKeys;
+      if(!forgotten.size){toast('Bạn không có cụm nào đánh dấu Chưa nhớ.');return;}
+      const seen=new Set();
+      const items=chunkMemorySession.items.filter(item=>{
+        if(!forgotten.has(item.key)||seen.has(item.key)) return false;
+        seen.add(item.key);return true;
+      });
+      chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:items.length,lessonId:chunkMemorySession.lessonId,order:chunkMemorySession.order,done:false};
+      renderVocab();
+    });
+
+    $('#restartChunkMemory')?.addEventListener('click',()=>{
+      const cfg=chunkMemorySettings();
+      const items=chunkMemoryGroups(cfg.lessonId,cfg.order);
+      chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:new Set(items.map(x=>x.key)).size,lessonId:cfg.lessonId,order:cfg.order,done:false};
+      renderVocab();
+    });
+
+    $('#exitChunkMemory')?.addEventListener('click',()=>{
+      chunkMemorySession=null;
+      setHubView('remember');
+    });
+
+    $('[data-vocab-lesson]').forEach(btn=>btn.onclick=()=>{
       state.vocabHubLessonId=btn.dataset.vocabLesson;
       state.vocabTrainerSettings={...trainerSettings,lessonId:btn.dataset.vocabLesson};
       setHubView('lesson');
@@ -2468,6 +2582,14 @@
       renderFlashcards([], {lessonId:selected.lessonId,mode:'learn',size:'5',priority:'all'});
     });
   
+    $('#rememberThisLesson')?.addEventListener('click',()=>{
+      if(!selected) return;
+      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:selected.lessonId};
+      chunkMemorySession=null;
+      saveState();
+      setHubView('remember');
+    });
+
     $('#listenThisLesson')?.addEventListener('click',()=>{
       if(!selected) return;
       window.ChunkListener?.setLesson?.(selected.lessonId,state);
