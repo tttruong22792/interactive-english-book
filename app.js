@@ -19,6 +19,7 @@
     lessonVisits:0, lessonVisitsByLesson:{},
     vocabHubView:'today',
     vocabHubLessonId:'',
+    chunkMemorySettings:{lessonId:'all',order:'sequential'},
     vocabLibraryFilter:'all',
     vocabLibraryQuery:''
   };
@@ -32,6 +33,7 @@
   let practiceLessons = [];
   let shadowLessons = [];
   let shadowSession = {items:[],index:0,playing:false,settings:null};
+  let chunkMemorySession = null;
 
   function loadState(){
     try {
@@ -44,6 +46,7 @@
         meaningOverrides:{...(raw.meaningOverrides||{})},
         shadowed:{...(raw.shadowed||{})},
         shadowingSettings:{...defaults.shadowingSettings,...(raw.shadowingSettings||{})},
+        chunkMemorySettings:{...defaults.chunkMemorySettings,...(raw.chunkMemorySettings||{})},
         quizBestByLesson:{...(raw.quizBestByLesson||{})},
         quizRunsByLesson:{...(raw.quizRunsByLesson||{})},
         lessonVisitsByLesson:{...(raw.lessonVisitsByLesson||{})}
