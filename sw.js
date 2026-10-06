@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v83-challenge-pattern-filter';
+const APP_CACHE='language-studio-v84-chunk-memory';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261006-challenge-pattern-filter-v47.js',
+  './runtime-20261006-chunk-memory-v48.js',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];
