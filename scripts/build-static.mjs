@@ -168,10 +168,12 @@ const runtimeFiles = [
   "personalization-engine.js",
   "data/english/active-study-packs.js",
   "data/english/chunk-usage-vi.js",
+  "data/english/pattern-frames-80.js",
   "vocabulary-trainer.js",
   "shadowing-v2.js",
   "chunk-listener.js",
   "english-challenge.js",
+  "chunk-builder.js",
   "app.js"
 ];
 
