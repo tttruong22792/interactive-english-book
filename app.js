@@ -2027,8 +2027,8 @@
     const allChunks=packs.flatMap(pack=>window.VocabularyTrainer?.studyChunks?.(pack)||[]);
     const nextPath=window.VocabularyTrainer?.nextPathStep?.(state.saved||{},selected?.lessonId||trainerSettings.lessonId)||null;
     const view=state.vocabHubView||'today';
-    const normalizedView=view==='lessons'?'learn':view==='practice'?'automate':view;
-    const mainView=['lesson','remember'].includes(normalizedView)?'learn':normalizedView;
+    const normalizedView=['lessons','learn','practice','automate','use'].includes(view)?'today':view;
+    const mainView=['lesson','remember'].includes(normalizedView)?'today':normalizedView;
   
     const modes=[
       ['write','Active Recall','Ý tiếng Việt → tự gọi cả chunk, không chọn A/B/C','RECALL','keyboard'],
@@ -2162,7 +2162,12 @@
             });
           }
           if(card.kind==='family-variant'){
-            item.contexts.push({parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi});
+            const familyContexts=Array.isArray(card.contexts)&&card.contexts.length
+              ? card.contexts
+              : [{parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi,extensionEn:card.extensionEn||'',extensionVi:card.extensionVi||'',familyRoleLabel:card.familyRoleLabel||''}];
+            familyContexts.forEach(ctx=>{
+              if(!item.contexts.some(x=>x.en===ctx.en&&x.parentEn===ctx.parentEn)) item.contexts.push(ctx);
+            });
           }
           if(!item.lessons.some(x=>x.lessonId===pack.lessonId)) item.lessons.push({lessonId:pack.lessonId,order:pack.order,pattern:pack.pattern});
         });
@@ -2402,7 +2407,7 @@
       }).join('');
   
       return shell(`
-        <button id="backToVocabLessons" class="vocab-back-button" type="button">${uiIcon('arrow-left')}<span>Tất cả bài học</span></button>
+        <button id="backToVocabLessons" class="vocab-back-button" type="button">${uiIcon('arrow-left')}<span>Về Kho chunk</span></button>
   
         <section class="vocab-lesson-detail-head">
           <span class="eyebrow">MẪU ${String(pack.order).padStart(2,'0')}</span>
@@ -2434,11 +2439,9 @@
           <button id="rememberSupplementThisLesson" class="secondary-button" type="button">Học cụm bổ sung →</button>
         </section>
 
-        <div class="vocab-detail-actions">
-          <button id="startLessonChunks" class="primary-button" type="button">Learn · 5 cụm mới ${uiIcon('arrow-right')}</button>
-          <button id="rememberThisLesson" class="secondary-button" type="button">Nhìn Việt → bật English</button>
-          <button id="practiceThisLesson" class="secondary-button" type="button">Automate cụm của bài</button>
-          <button id="listenThisLesson" class="secondary-button" type="button">${uiIcon('headphones')} Nghe cụm của bài</button>
+        <div class="vocab-detail-actions vocab-detail-actions-simplified">
+          <button id="rememberThisLesson" class="primary-button" type="button">Học / ôn toàn bộ chunk của bài ${uiIcon('arrow-right')}</button>
+          <button id="listenThisLesson" class="secondary-button" type="button">${uiIcon('headphones')} Nghe chunk của bài</button>
         </div>
       `,`Mẫu ${String(pack.order).padStart(2,'0')}`,'Một màn hình chỉ để xem và bắt đầu học cụm của bài này.');
     }
@@ -2498,8 +2501,32 @@
       const familyChunks=packs.flatMap(pack=>window.VocabularyTrainer?.usageFamilyChunks?.(pack)||[]);
       const supplementChunks=packs.flatMap(pack=>window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[]);
       const grouped=new Map();
+      const familyByParent=new Map();
 
-      [...allChunks,...familyChunks,...supplementChunks].forEach(card=>{
+      familyChunks.forEach(card=>{
+        const contexts=Array.isArray(card.contexts)&&card.contexts.length
+          ? card.contexts
+          : [{parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi,extensionEn:card.extensionEn||'',extensionVi:card.extensionVi||'',familyRoleLabel:card.familyRoleLabel||''}];
+        contexts.forEach(ctx=>{
+          const parentKey=String(ctx.parentEn||card.parentEn||'').trim().toLowerCase();
+          if(!parentKey) return;
+          if(!familyByParent.has(parentKey)) familyByParent.set(parentKey,[]);
+          const list=familyByParent.get(parentKey);
+          const member={
+            en:ctx.en||card.baseEn,
+            vi:ctx.vi||card.baseVi,
+            extensionEn:ctx.extensionEn||card.extensionEn||'',
+            extensionVi:ctx.extensionVi||card.extensionVi||'',
+            role:ctx.familyRoleLabel||card.familyRoleLabel||'Biến thể thường dùng',
+            lessonId:card.pack?.lessonId||'',
+            order:card.pack?.order||0,
+            pattern:card.pack?.pattern||''
+          };
+          if(!list.some(x=>String(x.en).toLowerCase()===String(member.en).toLowerCase())) list.push(member);
+        });
+      });
+
+      [...allChunks,...supplementChunks].forEach(card=>{
         const key=String(card.baseEn||'').toLowerCase();
         if(!key) return;
         if(!grouped.has(key)) grouped.set(key,{baseEn:card.baseEn,baseVi:card.baseVi,cards:[],contexts:[]});
@@ -2508,9 +2535,6 @@
         if(card.kind==='main'||card.kind==='recognition'){
           entry.baseEn=card.baseEn;
           entry.baseVi=card.baseVi;
-        }
-        if(card.kind==='family-variant'){
-          entry.contexts.push({parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi});
         }
         if(card.kind==='usage-addon'){
           (card.contexts||[]).forEach(ctx=>{
@@ -2532,14 +2556,15 @@
         const reviewed=progresses.some(p=>Number(p.reviewCount||0)>0);
         const starred=progresses.some(p=>!!p.starred);
         const mainImportant=entry.cards.some(card=>card.kind==='main'||card.kind==='recognition');
-        const family=entry.cards.some(card=>card.kind==='family-variant');
         const supplemental=entry.cards.some(card=>card.kind==='usage-addon');
-        const learnable=mainImportant||family||supplemental;
+        const familyMembers=familyByParent.get(String(entry.baseEn||'').trim().toLowerCase())||[];
+        const family=familyMembers.length>0;
+        const learnable=mainImportant||supplemental;
         const weak=progresses.some(p=>p.lastRating==='again'||Number(p.wrongCount||0)>Number(p.correctCount||0))||(reviewed&&skills.recall<2);
         const mainMastered=skills.recognize>=2&&skills.recall>=2&&skills.use>=2;
         const mastered=mainImportant?mainMastered:skills.recall>=2;
         const automatic=mainImportant&&progresses.some(p=>window.VocabularyTrainer?.automaticStatus?.(p)?.automatic);
-        const lessonCards=entry.cards.filter(card=>['main','recognition','family-variant','usage-addon'].includes(card.kind));
+        const lessonCards=entry.cards.filter(card=>['main','recognition','usage-addon'].includes(card.kind));
         const lessonIds=[...new Set(lessonCards.map(card=>card.pack?.lessonId).filter(Boolean))];
         const lessons=[...new Map(
           lessonCards
@@ -2547,13 +2572,13 @@
             .filter(([id])=>id)
         ).values()].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
         return {
-          ...entry,skills,reviewed,starred,weak,mastered,automatic,learnable,mainImportant,family,supplemental,
+          ...entry,skills,reviewed,starred,weak,mastered,automatic,learnable,mainImportant,family,supplemental,familyMembers,
           lessonIds,lessons,lessonId:lessonIds[0]||entry.cards[0]?.pack?.lessonId||''
         };
       });
 
       const personal=Object.values(state.saved||{}).filter(x=>x?.type==='phrase').map(item=>({
-        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],contexts:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,learnable:false,mainImportant:false,family:false,supplemental:false,lessonIds:[],lessons:[],lessonId:'',personal:true
+        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],contexts:[],familyMembers:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,learnable:false,mainImportant:false,family:false,supplemental:false,lessonIds:[],lessons:[],lessonId:'',personal:true
       }));
 
       const filter=state.vocabLibraryFilter||'important';
@@ -2562,45 +2587,46 @@
 
       if(filter==='important') filtered=filtered.filter(x=>x.learnable&&!x.personal);
       if(filter==='core') filtered=filtered.filter(x=>x.mainImportant&&!x.personal);
-      if(filter==='family') filtered=filtered.filter(x=>x.family&&!x.personal);
-      if(filter==='supplement') filtered=filtered.filter(x=>x.supplemental&&!x.personal);
+      if(filter==='family') filtered=filtered.filter(x=>x.mainImportant&&x.family&&!x.personal);
+      if(filter==='supplement') filtered=filtered.filter(x=>x.supplemental&&!x.mainImportant&&!x.personal);
       if(filter==='learning') filtered=filtered.filter(x=>x.reviewed&&!x.mastered&&!x.personal);
       if(filter==='weak') filtered=filtered.filter(x=>x.weak&&!x.personal);
       if(filter==='mastered') filtered=filtered.filter(x=>x.mastered&&!x.personal);
       if(filter==='saved') filtered=filtered.filter(x=>x.starred||x.personal);
 
       if(lessonFilter!=='all'){
-        filtered=filtered.filter(x=>x.lessonIds?.includes(lessonFilter));
+        filtered=filtered.filter(x=>x.lessonIds?.includes(lessonFilter)||x.familyMembers?.some(member=>member.lessonId===lessonFilter));
       }
 
       const learnableCount=entries.filter(x=>x.learnable).length;
       const mainCount=entries.filter(x=>x.mainImportant).length;
-      const familyCount=entries.filter(x=>x.family).length;
-      const supplementCount=entries.filter(x=>x.supplemental).length;
+      const familyRootCount=entries.filter(x=>x.mainImportant&&x.family).length;
+      const familyBranchCount=[...new Set(familyChunks.map(card=>String(card.baseEn||'').toLowerCase()).filter(Boolean))].length;
+      const supplementCount=entries.filter(x=>x.supplemental&&!x.mainImportant).length;
       const selectedPack=packs.find(p=>p.lessonId===lessonFilter);
 
       return shell(`
-        <div class="vocab-screen-title"><div><span class="eyebrow">KHO CHUNK</span><h2>Vốn tiếng Anh để lấy ra khi cần nói</h2><p>Kho được chia thành 3 tầng: <b>chunk gốc</b> → <b>chunk family</b> → <b>cụm bổ sung</b>. Mỗi ngày chỉ học một lượng nhỏ, nhưng Kho có thể rất lớn.</p></div></div>
+        <div class="vocab-screen-title"><div><span class="eyebrow">KHO CHUNK</span><h2>Mỗi chunk gốc là một Family để tái sử dụng</h2><p>Không học hàng trăm câu rời. Mỗi chunk gốc giữ một nghĩa lõi, sau đó mở ra các nhánh <b>đối tượng · thời điểm · cách thức · mục đích · ngữ cảnh</b> thường gặp.</p></div></div>
 
         <section class="vocab-library-important-summary">
-          <div><span class="eyebrow">CHUNK BANK</span><h3>${learnableCount} mục không trùng</h3><p>${mainCount} chunk gốc · ${familyCount} cách dùng trong family · ${supplementCount} cụm bổ sung.</p></div>
+          <div><span class="eyebrow">CHUNK BANK</span><h3>${learnableCount} mục học độc lập</h3><p>${mainCount} chunk gốc · ${familyRootCount} gốc đã có family · ${familyBranchCount} nhánh cách dùng · ${supplementCount} cụm bổ sung.</p></div>
           <button id="studyImportantFromLibrary" class="primary-button" type="button">Bắt đầu Recall →</button>
         </section>
 
         <div class="vocab-library-tools">
-          <input id="vocabLibrarySearch" type="search" autocomplete="off" placeholder="Tìm: take a break, for five minutes..." value="${escAttr(state.vocabLibraryQuery||'')}">
+          <input id="vocabLibrarySearch" type="search" autocomplete="off" placeholder="Tìm: take a closer look, before we continue..." value="${escAttr(state.vocabLibraryQuery||'')}">
           <select id="vocabLibraryLesson" class="vocab-library-lesson-filter">
             <option value="all" ${lessonFilter==='all'?'selected':''}>Tất cả bài · ${learnableCount} mục</option>
             ${packs.map(pack=>{
-              const count=entries.filter(x=>x.learnable&&x.lessonIds.includes(pack.lessonId)).length;
-              return `<option value="${pack.lessonId}" ${lessonFilter===pack.lessonId?'selected':''}>#${String(pack.order).padStart(2,'0')} · ${esc(pack.pattern)} · ${count} mục</option>`;
+              const count=entries.filter(x=>(x.learnable&&x.lessonIds.includes(pack.lessonId))||x.familyMembers.some(member=>member.lessonId===pack.lessonId)).length;
+              return `<option value="${pack.lessonId}" ${lessonFilter===pack.lessonId?'selected':''}>#${String(pack.order).padStart(2,'0')} · ${esc(pack.pattern)} · ${count} gốc/family</option>`;
             }).join('')}
           </select>
           <div class="vocab-library-filters">
             ${[
               ['important','Tất cả'],
               ['core','Chunk gốc'],
-              ['family','Chunk family'],
+              ['family','Có Family'],
               ['supplement','Cụm bổ sung'],
               ['learning','Đang học'],
               ['weak','Cần ôn'],
@@ -2611,21 +2637,40 @@
         </div>
 
         <div class="vocab-library-count"><b>${filtered.length}</b> mục ${selectedPack?`· #${String(selectedPack.order).padStart(2,'0')} ${esc(selectedPack.pattern)}`:''}</div>
-        <div class="vocab-library-list">
+        <div class="vocab-library-list vocab-library-family-first">
           ${filtered.map(entry=>{
             const ctx=entry.contexts?.[0];
             const badges=[
               entry.mainImportant?'<em class="library-kind-main">GỐC</em>':'',
-              entry.family?'<em class="library-kind-family">FAMILY</em>':'',
-              entry.supplemental?'<em class="library-kind-supplement">BỔ SUNG</em>':''
+              entry.family?'<em class="library-kind-family">FAMILY '+entry.familyMembers.length+'</em>':'',
+              entry.supplemental&&!entry.mainImportant?'<em class="library-kind-supplement">BỔ SUNG</em>':''
             ].filter(Boolean).join('');
-            const searchText=(entry.baseEn+' '+entry.baseVi+' '+(ctx?.vi||'')+' '+(ctx?.parentEn||'')+' '+entry.lessons.map(x=>x.pattern).join(' ')).toLowerCase();
-            return `<article data-library-row data-search="${escAttr(searchText)}" class="${entry.learnable?'is-important':''} ${entry.family&&!entry.mainImportant?'is-family':''} ${entry.supplemental&&!entry.mainImportant&&!entry.family?'is-supplement':''}">
+            const familySearch=(entry.familyMembers||[]).map(x=>x.en+' '+x.vi+' '+x.extensionEn+' '+x.extensionVi+' '+x.role).join(' ');
+            const searchText=(entry.baseEn+' '+entry.baseVi+' '+(ctx?.vi||'')+' '+(ctx?.parentEn||'')+' '+entry.lessons.map(x=>x.pattern).join(' ')+' '+familySearch).toLowerCase();
+            const familyHTML=entry.mainImportant&&entry.familyMembers.length?`
+              <details class="vocab-library-family">
+                <summary><span><b>Chunk Family</b><small>${entry.familyMembers.length} cách dùng quanh cùng một chunk gốc</small></span>${uiIcon('arrow-right')}</summary>
+                <div class="vocab-library-family-list">
+                  ${entry.familyMembers.map((member,index)=>`
+                    <div class="vocab-library-family-row">
+                      <em>${index+1}</em>
+                      <div>
+                        <small>${esc(member.role)}</small>
+                        <strong>${esc(member.en)}</strong>
+                        ${member.vi?`<span>${esc(member.vi)}</span>`:''}
+                        ${member.extensionEn?`<p><b>Phần mở rộng:</b> ${esc(member.extensionEn)}${member.extensionVi?` · ${esc(member.extensionVi)}`:''}</p>`:''}
+                      </div>
+                      <button data-active-speak="${escAttr(member.en)}" type="button" aria-label="Nghe cách dùng">${uiIcon('volume-2')}</button>
+                    </div>
+                  `).join('')}
+                </div>
+              </details>`:'';
+            return `<article data-library-row data-search="${escAttr(searchText)}" class="${entry.learnable?'is-important':''} ${entry.family?'has-family':''} ${entry.supplemental&&!entry.mainImportant?'is-supplement':''}">
               <button class="vocab-library-audio" data-active-speak="${escAttr(entry.baseEn)}" type="button">${uiIcon('volume-2')}</button>
               <div class="vocab-library-copy">
                 <div class="vocab-library-title-line"><strong>${esc(entry.baseEn)}</strong>${badges}</div>
-                ${(entry.family||entry.supplemental)&&!entry.mainImportant&&ctx
-                  ? `<span>${esc(entry.baseVi||ctx.vi||'')}</span><small>Gốc: <b>${esc(ctx.parentEn||'')}</b>${ctx.en&&ctx.en!==entry.baseEn?` · ${esc(ctx.en)}`:''}</small>`
+                ${entry.supplemental&&!entry.mainImportant&&ctx
+                  ? `<span>${esc(entry.baseVi||ctx.vi||'')}</span><small>Được tách từ: <b>${esc(ctx.parentEn||'')}</b>${ctx.en&&ctx.en!==entry.baseEn?` · ${esc(ctx.en)}`:''}</small>`
                   : `<span>${esc(entry.baseVi)}</span>${entry.personal
                       ? '<small>Cụm cá nhân</small>'
                       : entry.lessons.length
@@ -2633,13 +2678,14 @@
                         : ''
                     }`
                 }
+                ${familyHTML}
               </div>
               ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recall>=1?'done':''}">1</i><i class="${entry.skills.recall>=2?'done':''}">2</i><i class="${entry.skills.fast>=2?'done':''}">3</i><i class="${entry.mainImportant&&entry.automatic||!entry.mainImportant&&entry.skills.recall>=2?'done automatic':''}">✓</i></div>`}
               ${entry.lessonId?`<button class="vocab-library-practice" data-library-practice="${escAttr(entry.lessonId)}" type="button">Luyện</button>`:''}
             </article>`;
           }).join('')||'<div class="vocab-empty-state"><b>Không có mục phù hợp</b><span>Thử từ khóa, bài học hoặc bộ lọc khác.</span></div>'}
         </div>
-      `,'Kho chunk','Mục tiêu là xây một kho lớn nhưng luôn ôn theo retrieval + spacing.');
+      `,'Kho chunk','Một gốc → nhiều cách dùng; vẫn chỉ học lượng nhỏ theo retrieval + spacing.');
     }
 
     let content='';
@@ -2812,7 +2858,7 @@
       setHubView('lesson');
     });
   
-    $('#backToVocabLessons')?.addEventListener('click',()=>setHubView('learn'));
+    $('#backToVocabLessons')?.addEventListener('click',()=>setHubView('library'));
   
     $('#startLessonChunks')?.addEventListener('click',()=>{
       if(!selected) return;
