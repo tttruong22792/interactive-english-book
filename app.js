@@ -2436,7 +2436,7 @@
         if(!grouped.has(key)) grouped.set(key,{baseEn:card.baseEn,baseVi:card.baseVi,cards:[],contexts:[]});
         const entry=grouped.get(key);
         entry.cards.push(card);
-        if(card.kind==='main'){
+        if(card.kind==='main'||card.kind==='recognition'){
           entry.baseEn=card.baseEn;
           entry.baseVi=card.baseVi;
         }
@@ -2462,7 +2462,7 @@
         };
         const reviewed=progresses.some(p=>Number(p.reviewCount||0)>0);
         const starred=progresses.some(p=>!!p.starred);
-        const mainImportant=entry.cards.some(card=>card.kind==='main');
+        const mainImportant=entry.cards.some(card=>card.kind==='main'||card.kind==='recognition');
         const family=entry.cards.some(card=>card.kind==='family-variant');
         const supplemental=entry.cards.some(card=>card.kind==='usage-addon');
         const learnable=mainImportant||family||supplemental;
@@ -2470,7 +2470,7 @@
         const mainMastered=skills.recognize>=2&&skills.recall>=2&&skills.use>=2;
         const mastered=mainImportant?mainMastered:skills.recall>=2;
         const automatic=mainImportant&&progresses.some(p=>window.VocabularyTrainer?.automaticStatus?.(p)?.automatic);
-        const lessonCards=entry.cards.filter(card=>['main','family-variant','usage-addon'].includes(card.kind));
+        const lessonCards=entry.cards.filter(card=>['main','recognition','family-variant','usage-addon'].includes(card.kind));
         const lessonIds=[...new Set(lessonCards.map(card=>card.pack?.lessonId).filter(Boolean))];
         const lessons=[...new Map(
           lessonCards
