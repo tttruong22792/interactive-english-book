@@ -275,17 +275,6 @@
     return rest||clean(fullVi);
   }
 
-  function familyRoleForExtension(extension=''){
-    const text=normalize(extension);
-    if(!text) return {id:'same',label:'Cùng ý · đổi ngữ cảnh'};
-    if(/^(at|about|into|over)\b/.test(text)) return {id:'focus',label:'Đối tượng / chủ đề'};
-    if(/^(before|after|when|while|once|until|during)\b/.test(text)) return {id:'time',label:'Thời điểm'};
-    if(/^(for|within|in)\b/.test(text)) return {id:'range',label:'Thời lượng / phạm vi'};
-    if(/^(with|without|by|through)\b/.test(text)) return {id:'method',label:'Cách thức'};
-    if(/^(to|so|because|if)\b/.test(text)) return {id:'purpose',label:'Mục đích / điều kiện'};
-    return {id:'variation',label:'Biến thể thường dùng'};
-  }
-
   function usageFamilyChunks(pack){
     if(!pack) return [];
     const parents=studyChunks(pack).filter(card=>card.kind!=='building');
@@ -299,11 +288,6 @@
         if(!cleanEn) return;
         const key=normalize(cleanEn);
         if(!key||key===normalize(parent.baseEn)) return;
-
-        const extensionEn=usageVariablePart(parent.baseEn,cleanEn);
-        const extensionVi=vietnameseUsageCue(parent.baseVi,vi);
-        const role=familyRoleForExtension(extensionEn);
-
         if(!grouped.has(key)){
           grouped.set(key,{
             id:`family:${pack.lessonId}:${slug(cleanEn)}`,
@@ -322,38 +306,8 @@
             usageExamples:[],
             parentEn:parent.baseEn,
             parentVi:parent.baseVi,
-            extensionEn,
-            extensionVi,
-            familyRole:role.id,
-            familyRoleLabel:role.label,
-            familyIndex:index,
-            contexts:[{
-              parentEn:parent.baseEn,
-              parentVi:parent.baseVi,
-              en:cleanEn,
-              vi,
-              extensionEn,
-              extensionVi,
-              familyRole:role.id,
-              familyRoleLabel:role.label,
-              exampleIndex:index
-            }]
+            familyIndex:index
           });
-        }else{
-          const card=grouped.get(key);
-          if(!card.contexts.some(ctx=>ctx.parentEn===parent.baseEn)){
-            card.contexts.push({
-              parentEn:parent.baseEn,
-              parentVi:parent.baseVi,
-              en:cleanEn,
-              vi,
-              extensionEn,
-              extensionVi,
-              familyRole:role.id,
-              familyRoleLabel:role.label,
-              exampleIndex:index
-            });
-          }
         }
       });
     });
