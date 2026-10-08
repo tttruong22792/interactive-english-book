@@ -275,6 +275,46 @@
     return rest||clean(fullVi);
   }
 
+  function usageFamilyChunks(pack){
+    if(!pack) return [];
+    const parents=studyChunks(pack).filter(card=>card.kind!=='building');
+    const grouped=new Map();
+
+    parents.forEach(parent=>{
+      (parent.usageExamples||[]).forEach((example,index)=>{
+        const en=typeof example==='string'?String(example):String(example?.en||'');
+        const vi=typeof example==='string'?'':String(example?.vi||'');
+        const cleanEn=en.trim();
+        if(!cleanEn) return;
+        const key=normalize(cleanEn);
+        if(!key||key===normalize(parent.baseEn)) return;
+        if(!grouped.has(key)){
+          grouped.set(key,{
+            id:`family:${pack.lessonId}:${slug(cleanEn)}`,
+            key:`family:${pack.lessonId}:${slug(cleanEn)}`,
+            pack,
+            index:grouped.size,
+            priority:'family',
+            kind:'family-variant',
+            baseEn:cleanEn,
+            baseVi:vi,
+            modelEn:cleanEn,
+            modelVi:vi,
+            phraseEn:cleanEn,
+            phraseVi:vi,
+            examples:[{en:cleanEn,vi}],
+            usageExamples:[],
+            parentEn:parent.baseEn,
+            parentVi:parent.baseVi,
+            familyIndex:index
+          });
+        }
+      });
+    });
+
+    return [...grouped.values()];
+  }
+
   function usageSupplementChunks(pack){
     if(!pack) return [];
     const parents=studyChunks(pack).filter(card=>card.kind!=='building');
@@ -1894,6 +1934,7 @@
     packById,
     packs,
     studyChunks,
+    usageFamilyChunks,
     usageSupplementChunks,
     usageVariablePart,
     recordMemory,
