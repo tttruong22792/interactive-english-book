@@ -2096,7 +2096,7 @@
           <div>
             <span class="eyebrow">TODAY · CHUNK FIRST</span>
             <h2>${dailyDue?'Ôn chunk đến hạn trước':'Xây thêm vốn chunk hôm nay'}</h2>
-            <p>Phiên hôm nay được chọn tự động: ưu tiên chunk đến hạn, chunk từng sai/chậm, sau đó mới thêm chunk mới. Không cần tự chọn Fast Recall, Mix hay Variation.</p>
+            <p>Phiên hôm nay được chọn tự động: ôn đến hạn và chunk từng quên trước, sau đó mới thêm tối đa 5 mục mới. Family/cụm bổ sung chỉ vào phiên khi chunk gốc liên quan đã được gặp.</p>
             <div class="chunk-today-meta"><span><b>${daily.length}</b> mục</span><span><b>${dailyDue}</b> đến hạn</span><span><b>${dailyNew}</b> mới</span></div>
           </div>
           <button id="startDailyChunkSession" class="vocab-primary-cta" type="button"><span>Bắt đầu phiên hôm nay</span>${uiIcon('arrow-right')}</button>
@@ -2117,7 +2117,7 @@
 
         <section class="chunk-first-rule">
           <span class="eyebrow">NGUYÊN TẮC</span>
-          <p><b>Kho lớn, lượng mới mỗi ngày nhỏ.</b> Mục tiêu là tích lũy hàng trăm chunk hữu ích, nhưng mỗi phiên chỉ lấy một nhóm nhỏ và buộc não tự gọi lại trước khi xem đáp án.</p>
+          <p><b>Kho có thể rất lớn, nhưng lượng mới trong một phiên phải nhỏ.</b> Muốn học nhiều chunk lâu dài, app ưu tiên retrieval + spaced review; khi đã ôn xong bạn luôn có thể bắt đầu thêm một phiên nữa.</p>
         </section>
 
         ${currentPack?`<section class="vocab-today-continue compact">
@@ -2193,23 +2193,61 @@
       return {reviewed,due,weak,next,last,recall:chunkMemoryRecall(group)};
     }
 
-    function dailyChunkItems(limit=10){
-      const groups=chunkMemoryGroups('all','sequential','all').map(group=>({group,p:chunkGroupProgress(group)}));
-      groups.sort((a,b)=>{
-        const rank=x=>{
-          if(x.p.due) return 0;
-          if(x.p.reviewed&&(x.p.weak||x.p.recall<2)) return 1;
-          if(!x.p.reviewed&&x.group.isMain) return 2;
-          if(!x.p.reviewed&&x.group.isFamily) return 3;
-          if(!x.p.reviewed&&x.group.isSupplement) return 4;
-          return 5;
-        };
-        const ra=rank(a),rb=rank(b);
-        if(ra!==rb) return ra-rb;
-        if(ra===0) return a.p.next-b.p.next;
-        return a.p.last-b.p.last;
-      });
-      return groups.slice(0,Math.max(1,limit)).map(x=>x.group);
+    function dailyChunkItems(limit=10,newLimit=5){
+      const all=chunkMemoryGroups('all','sequential','all').map(group=>({group,p:chunkGroupProgress(group)}));
+      const mainByText=new Map(
+        chunkMemoryGroups('all','sequential','main').map(group=>[String(group.baseEn||'').toLowerCase(),group])
+      );
+
+      const parentReady=group=>{
+        if(group.isMain) return true;
+        const parents=[...new Set((group.contexts||[]).map(ctx=>String(ctx.parentEn||'').toLowerCase()).filter(Boolean))];
+        if(!parents.length) return false;
+        return parents.some(parent=>{
+          const main=mainByText.get(parent);
+          return main ? chunkGroupProgress(main).reviewed : false;
+        });
+      };
+
+      const due=all
+        .filter(x=>x.p.reviewed&&x.p.due)
+        .sort((a,b)=>a.p.next-b.p.next);
+
+      const weak=all
+        .filter(x=>x.p.reviewed&&!x.p.due&&(x.p.weak||x.p.recall<2))
+        .sort((a,b)=>a.p.last-b.p.last);
+
+      const reviewed=[...due,...weak];
+      const chosen=[];
+      const seen=new Set();
+      const add=item=>{
+        if(!item||seen.has(item.group.key)||chosen.length>=limit) return false;
+        seen.add(item.group.key);
+        chosen.push(item.group);
+        return true;
+      };
+
+      reviewed.forEach(add);
+      if(chosen.length>=limit) return chosen.slice(0,limit);
+
+      const room=limit-chosen.length;
+      const allowedNew=Math.min(Math.max(0,newLimit),room);
+      if(!allowedNew) return chosen;
+
+      const newMain=all.filter(x=>!x.p.reviewed&&x.group.isMain);
+      const newFamily=all.filter(x=>!x.p.reviewed&&x.group.isFamily&&!x.group.isMain&&parentReady(x.group));
+      const newSupplement=all.filter(x=>!x.p.reviewed&&x.group.isSupplement&&!x.group.isMain&&!x.group.isFamily&&parentReady(x.group));
+
+      const newQueue=[];
+      let i=0;
+      while(newQueue.length<allowedNew&&(i<newMain.length||i<newFamily.length||i<newSupplement.length)){
+        if(i<newMain.length) newQueue.push(newMain[i]);
+        if(newQueue.length<allowedNew&&i<newFamily.length) newQueue.push(newFamily[i]);
+        if(newQueue.length<allowedNew&&i<newSupplement.length) newQueue.push(newSupplement[i]);
+        i++;
+      }
+      newQueue.slice(0,allowedNew).forEach(add);
+      return chosen;
     }
 
     function chunkMemoryScreen(){
