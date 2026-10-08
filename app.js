@@ -2083,7 +2083,9 @@
   
     function todayScreen(){
       const currentPack=selected||packs[0];
-      const step=nextPath||{eyebrow:'RETRIEVAL',title:'Ôn chunk cần gọi ra',reason:'Ưu tiên chunk yếu hoặc đến lịch ôn.',mode:'write',count:5};
+      const daily=dailyChunkItems(10);
+      const dailyDue=daily.filter(group=>chunkGroupProgress(group).due).length;
+      const dailyNew=daily.filter(group=>!chunkGroupProgress(group).reviewed).length;
       const mainCount=chunkMemoryGroups('all','sequential','main').length;
       const familyCount=chunkMemoryGroups('all','sequential','family').length;
       const supplementCount=chunkMemoryGroups('all','sequential','supplement').length;
@@ -2093,11 +2095,11 @@
         <section class="chunk-today-hero">
           <div>
             <span class="eyebrow">TODAY · CHUNK FIRST</span>
-            <h2>${esc(step.title||'Học chunk hôm nay')}</h2>
-            <p>${esc(step.reason||'App tự chọn bước phù hợp. Bạn chỉ cần làm retrieval, không cần chọn chế độ học.')}</p>
-            <div class="chunk-today-meta"><span><b>${step.count||5}</b> chunk mục tiêu</span><span>${step.due?'Đến lịch ôn':'Tự động chọn'}</span></div>
+            <h2>${dailyDue?'Ôn chunk đến hạn trước':'Xây thêm vốn chunk hôm nay'}</h2>
+            <p>Phiên hôm nay được chọn tự động: ưu tiên chunk đến hạn, chunk từng sai/chậm, sau đó mới thêm chunk mới. Không cần tự chọn Fast Recall, Mix hay Variation.</p>
+            <div class="chunk-today-meta"><span><b>${daily.length}</b> mục</span><span><b>${dailyDue}</b> đến hạn</span><span><b>${dailyNew}</b> mới</span></div>
           </div>
-          <button id="startActivePath" class="vocab-primary-cta" type="button"><span>Bắt đầu phiên hôm nay</span>${uiIcon('arrow-right')}</button>
+          <button id="startDailyChunkSession" class="vocab-primary-cta" type="button"><span>Bắt đầu phiên hôm nay</span>${uiIcon('arrow-right')}</button>
         </section>
 
         <section class="chunk-bank-snapshot">
@@ -2108,20 +2110,20 @@
         </section>
 
         <section class="chunk-today-actions">
-          <button id="openRecallDeck" type="button"><span>${uiIcon('check-circle')}</span><div><b>Nhìn Việt → bật English</b><small>Retrieval là bài tập chính</small></div>${uiIcon('arrow-right')}</button>
+          <button id="openRecallDeck" type="button"><span>${uiIcon('check-circle')}</span><div><b>Recall tự do</b><small>Nhìn Việt → bật English</small></div>${uiIcon('arrow-right')}</button>
           <button id="openChunkBuilderToday" type="button"><span>${uiIcon('book-open')}</span><div><b>Ghép chunk vào mẫu câu</b><small>Một chunk → nhiều khung trong bộ 80</small></div>${uiIcon('arrow-right')}</button>
           <button data-vocab-screen="library" type="button"><span>${uiIcon('bookmark')}</span><div><b>Mở Kho chunk</b><small>Xem lại toàn bộ vốn chunk</small></div>${uiIcon('arrow-right')}</button>
         </section>
 
         <section class="chunk-first-rule">
           <span class="eyebrow">NGUYÊN TẮC</span>
-          <p><b>Kho lớn, lượt học nhỏ.</b> Tích lũy càng nhiều chunk hữu ích càng tốt, nhưng mỗi ngày chỉ đưa một lượng vừa phải vào trí nhớ và gặp lại chúng theo khoảng cách.</p>
+          <p><b>Kho lớn, lượng mới mỗi ngày nhỏ.</b> Mục tiêu là tích lũy hàng trăm chunk hữu ích, nhưng mỗi phiên chỉ lấy một nhóm nhỏ và buộc não tự gọi lại trước khi xem đáp án.</p>
         </section>
 
         ${currentPack?`<section class="vocab-today-continue compact">
           <div class="vocab-section-heading"><div><span class="eyebrow">NGỮ CẢNH ĐANG HỌC</span><h3>#${String(currentPack.order).padStart(2,'0')} · ${esc(currentPack.pattern)}</h3><p>Mẫu câu chỉ là khung để tái sử dụng chunk.</p></div><button id="openCurrentVocabLesson" class="text-button" type="button">Xem chunk của bài →</button></div>
         </section>`:''}
-      `,'Hôm nay','Một đường học duy nhất: gặp chunk → tự gọi ra → gặp lại cách quãng → ghép vào câu.');
+      `,'Hôm nay','Retrieval + spacing là trục chính; các kỹ thuật còn lại chạy phía sau hệ thống.');
     }
 
     function chunkMemorySettings(){
@@ -2179,6 +2181,35 @@
 
     function chunkMemoryRecall(group){
       return Math.max(0,...group.cards.map(card=>Number(state.saved?.[card.key]?.trainer?.skills?.recall||0)));
+    }
+
+    function chunkGroupProgress(group){
+      const rows=group.cards.map(card=>state.saved?.[card.key]?.trainer||{});
+      const reviewed=rows.some(p=>Number(p.reviewCount||0)>0);
+      const due=rows.some(p=>Number(p.reviewCount||0)>0&&Number(p.nextReviewAt||0)<=Date.now());
+      const weak=rows.some(p=>p.lastRating==='again'||Number(p.wrongCount||0)>Number(p.correctCount||0));
+      const next=Math.min(...rows.map(p=>Number(p.nextReviewAt||Infinity)));
+      const last=Math.max(0,...rows.map(p=>Number(p.lastReviewedAt||0)));
+      return {reviewed,due,weak,next,last,recall:chunkMemoryRecall(group)};
+    }
+
+    function dailyChunkItems(limit=10){
+      const groups=chunkMemoryGroups('all','sequential','all').map(group=>({group,p:chunkGroupProgress(group)}));
+      groups.sort((a,b)=>{
+        const rank=x=>{
+          if(x.p.due) return 0;
+          if(x.p.reviewed&&(x.p.weak||x.p.recall<2)) return 1;
+          if(!x.p.reviewed&&x.group.isMain) return 2;
+          if(!x.p.reviewed&&x.group.isFamily) return 3;
+          if(!x.p.reviewed&&x.group.isSupplement) return 4;
+          return 5;
+        };
+        const ra=rank(a),rb=rank(b);
+        if(ra!==rb) return ra-rb;
+        if(ra===0) return a.p.next-b.p.next;
+        return a.p.last-b.p.last;
+      });
+      return groups.slice(0,Math.max(1,limit)).map(x=>x.group);
     }
 
     function chunkMemoryScreen(){
@@ -2602,13 +2633,14 @@
       await syncSavedVocabulary({silent:false,rerender:true});
     });
   
-    $('#startActivePath')?.addEventListener('click',()=>{
-      const lessonId=selected?.lessonId||trainerSettings.lessonId||packs[0]?.lessonId;
-      state.vocabHubLessonId=lessonId;
-      saveState();
-      renderFlashcards([], {autoPath:true,lessonId});
-    });
+
   
+    $('#startDailyChunkSession')?.addEventListener('click',()=>{
+      const items=dailyChunkItems(10);
+      chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:new Set(items.map(x=>x.key)).size,lessonId:'all',order:'priority',done:false};
+      setHubView('remember');
+    });
+
     $('#openRecallDeck')?.addEventListener('click',()=>{
       state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:'all',type:'all',order:'random'};
       chunkMemorySession=null;
