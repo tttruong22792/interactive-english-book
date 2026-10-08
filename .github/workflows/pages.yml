@@ -58,9 +58,6 @@ jobs:
           node --check english-challenge.js
           node --check scripts/test-english-challenge.mjs
           node --check scripts/test-chunk-memory.mjs
-          node --check scripts/test-chunk-first.mjs
-          node --check chunk-builder.js
-          node --check data/english/pattern-frames-80.js
           node --check data/english/active-study-packs.js
           node --check data/english/chunk-usage-vi.js
           node --check cloud-sync.js
@@ -84,10 +81,6 @@ jobs:
       - name: Test all-chunk memory recall
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-chunk-memory.mjs
-
-      - name: Test chunk-first architecture
-        if: steps.head_guard.outputs.deploy == 'true'
-        run: node scripts/test-chunk-first.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'

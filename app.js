@@ -20,7 +20,6 @@
     vocabHubView:'today',
     vocabHubLessonId:'',
     chunkMemorySettings:{lessonId:'all',type:'all',order:'sequential'},
-    chunkBuilder:{frameId:'frame-001',chunkKey:''},
     vocabLibraryFilter:'important',
     vocabLibraryLessonId:'all',
     vocabLibraryImportantV1:false,
@@ -50,7 +49,6 @@
         shadowed:{...(raw.shadowed||{})},
         shadowingSettings:{...defaults.shadowingSettings,...(raw.shadowingSettings||{})},
         chunkMemorySettings:{...defaults.chunkMemorySettings,...(raw.chunkMemorySettings||{})},
-        chunkBuilder:{...defaults.chunkBuilder,...(raw.chunkBuilder||{})},
         quizBestByLesson:{...(raw.quizBestByLesson||{})},
         quizRunsByLesson:{...(raw.quizRunsByLesson||{})},
         lessonVisitsByLesson:{...(raw.lessonVisitsByLesson||{})}
@@ -450,7 +448,7 @@
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge','builder'].includes(r.name) ? 'patterns' : r.name);
+    setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge'].includes(r.name) ? 'patterns' : r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
@@ -460,7 +458,6 @@
       else if (r.name === 'vocab') renderVocab();
       else if (r.name === 'practice') await renderPracticeHub();
       else if (r.name === 'challenge') await renderChallenge();
-      else if (r.name === 'builder') await renderChunkBuilder();
       else if (r.name === 'shadowing') await renderShadowing();
       else if (r.name === 'progress') await renderProgress();
       else if (r.name === 'settings') renderSettings();
@@ -500,17 +497,17 @@
     $('#mainView').innerHTML = `
       <section class="landing-hero">
         <div class="hero-copy-new">
-          <div class="landing-kicker">CHUNK-FIRST ENGLISH · ACTIVE RECALL</div>
-          <h1 class="display-title">Tích lũy <span class="marker marker-purple">chunk dùng thật</span>,<br>rồi ghép thành <span class="marker marker-green">câu của bạn</span>.</h1>
-          <p class="hero-lead">Language Studio ưu tiên vốn cụm có thể lấy ra nhanh khi nói. Mẫu câu, ngữ pháp và shadowing được giữ như công cụ hỗ trợ cho việc dùng chunk.</p>
+          <div class="landing-kicker">ENGLISH · GRAMMAR · VOCABULARY · SHADOWING</div>
+          <h1 class="display-title">Học tiếng Anh theo <span class="marker marker-purple">hệ thống</span>,<br>dùng được trong <span class="marker marker-green">đời sống thật</span>.</h1>
+          <p class="hero-lead">Language Studio kết hợp mẫu câu thực tế, ngữ pháp trực quan, từ vựng có ngữ cảnh, audio tự nhiên và shadowing trong một trải nghiệm học thống nhất.</p>
           <div class="hero-actions">
-            <button class="primary-button" data-go="vocab">Học chunk hôm nay →</button>
-            <button class="secondary-button" data-go="builder">Ghép chunk vào mẫu câu</button>
+            <button class="primary-button" data-go="patterns">Bắt đầu học English →</button>
+            <button class="secondary-button" data-go="shadowing">Luyện Shadowing</button>
           </div>
           <div class="hero-mini-stats">
-            <div><strong>${window.ChunkBuilder?.coreBank?.(window.VocabularyTrainer?.packs?.()||[])?.length||0}</strong><span>Chunk gốc hiện có</span></div>
-            <div><strong>80</strong><span>Khung câu tham chiếu</span></div>
-            <div><strong>1</strong><span>Lộ trình chính</span></div>
+            <div><strong>${availableEnglish}</strong><span>Bài mẫu câu</span></div>
+            <div><strong>12</strong><span>Thì tiếng Anh</span></div>
+            <div><strong>3</strong><span>Cấp độ Shadowing</span></div>
           </div>
         </div>
         <div class="hero-showcase">
@@ -532,13 +529,13 @@
       </section>
 
       <section class="big-statement">
-        <h2>Từ “không biết nói gì” đến <span class="marker marker-purple">có sẵn nguyên liệu để nói</span>.</h2>
-        <p>Vòng lặp chính được rút gọn thành: gặp chunk → tự gọi lại → gặp lại cách quãng → ghép vào nhiều khung câu → dùng trong tình huống mới.</p>
+        <h2>Từ hiểu câu đến <span class="marker marker-purple">nói được câu</span>.<br>Mỗi kỹ năng nằm trong <span class="marker marker-yellow">cùng một lộ trình</span>.</h2>
+        <p>Người học đi theo một vòng lặp rõ ràng: hiểu → nghe → tra từ → nói theo → tự nhớ lại → ôn tập. Mỗi module dùng chung nội dung và tiến độ học.</p>
         <div class="scribble" aria-hidden="true">⌁⌁⌁  ↗  ⌁⌁⌁</div>
       </section>
 
       <section class="landing-section">
-        <div class="landing-section-head"><div><span class="landing-kicker">CHUNK ECOSYSTEM</span><h2>Một trọng tâm, các công cụ xoay quanh</h2></div><p>Kho chunk là trung tâm. Mẫu câu, nghe nói, ngữ pháp và thử thách chỉ phục vụ việc nhớ và tái sử dụng các chunk đó.</p></div>
+        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING TRACKS</span><h2>Một nền tảng, nhiều kỹ năng</h2></div><p>Mẫu câu, ngữ pháp, từ vựng, luyện nghe nói và shadowing được tổ chức thành các module có thể mở rộng theo lộ trình.</p></div>
         <div class="track-grid-new">${tracks}</div>
       </section>
 
@@ -588,88 +585,52 @@
 
   function renderPatterns(){
     L=null;
-    setHeader('English','English · Chunk First');
-    const packs=window.VocabularyTrainer?.packs?.()||[];
-    const core=window.ChunkBuilder?.coreBank?.(packs)||[];
-    const familyCount=packs.reduce((n,pack)=>n+(window.VocabularyTrainer?.usageFamilyChunks?.(pack)||[]).length,0);
-    const supplementCount=packs.reduce((n,pack)=>n+(window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[]).length,0);
+    setHeader('English','English Learning');
     $('#mainView').innerHTML = `
-      <section class="chunk-first-hero">
-        <div>
-          <span class="eyebrow">CHUNK-FIRST ENGLISH</span>
-          <h1>Xây vốn chunk trước.<br><span>Dùng mẫu câu để lắp chúng lại.</span></h1>
-          <p>Trọng tâm mới của Language Studio là tích lũy nhiều cụm dùng thật, gọi ra nhanh bằng retrieval practice, rồi tái sử dụng chúng với các khung như <b>I'd like to…</b>, <b>I'm going to…</b>, <b>I need to…</b>.</p>
-          <div class="chunk-first-actions"><button class="primary-button" data-go="vocab">Học chunk hôm nay →</button><button class="secondary-button" data-go="builder">Ghép chunk vào mẫu câu</button></div>
+      <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>Mục tiêu không phải biết nhiều từ, mà là có ý muốn nói → chunk bật ra nhanh → dùng được ngay trong câu và tình huống thật.</p></section>
+      <section class="english-active-system">
+        <div class="english-active-system-head"><span class="eyebrow">ACTIVE LEARNING SYSTEM</span><h2>Một hệ thống, ba khối</h2><p>Mọi module tiếng Anh đều phục vụ một trong ba việc: học đúng đầu vào, tự động hóa phản xạ, rồi dùng được trong giao tiếp.</p></div>
+        <div class="english-active-system-grid">
+          <article><b>01 · LEARN</b><h3>Hiểu đúng</h3><p>Mẫu câu · chunk · 5 cách dùng · ngữ pháp đủ dùng. Không học từ rời nếu chưa cần.</p></article>
+          <article><b>02 · AUTOMATE</b><h3>Gọi ra tự động</h3><p>Recall → Fast Recall → Variation → Discrimination → Situation → Spaced Review.</p></article>
+          <article><b>03 · USE</b><h3>Dùng được</h3><p>Shadowing → tắt audio → tự nói → câu hoàn chỉnh → hội thoại và tình huống mới.</p></article>
         </div>
-        <div class="chunk-first-score">
-          <strong>${core.length}</strong><span>chunk gốc</span>
-          <strong>${familyCount}</strong><span>cách dùng trong family</span>
-          <strong>${supplementCount}</strong><span>cụm bổ sung</span>
-        </div>
+        <button class="primary-button english-active-start" data-go="vocab">Bắt đầu Active Path →</button>
       </section>
-
-      <section class="chunk-first-main-grid">
-        <article data-go="vocab"><span>01</span><div><h2>Hôm nay</h2><p>App tự chọn chunk mới + chunk đến hạn. Bạn không phải chọn Fast Recall, Mix hay Variation nữa.</p></div><b>→</b></article>
-        <article data-go="vocab" data-vocab-target="library"><span>02</span><div><h2>Kho chunk</h2><p>Toàn bộ chunk gốc, family và cụm bổ sung. Đây là vốn tiếng Anh của bạn.</p></div><b>→</b></article>
-        <article data-go="builder"><span>03</span><div><h2>Ghép câu</h2><p>Lấy một chunk và tái sử dụng với các khung trong bộ 80 cấu trúc của bạn.</p></div><b>→</b></article>
-        <article data-go="challenge"><span>04</span><div><h2>Thử thách</h2><p>Nhìn ý tiếng Việt → tự tạo English. Câu yếu được đưa trở lại để ôn.</p></div><b>→</b></article>
+      <section class="english-grammar-entry english-vocab-entry">
+        <div><span class="eyebrow">LEARN + AUTOMATE</span><h2>Cụm chủ động</h2><p>Học các cụm dùng thật theo từng mẫu câu: nhận ra → gọi ra → dùng trong câu, kèm Flashcard, nghe lặp và luyện viết.</p></div>
+        <button class="primary-button" data-go="vocab">Mở Cụm chủ động →</button>
       </section>
-
-      <section class="chunk-first-method">
-        <div><span class="eyebrow">MỘT VÒNG HỌC</span><h2>Ít thao tác hơn, nhiều retrieval hơn</h2></div>
-        <div class="chunk-first-flow">
-          <div><b>1</b><strong>Gặp chunk</strong><span>nghĩa + audio + family</span></div>
-          <div><b>2</b><strong>Tự gọi ra</strong><span>Việt → English trước khi xem</span></div>
-          <div><b>3</b><strong>Gặp lại cách quãng</strong><span>ưu tiên câu yếu và lâu chưa ôn</span></div>
-          <div><b>4</b><strong>Ghép vào khung</strong><span>một chunk → nhiều câu</span></div>
-        </div>
+      <section class="english-grammar-entry">
+        <div><span class="eyebrow">LEARN · SUPPORT</span><h2>Các thì trong tiếng Anh</h2><p>Hiểu bằng bản đồ 3 mốc thời gian × 4 cách nhìn, có công thức, ví dụ nghe được, lỗi hay gặp, cách phân biệt và bài luyện chọn thì.</p></div>
+        <button class="primary-button" data-go="tenses">Mở trang các thì →</button>
       </section>
-
-      <details class="chunk-first-support">
-        <summary>Công cụ hỗ trợ · mở khi cần</summary>
-        <div>
-          <button data-go="shadowing">Shadowing</button>
-          <button data-go="tenses">Các thì</button>
-          <button data-go="practice">Luyện tập cũ</button>
-        </div>
-      </details>
-
-      <section class="chunk-first-pattern-reference">
-        <div class="section-title-row"><div><span class="eyebrow">80 KHUNG CÂU</span><h2>Khung để lắp chunk, không phải đích học</h2><p>Bộ 80 cấu trúc vẫn được giữ nguyên làm thư viện tham chiếu.</p></div></div>
-        <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
-        <section id="patternsGrid" class="card-grid"></section>
-      </section>`;
-
+      <section class="english-grammar-entry shadowing-entry">
+        <div><span class="eyebrow">USE · LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn một hoặc nhiều bài đã có, lấy trực tiếp câu trong bài và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
+        <button class="primary-button" data-go="shadowing">Mở Shadowing →</button>
+      </section>
+      <section class="english-grammar-entry english-practice-entry">
+        <div><span class="eyebrow">USE · PRODUCTIVE PRACTICE</span><h2>Luyện tập tiếng Anh</h2><p>Luyện toàn bộ nội dung đã học theo từng bài hoặc nhiều bài: Việt → Anh, nhận diện câu, phản xạ và ôn lại những phần còn yếu.</p></div>
+        <button class="primary-button" data-go="practice">Mở Luyện tập →</button>
+      </section>
+      <section class="english-grammar-entry english-challenge-entry">
+        <div><span class="eyebrow">FINAL RETRIEVAL</span><h2>Thử thách</h2><p>Gom toàn bộ câu ví dụ đang dùng trong Mẫu câu, Cụm chủ động, Các thì, Shadowing và Luyện tập để kiểm tra Việt → English.</p></div>
+        <button class="primary-button" data-go="challenge">Mở Thử thách →</button>
+      </section>
+      <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
+      <section id="patternsGrid" class="card-grid"></section>`;
     let filter='all';
     const draw=()=>{
       const q=normalizeText($('#patternSearch').value);
       const items=CATALOG.filter(p => (filter==='all' || p.status==='available') && (!q || normalizeText(`${p.title} ${p.meaning}`).includes(q)));
       $('#patternsGrid').innerHTML = items.map(patternCard).join('');
       bindGenericRoutes();
-      $$('.pattern-card button[data-disabled]').forEach(btn => btn.onclick=()=>toast(btn.dataset.status==='next'?'Bài này đã có tên và nghĩa; nội dung chi tiết chưa được nhập.':'Khung này đang ở chế độ tham chiếu.'));
+      $$('.pattern-card button[data-disabled]').forEach(btn => btn.onclick=()=>toast(btn.dataset.status==='next'?'Mẫu 02 đã có tên và nghĩa; nội dung chi tiết chưa được nhập.':'Khung bài này đã sẵn sàng, nhưng chưa có nội dung.'));
     };
     $('#patternSearch').addEventListener('input',draw);
     $$('.filter-chip').forEach(b=>b.onclick=()=>{filter=b.dataset.filter; $$('.filter-chip').forEach(x=>x.classList.toggle('active',x===b)); draw();});
-    bindGenericRoutes();
     draw();
   }
-
-  async function renderChunkBuilder(){
-    L=null;
-    const packs=window.VocabularyTrainer?.packs?.()||[];
-    if(!window.ChunkBuilder?.render) throw new Error('Chunk Builder is not available.');
-    window.ChunkBuilder.render({
-      state,
-      packs,
-      main:$('#mainView'),
-      setHeader,
-      saveState,
-      speak,
-      uiIcon,
-      toast
-    });
-  }
-
   function patternCard(p){
     if(!p) return '';
     const status=p.status==='available'?'Đã có bài':p.status==='next'?'Bài tiếp theo':'Đang chuẩn bị';
@@ -2062,10 +2023,13 @@
     function hubNav(){
       const tabs=[
         ['today','Hôm nay','clipboard-check'],
-        ['library','Kho chunk','bookmark'],
-        ['listen','Nghe','headphones']
+        ['learn','Learn','book-open'],
+        ['automate','Automate','mic'],
+        ['use','Use','play'],
+        ['listen','Nghe','headphones'],
+        ['library','Kho cụm','bookmark']
       ];
-      return `<nav class="vocab-hub-nav vocab-hub-nav-simple" aria-label="Điều hướng Chunk Studio">
+      return `<nav class="vocab-hub-nav" aria-label="Điều hướng Cụm từ">
         ${tabs.map(([id,label,icon])=>`<button data-vocab-screen="${id}" class="${mainView===id?'active':''}" type="button">${uiIcon(icon)}<span>${label}</span></button>`).join('')}
       </nav>`;
     }
@@ -2083,47 +2047,70 @@
   
     function todayScreen(){
       const currentPack=selected||packs[0];
-      const daily=dailyChunkItems(10);
-      const dailyDue=daily.filter(group=>chunkGroupProgress(group).due).length;
-      const dailyNew=daily.filter(group=>!chunkGroupProgress(group).reviewed).length;
-      const mainCount=chunkMemoryGroups('all','sequential','main').length;
-      const familyCount=chunkMemoryGroups('all','sequential','family').length;
-      const supplementCount=chunkMemoryGroups('all','sequential','supplement').length;
-      const totalCount=chunkMemoryGroups('all','sequential','all').length;
+      const currentProgress=currentPack?packProgress(currentPack):null;
+      const currentChunks=currentPack?(window.VocabularyTrainer?.studyChunks?.(currentPack)||[]):[];
+      const unseen=currentChunks.filter(card=>card.kind!=='building'&&Number(trainerProgress(card).reviewCount||0)===0).length;
+      const step=nextPath||{eyebrow:'LEARN',title:'Học 5 cụm mới',reason:'Bắt đầu từ cụm giá trị cao của bài hiện tại.',mode:'learn',count:Math.min(5,currentChunks.length)};
+      const minutes=step.mode==='learn'?5:step.mode==='fast'?3:step.mode==='situation'?3:4;
 
       return shell(`
-        <section class="chunk-today-hero">
-          <div>
-            <span class="eyebrow">TODAY · CHUNK FIRST</span>
-            <h2>${dailyDue?'Ôn chunk đến hạn trước':'Xây thêm vốn chunk hôm nay'}</h2>
-            <p>Phiên hôm nay được chọn tự động: ôn đến hạn và chunk từng quên trước, sau đó mới thêm tối đa 5 mục mới. Family/cụm bổ sung chỉ vào phiên khi chunk gốc liên quan đã được gặp.</p>
-            <div class="chunk-today-meta"><span><b>${daily.length}</b> mục</span><span><b>${dailyDue}</b> đến hạn</span><span><b>${dailyNew}</b> mới</span></div>
+        <section class="active-path-hero">
+          <div class="active-path-copy">
+            <span class="vocab-kicker">${esc(step.eyebrow||'ACTIVE PATH')}</span>
+            <h2>${esc(step.title||'Bước tiếp theo')}</h2>
+            <p>${esc(step.reason||'Hệ thống đã chọn bước phù hợp tiếp theo dựa trên tiến độ thật của từng cụm.')}</p>
+            <div class="vocab-today-meta">
+              <span><b>${step.count||5}</b> cụm</span>
+              <span>≈ ${minutes} phút / bước</span>
+              <span>${step.due?'Đến lịch ôn':'Tự động chọn'}</span>
+            </div>
           </div>
-          <button id="startDailyChunkSession" class="vocab-primary-cta" type="button"><span>Bắt đầu phiên hôm nay</span>${uiIcon('arrow-right')}</button>
+          <button id="startActivePath" class="vocab-primary-cta" type="button">
+            <span>Bắt đầu bước tiếp theo</span>${uiIcon('arrow-right')}
+          </button>
         </section>
 
-        <section class="chunk-bank-snapshot">
-          <div><b>${totalCount}</b><span>tổng mục trong Kho</span></div>
-          <div><b>${mainCount}</b><span>chunk gốc</span></div>
-          <div><b>${familyCount}</b><span>chunk family</span></div>
-          <div><b>${supplementCount}</b><span>cụm bổ sung</span></div>
+        <section class="active-daily-plan">
+          <div class="vocab-section-heading"><div><span class="eyebrow">20 PHÚT / NGÀY</span><h3>Một đường học duy nhất</h3><p>Không cần tự chọn bài tập. Hệ thống dịch chuyển cụm qua từng tầng khi bạn thực sự đạt yêu cầu.</p></div></div>
+          <div class="active-daily-plan-grid">
+            <div><b>01</b><strong>Ôn cụm đến hạn</strong><span>Recall trước, xem đáp án sau</span></div>
+            <div><b>02</b><strong>5 cụm mới</strong><span>Hiểu + audio + 5 cách dùng</span></div>
+            <div><b>03</b><strong>Automate</strong><span>Recall → Fast → Variation → Mix</span></div>
+            <div><b>04</b><strong>Situation</strong><span>Ý định → câu English</span></div>
+            <div><b>05</b><strong>Use</strong><span>Shadowing → tự nói → câu mới</span></div>
+          </div>
         </section>
 
-        <section class="chunk-today-actions">
-          <button id="openRecallDeck" type="button"><span>${uiIcon('check-circle')}</span><div><b>Recall tự do</b><small>Nhìn Việt → bật English</small></div>${uiIcon('arrow-right')}</button>
-          <button id="openChunkBuilderToday" type="button"><span>${uiIcon('book-open')}</span><div><b>Ghép chunk vào mẫu câu</b><small>Một chunk → nhiều khung trong bộ 80</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="library" type="button"><span>${uiIcon('bookmark')}</span><div><b>Mở Kho chunk</b><small>Xem lại toàn bộ vốn chunk</small></div>${uiIcon('arrow-right')}</button>
-        </section>
-
-        <section class="chunk-first-rule">
-          <span class="eyebrow">NGUYÊN TẮC</span>
-          <p><b>Kho có thể rất lớn, nhưng lượng mới trong một phiên phải nhỏ.</b> Muốn học nhiều chunk lâu dài, app ưu tiên retrieval + spaced review; khi đã ôn xong bạn luôn có thể bắt đầu thêm một phiên nữa.</p>
-        </section>
-
-        ${currentPack?`<section class="vocab-today-continue compact">
-          <div class="vocab-section-heading"><div><span class="eyebrow">NGỮ CẢNH ĐANG HỌC</span><h3>#${String(currentPack.order).padStart(2,'0')} · ${esc(currentPack.pattern)}</h3><p>Mẫu câu chỉ là khung để tái sử dụng chunk.</p></div><button id="openCurrentVocabLesson" class="text-button" type="button">Xem chunk của bài →</button></div>
+        ${currentPack?`<section class="vocab-today-continue">
+          <div class="vocab-section-heading"><div><span class="eyebrow">BÀI ĐANG HỌC</span><h3>Mẫu ${String(currentPack.order).padStart(2,'0')} · ${esc(currentPack.pattern)}</h3></div><button id="openCurrentVocabLesson" class="text-button" type="button">Xem bài ${uiIcon('arrow-right')}</button></div>
+          <div class="vocab-progress-line"><i style="width:${currentProgress?.percent||0}%"></i></div>
+          <div class="vocab-continue-stats">
+            <span><b>${currentProgress?.level1||0}/${currentProgress?.total1||0}</b> Nhận ra</span>
+            <span><b>${currentProgress?.level2||0}/${currentProgress?.total2||0}</b> Recall</span>
+            <span><b>${currentProgress?.fast||0}/${currentProgress?.totalImportant||0}</b> Fast</span>
+            <span><b>${currentProgress?.discriminate||0}/${currentProgress?.totalImportant||0}</b> Phân biệt</span>
+            <span><b>${currentProgress?.automatic||0}/${currentProgress?.totalImportant||0}</b> Automatic</span>
+            <span><b>${unseen}</b> cụm chính chưa học</span>
+          </div>
         </section>`:''}
-      `,'Hôm nay','Retrieval + spacing là trục chính; các kỹ thuật còn lại chạy phía sau hệ thống.');
+
+        <section class="vocab-automaticity-strip">
+          <div><b>${summary.mastered2}</b><span>Recall</span></div>
+          <div><b>${summary.fast}</b><span>≤1s / Fast</span></div>
+          <div><b>${summary.vary}</b><span>Biến đổi</span></div>
+          <div><b>${summary.discriminate||0}</b><span>Phân biệt</span></div>
+          <div><b>${summary.situation}</b><span>Tình huống</span></div>
+          <div class="is-auto"><b>${summary.automatic}</b><span>Automatic</span></div>
+        </section>
+
+        <section class="vocab-today-mini">
+          <button data-vocab-screen="learn" type="button"><span>${uiIcon('book-open')}</span><div><b>Learn</b><small>Hiểu + nghe + 5 biến thể thực tế</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="remember" type="button"><span>${uiIcon('check-circle')}</span><div><b>Cụm cần nhớ</b><small>Nhìn Việt → tự bật English</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="automate" type="button"><span>${uiIcon('mic')}</span><div><b>Automate</b><small>Recall → Fast → Variation → Mix → Situation</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="use" type="button"><span>${uiIcon('play')}</span><div><b>Use</b><small>Shadowing → tự nói → câu mới</small></div>${uiIcon('arrow-right')}</button>
+          <button data-vocab-screen="listen" type="button"><span>${uiIcon('headphones')}</span><div><b>Nghe khi di chuyển</b><small>Củng cố âm thanh, không thay cho retrieval</small></div>${uiIcon('arrow-right')}</button>
+        </section>
+      `,'Hôm nay','Web tự quyết định bước tiếp theo; mục tiêu cuối là gọi ra và dùng được, không phải chỉ nhận ra.');
     }
 
     function chunkMemorySettings(){
@@ -2138,9 +2125,8 @@
       const map=new Map();
       source.forEach(pack=>{
         const main=(window.VocabularyTrainer?.studyChunks?.(pack)||[]).filter(card=>card.kind!=='building');
-        const family=window.VocabularyTrainer?.usageFamilyChunks?.(pack)||[];
         const supplements=window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[];
-        const cards=type==='main'?main:type==='family'?family:type==='supplement'?supplements:[...main,...family,...supplements];
+        const cards=type==='main'?main:type==='supplement'?supplements:[...main,...supplements];
 
         cards.forEach(card=>{
           const key=String(card.baseEn||'').trim().toLowerCase();
@@ -2150,7 +2136,7 @@
           }
           const item=map.get(key);
           item.cards.push(card);
-          const sourceType=card.kind==='usage-addon'?'supplement':card.kind==='family-variant'?'family':'main';
+          const sourceType=card.kind==='usage-addon'?'supplement':'main';
           if(!item.types.includes(sourceType)) item.types.push(sourceType);
           if(sourceType==='main'){
             item.baseEn=card.baseEn;
@@ -2161,19 +2147,14 @@
               if(!item.contexts.some(x=>x.en===ctx.en&&x.parentEn===ctx.parentEn)) item.contexts.push(ctx);
             });
           }
-          if(card.kind==='family-variant'){
-            item.contexts.push({parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi});
-          }
           if(!item.lessons.some(x=>x.lessonId===pack.lessonId)) item.lessons.push({lessonId:pack.lessonId,order:pack.order,pattern:pack.pattern});
         });
       });
       let arr=[...map.values()].map(item=>({
         ...item,
         isMain:item.types.includes('main'),
-        isFamily:item.types.includes('family'),
         isSupplement:item.types.includes('supplement'),
-        isFamilyOnly:item.types.includes('family')&&!item.types.includes('main'),
-        isSupplementOnly:item.types.includes('supplement')&&!item.types.includes('main')&&!item.types.includes('family')
+        isSupplementOnly:item.types.includes('supplement')&&!item.types.includes('main')
       }));
       if(order==='random') arr=arr.sort(()=>Math.random()-.5);
       return arr;
@@ -2181,73 +2162,6 @@
 
     function chunkMemoryRecall(group){
       return Math.max(0,...group.cards.map(card=>Number(state.saved?.[card.key]?.trainer?.skills?.recall||0)));
-    }
-
-    function chunkGroupProgress(group){
-      const rows=group.cards.map(card=>state.saved?.[card.key]?.trainer||{});
-      const reviewed=rows.some(p=>Number(p.reviewCount||0)>0);
-      const due=rows.some(p=>Number(p.reviewCount||0)>0&&Number(p.nextReviewAt||0)<=Date.now());
-      const weak=rows.some(p=>p.lastRating==='again'||Number(p.wrongCount||0)>Number(p.correctCount||0));
-      const next=Math.min(...rows.map(p=>Number(p.nextReviewAt||Infinity)));
-      const last=Math.max(0,...rows.map(p=>Number(p.lastReviewedAt||0)));
-      return {reviewed,due,weak,next,last,recall:chunkMemoryRecall(group)};
-    }
-
-    function dailyChunkItems(limit=10,newLimit=5){
-      const all=chunkMemoryGroups('all','sequential','all').map(group=>({group,p:chunkGroupProgress(group)}));
-      const mainByText=new Map(
-        chunkMemoryGroups('all','sequential','main').map(group=>[String(group.baseEn||'').toLowerCase(),group])
-      );
-
-      const parentReady=group=>{
-        if(group.isMain) return true;
-        const parents=[...new Set((group.contexts||[]).map(ctx=>String(ctx.parentEn||'').toLowerCase()).filter(Boolean))];
-        if(!parents.length) return false;
-        return parents.some(parent=>{
-          const main=mainByText.get(parent);
-          return main ? chunkGroupProgress(main).reviewed : false;
-        });
-      };
-
-      const due=all
-        .filter(x=>x.p.reviewed&&x.p.due)
-        .sort((a,b)=>a.p.next-b.p.next);
-
-      const weak=all
-        .filter(x=>x.p.reviewed&&!x.p.due&&(x.p.weak||x.p.recall<2))
-        .sort((a,b)=>a.p.last-b.p.last);
-
-      const reviewed=[...due,...weak];
-      const chosen=[];
-      const seen=new Set();
-      const add=item=>{
-        if(!item||seen.has(item.group.key)||chosen.length>=limit) return false;
-        seen.add(item.group.key);
-        chosen.push(item.group);
-        return true;
-      };
-
-      reviewed.forEach(add);
-      if(chosen.length>=limit) return chosen.slice(0,limit);
-
-      const room=limit-chosen.length;
-      const allowedNew=Math.min(Math.max(0,newLimit),room);
-      if(!allowedNew) return chosen;
-
-      const newMain=all.filter(x=>!x.p.reviewed&&x.group.isMain);
-      const newFamily=all.filter(x=>!x.p.reviewed&&x.group.isFamily&&!x.group.isMain&&parentReady(x.group));
-      const newSupplement=all.filter(x=>!x.p.reviewed&&x.group.isSupplement&&!x.group.isMain&&!x.group.isFamily&&parentReady(x.group));
-
-      const newQueue=[];
-      let i=0;
-      while(newQueue.length<allowedNew&&(i<newMain.length||i<newFamily.length||i<newSupplement.length)){
-        if(i<newMain.length) newQueue.push(newMain[i]);
-        if(newQueue.length<allowedNew&&i<newFamily.length) newQueue.push(newFamily[i]);
-        if(newQueue.length<allowedNew&&i<newSupplement.length) newQueue.push(newSupplement[i]);
-        i++;
-      }
-      newQueue.slice(0,allowedNew).forEach(add);
-      return chosen;
     }
 
     function chunkMemoryScreen(){
@@ -2287,19 +2201,19 @@
         const level=chunkMemoryRecall(item);
         const lessonText=item.lessons.map(x=>`#${String(x.order).padStart(2,'0')} ${x.pattern}`).join(' · ');
         const addonContext=item.contexts?.[0]||null;
-        const memoryPrompt=(item.isSupplementOnly||item.isFamilyOnly)?(addonContext?.vi||item.baseVi):item.baseVi;
-        const contextAnswer=(item.isSupplementOnly||item.isFamilyOnly)?(addonContext?.en||''):'';
+        const memoryPrompt=item.isSupplementOnly?(addonContext?.vi||item.baseVi):item.baseVi;
+        const contextAnswer=item.isSupplementOnly?(addonContext?.en||''):'';
         return shell(`
           <section class="chunk-memory-session">
             <div class="chunk-memory-session-top"><button id="exitChunkMemory" class="text-button" type="button">← Cụm cần nhớ</button><strong>${chunkMemorySession.index+1}/${chunkMemorySession.items.length}</strong></div>
             <div class="chunk-memory-progress"><i style="width:${pct}%"></i></div>
             <article id="chunkMemoryCard" class="chunk-memory-card ${chunkMemorySession.revealed?'is-revealed':''}" tabindex="0">
-              <span class="eyebrow">${item.isFamilyOnly?'CHUNK FAMILY · VI → EN':item.isSupplementOnly?'CỤM BỔ SUNG · VI → EN':'VIỆT → ENGLISH'}</span>
+              <span class="eyebrow">${item.isSupplementOnly?'CỤM BỔ SUNG · VI → EN':'VIỆT → ENGLISH'}</span>
               <div class="chunk-memory-vi">${esc(memoryPrompt)}</div>
               <small>${esc(lessonText)}</small>
               <div class="chunk-memory-divider"></div>
               ${chunkMemorySession.revealed?`
-                <div class="chunk-memory-answer"><span>${item.isFamilyOnly?'CÁCH DÙNG':item.isSupplementOnly?'PHẦN BỔ SUNG':'ENGLISH'}</span><h2>${esc(item.baseEn)}</h2>${contextAnswer&&contextAnswer!==item.baseEn?`<small class="chunk-memory-context-en">${esc(contextAnswer)}</small>`:''}<button id="chunkMemorySpeak" type="button">${uiIcon('volume-2')} Nghe</button></div>
+                <div class="chunk-memory-answer"><span>${item.isSupplementOnly?'PHẦN BỔ SUNG':'ENGLISH'}</span><h2>${esc(item.baseEn)}</h2>${contextAnswer?`<small class="chunk-memory-context-en">${esc(contextAnswer)}</small>`:''}<button id="chunkMemorySpeak" type="button">${uiIcon('volume-2')} Nghe</button></div>
               `:`<button id="chunkMemoryReveal" class="chunk-memory-reveal" type="button">Bật English</button>`}
             </article>
             <div class="chunk-memory-skill"><span>Mức Recall hiện tại</span><b>${level>=2?'Đã gọi ra được':level===1?'Đang hình thành':'Chưa vững'}</b></div>
@@ -2312,11 +2226,10 @@
 
       const allUnique=chunkMemoryGroups('all','sequential',cfg.type).length;
       const mainUnique=chunkMemoryGroups('all','sequential','main').length;
-      const familyUnique=chunkMemoryGroups('all','sequential','family').length;
       const supplementUnique=chunkMemoryGroups('all','sequential','supplement').length;
       return shell(`
         <section class="chunk-memory-hero">
-          <div><span class="eyebrow">ACTIVE RECALL · VI → EN</span><h2>Học toàn bộ Kho chunk</h2><p>Học theo 3 tầng: chunk gốc → cách dùng trong family → cụm bổ sung. Kho lớn, mỗi lượt chỉ lấy một phần nhỏ để nhớ sâu.</p></div>
+          <div><span class="eyebrow">ACTIVE RECALL · VI → EN</span><h2>Học toàn bộ cụm cần nhớ</h2><p>Gồm cả chunk chính và phần in đậm hữu ích được tách từ 5 cách dùng thường gặp.</p></div>
           <div class="chunk-memory-count"><b>${baseGroups.length}</b><span>mục đang chọn</span></div>
         </section>
         <section class="chunk-memory-setup">
@@ -2326,9 +2239,8 @@
           </select></label>
           <label><span>Loại cần học</span><select id="chunkMemoryType">
             <option value="all" ${cfg.type==='all'?'selected':''}>Tất cả · ${chunkMemoryGroups('all','sequential','all').length}</option>
-            <option value="main" ${cfg.type==='main'?'selected':''}>Chunk gốc · ${mainUnique}</option>
-            <option value="family" ${cfg.type==='family'?'selected':''}>Chunk family · ${familyUnique}</option>
-            <option value="supplement" ${cfg.type==='supplement'?'selected':''}>Cụm bổ sung · ${supplementUnique}</option>
+            <option value="main" ${cfg.type==='main'?'selected':''}>Cụm chính · ${mainUnique}</option>
+            <option value="supplement" ${cfg.type==='supplement'?'selected':''}>Bổ sung từ ví dụ · ${supplementUnique}</option>
           </select></label>
           <label><span>Thứ tự</span><select id="chunkMemoryOrder"><option value="sequential" ${cfg.order==='sequential'?'selected':''}>Theo thứ tự</option><option value="random" ${cfg.order==='random'?'selected':''}>Trộn ngẫu nhiên</option></select></label>
           <div class="chunk-memory-stats"><span><b>${recalled}</b> đã gọi ra</span><span><b>${baseGroups.length-recalled}</b> đang học</span></div>
@@ -2495,22 +2407,18 @@
     }
   
     function libraryScreen(){
-      const familyChunks=packs.flatMap(pack=>window.VocabularyTrainer?.usageFamilyChunks?.(pack)||[]);
       const supplementChunks=packs.flatMap(pack=>window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[]);
       const grouped=new Map();
 
-      [...allChunks,...familyChunks,...supplementChunks].forEach(card=>{
+      [...allChunks,...supplementChunks].forEach(card=>{
         const key=String(card.baseEn||'').toLowerCase();
         if(!key) return;
         if(!grouped.has(key)) grouped.set(key,{baseEn:card.baseEn,baseVi:card.baseVi,cards:[],contexts:[]});
         const entry=grouped.get(key);
         entry.cards.push(card);
-        if(card.kind==='main'||card.kind==='recognition'){
+        if(card.kind==='main'){
           entry.baseEn=card.baseEn;
           entry.baseVi=card.baseVi;
-        }
-        if(card.kind==='family-variant'){
-          entry.contexts.push({parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi});
         }
         if(card.kind==='usage-addon'){
           (card.contexts||[]).forEach(ctx=>{
@@ -2518,7 +2426,7 @@
           });
         }
       });
-
+  
       const entries=[...grouped.values()].map(entry=>{
         const progresses=entry.cards.map(trainerProgress);
         const skills={
@@ -2531,15 +2439,14 @@
         };
         const reviewed=progresses.some(p=>Number(p.reviewCount||0)>0);
         const starred=progresses.some(p=>!!p.starred);
-        const mainImportant=entry.cards.some(card=>card.kind==='main'||card.kind==='recognition');
-        const family=entry.cards.some(card=>card.kind==='family-variant');
+        const mainImportant=entry.cards.some(card=>card.kind==='main');
         const supplemental=entry.cards.some(card=>card.kind==='usage-addon');
-        const learnable=mainImportant||family||supplemental;
+        const learnable=mainImportant||supplemental;
         const weak=progresses.some(p=>p.lastRating==='again'||Number(p.wrongCount||0)>Number(p.correctCount||0))||(reviewed&&skills.recall<2);
         const mainMastered=skills.recognize>=2&&skills.recall>=2&&skills.use>=2;
-        const mastered=mainImportant?mainMastered:skills.recall>=2;
+        const mastered=supplemental&&!mainImportant?skills.recall>=2:mainMastered;
         const automatic=mainImportant&&progresses.some(p=>window.VocabularyTrainer?.automaticStatus?.(p)?.automatic);
-        const lessonCards=entry.cards.filter(card=>['main','recognition','family-variant','usage-addon'].includes(card.kind));
+        const lessonCards=entry.cards.filter(card=>card.kind==='main'||card.kind==='usage-addon');
         const lessonIds=[...new Set(lessonCards.map(card=>card.pack?.lessonId).filter(Boolean))];
         const lessons=[...new Map(
           lessonCards
@@ -2547,22 +2454,21 @@
             .filter(([id])=>id)
         ).values()].sort((a,b)=>Number(a.order||0)-Number(b.order||0));
         return {
-          ...entry,skills,reviewed,starred,weak,mastered,automatic,learnable,mainImportant,family,supplemental,
+          ...entry,skills,reviewed,starred,weak,mastered,automatic,learnable,mainImportant,supplemental,
           lessonIds,lessons,lessonId:lessonIds[0]||entry.cards[0]?.pack?.lessonId||''
         };
       });
-
+  
       const personal=Object.values(state.saved||{}).filter(x=>x?.type==='phrase').map(item=>({
-        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],contexts:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,learnable:false,mainImportant:false,family:false,supplemental:false,lessonIds:[],lessons:[],lessonId:'',personal:true
+        baseEn:item.term||'',baseVi:item.meaning||'',cards:[],contexts:[],skills:{recognize:0,recall:0,fast:0,vary:0,situation:0,use:0},reviewed:true,starred:true,weak:false,mastered:false,automatic:false,learnable:false,mainImportant:false,supplemental:false,lessonIds:[],lessons:[],lessonId:'',personal:true
       }));
-
+  
       const filter=state.vocabLibraryFilter||'important';
       const lessonFilter=state.vocabLibraryLessonId||'all';
       let filtered=[...entries,...personal];
 
       if(filter==='important') filtered=filtered.filter(x=>x.learnable&&!x.personal);
       if(filter==='core') filtered=filtered.filter(x=>x.mainImportant&&!x.personal);
-      if(filter==='family') filtered=filtered.filter(x=>x.family&&!x.personal);
       if(filter==='supplement') filtered=filtered.filter(x=>x.supplemental&&!x.personal);
       if(filter==='learning') filtered=filtered.filter(x=>x.reviewed&&!x.mastered&&!x.personal);
       if(filter==='weak') filtered=filtered.filter(x=>x.weak&&!x.personal);
@@ -2575,20 +2481,19 @@
 
       const learnableCount=entries.filter(x=>x.learnable).length;
       const mainCount=entries.filter(x=>x.mainImportant).length;
-      const familyCount=entries.filter(x=>x.family).length;
       const supplementCount=entries.filter(x=>x.supplemental).length;
       const selectedPack=packs.find(p=>p.lessonId===lessonFilter);
-
+  
       return shell(`
-        <div class="vocab-screen-title"><div><span class="eyebrow">KHO CHUNK</span><h2>Vốn tiếng Anh để lấy ra khi cần nói</h2><p>Kho được chia thành 3 tầng: <b>chunk gốc</b> → <b>chunk family</b> → <b>cụm bổ sung</b>. Mỗi ngày chỉ học một lượng nhỏ, nhưng Kho có thể rất lớn.</p></div></div>
+        <div class="vocab-screen-title"><div><span class="eyebrow">KHO CỤM</span><h2>Các cụm cần nhớ để xem lại lúc rảnh</h2><p>Kho gồm cả <b>chunk chính</b> và những <b>phần in đậm hữu ích</b> được tách từ 5 cách dùng thường gặp.</p></div></div>
 
         <section class="vocab-library-important-summary">
-          <div><span class="eyebrow">CHUNK BANK</span><h3>${learnableCount} mục không trùng</h3><p>${mainCount} chunk gốc · ${familyCount} cách dùng trong family · ${supplementCount} cụm bổ sung.</p></div>
-          <button id="studyImportantFromLibrary" class="primary-button" type="button">Bắt đầu Recall →</button>
+          <div><span class="eyebrow">TOÀN BỘ CẦN HỌC</span><h3>${learnableCount} mục không trùng</h3><p>${mainCount} cụm chính · ${supplementCount} cụm/từ bổ sung từ ví dụ. Cụm trùng chỉ hiện một lần.</p></div>
+          <button id="studyImportantFromLibrary" class="primary-button" type="button">Nhìn Việt → bật English</button>
         </section>
-
+  
         <div class="vocab-library-tools">
-          <input id="vocabLibrarySearch" type="search" autocomplete="off" placeholder="Tìm: take a break, for five minutes..." value="${escAttr(state.vocabLibraryQuery||'')}">
+          <input id="vocabLibrarySearch" type="search" autocomplete="off" placeholder="Tìm: for five minutes, make sure..." value="${escAttr(state.vocabLibraryQuery||'')}">
           <select id="vocabLibraryLesson" class="vocab-library-lesson-filter">
             <option value="all" ${lessonFilter==='all'?'selected':''}>Tất cả bài · ${learnableCount} mục</option>
             ${packs.map(pack=>{
@@ -2598,34 +2503,33 @@
           </select>
           <div class="vocab-library-filters">
             ${[
-              ['important','Tất cả'],
-              ['core','Chunk gốc'],
-              ['family','Chunk family'],
-              ['supplement','Cụm bổ sung'],
+              ['important','Tất cả cần học'],
+              ['core','Cụm chính'],
+              ['supplement','Bổ sung từ ví dụ'],
               ['learning','Đang học'],
               ['weak','Cần ôn'],
               ['mastered','Đã vững'],
-              ['saved','Đã lưu']
+              ['saved','Đã lưu'],
+              ['all','Tất cả']
             ].map(([id,label])=>`<button data-library-filter="${id}" class="${filter===id?'active':''}" type="button">${label}</button>`).join('')}
           </div>
         </div>
-
+  
         <div class="vocab-library-count"><b>${filtered.length}</b> mục ${selectedPack?`· #${String(selectedPack.order).padStart(2,'0')} ${esc(selectedPack.pattern)}`:''}</div>
         <div class="vocab-library-list">
           ${filtered.map(entry=>{
             const ctx=entry.contexts?.[0];
             const badges=[
-              entry.mainImportant?'<em class="library-kind-main">GỐC</em>':'',
-              entry.family?'<em class="library-kind-family">FAMILY</em>':'',
+              entry.mainImportant?'<em class="library-kind-main">CỤM CHÍNH</em>':'',
               entry.supplemental?'<em class="library-kind-supplement">BỔ SUNG</em>':''
             ].filter(Boolean).join('');
             const searchText=(entry.baseEn+' '+entry.baseVi+' '+(ctx?.vi||'')+' '+(ctx?.parentEn||'')+' '+entry.lessons.map(x=>x.pattern).join(' ')).toLowerCase();
-            return `<article data-library-row data-search="${escAttr(searchText)}" class="${entry.learnable?'is-important':''} ${entry.family&&!entry.mainImportant?'is-family':''} ${entry.supplemental&&!entry.mainImportant&&!entry.family?'is-supplement':''}">
+            return `<article data-library-row data-search="${escAttr(searchText)}" class="${entry.learnable?'is-important':''} ${entry.supplemental&&!entry.mainImportant?'is-supplement':''}">
               <button class="vocab-library-audio" data-active-speak="${escAttr(entry.baseEn)}" type="button">${uiIcon('volume-2')}</button>
               <div class="vocab-library-copy">
                 <div class="vocab-library-title-line"><strong>${esc(entry.baseEn)}</strong>${badges}</div>
-                ${(entry.family||entry.supplemental)&&!entry.mainImportant&&ctx
-                  ? `<span>${esc(entry.baseVi||ctx.vi||'')}</span><small>Gốc: <b>${esc(ctx.parentEn||'')}</b>${ctx.en&&ctx.en!==entry.baseEn?` · ${esc(ctx.en)}`:''}</small>`
+                ${entry.supplemental&&!entry.mainImportant&&ctx
+                  ? `<span>Trong câu Việt: ${esc(ctx.vi)}</span><small>Ghép với <b>${esc(ctx.parentEn)}</b> · ${esc(ctx.en)}</small>`
                   : `<span>${esc(entry.baseVi)}</span>${entry.personal
                       ? '<small>Cụm cá nhân</small>'
                       : entry.lessons.length
@@ -2634,12 +2538,12 @@
                     }`
                 }
               </div>
-              ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recall>=1?'done':''}">1</i><i class="${entry.skills.recall>=2?'done':''}">2</i><i class="${entry.skills.fast>=2?'done':''}">3</i><i class="${entry.mainImportant&&entry.automatic||!entry.mainImportant&&entry.skills.recall>=2?'done automatic':''}">✓</i></div>`}
+              ${entry.personal?'<em class="library-personal">Đã lưu</em>':`<div class="vocab-library-skills"><i class="${entry.skills.recognize>=2?'done':''}" title="Nhận ra">1</i><i class="${entry.skills.recall>=2?'done':''}" title="Recall">2</i><i class="${entry.skills.fast>=2?'done':''}" title="Fast Recall">3</i><i class="${entry.skills.vary>=2&&entry.skills.situation>=2?'done':''}" title="Linh hoạt">4</i><i class="${entry.automatic||entry.supplemental&&entry.skills.recall>=2?'done automatic':''}" title="Đã vững">5</i></div>`}
               ${entry.lessonId?`<button class="vocab-library-practice" data-library-practice="${escAttr(entry.lessonId)}" type="button">Luyện</button>`:''}
             </article>`;
           }).join('')||'<div class="vocab-empty-state"><b>Không có mục phù hợp</b><span>Thử từ khóa, bài học hoặc bộ lọc khác.</span></div>'}
         </div>
-      `,'Kho chunk','Mục tiêu là xây một kho lớn nhưng luôn ôn theo retrieval + spacing.');
+      `,'Kho cụm','Nơi xem lại nhanh cả chunk chính và cụm bổ sung tách từ ví dụ.');
     }
 
     let content='';
@@ -2671,23 +2575,13 @@
       await syncSavedVocabulary({silent:false,rerender:true});
     });
   
-
-  
-    $('#startDailyChunkSession')?.addEventListener('click',()=>{
-      const items=dailyChunkItems(10);
-      chunkMemorySession={items,index:0,revealed:false,remembered:0,forgot:0,retries:{},forgottenKeys:new Set(),uniqueTotal:new Set(items.map(x=>x.key)).size,lessonId:'all',order:'priority',done:false};
-      setHubView('remember');
-    });
-
-    $('#openRecallDeck')?.addEventListener('click',()=>{
-      state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:'all',type:'all',order:'random'};
-      chunkMemorySession=null;
+    $('#startActivePath')?.addEventListener('click',()=>{
+      const lessonId=selected?.lessonId||trainerSettings.lessonId||packs[0]?.lessonId;
+      state.vocabHubLessonId=lessonId;
       saveState();
-      setHubView('remember');
+      renderFlashcards([], {autoPath:true,lessonId});
     });
-
-    $('#openChunkBuilderToday')?.addEventListener('click',()=>routeTo('builder'));
-
+  
     $('#openCurrentVocabLesson')?.addEventListener('click',()=>{
       if(selected) state.vocabHubLessonId=selected.lessonId;
       setHubView('lesson');
@@ -2899,7 +2793,7 @@
 
     $('#studyImportantFromLibrary')?.addEventListener('click',()=>{
       const libraryFilter=state.vocabLibraryFilter||'important';
-      const type=libraryFilter==='core'?'main':libraryFilter==='family'?'family':libraryFilter==='supplement'?'supplement':'all';
+      const type=libraryFilter==='core'?'main':libraryFilter==='supplement'?'supplement':'all';
       state.chunkMemorySettings={...(state.chunkMemorySettings||{}),lessonId:state.vocabLibraryLessonId||'all',type};
       chunkMemorySession=null;
       saveState();
