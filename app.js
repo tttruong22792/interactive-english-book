@@ -20,6 +20,7 @@
     vocabHubView:'today',
     vocabHubLessonId:'',
     chunkMemorySettings:{lessonId:'all',type:'all',order:'sequential'},
+    chunkBuilder:{frameId:'frame-001',chunkKey:''},
     vocabLibraryFilter:'important',
     vocabLibraryLessonId:'all',
     vocabLibraryImportantV1:false,
@@ -49,6 +50,7 @@
         shadowed:{...(raw.shadowed||{})},
         shadowingSettings:{...defaults.shadowingSettings,...(raw.shadowingSettings||{})},
         chunkMemorySettings:{...defaults.chunkMemorySettings,...(raw.chunkMemorySettings||{})},
+        chunkBuilder:{...defaults.chunkBuilder,...(raw.chunkBuilder||{})},
         quizBestByLesson:{...(raw.quizBestByLesson||{})},
         quizRunsByLesson:{...(raw.quizRunsByLesson||{})},
         lessonVisitsByLesson:{...(raw.lessonVisitsByLesson||{})}
@@ -448,7 +450,7 @@
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge'].includes(r.name) ? 'patterns' : r.name);
+    setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge','builder'].includes(r.name) ? 'patterns' : r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'patterns') renderPatterns();
@@ -458,6 +460,7 @@
       else if (r.name === 'vocab') renderVocab();
       else if (r.name === 'practice') await renderPracticeHub();
       else if (r.name === 'challenge') await renderChallenge();
+      else if (r.name === 'builder') await renderChunkBuilder();
       else if (r.name === 'shadowing') await renderShadowing();
       else if (r.name === 'progress') await renderProgress();
       else if (r.name === 'settings') renderSettings();
@@ -585,52 +588,88 @@
 
   function renderPatterns(){
     L=null;
-    setHeader('English','English Learning');
+    setHeader('English','English · Chunk First');
+    const packs=window.VocabularyTrainer?.packs?.()||[];
+    const core=window.ChunkBuilder?.coreBank?.(packs)||[];
+    const familyCount=packs.reduce((n,pack)=>n+(window.VocabularyTrainer?.usageFamilyChunks?.(pack)||[]).length,0);
+    const supplementCount=packs.reduce((n,pack)=>n+(window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[]).length,0);
     $('#mainView').innerHTML = `
-      <section class="page-hero"><div class="eyebrow">ENGLISH LEARNING</div><h1>English cho giao tiếp thực tế</h1><p>Mục tiêu không phải biết nhiều từ, mà là có ý muốn nói → chunk bật ra nhanh → dùng được ngay trong câu và tình huống thật.</p></section>
-      <section class="english-active-system">
-        <div class="english-active-system-head"><span class="eyebrow">ACTIVE LEARNING SYSTEM</span><h2>Một hệ thống, ba khối</h2><p>Mọi module tiếng Anh đều phục vụ một trong ba việc: học đúng đầu vào, tự động hóa phản xạ, rồi dùng được trong giao tiếp.</p></div>
-        <div class="english-active-system-grid">
-          <article><b>01 · LEARN</b><h3>Hiểu đúng</h3><p>Mẫu câu · chunk · 5 cách dùng · ngữ pháp đủ dùng. Không học từ rời nếu chưa cần.</p></article>
-          <article><b>02 · AUTOMATE</b><h3>Gọi ra tự động</h3><p>Recall → Fast Recall → Variation → Discrimination → Situation → Spaced Review.</p></article>
-          <article><b>03 · USE</b><h3>Dùng được</h3><p>Shadowing → tắt audio → tự nói → câu hoàn chỉnh → hội thoại và tình huống mới.</p></article>
+      <section class="chunk-first-hero">
+        <div>
+          <span class="eyebrow">CHUNK-FIRST ENGLISH</span>
+          <h1>Xây vốn chunk trước.<br><span>Dùng mẫu câu để lắp chúng lại.</span></h1>
+          <p>Trọng tâm mới của Language Studio là tích lũy nhiều cụm dùng thật, gọi ra nhanh bằng retrieval practice, rồi tái sử dụng chúng với các khung như <b>I'd like to…</b>, <b>I'm going to…</b>, <b>I need to…</b>.</p>
+          <div class="chunk-first-actions"><button class="primary-button" data-go="vocab">Học chunk hôm nay →</button><button class="secondary-button" data-go="builder">Ghép chunk vào mẫu câu</button></div>
         </div>
-        <button class="primary-button english-active-start" data-go="vocab">Bắt đầu Active Path →</button>
+        <div class="chunk-first-score">
+          <strong>${core.length}</strong><span>chunk gốc</span>
+          <strong>${familyCount}</strong><span>cách dùng trong family</span>
+          <strong>${supplementCount}</strong><span>cụm bổ sung</span>
+        </div>
       </section>
-      <section class="english-grammar-entry english-vocab-entry">
-        <div><span class="eyebrow">LEARN + AUTOMATE</span><h2>Cụm chủ động</h2><p>Học các cụm dùng thật theo từng mẫu câu: nhận ra → gọi ra → dùng trong câu, kèm Flashcard, nghe lặp và luyện viết.</p></div>
-        <button class="primary-button" data-go="vocab">Mở Cụm chủ động →</button>
+
+      <section class="chunk-first-main-grid">
+        <article data-go="vocab"><span>01</span><div><h2>Hôm nay</h2><p>App tự chọn chunk mới + chunk đến hạn. Bạn không phải chọn Fast Recall, Mix hay Variation nữa.</p></div><b>→</b></article>
+        <article data-go="vocab" data-vocab-target="library"><span>02</span><div><h2>Kho chunk</h2><p>Toàn bộ chunk gốc, family và cụm bổ sung. Đây là vốn tiếng Anh của bạn.</p></div><b>→</b></article>
+        <article data-go="builder"><span>03</span><div><h2>Ghép câu</h2><p>Lấy một chunk và tái sử dụng với các khung trong bộ 80 cấu trúc của bạn.</p></div><b>→</b></article>
+        <article data-go="challenge"><span>04</span><div><h2>Thử thách</h2><p>Nhìn ý tiếng Việt → tự tạo English. Câu yếu được đưa trở lại để ôn.</p></div><b>→</b></article>
       </section>
-      <section class="english-grammar-entry">
-        <div><span class="eyebrow">LEARN · SUPPORT</span><h2>Các thì trong tiếng Anh</h2><p>Hiểu bằng bản đồ 3 mốc thời gian × 4 cách nhìn, có công thức, ví dụ nghe được, lỗi hay gặp, cách phân biệt và bài luyện chọn thì.</p></div>
-        <button class="primary-button" data-go="tenses">Mở trang các thì →</button>
+
+      <section class="chunk-first-method">
+        <div><span class="eyebrow">MỘT VÒNG HỌC</span><h2>Ít thao tác hơn, nhiều retrieval hơn</h2></div>
+        <div class="chunk-first-flow">
+          <div><b>1</b><strong>Gặp chunk</strong><span>nghĩa + audio + family</span></div>
+          <div><b>2</b><strong>Tự gọi ra</strong><span>Việt → English trước khi xem</span></div>
+          <div><b>3</b><strong>Gặp lại cách quãng</strong><span>ưu tiên câu yếu và lâu chưa ôn</span></div>
+          <div><b>4</b><strong>Ghép vào khung</strong><span>một chunk → nhiều câu</span></div>
+        </div>
       </section>
-      <section class="english-grammar-entry shadowing-entry">
-        <div><span class="eyebrow">USE · LISTENING + SPEAKING</span><h2>Shadowing theo từng bài</h2><p>Chọn một hoặc nhiều bài đã có, lấy trực tiếp câu trong bài và luyện nghe → nhại → shadowing có chữ → không chữ.</p></div>
-        <button class="primary-button" data-go="shadowing">Mở Shadowing →</button>
-      </section>
-      <section class="english-grammar-entry english-practice-entry">
-        <div><span class="eyebrow">USE · PRODUCTIVE PRACTICE</span><h2>Luyện tập tiếng Anh</h2><p>Luyện toàn bộ nội dung đã học theo từng bài hoặc nhiều bài: Việt → Anh, nhận diện câu, phản xạ và ôn lại những phần còn yếu.</p></div>
-        <button class="primary-button" data-go="practice">Mở Luyện tập →</button>
-      </section>
-      <section class="english-grammar-entry english-challenge-entry">
-        <div><span class="eyebrow">FINAL RETRIEVAL</span><h2>Thử thách</h2><p>Gom toàn bộ câu ví dụ đang dùng trong Mẫu câu, Cụm chủ động, Các thì, Shadowing và Luyện tập để kiểm tra Việt → English.</p></div>
-        <button class="primary-button" data-go="challenge">Mở Thử thách →</button>
-      </section>
-      <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
-      <section id="patternsGrid" class="card-grid"></section>`;
+
+      <details class="chunk-first-support">
+        <summary>Công cụ hỗ trợ · mở khi cần</summary>
+        <div>
+          <button data-go="shadowing">Shadowing</button>
+          <button data-go="tenses">Các thì</button>
+          <button data-go="practice">Luyện tập cũ</button>
+        </div>
+      </details>
+
+      <section class="chunk-first-pattern-reference">
+        <div class="section-title-row"><div><span class="eyebrow">80 KHUNG CÂU</span><h2>Khung để lắp chunk, không phải đích học</h2><p>Bộ 80 cấu trúc vẫn được giữ nguyên làm thư viện tham chiếu.</p></div></div>
+        <div class="search-row"><input id="patternSearch" class="search-input" placeholder="Tìm mẫu câu, ví dụ: I'd like to..." /><button class="filter-chip active" data-filter="all">Tất cả</button><button class="filter-chip" data-filter="available">Đã có bài</button></div>
+        <section id="patternsGrid" class="card-grid"></section>
+      </section>`;
+
     let filter='all';
     const draw=()=>{
       const q=normalizeText($('#patternSearch').value);
       const items=CATALOG.filter(p => (filter==='all' || p.status==='available') && (!q || normalizeText(`${p.title} ${p.meaning}`).includes(q)));
       $('#patternsGrid').innerHTML = items.map(patternCard).join('');
       bindGenericRoutes();
-      $$('.pattern-card button[data-disabled]').forEach(btn => btn.onclick=()=>toast(btn.dataset.status==='next'?'Mẫu 02 đã có tên và nghĩa; nội dung chi tiết chưa được nhập.':'Khung bài này đã sẵn sàng, nhưng chưa có nội dung.'));
+      $$('.pattern-card button[data-disabled]').forEach(btn => btn.onclick=()=>toast(btn.dataset.status==='next'?'Bài này đã có tên và nghĩa; nội dung chi tiết chưa được nhập.':'Khung này đang ở chế độ tham chiếu.'));
     };
     $('#patternSearch').addEventListener('input',draw);
     $$('.filter-chip').forEach(b=>b.onclick=()=>{filter=b.dataset.filter; $$('.filter-chip').forEach(x=>x.classList.toggle('active',x===b)); draw();});
+    bindGenericRoutes();
     draw();
   }
+
+  async function renderChunkBuilder(){
+    L=null;
+    const packs=window.VocabularyTrainer?.packs?.()||[];
+    if(!window.ChunkBuilder?.render) throw new Error('Chunk Builder is not available.');
+    window.ChunkBuilder.render({
+      state,
+      packs,
+      main:$('#mainView'),
+      setHeader,
+      saveState,
+      speak,
+      uiIcon,
+      toast
+    });
+  }
+
   function patternCard(p){
     if(!p) return '';
     const status=p.status==='available'?'Đã có bài':p.status==='next'?'Bài tiếp theo':'Đang chuẩn bị';
