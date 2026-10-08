@@ -500,17 +500,17 @@
     $('#mainView').innerHTML = `
       <section class="landing-hero">
         <div class="hero-copy-new">
-          <div class="landing-kicker">ENGLISH · GRAMMAR · VOCABULARY · SHADOWING</div>
-          <h1 class="display-title">Học tiếng Anh theo <span class="marker marker-purple">hệ thống</span>,<br>dùng được trong <span class="marker marker-green">đời sống thật</span>.</h1>
-          <p class="hero-lead">Language Studio kết hợp mẫu câu thực tế, ngữ pháp trực quan, từ vựng có ngữ cảnh, audio tự nhiên và shadowing trong một trải nghiệm học thống nhất.</p>
+          <div class="landing-kicker">CHUNK-FIRST ENGLISH · ACTIVE RECALL</div>
+          <h1 class="display-title">Tích lũy <span class="marker marker-purple">chunk dùng thật</span>,<br>rồi ghép thành <span class="marker marker-green">câu của bạn</span>.</h1>
+          <p class="hero-lead">Language Studio ưu tiên vốn cụm có thể lấy ra nhanh khi nói. Mẫu câu, ngữ pháp và shadowing được giữ như công cụ hỗ trợ cho việc dùng chunk.</p>
           <div class="hero-actions">
-            <button class="primary-button" data-go="patterns">Bắt đầu học English →</button>
-            <button class="secondary-button" data-go="shadowing">Luyện Shadowing</button>
+            <button class="primary-button" data-go="vocab">Học chunk hôm nay →</button>
+            <button class="secondary-button" data-go="builder">Ghép chunk vào mẫu câu</button>
           </div>
           <div class="hero-mini-stats">
-            <div><strong>${availableEnglish}</strong><span>Bài mẫu câu</span></div>
-            <div><strong>12</strong><span>Thì tiếng Anh</span></div>
-            <div><strong>3</strong><span>Cấp độ Shadowing</span></div>
+            <div><strong>${window.ChunkBuilder?.coreBank?.(window.VocabularyTrainer?.packs?.()||[])?.length||0}</strong><span>Chunk gốc hiện có</span></div>
+            <div><strong>80</strong><span>Khung câu tham chiếu</span></div>
+            <div><strong>1</strong><span>Lộ trình chính</span></div>
           </div>
         </div>
         <div class="hero-showcase">
@@ -532,13 +532,13 @@
       </section>
 
       <section class="big-statement">
-        <h2>Từ hiểu câu đến <span class="marker marker-purple">nói được câu</span>.<br>Mỗi kỹ năng nằm trong <span class="marker marker-yellow">cùng một lộ trình</span>.</h2>
-        <p>Người học đi theo một vòng lặp rõ ràng: hiểu → nghe → tra từ → nói theo → tự nhớ lại → ôn tập. Mỗi module dùng chung nội dung và tiến độ học.</p>
+        <h2>Từ “không biết nói gì” đến <span class="marker marker-purple">có sẵn nguyên liệu để nói</span>.</h2>
+        <p>Vòng lặp chính được rút gọn thành: gặp chunk → tự gọi lại → gặp lại cách quãng → ghép vào nhiều khung câu → dùng trong tình huống mới.</p>
         <div class="scribble" aria-hidden="true">⌁⌁⌁  ↗  ⌁⌁⌁</div>
       </section>
 
       <section class="landing-section">
-        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING TRACKS</span><h2>Một nền tảng, nhiều kỹ năng</h2></div><p>Mẫu câu, ngữ pháp, từ vựng, luyện nghe nói và shadowing được tổ chức thành các module có thể mở rộng theo lộ trình.</p></div>
+        <div class="landing-section-head"><div><span class="landing-kicker">CHUNK ECOSYSTEM</span><h2>Một trọng tâm, các công cụ xoay quanh</h2></div><p>Kho chunk là trung tâm. Mẫu câu, nghe nói, ngữ pháp và thử thách chỉ phục vụ việc nhớ và tái sử dụng các chunk đó.</p></div>
         <div class="track-grid-new">${tracks}</div>
       </section>
 
