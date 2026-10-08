@@ -2164,8 +2164,9 @@
       const map=new Map();
       source.forEach(pack=>{
         const main=(window.VocabularyTrainer?.studyChunks?.(pack)||[]).filter(card=>card.kind!=='building');
+        const family=window.VocabularyTrainer?.usageFamilyChunks?.(pack)||[];
         const supplements=window.VocabularyTrainer?.usageSupplementChunks?.(pack)||[];
-        const cards=type==='main'?main:type==='supplement'?supplements:[...main,...supplements];
+        const cards=type==='main'?main:type==='family'?family:type==='supplement'?supplements:[...main,...family,...supplements];
 
         cards.forEach(card=>{
           const key=String(card.baseEn||'').trim().toLowerCase();
@@ -2175,7 +2176,7 @@
           }
           const item=map.get(key);
           item.cards.push(card);
-          const sourceType=card.kind==='usage-addon'?'supplement':'main';
+          const sourceType=card.kind==='usage-addon'?'supplement':card.kind==='family-variant'?'family':'main';
           if(!item.types.includes(sourceType)) item.types.push(sourceType);
           if(sourceType==='main'){
             item.baseEn=card.baseEn;
@@ -2186,14 +2187,19 @@
               if(!item.contexts.some(x=>x.en===ctx.en&&x.parentEn===ctx.parentEn)) item.contexts.push(ctx);
             });
           }
+          if(card.kind==='family-variant'){
+            item.contexts.push({parentEn:card.parentEn,parentVi:card.parentVi,en:card.baseEn,vi:card.baseVi});
+          }
           if(!item.lessons.some(x=>x.lessonId===pack.lessonId)) item.lessons.push({lessonId:pack.lessonId,order:pack.order,pattern:pack.pattern});
         });
       });
       let arr=[...map.values()].map(item=>({
         ...item,
         isMain:item.types.includes('main'),
+        isFamily:item.types.includes('family'),
         isSupplement:item.types.includes('supplement'),
-        isSupplementOnly:item.types.includes('supplement')&&!item.types.includes('main')
+        isFamilyOnly:item.types.includes('family')&&!item.types.includes('main'),
+        isSupplementOnly:item.types.includes('supplement')&&!item.types.includes('main')&&!item.types.includes('family')
       }));
       if(order==='random') arr=arr.sort(()=>Math.random()-.5);
       return arr;
@@ -2240,19 +2246,19 @@
         const level=chunkMemoryRecall(item);
         const lessonText=item.lessons.map(x=>`#${String(x.order).padStart(2,'0')} ${x.pattern}`).join(' · ');
         const addonContext=item.contexts?.[0]||null;
-        const memoryPrompt=item.isSupplementOnly?(addonContext?.vi||item.baseVi):item.baseVi;
-        const contextAnswer=item.isSupplementOnly?(addonContext?.en||''):'';
+        const memoryPrompt=(item.isSupplementOnly||item.isFamilyOnly)?(addonContext?.vi||item.baseVi):item.baseVi;
+        const contextAnswer=(item.isSupplementOnly||item.isFamilyOnly)?(addonContext?.en||''):'';
         return shell(`
           <section class="chunk-memory-session">
             <div class="chunk-memory-session-top"><button id="exitChunkMemory" class="text-button" type="button">← Cụm cần nhớ</button><strong>${chunkMemorySession.index+1}/${chunkMemorySession.items.length}</strong></div>
             <div class="chunk-memory-progress"><i style="width:${pct}%"></i></div>
             <article id="chunkMemoryCard" class="chunk-memory-card ${chunkMemorySession.revealed?'is-revealed':''}" tabindex="0">
-              <span class="eyebrow">${item.isSupplementOnly?'CỤM BỔ SUNG · VI → EN':'VIỆT → ENGLISH'}</span>
+              <span class="eyebrow">${item.isFamilyOnly?'CHUNK FAMILY · VI → EN':item.isSupplementOnly?'CỤM BỔ SUNG · VI → EN':'VIỆT → ENGLISH'}</span>
               <div class="chunk-memory-vi">${esc(memoryPrompt)}</div>
               <small>${esc(lessonText)}</small>
               <div class="chunk-memory-divider"></div>
               ${chunkMemorySession.revealed?`
-                <div class="chunk-memory-answer"><span>${item.isSupplementOnly?'PHẦN BỔ SUNG':'ENGLISH'}</span><h2>${esc(item.baseEn)}</h2>${contextAnswer?`<small class="chunk-memory-context-en">${esc(contextAnswer)}</small>`:''}<button id="chunkMemorySpeak" type="button">${uiIcon('volume-2')} Nghe</button></div>
+                <div class="chunk-memory-answer"><span>${item.isFamilyOnly?'CÁCH DÙNG':item.isSupplementOnly?'PHẦN BỔ SUNG':'ENGLISH'}</span><h2>${esc(item.baseEn)}</h2>${contextAnswer&&contextAnswer!==item.baseEn?`<small class="chunk-memory-context-en">${esc(contextAnswer)}</small>`:''}<button id="chunkMemorySpeak" type="button">${uiIcon('volume-2')} Nghe</button></div>
               `:`<button id="chunkMemoryReveal" class="chunk-memory-reveal" type="button">Bật English</button>`}
             </article>
             <div class="chunk-memory-skill"><span>Mức Recall hiện tại</span><b>${level>=2?'Đã gọi ra được':level===1?'Đang hình thành':'Chưa vững'}</b></div>
@@ -2265,10 +2271,11 @@
 
       const allUnique=chunkMemoryGroups('all','sequential',cfg.type).length;
       const mainUnique=chunkMemoryGroups('all','sequential','main').length;
+      const familyUnique=chunkMemoryGroups('all','sequential','family').length;
       const supplementUnique=chunkMemoryGroups('all','sequential','supplement').length;
       return shell(`
         <section class="chunk-memory-hero">
-          <div><span class="eyebrow">ACTIVE RECALL · VI → EN</span><h2>Học toàn bộ cụm cần nhớ</h2><p>Gồm cả chunk chính và phần in đậm hữu ích được tách từ 5 cách dùng thường gặp.</p></div>
+          <div><span class="eyebrow">ACTIVE RECALL · VI → EN</span><h2>Học toàn bộ Kho chunk</h2><p>Học theo 3 tầng: chunk gốc → cách dùng trong family → cụm bổ sung. Kho lớn, mỗi lượt chỉ lấy một phần nhỏ để nhớ sâu.</p></div>
           <div class="chunk-memory-count"><b>${baseGroups.length}</b><span>mục đang chọn</span></div>
         </section>
         <section class="chunk-memory-setup">
@@ -2278,8 +2285,9 @@
           </select></label>
           <label><span>Loại cần học</span><select id="chunkMemoryType">
             <option value="all" ${cfg.type==='all'?'selected':''}>Tất cả · ${chunkMemoryGroups('all','sequential','all').length}</option>
-            <option value="main" ${cfg.type==='main'?'selected':''}>Cụm chính · ${mainUnique}</option>
-            <option value="supplement" ${cfg.type==='supplement'?'selected':''}>Bổ sung từ ví dụ · ${supplementUnique}</option>
+            <option value="main" ${cfg.type==='main'?'selected':''}>Chunk gốc · ${mainUnique}</option>
+            <option value="family" ${cfg.type==='family'?'selected':''}>Chunk family · ${familyUnique}</option>
+            <option value="supplement" ${cfg.type==='supplement'?'selected':''}>Cụm bổ sung · ${supplementUnique}</option>
           </select></label>
           <label><span>Thứ tự</span><select id="chunkMemoryOrder"><option value="sequential" ${cfg.order==='sequential'?'selected':''}>Theo thứ tự</option><option value="random" ${cfg.order==='random'?'selected':''}>Trộn ngẫu nhiên</option></select></label>
           <div class="chunk-memory-stats"><span><b>${recalled}</b> đã gọi ra</span><span><b>${baseGroups.length-recalled}</b> đang học</span></div>
