@@ -20,7 +20,7 @@ let saves=0;
 const context={
   window:{
     VocabCloudSync:{status:()=>({signedIn:false,userId:''}),getAccessToken:async()=>''},
-    VocabularyTrainer:{packs:()=>[pack],packById:()=>pack,studyChunks:()=>sample,recordMemory:()=>{}}
+    VocabularyTrainer:{packs:()=>[pack],packById:()=>pack,studyChunks:()=>sample,recordMemory:(env,card,correct)=>{env.state.saved[card.key]={trainer:{reviewCount:1,nextReviewAt:Date.now()+600000,recall:correct}};}}
   },
   document:{querySelector:element,querySelectorAll:()=>[]},
   Date,JSON,Array,Map,Set,Number,String,Math,
@@ -49,4 +49,21 @@ const saved=state.dailyV52Sessions[key];
 flow.render(env);
 assert.equal(state.dailyV52Sessions[key].stage,3,'reopen resumes prior step');
 assert.deepEqual(Object.keys(state.saved),[],'learning new chunks does not incorrectly claim mastery');
-console.log('v52 daily: plan, empty review, learning, resumability, legacy progress OK');
+// Finish recall cards and use the explicit non-AI fallback.
+for (let i=0;i<3;i++){
+  element('#dailyAnswer').value=sample[i].modelEn;
+  element('#dailyNext').onclick(); // check chunk use
+  element('#dailyNext').onclick(); // next card
+}
+assert.equal(state.dailyV52Sessions[key].stage,4);
+assert.equal(Object.keys(state.saved).length,3,'recall enters existing Chunk SRS without deleting old keys');
+element('#dailyFallback').onclick();
+element('#dailyMessage').value="I'd like to take a closer look.";
+await element('#dailyNext').onclick();
+assert.equal(state.dailyV52Sessions[key].conversation.turns,1);
+element('#dailyFinishConversation').onclick();
+assert.equal(state.dailyV52Sessions[key].stage,5);
+assert.ok(state.dailyV52Sessions[key].completedAt);
+flow.render(env);
+assert.match(element('#mainView').innerHTML,/Buổi học đã hoàn thành/);
+console.log('v52 daily: plan, learning, recall SRS, offline roleplay, persistence and finish OK');
