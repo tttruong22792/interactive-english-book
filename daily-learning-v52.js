@@ -156,7 +156,7 @@ function review(s){
   if(!result){
     $('#dailyMic').onclick=()=>microphone('dailyAnswer');
     $('#dailyAnswer').oninput=e=>{s.drafts['review:'+c.key]=e.target.value;env.saveState();};
-    $('#dailyHint').onclick=()=>env.toast('Gợi ý: +(c.baseEn||'').split(' ')[0]+' ...');
+    $('#dailyHint').onclick=()=>env.toast('Gợi ý: '+(c.baseEn||'').split(' ')[0]+' ...');
     $('#dailyNext').onclick=()=>{
       const attempt=$('#dailyAnswer').value.trim();if(!attempt){env.toast('Hãy thử tự nhớ trước khi xem đáp án.');return;}
       const expected=norm(c.baseEn),actual=norm(attempt);
