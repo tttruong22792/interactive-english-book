@@ -451,6 +451,7 @@
     setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge'].includes(r.name) ? 'patterns' : r.name);
     try {
       if (r.name === 'home') renderHome();
+      else if (r.name === 'daily') renderDailyV52();
       else if (r.name === 'patterns') renderPatterns();
       else if (r.name === 'tenses') renderTenses();
       else if (r.name === 'japanese') await renderJapanese(r.view||'home',r.id||1);
@@ -482,6 +483,22 @@
     return L;
   }
 
+  function renderDailyV52(){
+    if(!window.DailyLearningV52?.render){
+      setHeader('English › Hôm nay','Chưa tải được v52');
+      $('#mainView').innerHTML='<section class="page-hero"><h1>Không tải được bài Hôm nay.</h1><p>Hãy tải lại trang và kiểm tra kết nối.</p></section>';
+      return;
+    }
+    const dailyEnv={
+      state,setHeader,saveState,queueVocabUpsert,speak,startRecognition,esc,escAttr,uiIcon,toast,
+      openTrainer:(options={})=>window.VocabularyTrainer?.open?.({
+        state,main:$('#mainView'),setHeader,saveState,queueVocabUpsert,speak,uiIcon,esc,escAttr,toast,
+        renderVocab:()=>window.DailyLearningV52.render(dailyEnv)
+      },options)
+    };
+    window.DailyLearningV52.render(dailyEnv);
+  }
+
   function renderHome(){
     L=null;
     setHeader('Trang chủ','Language Studio');
@@ -501,7 +518,8 @@
           <h1 class="display-title">Học tiếng Anh theo <span class="marker marker-purple">hệ thống</span>,<br>dùng được trong <span class="marker marker-green">đời sống thật</span>.</h1>
           <p class="hero-lead">Language Studio kết hợp mẫu câu thực tế, ngữ pháp trực quan, từ vựng có ngữ cảnh, audio tự nhiên và shadowing trong một trải nghiệm học thống nhất.</p>
           <div class="hero-actions">
-            <button class="primary-button" data-go="patterns">Bắt đầu học English →</button>
+            <button class="primary-button" data-go="daily">Học hôm nay · 25 phút →</button>
+            <button class="secondary-button" data-go="patterns">Thư viện English</button>
             <button class="secondary-button" data-go="shadowing">Luyện Shadowing</button>
           </div>
           <div class="hero-mini-stats">

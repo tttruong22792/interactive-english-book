@@ -61,6 +61,8 @@ jobs:
           node --check data/english/active-study-packs.js
           node --check data/english/chunk-usage-vi.js
           node --check cloud-sync.js
+          node --check daily-learning-v52.js
+          node --check scripts/test-daily-v52.mjs
 
       - name: Test listening lesson switching
         if: steps.head_guard.outputs.deploy == 'true'
@@ -81,6 +83,10 @@ jobs:
       - name: Test all-chunk memory recall
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-chunk-memory.mjs
+
+      - name: Test v52 daily learning and legacy progress
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-daily-v52.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
