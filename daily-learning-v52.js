@@ -40,6 +40,7 @@ function uploadSoon(s){
   const user=cloudUser().userId,day=dateKey();
   const safe=JSON.parse(JSON.stringify(s));
   if(safe.conversation){safe.conversation.history=[];safe.conversation.transcriptLocalOnly=true;}
+  safe.drafts={};
   pendingSave=setTimeout(async()=>{
     try{
       const token=await window.VocabCloudSync?.getAccessToken?.();
@@ -99,7 +100,7 @@ function plan(){
 function createSession(){
   const p=plan();
   return {version:V,day:dateKey(),stage:0,index:0,startedAt:Date.now(),updatedAt:Date.now(),plan:p,
-    reviewResults:{},learned:[],recallResults:{},
+    reviewResults:{},learned:[],recallResults:{},drafts:{},
     conversation:{history:[],turns:0,feedback:[],used:[],weak:[],fallback:false,done:false,transcriptLocalOnly:true},
     completedAt:0
   };
@@ -118,7 +119,7 @@ function shell(s,body){
     '<p class="daily-v52-small">Tiến độ tự lưu trên thiết bị. '+(cloudUser().signedIn?'Đồng bộ tài khoản khi có mạng.':'Đăng nhập để đồng bộ giữa các thiết bị.')+'</p></section>';
   $('#dailyExit').onclick=()=>{location.hash='#patterns';};
 }
-function go(s,stage){s.stage=stage;s.index=0;remember(s);render();}
+function go(s,stage){s.stage=stage;s.index=0;if(stage===5&&!s.completedAt)s.completedAt=Date.now();remember(s);render();}
 function stageButton(label,id='dailyNext'){return '<button type="button" id="'+id+'" class="daily-v52-primary">'+esc(label)+' <span aria-hidden="true">→</span></button>';}
 function microphone(fieldId){
   const input=$('#'+fieldId);
@@ -134,13 +135,13 @@ function inputTools(id){
 function home(s){
   const p=s.plan;const t=TOPICS.find(x=>x.id===p.topicId)||TOPICS[0];
   shell(s,'<span class="daily-v52-eyebrow">BUỔI HỌC CỦA BẠN</span><h2>25 phút để dùng được tiếng Anh</h2>'+
-    '<p>Mỗi ngày chỉ cần bắt đầu. Ứng dụng tự chọn cụm cần ôn, cụm mới và tình huống giao tiếp.</p>'+
+    '<p>'+(s.completedAt?'Bạn đã hoàn thành buổi học hôm nay. Có thể xem kết quả hoặc vào Chunk Trainer để luyện thêm.':'Mỗi ngày chỉ cần bắt đầu. Ứng dụng tự chọn cụm cần ôn, cụm mới và tình huống giao tiếp.')+'</p>'+
     '<div class="daily-v52-metrics"><div><strong>'+p.review.length+'</strong><small>Cụm cần ôn</small></div><div><strong>'+p.newCards.length+'</strong><small>Cụm mới</small></div><div><strong>1</strong><small>Hội thoại</small></div></div>'+
     '<div class="daily-v52-focus"><b>Mẫu câu trọng tâm</b><span>'+esc(p.pattern)+'</span><b>Chủ đề hội thoại</b><span>'+esc(t.name)+'</span></div>'+
     '<div class="daily-v52-agenda">'+STAGES.slice(1).map((x,i)=>'<div><span>0'+(i+1)+'</span><strong>'+esc(x.title)+'</strong><small>'+x.min+' phút</small></div>').join('')+'</div>'+
-    stageButton(s.startedAt&&s.stage>0?'Tiếp tục học':'Bắt đầu 25 phút')+
+    stageButton(s.completedAt?'Xem lại kết quả':'Bắt đầu 25 phút')+
     '<p class="daily-v52-small">Không giới hạn thời gian trả lời; các mốc phút chỉ là mục tiêu.</p>');
-  $('#dailyNext').onclick=()=>go(s,p.review.length?1:p.newCards.length?2:3);
+  $('#dailyNext').onclick=()=>go(s,s.completedAt?5:p.review.length?1:p.newCards.length?2:3);
 }
 function review(s){
   const keys=s.plan.review;if(s.index>=keys.length){go(s,s.plan.newCards.length?2:3);return;}
@@ -149,17 +150,19 @@ function review(s){
   shell(s,'<span class="daily-v52-eyebrow">ÔN TẬP '+n+'/'+keys.length+'</span>'+
     '<p class="daily-v52-label">Hãy nhớ cả cụm từ từ ý tiếng Việt. Không nhìn đáp án trước.</p>'+
     '<h2>'+esc(c.baseVi||c.modelVi||'Hãy nói cụm tiếng Anh')+'</h2>'+
-    (!result?'<label class="daily-v52-label" for="dailyAnswer">Cụm tiếng Anh của bạn</label><textarea id="dailyAnswer" rows="2" placeholder="Tự nói hoặc nhập câu trả lời..."></textarea>'+inputTools('dailyAnswer')+stageButton('Kiểm tra'):'<div class="daily-v52-result '+(result.ok?'is-good':'is-hard')+'"><b>'+(result.ok?'Đã nhớ đúng cụm':'Cần ôn thêm')+'</b><div>'+esc(c.baseEn)+'</div><small>'+esc(c.modelEn||'')+'</small></div>'+stageButton(n===keys.length?'Tiếp tục học':'Cụm tiếp theo'))+
+    (!result?'<label class="daily-v52-label" for="dailyAnswer">Cụm tiếng Anh của bạn</label><textarea id="dailyAnswer" rows="2" placeholder="Tự nói hoặc nhập câu trả lời...">'+esc(s.drafts?.['review:'+c.key]||'')+'</textarea>'+inputTools('dailyAnswer')+stageButton('Kiểm tra'):'<div class="daily-v52-result '+(result.ok?'is-good':'is-hard')+'"><b>'+(result.ok?'Đã nhớ đúng cụm':'Cần ôn thêm')+'</b><div>'+esc(c.baseEn)+'</div><small>'+esc(c.modelEn||'')+'</small></div>'+stageButton(n===keys.length?'Tiếp tục học':'Cụm tiếp theo'))+
     '<button class="daily-v52-listen" type="button" data-daily-audio="'+esc(c.baseEn)+'">♫ Nghe cụm tiếng Anh</button>');
   audioBinder();
   if(!result){
     $('#dailyMic').onclick=()=>microphone('dailyAnswer');
-    $('#dailyHint').onclick=()=>env.toast('Gợi ý: '+(c.baseEn||'').split(' ')[0]+' ...');
+    $('#dailyAnswer').oninput=e=>{s.drafts['review:'+c.key]=e.target.value;env.saveState();};
+    $('#dailyHint').onclick=()=>env.toast('Gợi ý: +(c.baseEn||'').split(' ')[0]+' ...');
     $('#dailyNext').onclick=()=>{
       const attempt=$('#dailyAnswer').value.trim();if(!attempt){env.toast('Hãy thử tự nhớ trước khi xem đáp án.');return;}
       const expected=norm(c.baseEn),actual=norm(attempt);
       const ok=actual===expected||(actual.startsWith(expected+' '))||(actual.endsWith(' '+expected))||(actual.includes(' '+expected+' '));
       s.reviewResults[c.key]={ok,attempt};
+      delete s.drafts['review:'+c.key];
       window.VocabularyTrainer?.recordMemory?.(env,c,ok);
       remember(s);render();
     };
@@ -194,15 +197,19 @@ function recall(s){
   const result=s.recallResults[c.key];
   shell(s,'<span class="daily-v52-eyebrow">TỰ TẠO CÂU '+(s.index+1)+'/'+keys.length+'</span>'+
     '<p class="daily-v52-label">Diễn đạt ý sau bằng tiếng Anh, không nhìn câu mẫu:</p><h2>'+esc(c.modelVi||c.baseVi)+'</h2>'+
-    (!result?'<textarea id="dailyAnswer" rows="3" placeholder="Nhập hoặc nói một câu hoàn chỉnh..."></textarea>'+inputTools('dailyAnswer')+stageButton('Kiểm tra cách dùng cụm'):'<div class="daily-v52-result '+(result.found?'is-good':'is-hard')+'"><b>'+(result.found?'Đã sử dụng đúng cụm về mặt từ ngữ':'Chưa có cụm mục tiêu trong câu')+'</b><p>'+esc(result.attempt)+'</p><small>Đối chiếu mẫu: '+esc(c.modelEn)+'</small><p class="daily-v52-small">Đây chỉ là kiểm tra cụm theo từ ngữ. Ngữ pháp và ý nghĩa cần phản hồi của AI.</p></div>'+stageButton(s.index===keys.length-1?'Chuyển sang hội thoại':'Câu tiếp theo'))+
+    (!result?'<textarea id="dailyAnswer" rows="3" placeholder="Nhập hoặc nói một câu hoàn chỉnh...">'+esc(s.drafts?.['recall:'+c.key]||'')+'</textarea>'+inputTools('dailyAnswer')+stageButton('Kiểm tra cách dùng cụm'):'<div class="daily-v52-result '+(result.found?'is-good':'is-hard')+'"><b>'+(result.found?'Đã sử dụng đúng cụm về mặt từ ngữ':'Chưa có cụm mục tiêu trong câu')+'</b><p>'+esc(result.attempt)+'</p><small>Đối chiếu mẫu: '+esc(c.modelEn)+'</small><p class="daily-v52-small">Đây chỉ là kiểm tra cụm theo từ ngữ. Ngữ pháp và ý nghĩa cần phản hồi của AI.</p></div>'+stageButton(s.index===keys.length-1?'Chuyển sang hội thoại':'Câu tiếp theo'))+
     '<button id="dailyDeepPractice" class="daily-v52-outline daily-v52-extend" type="button">Luyện biến đổi / phân biệt trong Chunk Trainer ↗</button>');
   if(!result){
     $('#dailyMic').onclick=()=>microphone('dailyAnswer');
+    $('#dailyAnswer').oninput=e=>{s.drafts['recall:'+c.key]=e.target.value;env.saveState();};
     $('#dailyHint').onclick=()=>env.toast('Cụm gợi ý: '+c.baseEn);
     $('#dailyNext').onclick=()=>{
       const attempt=$('#dailyAnswer').value.trim();if(!attempt){env.toast('Hãy thử tạo một câu trước.');return;}
       const found=norm(attempt).includes(norm(c.baseEn));
       s.recallResults[c.key]={attempt,found};
+      delete s.drafts['recall:'+c.key];
+      // Only a genuine recall attempt enters SRS. This does not credit the Use skill.
+      window.VocabularyTrainer?.recordMemory?.(env,c,found);
       remember(s);render();
     };
   }else $('#dailyNext').onclick=()=>{s.index++;remember(s);render();};
@@ -225,7 +232,7 @@ function conversation(s){
     body+='<p>Đã hoàn thành phần hội thoại. Các cụm cần luyện thêm được đưa vào mục tổng kết.</p>'+stageButton('Xem tổng kết');
   }else{
     body+='<label for="dailyMessage" class="daily-v52-label">Bạn trả lời bằng tiếng Anh</label>'+
-      '<textarea id="dailyMessage" rows="3" placeholder="Nói hoặc nhập câu trả lời..."></textarea>'+
+      '<textarea id="dailyMessage" rows="3" placeholder="Nói hoặc nhập câu trả lời...">'+esc(s.drafts?.conversation||'')+'</textarea>'+
       inputTools('dailyMessage')+
       '<p id="dailyConversationHint" class="daily-v52-hint" hidden></p>'+
       stageButton(convo.fallback?'Gửi câu (luyện tình huống)':'Gửi câu cho AI')+
@@ -241,6 +248,7 @@ function conversation(s){
   });
   if(convo.done||convo.turns>=5){$('#dailyNext').onclick=()=>go(s,5);return;}
   $('#dailyMic').onclick=()=>microphone('dailyMessage');
+  $('#dailyMessage').oninput=e=>{s.drafts.conversation=e.target.value;env.saveState();};
   $('#dailyHint').onclick=()=>{
     const hint=$('#dailyConversationHint');
     hint.hidden=false;
@@ -267,7 +275,7 @@ function conversation(s){
         convo.feedback.push({text:'Bài luyện tình huống không AI: hệ thống chưa đánh giá ngữ pháp hoặc sự tự nhiên.',corrected:''});
       }else{
         const token=await window.VocabCloudSync?.getAccessToken?.();
-        if(!token){convo.error='Bạn cần đăng nhập trong Tài khoản & dữ liệu để dùng AI. Có thể chọn tình huống không AI.';return;}
+        if(!token){convo.error='Bạn cần đăng nhập trong Tài khoản & dữ liệu để dùng AI. Có thể chọn tình huống không AI.';remember(s);return;}
         const response=await fetch(AI,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
           body:JSON.stringify({sessionId:accountKey()+'-'+s.day,answer:text,level:'beginner',
             pattern:s.plan.pattern,objective:t.goal,opener:t.open,chunks:targets,history:recent})});
@@ -286,6 +294,7 @@ function conversation(s){
         convo.hint=data.hint_vi||'';
       }
       convo.turns++;
+      delete s.drafts.conversation;
       convo.error='';
       if(convo.turns>=5)convo.done=true;
       remember(s);
