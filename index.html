@@ -8,7 +8,7 @@
   <title>Language Studio – English + Japanese</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=20260930-ios-viewport-lock-v26" />
+  <link rel="stylesheet" href="styles.css?v=20261013-daily-v52" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -26,6 +26,7 @@
 
       <nav class="nav-list" aria-label="Điều hướng chính">
         <button class="nav-item" data-route="home"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span><b>Trang chủ</b></button>
+        <button class="nav-item" data-route="daily"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>Hôm nay · 25 phút</b></button>
         <button class="nav-item" data-route="patterns"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></span><b>English</b></button>
         <button class="nav-item" data-route="japanese"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span><b>Japanese</b></button>
         <button class="nav-item" data-route="progress"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 5-7"/></svg></span><b>Tiến độ</b></button>
@@ -63,6 +64,7 @@
 
       <nav class="bottom-nav mobile-only" aria-label="Điều hướng di động">
         <button data-route="home"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span><small>Home</small></button>
+        <button data-route="daily"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><small>Hôm nay</small></button>
         <button data-route="patterns"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></span><small>English</small></button>
         <button data-route="japanese"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span><small>日本語</small></button>
       </nav>
@@ -120,10 +122,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261007-hide-parent-hint-v51.js'
-        : 'runtime.js?v=20261007-hide-parent-hint-v51-local';
+        ? 'runtime-20261013-daily-v52.js'
+        : 'runtime.js?v=20261013-daily-v52-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261007-v51';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261013-v52';
       script.async = false;
       document.body.appendChild(script);
     }());
