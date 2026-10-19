@@ -448,7 +448,7 @@
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive(['lesson','vocab','tenses','shadowing','practice','challenge'].includes(r.name) ? 'patterns' : r.name);
+    setNavActive(r.name==='vocab'?'vocab':['lesson','tenses','shadowing','practice','challenge'].includes(r.name)?'patterns':r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'daily') renderDailyV52();
@@ -2040,20 +2040,18 @@
   
     function hubNav(){
       const tabs=[
-        ['today','Hôm nay','clipboard-check'],
-        ['learn','Learn','book-open'],
-        ['automate','Automate','mic'],
-        ['use','Use','play'],
-        ['listen','Nghe','headphones'],
+        ['today','Tổng quan','clipboard-check'],
+        ['learn','Học cụm','book-open'],
+        ['automate','Luyện tập','mic'],
         ['library','Kho cụm','bookmark']
       ];
       return `<nav class="vocab-hub-nav" aria-label="Điều hướng Cụm từ">
-        ${tabs.map(([id,label,icon])=>`<button data-vocab-screen="${id}" class="${mainView===id?'active':''}" type="button">${uiIcon(icon)}<span>${label}</span></button>`).join('')}
+        ${tabs.map(([id,label,icon])=>`<button data-vocab-screen="${id}" class="${mainView===id?'active':''}" type="button" aria-current="${mainView===id?'page':'false'}">${uiIcon(icon)}<span>${label}</span></button>`).join('')}
       </nav>`;
     }
   
     function shell(content,title='',subtitle=''){
-      return `<section class="vocab-hub">
+      return `<section class="vocab-hub native-chunk-hub">
         <header class="vocab-hub-header">
           <div><span class="eyebrow">CHUNK STUDIO</span><h1>${esc(title||'Cụm từ')}</h1>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div>
           ${syncChip()}
@@ -2065,70 +2063,45 @@
   
     function todayScreen(){
       const currentPack=selected||packs[0];
-      const currentProgress=currentPack?packProgress(currentPack):null;
-      const currentChunks=currentPack?(window.VocabularyTrainer?.studyChunks?.(currentPack)||[]):[];
-      const unseen=currentChunks.filter(card=>card.kind!=='building'&&Number(trainerProgress(card).reviewCount||0)===0).length;
-      const step=nextPath||{eyebrow:'LEARN',title:'Học 5 cụm mới',reason:'Bắt đầu từ cụm giá trị cao của bài hiện tại.',mode:'learn',count:Math.min(5,currentChunks.length)};
-      const minutes=step.mode==='learn'?5:step.mode==='fast'?3:step.mode==='situation'?3:4;
-
+      const progress=currentPack?packProgress(currentPack):null;
+      const step=nextPath||{eyebrow:'LEARN',title:'Học 5 cụm mới',reason:'Bắt đầu từ những cụm dùng được trong đời sống.',mode:'learn',count:5};
+      const isReview=!!step.due;
+      const due=Math.max(0,Number(summary.due)||0);
       return shell(`
-        <section class="active-path-hero">
-          <div class="active-path-copy">
-            <span class="vocab-kicker">${esc(step.eyebrow||'ACTIVE PATH')}</span>
-            <h2>${esc(step.title||'Bước tiếp theo')}</h2>
-            <p>${esc(step.reason||'Hệ thống đã chọn bước phù hợp tiếp theo dựa trên tiến độ thật của từng cụm.')}</p>
-            <div class="vocab-today-meta">
-              <span><b>${step.count||5}</b> cụm</span>
-              <span>≈ ${minutes} phút / bước</span>
-              <span>${step.due?'Đến lịch ôn':'Tự động chọn'}</span>
+        <div class="chunk-app-dashboard">
+          <section class="chunk-app-focus" aria-label="Bước học quan trọng nhất">
+            <div class="chunk-app-focus-main">
+              <span class="vocab-kicker">BƯỚC TIẾP THEO · ${esc(isReview?'ÔN TẬP':'TỰ ĐỘNG CHỌN')}</span>
+              <h2>${esc(step.title||'Học cụm từ mới')}</h2>
+              <p>${esc(step.reason||'Tự nhớ và dùng được trong câu của bạn.')}</p>
+              <div class="chunk-app-chips">
+                <span>${uiIcon('layers')} <b>${Math.max(1,Number(step.count)||5)}</b> cụm</span>
+                <span>${uiIcon('clock')} 3–5 phút</span>
+                <span>${uiIcon('refresh-cw')} ${due} đến hạn</span>
+              </div>
             </div>
-          </div>
-          <button id="startActivePath" class="vocab-primary-cta" type="button">
-            <span>Bắt đầu bước tiếp theo</span>${uiIcon('arrow-right')}
-          </button>
-        </section>
+            <button id="startActivePath" class="chunk-app-start" type="button">Bắt đầu học ${uiIcon('arrow-right')}</button>
+          </section>
 
-        <section class="active-daily-plan">
-          <div class="vocab-section-heading"><div><span class="eyebrow">20 PHÚT / NGÀY</span><h3>Một đường học duy nhất</h3><p>Không cần tự chọn bài tập. Hệ thống dịch chuyển cụm qua từng tầng khi bạn thực sự đạt yêu cầu.</p></div></div>
-          <div class="active-daily-plan-grid">
-            <div><b>01</b><strong>Ôn cụm đến hạn</strong><span>Recall trước, xem đáp án sau</span></div>
-            <div><b>02</b><strong>5 cụm mới</strong><span>Hiểu + audio + 5 cách dùng</span></div>
-            <div><b>03</b><strong>Automate</strong><span>Recall → Fast → Variation → Mix</span></div>
-            <div><b>04</b><strong>Situation</strong><span>Ý định → câu English</span></div>
-            <div><b>05</b><strong>Use</strong><span>Shadowing → tự nói → câu mới</span></div>
-          </div>
-        </section>
+          <section class="chunk-app-quick" aria-label="Luyện cụm chủ động">
+            <button type="button" data-vocab-screen="learn"><span>${uiIcon('book-open')}</span><strong>Học chunk</strong><small>Hiểu & mở rộng</small></button>
+            <button type="button" data-vocab-screen="remember"><span>${uiIcon('check-circle')}</span><strong>Tự nhớ</strong><small>Việt → English</small></button>
+            <button type="button" data-vocab-screen="automate"><span>${uiIcon('zap')}</span><strong>Phản xạ</strong><small>Luyện không nhìn</small></button>
+            <button type="button" data-vocab-screen="listen"><span>${uiIcon('headphones')}</span><strong>Nghe cụm</strong><small>Luyện khi rảnh</small></button>
+          </section>
 
-        ${currentPack?`<section class="vocab-today-continue">
-          <div class="vocab-section-heading"><div><span class="eyebrow">BÀI ĐANG HỌC</span><h3>Mẫu ${String(currentPack.order).padStart(2,'0')} · ${esc(currentPack.pattern)}</h3></div><button id="openCurrentVocabLesson" class="text-button" type="button">Xem bài ${uiIcon('arrow-right')}</button></div>
-          <div class="vocab-progress-line"><i style="width:${currentProgress?.percent||0}%"></i></div>
-          <div class="vocab-continue-stats">
-            <span><b>${currentProgress?.level1||0}/${currentProgress?.total1||0}</b> Nhận ra</span>
-            <span><b>${currentProgress?.level2||0}/${currentProgress?.total2||0}</b> Recall</span>
-            <span><b>${currentProgress?.fast||0}/${currentProgress?.totalImportant||0}</b> Fast</span>
-            <span><b>${currentProgress?.discriminate||0}/${currentProgress?.totalImportant||0}</b> Phân biệt</span>
-            <span><b>${currentProgress?.automatic||0}/${currentProgress?.totalImportant||0}</b> Automatic</span>
-            <span><b>${unseen}</b> cụm chính chưa học</span>
-          </div>
-        </section>`:''}
-
-        <section class="vocab-automaticity-strip">
-          <div><b>${summary.mastered2}</b><span>Recall</span></div>
-          <div><b>${summary.fast}</b><span>≤1s / Fast</span></div>
-          <div><b>${summary.vary}</b><span>Biến đổi</span></div>
-          <div><b>${summary.discriminate||0}</b><span>Phân biệt</span></div>
-          <div><b>${summary.situation}</b><span>Tình huống</span></div>
-          <div class="is-auto"><b>${summary.automatic}</b><span>Automatic</span></div>
-        </section>
-
-        <section class="vocab-today-mini">
-          <button data-vocab-screen="learn" type="button"><span>${uiIcon('book-open')}</span><div><b>Learn</b><small>Hiểu + nghe + 5 biến thể thực tế</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="remember" type="button"><span>${uiIcon('check-circle')}</span><div><b>Cụm cần nhớ</b><small>Nhìn Việt → tự bật English</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="automate" type="button"><span>${uiIcon('mic')}</span><div><b>Automate</b><small>Recall → Fast → Variation → Mix → Situation</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="use" type="button"><span>${uiIcon('play')}</span><div><b>Use</b><small>Shadowing → tự nói → câu mới</small></div>${uiIcon('arrow-right')}</button>
-          <button data-vocab-screen="listen" type="button"><span>${uiIcon('headphones')}</span><div><b>Nghe khi di chuyển</b><small>Củng cố âm thanh, không thay cho retrieval</small></div>${uiIcon('arrow-right')}</button>
-        </section>
-      `,'Hôm nay','Web tự quyết định bước tiếp theo; mục tiêu cuối là gọi ra và dùng được, không phải chỉ nhận ra.');
+          <section class="chunk-app-status" aria-label="Tiến độ học cụm">
+            <div class="chunk-app-current"><span class="chunk-app-label">ĐANG HỌC</span>
+              <strong>${currentPack?'Mẫu '+String(currentPack.order).padStart(2,'0')+' · '+esc(currentPack.pattern):'Chọn mẫu câu'}</strong>
+              <div class="vocab-progress-line"><i style="width:${progress?.percent||0}%"></i></div>
+            </div>
+            <div class="chunk-app-numbers">
+              <div><strong>${Number(summary.mastered2)||0}</strong><span>Nhớ được</span></div>
+              <div><strong>${Number(summary.automatic)||0}</strong><span>Automatic</span></div>
+            </div>
+            <button id="openCurrentVocabLesson" type="button" class="chunk-app-chevron" aria-label="Mở bài đang học">${uiIcon('chevron-right')}</button>
+          </section>
+        </div>`,'Cụm chủ động','Học sâu từng cụm, gọi lại nhanh và dùng được trong tình huống thực tế.');
     }
 
     function chunkMemorySettings(){
@@ -3441,6 +3414,7 @@
   function closeSidebar(){ $('#sidebar').classList.remove('open');$('#drawerShade').classList.add('hidden'); }
 
   document.addEventListener('click',e=>{
+    const more=e.target.closest('[data-ui-menu]');if(more){openSidebar();return;}
     const r=e.target.closest('[data-route]'); if(r){routeTo(r.dataset.route);return;}
     if(!e.target.closest('#wordPopover') && !e.target.closest('.word-token') && !e.target.closest('#selectionBar')) closePopover();
   });
@@ -3481,7 +3455,7 @@
     }
   }
   window.__LS_RENDERED=false;
-  if(!location.hash) location.hash='#home';
+  if(!location.hash) location.hash='#vocab';
   Promise.resolve(render())
     .then(async()=>{
       window.__LS_RENDERED=true;
