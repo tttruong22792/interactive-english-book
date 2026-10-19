@@ -243,7 +243,7 @@ const context = vm.createContext({ window: { CONTENT_REGISTRY: {} } });
   const tensesSource = await readFile(join(root, "data/english/tenses.js"), "utf8");
   vm.runInContext(tensesSource, context, { filename: "data/english/tenses.js" });
 }
-for (const relative of sourceMatches.filter((p) => p.startsWith("data/english/patterns/"))) {
+for (const relative of [...new Set(sourceMatches.filter((p) => p.startsWith("data/english/patterns/")))]) {
   const source = await readFile(join(root, relative), "utf8");
   vm.runInContext(source, context, { filename: relative });
 }
