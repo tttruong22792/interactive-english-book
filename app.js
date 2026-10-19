@@ -3448,6 +3448,29 @@
       toast('Đã xóa dữ liệu cục bộ trên thiết bị.');
     }
   };
+  // Keep text inputs in the visible iPhone app viewport when the soft keyboard opens.
+  // Chunk Trainer owns its separate visualViewport logic and is deliberately excluded.
+  function updateAppKeyboardViewport(){
+    const root=document.documentElement;
+    if(window.VocabularyTrainer?.isOpen?.()){
+      root.classList.remove('ls-app-keyboard-open');
+      return;
+    }
+    const vv=window.visualViewport;
+    const editing=/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'');
+    const mobile=!!window.matchMedia?.('(max-width:760px)')?.matches;
+    const occupied=vv?Math.max(0,window.innerHeight-vv.height):0;
+    const opened=mobile&&editing&&occupied>135;
+    root.classList.toggle('ls-app-keyboard-open',opened);
+    if(opened)root.style.setProperty('--ls-app-visual-height',Math.max(260,Math.round(vv.height))+'px');
+    else root.style.removeProperty('--ls-app-visual-height');
+  }
+  window.visualViewport?.addEventListener('resize',updateAppKeyboardViewport);
+  window.visualViewport?.addEventListener('scroll',updateAppKeyboardViewport);
+  window.addEventListener('resize',updateAppKeyboardViewport);
+  document.addEventListener('focusin',()=>setTimeout(updateAppKeyboardViewport,30));
+  document.addEventListener('focusout',()=>setTimeout(updateAppKeyboardViewport,60));
+
   window.addEventListener('hashchange',render);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
   window.addEventListener('appinstalled',()=>{installPrompt=null;toast('Language Studio đã được cài.');});
