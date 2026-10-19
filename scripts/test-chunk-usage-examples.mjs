@@ -2,9 +2,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
+const specs=readFileSync(new URL('../data/english/patterns/specs-13-80.js',import.meta.url),'utf8');
+const curriculum=readFileSync(new URL('../data/english/patterns/curriculum-13-80.js',import.meta.url),'utf8');
 const source=readFileSync(new URL('../data/english/active-study-packs.js',import.meta.url),'utf8');
 const viSource=readFileSync(new URL('../data/english/chunk-usage-vi.js',import.meta.url),'utf8');
 const context={window:{}};
+runInNewContext(specs,context,{filename:'data/english/patterns/specs-13-80.js'});
+runInNewContext(curriculum,context,{filename:'data/english/patterns/curriculum-13-80.js'});
 runInNewContext(source,context,{filename:'data/english/active-study-packs.js'});
 runInNewContext(viSource,context,{filename:'data/english/chunk-usage-vi.js'});
 
@@ -31,7 +35,7 @@ for(const pack of packs){
   }
 }
 
-assert.equal(important,120,'Expected 10 important chunks across 12 lessons');
+assert.equal(important,800,'Expected 10 important chunks across 80 lessons');
 assert.deepEqual(
   Array.from(usage['take a closer look']),
   [
@@ -52,4 +56,4 @@ assert.deepEqual(
     'suy nghĩ kỹ rồi phản hồi lại cho tôi.'
   ]
 );
-console.log('PASS: 120 important chunk cards have five EN examples and five Vietnamese meanings');
+console.log('PASS: 800 important chunk cards have five EN examples and five Vietnamese meanings');
