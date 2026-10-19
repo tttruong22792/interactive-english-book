@@ -63,6 +63,7 @@ jobs:
           node --check cloud-sync.js
           node --check daily-learning-v52.js
           node --check scripts/test-daily-v52.mjs
+          node --check scripts/test-app-shell-v53.mjs
 
       - name: Test listening lesson switching
         if: steps.head_guard.outputs.deploy == 'true'
@@ -87,6 +88,10 @@ jobs:
       - name: Test v52 daily learning and legacy progress
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-daily-v52.mjs
+
+      - name: Test v53 app shell and navigation
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-app-shell-v53.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
