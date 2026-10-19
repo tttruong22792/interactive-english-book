@@ -32,7 +32,7 @@ const cutStarts=[
  ["^As far as I know,\\s*","^Theo (?:tôi|những gì tôi) biết,?\\s*"],
  ["^I agree with\\s+","^Tôi đồng ý với\\s+"],
  ["^I completely agree with\\s+","^Tôi hoàn toàn đồng ý với\\s+"],
- ["^I'm wondering if\\s+","^Tôi (?:đang tự hỏi liệu|không biết)\\s+"],
+ ["^I'm wondering if\\s+","^Tôi (?:đang tự hỏi(?: liệu)?|không biết)\\s+"],
  ["^It's necessary to\\s+","^Việc\\s+"],["^Is it possible to\\s+","^Có thể\\s+"],
  ["^Are you ready to\\s+","^Bạn (?:đã )?sẵn sàng\\s+"],
  ["^Did I\\s+","^Tôi đã\\s+"],["^Did you\\s+","^Bạn đã\\s+"],
@@ -44,9 +44,9 @@ const cutStarts=[
  ["^Can you show me how to\\s+","^Bạn có thể chỉ (?:cho )?tôi cách\\s+"],
  ["^I am in charge of\\s+","^Tôi phụ trách (?:việc )?"],
  ["^I'm in charge of\\s+","^Tôi phụ trách (?:việc )?"],
- ["^Thank you(?: so much)? for\\s+","^Cảm ơn bạn (?:rất nhiều )?vì đã\\s+"],
+ ["^Thank you(?: so much)? for\\s+","^Cảm ơn bạn (?:(?:rất nhiều )?vì )?đã\\s+"],
  ["^I'm (?:truly )?sorry for\\s+","^Tôi (?:thật lòng )?xin lỗi vì đã\\s+"],
- ["^It reminds me of\\s+","^Nó làm tôi nhớ (?:đến|về)\\s+"],
+ ["^It reminds me of\\s+","^Nó làm tôi nhớ (?:đến|về)?\\s+"],
  ["^That really reminds me of\\s+","^Điều đó thực sự làm tôi nhớ đến\\s+"],
  ["^That's why\\s+","^Đó là lý do\\s+"],
  ["^Otherwise,?\\s+","^Nếu không,?\\s+"],
@@ -100,13 +100,17 @@ function cutUseful(en,vi,order){
 function extractSentence(pair,p){
  let [en,vi]=pair;
  if(!en||!vi)return null;
+ if([55,56,57,58,63,66,69].includes(p.n)&&/^(?:After I|Before you|As soon as|While I was|If you|Unless you|Although)\b/i.test(en)&&!en.includes(","))return null;
  en=fixText(en).replace(/^(So,\s*|By the way,\s*|Excuse me,\s*|Just to clarify,\s*)/i,"");
  vi=fixText(vi).replace(/^Cho tôi hỏi:\s*/i,"");
  let item=stripHead(en,vi);
  if(item[0]===en&&item[1]===vi&&p.n!==61&&p.n!==65)return null;
  item=cutUseful(item[0],item[1],p.n);
  let [phrase,meaning]=item;
- phrase=tidy(phrase);meaning=tidy(meaning);
+ phrase=tidy(phrase);
+ meaning=tidy(meaning).replace(/\s+(?:bao giờ chưa|thế nào|chưa|không)$/i,"").trim();
+ if(/^Let me know\b/i.test(en)){phrase=tidy(en);meaning=tidy(vi.replace(/^Hãy\s+/i,""));}
+ if(/^i(?:'ll|\b)/.test(phrase))phrase=phrase[0].toUpperCase()+phrase.slice(1);
  if(phrase.length<8||phrase.split(/\s+/).length<2||phrase.split(/\s+/).length>12)return null;
  if(meaning.length<5)return null;
  if(/\b(?:the|a|to|of|and|or|if|when|with)$/i.test(phrase))return null;
@@ -214,6 +218,7 @@ function makeExtras(p){
  const offset=(p.n*7)%enrichmentThemes.length;
  for(let i=0;out.length<44&&i<enrichmentThemes.length;i++){
   const [phrase,vi]=enrichmentThemes[(i+offset)%enrichmentThemes.length];
+  if([18,19,22,27,28].includes(p.n)&&/\b(my|me)\b/i.test(phrase))continue;
   const context=contextual(p,phrase,vi);
   add([phrase,vi,...context]);
  }
