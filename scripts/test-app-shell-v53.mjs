@@ -8,6 +8,7 @@ const css=read("app-shell-v53.css");
 const sw=read("sw.js");
 const builder=read("scripts/build-static.mjs");
 const manifest=JSON.parse(read("manifest.webmanifest"));
+const versionedRuntime=html.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0]||"";
 
 new vm.Script(app,{filename:"app.js"});
 const tests=[
@@ -24,8 +25,8 @@ const tests=[
  ["Routing defaults to chunk studio",app.includes("if(!location.hash) location.hash='#vocab';")],
  ["Workspace scroll resets on route navigation",app.includes("$('#mainView').scrollTop=0;")],
  ["New CSS included in build and HTML",builder.includes('"app-shell-v53.css"')&&html.includes('app-shell-v53.css?v=20261019-app-v53')],
- ["Versioned v53 runtime present in build and HTML",builder.includes('"runtime-20261019-app-v53.js"')&&html.includes('runtime-20261019-app-v53.js')],
- ["PWA pre-caches new CSS and JS",sw.includes("'./app-shell-v53.css'")&&sw.includes("'./runtime-20261019-app-v53.js'")],
+ ["Versioned runtime present in build and HTML",!!versionedRuntime&&builder.includes('"'+versionedRuntime+'"')],
+ ["PWA pre-caches current CSS and JS",!!versionedRuntime&&sw.includes("'./app-shell-v53.css'")&&sw.includes("'./"+versionedRuntime+"'")],
  ["Installed PWA opens chunks",manifest.start_url.endsWith("#vocab")],
 ];
 for(const [name,success] of tests){assert.ok(success,name);console.log("OK",name);}
