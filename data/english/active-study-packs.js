@@ -456,7 +456,8 @@ const RECOGNITION_CHUNK_EXAMPLES = {
 
   "11|sort something out":["I need to sort this out today.","Tôi cần giải quyết việc này hôm nay."],
   "11|keep track of something":["I need to keep track of the changes.","Tôi cần theo dõi các thay đổi."],
-  "11|think something through":["I need to think this through carefully.","Tôi cần suy nghĩ kỹ việc này."],\n  "11|go over something":["I need to go over the details again.","Tôi cần xem lại các chi tiết lần nữa."],
+  "11|think something through":["I need to think this through carefully.","Tôi cần suy nghĩ kỹ việc này."],
+  "11|go over something":["I need to go over the details again.","Tôi cần xem lại các chi tiết lần nữa."],
   "12|get ready for work":["I have to get ready for work.","Tôi phải chuẩn bị đi làm."],
   "12|reschedule an appointment":["I have to reschedule my appointment.","Tôi phải dời lịch hẹn."],
   "12|make a final decision":["I have to make a final decision today.","Hôm nay tôi phải đưa ra quyết định cuối cùng."],
