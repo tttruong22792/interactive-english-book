@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -225,6 +225,7 @@ new vm.Script(runtimeSource, { filename: "language-studio-runtime.js" });
 await writeFile(join(dist, "runtime.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261007-hide-parent-hint-v51.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261013-daily-v52.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261019-app-v53.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.

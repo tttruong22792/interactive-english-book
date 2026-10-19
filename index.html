@@ -3,17 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#8f7cf7" />
+  <meta name="theme-color" content="#f7f7fb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Language Studio" />
   <meta name="description" content="Language Studio – nền tảng tự học English + Japanese, từ vựng, nghe, nói và mẫu câu tương tác." />
   <title>Language Studio – English + Japanese</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=20261013-daily-v52" />
+  <link rel="stylesheet" href="styles.css?v=20261019-app-v53" />
+  <link rel="stylesheet" href="app-shell-v53.css?v=20261019-app-v53" />
 </head>
 <body>
   <div id="app" class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <button class="brand" data-route="home" aria-label="Trang chủ">
+      <button class="brand" data-route="vocab" aria-label="Cụm chủ động">
         <span class="brand-mark">LS</span>
         <span class="brand-copy"><strong>Language Studio</strong><small>Learn for real life</small></span>
       </button>
@@ -24,14 +28,13 @@
         <small id="sidebarProgressNote">Bắt đầu học I’d like to…</small>
       </div>
 
-      <nav class="nav-list" aria-label="Điều hướng chính">
-        <button class="nav-item" data-route="home"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span><b>Trang chủ</b></button>
-        <button class="nav-item" data-route="daily"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>Hôm nay · 25 phút</b></button>
-        <button class="nav-item" data-route="patterns"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></span><b>English</b></button>
-        <button class="nav-item" data-route="japanese"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span><b>Japanese</b></button>
-        <button class="nav-item" data-route="progress"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 5-7"/></svg></span><b>Tiến độ</b></button>
-        <button class="nav-item" data-route="settings"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1L7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span><b>Tài khoản & dữ liệu</b></button>
-      </nav>
+<nav class="nav-list" aria-label="Điều hướng chính"><button class="nav-item" data-route="vocab" title="Cụm chủ động"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1.5"/><rect x="3" y="10" width="18" height="5" rx="1.5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg></span><b>Cụm chủ động</b></button>
+<button class="nav-item" data-route="daily" title="Hôm nay"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>Hôm nay</b></button>
+<button class="nav-item" data-route="patterns" title="Mẫu câu"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></span><b>Mẫu câu</b></button>
+<div class="nav-divider" role="separator"></div><button class="nav-item" data-route="japanese" title="Tiếng Nhật"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></span><b>Tiếng Nhật</b></button>
+<button class="nav-item" data-route="progress" title="Tiến độ"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 5-7"/></svg></span><b>Tiến độ</b></button>
+<button class="nav-item" data-route="home" title="Thư viện"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg></span><b>Thư viện</b></button>
+<button class="nav-item" data-route="settings" title="Cài đặt"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m20 12-2-1 0-2 1-2-2-2-2 1-2-1-1-2H9l-1 2-2 1-2-1-2 2 1 2v2l-2 1v2l2 1v2l-1 2 2 2 2-1 2 1 1 2h3l1-2 2-1 2 1 2-2-1-2v-2l2-1z"/></svg></span><b>Cài đặt</b></button></nav>
 
       <div class="side-bottom">
         <button id="resetDataBtn" class="text-button">↻ Xóa dữ liệu học</button>
@@ -62,12 +65,7 @@
 
       <main id="mainView" class="main-view" tabindex="-1"></main>
 
-      <nav class="bottom-nav mobile-only" aria-label="Điều hướng di động">
-        <button data-route="home"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span><small>Home</small></button>
-        <button data-route="daily"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><small>Hôm nay</small></button>
-        <button data-route="patterns"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></span><small>English</small></button>
-        <button data-route="japanese"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span><small>日本語</small></button>
-      </nav>
+<nav class="bottom-nav mobile-only" aria-label="Điều hướng chính trên điện thoại"><button type="button" data-route="vocab" aria-label="Cụm"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1.5"/><rect x="3" y="10" width="18" height="5" rx="1.5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg></span><small>Cụm</small></button><button type="button" data-route="daily" aria-label="Hôm nay"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><small>Hôm nay</small></button><button type="button" data-route="patterns" aria-label="Mẫu câu"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></span><small>Mẫu câu</small></button><button type="button" data-ui-menu aria-label="Mở các chức năng khác"><span><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><small>Thêm</small></button></nav>
     </div>
   </div>
 
@@ -122,10 +120,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261013-daily-v52.js'
-        : 'runtime.js?v=20261013-daily-v52-local';
+        ? 'runtime-20261019-app-v53.js'
+        : 'runtime.js?v=20261019-app-v53-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261013-v52';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261019-v53';
       script.async = false;
       document.body.appendChild(script);
     }());

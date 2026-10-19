@@ -1,0 +1,318 @@
+/* Language Studio v53 — native-like app shell. Layered over v52, never removes content. */
+:root{
+  --ls-accent:#6757d7;
+  --ls-accent-soft:#f0edff;
+  --ls-edge:#e6e7ef;
+  --ls-canvas:#f7f7fb;
+  --ls-nav-height:64px;
+  --ls-header-height:58px;
+  --ls-sidebar-wide:214px;
+  --ls-sidebar-rail:78px;
+  --navy:#24243b;
+  --purple:#6757d7;
+  --bg:var(--ls-canvas);
+  --paper:#fff;
+  --line:var(--ls-edge);
+  --blue:var(--ls-accent);
+  --shadow:none;
+}
+html{width:100%;height:100%;overflow:hidden;scroll-behavior:auto}
+body{width:100%;height:100%;min-height:0;margin:0;overflow:hidden;overscroll-behavior:none;background:var(--ls-canvas)}
+body,button,input,select,textarea{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif}
+#app.app-shell{position:relative;display:flex;height:100vh;height:100dvh;max-height:100dvh;min-height:0;overflow:hidden;background:var(--ls-canvas)}
+.app-shell .content-shell{margin-left:0;display:flex;flex:1;flex-direction:column;min-height:0;min-width:0;height:100%}
+.app-shell .main-view{
+  flex:1 1 auto;min-height:0;width:100%;max-width:none;margin:0;
+  padding:24px clamp(15px,3vw,36px) 36px;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  scroll-behavior:auto;
+}
+.app-shell .main-view>*{max-width:1120px;margin-left:auto;margin-right:auto}
+.app-shell .topbar{
+  position:relative;z-index:30;flex:0 0 var(--ls-header-height);min-height:0;height:var(--ls-header-height);
+  background:rgba(255,255,255,.96);border-bottom:1px solid var(--ls-edge);
+  box-shadow:none;padding:0 clamp(16px,2.2vw,26px);backdrop-filter:blur(18px)
+}
+.app-shell .topbar-left{min-width:0}
+.app-shell .page-title-small{font-size:15px;letter-spacing:-.01em;color:#29273a}
+.app-shell .crumb{font-size:10px;letter-spacing:.06em;text-transform:none;color:#87849a}
+.app-shell .icon-button{width:39px;height:39px;min-width:39px;border:1px solid #eeeaf5;background:#fff;border-radius:12px}
+.app-shell .lesson-controls{gap:7px}
+.app-shell .lesson-controls .pill-button,.app-shell .speed-pill{background:#f7f6fb;border-color:#e7e4f1;border-radius:10px;color:#615c75}
+.app-shell .sidebar{
+  position:relative;top:auto;left:auto;bottom:auto;z-index:40;
+  flex:0 0 var(--ls-sidebar-wide);width:var(--ls-sidebar-wide);
+  height:100%;min-height:0;gap:12px;padding:17px 12px 12px;
+  border-right:1px solid var(--ls-edge);background:#fff;
+  box-shadow:none;overflow-y:auto;overscroll-behavior-y:contain
+}
+.app-shell .brand{flex:0 0 auto;gap:11px;padding:6px 8px 13px}
+.app-shell .brand-mark{width:39px;height:39px;flex:0 0 39px;border-radius:12px;font-size:14px;background:#25243e;color:#fff;box-shadow:none}
+.app-shell .brand-copy strong{font-size:13px;white-space:nowrap}
+.app-shell .brand-copy small{font-size:10px;color:#9691a1;white-space:nowrap}
+.app-shell .side-progress{display:none}
+.app-shell .nav-list{gap:5px}
+.app-shell .nav-item{
+  width:100%;min-width:0;min-height:45px;display:flex;align-items:center;gap:13px;
+  color:#6a687b;border-radius:12px;padding:10px 12px;background:transparent
+}
+.app-shell .nav-item b{min-width:0;font-size:13px;font-weight:650;white-space:nowrap}
+.app-shell .nav-item span{flex:0 0 21px;width:21px;height:21px;display:grid;place-items:center}
+.app-shell .nav-item .nav-svg{height:20px;width:20px}
+.app-shell .nav-item.active{color:#5e4dcb;background:#f0edff;font-weight:750}
+.app-shell .nav-item:hover{background:#f6f4fb}
+.app-shell .nav-divider{height:1px;margin:10px 12px;background:#ece9f1}
+.app-shell .side-bottom{margin-top:auto;border-top:1px solid #eeeaf2;padding:11px 8px 2px}
+.app-shell .side-bottom .text-button{font-size:11px;color:#928d9c}
+.app-shell .side-bottom small{font-size:10px}
+.app-shell .drawer-shade{z-index:35}
+.app-shell .bottom-nav{display:none}
+.app-shell .landing-hero{min-height:0}
+.app-shell .page-hero,.app-shell .book-section,.app-shell .book-header,.app-shell .feature-card,.app-shell .pattern-card,.app-shell .paper-card{
+  box-shadow:none;border:1px solid var(--ls-edge);border-radius:16px
+}
+.app-shell .page-hero{background:#fff}
+.app-shell .page-hero:after{display:none}
+.app-shell .page-hero h1,.app-shell .page-hero p{color:#29283a}
+.app-shell .page-hero .eyebrow{color:#7764d3}
+.app-shell button,.app-shell a{-webkit-tap-highlight-color:transparent}
+.app-shell button{touch-action:manipulation}
+.app-shell button:focus-visible{outline:3px solid rgba(103,87,215,.45);outline-offset:2px}
+.app-shell .primary-button,.app-shell .vocab-primary-cta{background:#26223e;color:#fff;border-radius:12px;box-shadow:none}
+.app-shell .secondary-button{border-radius:12px;color:#403d52;background:#fff}
+.app-shell .sidebar button:active,.app-shell .bottom-nav button:active{transform:scale(.97)}
+
+/* Chunk hub is now the principal experience, not another scrolling marketing page. */
+.app-shell .native-chunk-hub{height:100%;min-height:0;max-width:1030px;display:flex;flex-direction:column;gap:10px;margin:auto;padding:0 0 6px}
+.native-chunk-hub .vocab-hub-header{
+  display:flex;flex:0 0 auto;align-items:center;gap:12px;margin:0;padding:0 1px
+}
+.native-chunk-hub .vocab-hub-header h1{font-size:clamp(22px,2.5vw,30px);margin:2px 0 0;line-height:1.18;letter-spacing:-.025em}
+.native-chunk-hub .vocab-hub-header p{display:none}
+.native-chunk-hub .vocab-hub-header .eyebrow{font-size:9px;letter-spacing:.12em;color:#9185b4}
+.native-chunk-hub .vocab-hub-sync{margin-left:auto;border-radius:11px;height:35px;font-weight:650;background:#faf9fc}
+.native-chunk-hub .vocab-hub-nav{
+  flex:0 0 auto;position:relative;top:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  background:#f0eff6;border:0;border-radius:12px;margin:0;padding:4px;gap:4px;
+  box-shadow:none;backdrop-filter:none
+}
+.native-chunk-hub .vocab-hub-nav button{
+  min-height:39px;border-radius:9px;gap:6px;padding:8px 6px;color:#777188;font-size:12px
+}
+.native-chunk-hub .vocab-hub-nav button.active{background:#fff;color:#5243ba;box-shadow:0 1px 3px rgba(28,27,48,.07)}
+.native-chunk-hub .vocab-hub-nav .ui-icon{height:17px;width:17px}
+.native-chunk-hub .vocab-hub-screen{flex:1;min-height:0;display:block;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin}
+.native-chunk-hub .vocab-hub-screen:has(.chunk-app-dashboard){overflow:hidden}
+.chunk-app-dashboard{height:100%;min-height:0;display:grid;grid-template-rows:minmax(0,1.7fr) auto auto;gap:12px}
+.chunk-app-focus{
+  min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:12px;
+  background:linear-gradient(130deg,#f1eeff 0%,#faf9ff 65%,#f0faf6 100%);
+  border:1px solid #e4defb;border-radius:20px;padding:clamp(15px,2.5vw,26px)
+}
+.chunk-app-focus-main{min-width:0}
+.chunk-app-focus .vocab-kicker{font-size:10px;letter-spacing:.09em;color:#7665c2}
+.chunk-app-focus h2{font-size:clamp(24px,3.7vw,40px);letter-spacing:-.035em;line-height:1.09;margin:10px 0}
+.chunk-app-focus p{max-width:630px;font-size:13px;color:#68647b;line-height:1.42;margin:0}
+.chunk-app-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.chunk-app-chips span{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.8);border:1px solid #e7e2f4;padding:6px 8px;border-radius:8px;font-size:11px;color:#665c84}
+.chunk-app-chips .ui-icon{width:13px;height:13px}
+.chunk-app-start{
+  width:100%;max-width:400px;min-height:49px;flex:0 0 auto;border:0;border-radius:13px;
+  background:#26223e;color:#fff;font-weight:750;font-size:15px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 17px
+}
+.chunk-app-start .ui-icon{width:19px;height:19px}
+.chunk-app-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.chunk-app-quick button{min-width:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;text-align:left;
+  border:1px solid #e8e6ef;border-radius:15px;background:#fff;padding:12px;color:#29263c;
+  min-height:79px}
+.chunk-app-quick button>span{flex:0 0 37px;height:37px;display:grid;place-items:center;border-radius:11px;background:#f1edff;color:#6a58cb}
+.chunk-app-quick button .ui-icon{width:19px;height:19px}
+.chunk-app-quick button strong{font-size:13px;flex:1 1 52%;line-height:1.25}
+.chunk-app-quick button small{display:block;flex:1 1 100%;color:#858092;font-size:10px;margin-left:47px;margin-top:-8px}
+.chunk-app-status{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e8e6ef;border-radius:15px;padding:13px 15px;min-width:0}
+.chunk-app-current{flex:1;min-width:0}
+.chunk-app-label{display:block;color:#9b91ad;font-size:9px;font-weight:850;letter-spacing:.09em}
+.chunk-app-current strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chunk-app-current .vocab-progress-line{margin:8px 0 0;max-width:100%;height:4px}
+.chunk-app-numbers{display:flex;gap:15px;border-left:1px solid #eeeaf4;padding-left:13px}
+.chunk-app-numbers>div{display:grid;gap:2px;text-align:center}
+.chunk-app-numbers strong{font-size:20px;line-height:1.1}
+.chunk-app-numbers span{font-size:10px;color:#847d90}
+.chunk-app-chevron{border:0;background:#f7f5fc;width:34px;height:34px;flex:0 0 34px;border-radius:10px;color:#6d59ca}
+.chunk-app-chevron .ui-icon{width:17px;height:17px}
+.native-chunk-hub .vocab-library-list>article{box-shadow:none}
+.native-chunk-hub .active-path-hero,.native-chunk-hub .vocab-today-continue,.native-chunk-hub .active-daily-plan{box-shadow:none}
+.native-chunk-hub .vocab-hub-screen>:last-child{margin-bottom:12px}
+
+/* Tablet: icon rail + full-screen workspace. */
+@media(min-width:761px) and (max-width:1199px){
+  .app-shell .sidebar{flex-basis:var(--ls-sidebar-rail);width:var(--ls-sidebar-rail);padding:14px 9px}
+  .app-shell .brand{justify-content:center;padding:4px 0 14px}
+  .app-shell .brand-copy,.app-shell .nav-item b,.app-shell .side-bottom{display:none}
+  .app-shell .nav-item{justify-content:center;padding:11px 0;gap:0}
+  .app-shell .nav-item span{flex-basis:23px;width:23px;height:23px}
+  .app-shell .nav-item .nav-svg{width:22px;height:22px}
+  .app-shell .main-view{padding:20px 24px 25px}
+}
+
+/* iPhone / narrow viewport: safe-area tab bar, only the workspace scrolls. */
+@media(max-width:760px){
+  :root{--ls-header-height:53px;--ls-nav-height:60px}
+  #app.app-shell{display:block}
+  .app-shell .content-shell{height:100%;width:100%;min-height:0}
+  .app-shell .sidebar{
+    position:fixed;top:0;left:0;bottom:0;height:100dvh;min-height:0;
+    width:min(310px,86vw);flex-basis:auto;z-index:41;
+    padding:calc(16px + env(safe-area-inset-top,0px)) 15px 16px;
+    transform:translateX(-110%);
+    transition:transform .2s ease;box-shadow:5px 0 32px rgba(25,25,45,.11)
+  }
+  .app-shell .sidebar.open{transform:translateX(0)}
+  .app-shell .brand-copy,.app-shell .nav-item b,.app-shell .side-bottom{display:flex}
+  .app-shell .nav-item{justify-content:flex-start;padding:11px 13px}
+  .app-shell .topbar{
+    height:calc(var(--ls-header-height) + env(safe-area-inset-top,0px));
+    flex-basis:calc(var(--ls-header-height) + env(safe-area-inset-top,0px));
+    padding:env(safe-area-inset-top,0px) 15px 0;box-sizing:border-box
+  }
+  .app-shell .topbar-left{min-width:0}
+  .app-shell .page-title-small{font-size:15px}
+  .app-shell .main-view{
+    flex:1 1 auto;min-height:0;padding:12px 12px 15px;
+    margin-bottom:calc(var(--ls-nav-height) + env(safe-area-inset-bottom,0px));
+    scrollbar-width:none;
+  }
+  .app-shell .main-view::-webkit-scrollbar{display:none}
+  .app-shell .bottom-nav.mobile-only{
+    display:grid;position:absolute;z-index:32;bottom:0;left:0;right:0;
+    height:calc(var(--ls-nav-height) + env(safe-area-inset-bottom,0px));
+    grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
+    padding:4px max(8px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left,0px));
+    background:#fff;border-top:1px solid #e6e4ee;box-shadow:none
+  }
+  .app-shell .bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;border:0;background:transparent;color:#8b8697;border-radius:10px;
+    min-width:0;font-size:16px}
+  .app-shell .bottom-nav button .nav-svg{height:21px;width:21px}
+  .app-shell .bottom-nav button.active{color:#5d4cc8}
+  .app-shell .bottom-nav button.active span{background:#f0edff;border-radius:9px}
+  .app-shell .bottom-nav button span{width:45px;height:29px;display:grid;place-items:center}
+  .app-shell .bottom-nav small{font-size:10px;font-weight:700}
+  .app-shell .lesson-controls .pill-button{font-size:11px}
+  .app-shell .vocab-hub-header{margin:0;padding:0}
+  .app-shell .native-chunk-hub{gap:8px;padding:0;min-height:0;height:100%}
+  .native-chunk-hub .vocab-hub-header h1{font-size:22px}
+  .native-chunk-hub .vocab-hub-header .eyebrow{font-size:8px}
+  .native-chunk-hub .vocab-hub-sync{height:33px;width:33px;padding:0;display:grid;place-items:center}
+  .native-chunk-hub .vocab-hub-sync span{display:none}
+  .native-chunk-hub .vocab-hub-nav{gap:1px;padding:3px}
+  .native-chunk-hub .vocab-hub-nav button{display:flex;flex-direction:column;gap:2px;min-height:44px;padding:5px 2px}
+  .native-chunk-hub .vocab-hub-nav button span{font-size:10px}
+  .native-chunk-hub .vocab-hub-nav .ui-icon{width:16px;height:16px}
+  .chunk-app-dashboard{grid-template-rows:minmax(0,1fr) auto auto;gap:8px}
+  .chunk-app-focus{border-radius:17px;padding:16px;gap:12px}
+  .chunk-app-focus h2{font-size:clamp(23px,6.2vw,31px);margin:8px 0}
+  .chunk-app-focus p{font-size:12px;line-height:1.42;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .chunk-app-chips{margin-top:9px;gap:4px}
+  .chunk-app-chips span{padding:5px 6px;font-size:10px}
+  .chunk-app-start{min-height:45px;font-size:14px;max-width:none}
+  .chunk-app-quick{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  .chunk-app-quick button{min-height:70px;padding:9px 4px;display:flex;justify-content:center;flex-direction:column;gap:5px;text-align:center;border-radius:12px}
+  .chunk-app-quick button>span{flex:0 0 auto;width:30px;height:30px;border-radius:9px}
+  .chunk-app-quick button .ui-icon{width:17px;height:17px}
+  .chunk-app-quick button strong{font-size:10px;flex:0 0 auto;line-height:1.1}
+  .chunk-app-quick button small{display:none}
+  .chunk-app-status{padding:10px;gap:6px;border-radius:12px}
+  .chunk-app-current strong{font-size:11px}
+  .chunk-app-numbers{gap:8px;padding-left:8px}
+  .chunk-app-numbers strong{font-size:15px}
+  .chunk-app-numbers span{font-size:8px}
+  .chunk-app-chevron{display:none}
+  .app-shell .book-header,.app-shell .book-section{border-radius:13px;padding:17px}
+  .app-shell .page-hero{padding:19px}
+  .app-shell .page-hero h1{font-size:25px}
+  .app-shell .landing-hero{padding:20px 0;gap:14px}
+  .daily-v52{max-width:100%;height:auto;margin:0 auto 8px}
+  .daily-v52-card{box-shadow:none}
+  .app-shell .selection-bar{bottom:calc(var(--ls-nav-height) + env(safe-area-inset-bottom,0px) + 8px)}
+  .app-shell .toast{bottom:calc(var(--ls-nav-height) + env(safe-area-inset-bottom,0px) + 12px)}
+}
+@media(max-width:360px){
+  .chunk-app-chips span:nth-child(2){display:none}
+  .chunk-app-status{gap:4px}
+  .chunk-app-numbers{gap:5px}
+}
+
+/* Focused training mode: one card in the visible stage and stable bottom controls. */
+html.vocab-trainer-open .vocab-trainer-root{
+  background:#f7f7fb;color:#272538;scrollbar-width:thin;
+  overscroll-behavior:contain
+}
+.vocab-trainer-root .vocab-trainer-topbar{height:66px;max-width:760px;grid-template-columns:48px 1fr 48px;padding:8px 14px}
+.vocab-trainer-root .vocab-trainer-counter strong{font-size:16px}
+.vocab-trainer-root .vocab-trainer-counter span{display:block;font-size:11px}
+.vocab-trainer-root .vocab-trainer-round{height:42px;width:42px;border-radius:12px;box-shadow:none}
+.vocab-trainer-root .vocab-trainer-round .ui-icon{width:21px;height:21px}
+.vocab-trainer-root .chunk-mode-intro{margin:8px auto 0}
+.vocab-trainer-root .chunk-mode-intro strong{font-size:15px}
+.vocab-trainer-root .vocab-trainer-stage{max-width:760px;padding:11px 12px 118px}
+.vocab-trainer-root .chunk-study-card{min-height:min(540px,calc(100dvh - 218px));box-shadow:none;border-radius:18px;border-color:#e5e1ee}
+.vocab-trainer-root .vocab-trainer-bottom{height:calc(68px + env(safe-area-inset-bottom,0px));gap:28px;background:rgba(255,255,255,.97);border-color:#e8e7ed}
+.vocab-trainer-root .vocab-trainer-bottom button{min-height:40px}
+@media(max-width:620px){
+  .vocab-trainer-root .vocab-trainer-topbar{height:57px;padding:5px 11px}
+  .vocab-trainer-root .chunk-mode-intro{margin:5px auto 0}
+  .vocab-trainer-root .chunk-mode-intro p{display:none}
+  .vocab-trainer-root .vocab-trainer-stage{padding:8px 10px calc(88px + env(safe-area-inset-bottom,0px))}
+  .vocab-trainer-root .chunk-study-card{min-height:max(310px,calc(100dvh - 204px));padding:16px 12px;gap:9px}
+  .vocab-trainer-root .chunk-card-head{top:10px;left:10px;right:10px}
+  .vocab-trainer-root .chunk-priority{margin-top:42px}
+  .vocab-trainer-root .chunk-writing-prompt{font-size:clamp(20px,6.1vw,29px)}
+  .vocab-trainer-root .chunk-rating-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .vocab-trainer-root .chunk-rating-row button{padding:7px 4px;min-height:52px}
+  .vocab-trainer-root .chunk-rating-row button b{font-size:10px}
+  .vocab-trainer-root .chunk-rating-row button span{font-size:8px}
+  .vocab-trainer-root .guided-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vocab-trainer-root .chunk-writing-box{grid-template-columns:minmax(0,1fr)}
+  .vocab-trainer-root .chunk-writing-box input{padding:12px;font-size:16px}
+  .vocab-trainer-root .chunk-writing-box button{padding:11px}
+  .vocab-trainer-root .vocab-trainer-bottom{height:calc(61px + env(safe-area-inset-bottom,0px));gap:16px}
+}
+@media(max-height:675px){
+  .native-chunk-hub .vocab-hub-header .eyebrow{display:none}
+  .chunk-app-focus{padding:12px}
+  .chunk-app-focus h2{margin:5px 0}
+  .chunk-app-chips{margin-top:6px}
+  .chunk-app-quick button{min-height:60px}
+  .chunk-app-quick button>span{height:26px;width:26px}
+  .chunk-app-status{padding:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .app-shell *, .app-shell *:before,.app-shell *:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+
+/* Short phone heights keep all controls reachable inside the workspace. */
+@media(max-width:760px) and (max-height:675px){
+  .native-chunk-hub .vocab-hub-screen:has(.chunk-app-dashboard){overflow-y:auto;overscroll-behavior:contain}
+  .chunk-app-dashboard{height:auto;min-height:380px;grid-template-rows:minmax(185px,1fr) auto auto}
+}
+@media(max-width:620px){
+  html.vocab-keyboard-open .vocab-trainer-root .chunk-study-card{
+    min-height:max(340px,calc(var(--vocab-visual-height,100dvh) - 150px));
+    padding-top:76px
+  }
+  html.vocab-keyboard-open .vocab-trainer-root .vocab-trainer-stage{padding-bottom:24px}
+}
+
+/* Only while typing outside Chunk Trainer: make the visible iPhone viewport the workspace. */
+@media(max-width:760px){
+  html.ls-app-keyboard-open #app.app-shell{
+    height:var(--ls-app-visual-height,100dvh);
+    max-height:var(--ls-app-visual-height,100dvh)
+  }
+  html.ls-app-keyboard-open .app-shell .bottom-nav{display:none}
+  html.ls-app-keyboard-open .app-shell .main-view{margin-bottom:0;padding-bottom:20px}
+}
