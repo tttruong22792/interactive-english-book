@@ -53,10 +53,19 @@ function lc(x){return x.charAt(0).toLowerCase()+x.slice(1);}
 function upper(x){return x.charAt(0).toUpperCase()+x.slice(1);}
 function pair(en,vi){return [upper(en).replace(/\s+/g," ").trim(),upper(vi).replace(/\s+/g," ").trim()];}
 function choose(bank,n,order,offset=0){return bank[(order*13+n*7+offset)%bank.length];}
+function englishStem(p){
+ let t=p.t.replace(/[…?.,\s]+$/g,"").trim();
+ if(p.kind==="opinion"||p.kind==="know")t+=",";
+ return t;
+}
+function vietnameseStem(p){
+ const map={13:"Để tôi",14:"Chúng ta hãy",15:"Bạn nên",16:"Tôi nhất định phải",18:"Chúng ta",19:"Hay là chúng ta",20:"Bạn nên",21:"Tôi có thể",22:"Bạn có thể",23:"Tôi xin phép",25:"Tôi có thể",26:"Tôi không thể",27:"Bạn sẽ",28:"Bạn có phiền",29:"Bạn có phiền nếu tôi",30:"Hãy nhớ",43:"Tôi nghĩ rằng",44:"Tôi không nghĩ rằng",45:"Bạn có nghĩ rằng",46:"Tôi muốn",47:"Tôi chắc rằng",48:"Tôi e rằng",49:"Theo tôi,",55:"Ngay khi",56:"Trong lúc tôi đang",57:"Trước khi bạn",58:"Sau khi tôi",61:"Bởi vì",62:"Đó là lý do",63:"Nếu bạn",64:"Để",65:"Để",66:"Trừ khi bạn",67:"Ngay cả khi",68:"Miễn là",69:"Mặc dù",70:"Nếu không,",75:"Đừng ngần ngại",78:"Không cần",79:"Tôi đang tự hỏi liệu",80:"Theo những gì tôi biết,"};
+ return map[p.n]||p.vi.replace(/[…?]+.*$/g,"").trim();
+}
 function actionPairs(spec){const list=[];for(let i=0;i<70;i++){const action=choose(rawActions,i,spec.n);const p=buildAction(spec,action,i);if(p)list.push(p);}return list;}
 function buildAction(p,a,i){
  const [v,vi]=a,ing=gerund(v),pp=participle(v);
- const en=p.t,ve=p.vi;
+ const en=englishStem(p),ve=vietnameseStem(p);
  switch(p.kind){
  case "v":return pair(en+" "+v+(p.question?"?":"."),ve+" "+vi+(p.question?"?":"."));
  case "askv":return pair(en+" "+v+"?",ve+" "+vi+"?");
@@ -99,7 +108,7 @@ function buildClaim(p,c,i){
  const [en,vi]=c,kind=p.kind;
  switch(kind){
  case "think":case "think-not":case "sure":case "afraid":case "wonder":case "know":case "opinion":case "think-q":case "why":
-   return pair(p.t+" "+en+(p.question?"?":"."),p.vi+" "+vi+(p.question?"?":"."));
+   return pair(englishStem(p)+" "+en+(p.question?"?":"."),vietnameseStem(p)+" "+vi+(p.question?"?":"."));
  case "that-why":return pair("That's why "+en+".","Đó là lý do "+vi+".");
  case "although-claim":return pair("Although "+en+", we should stay flexible.","Mặc dù "+vi+", chúng ta vẫn nên linh hoạt.");
  default:return null;
@@ -113,7 +122,7 @@ function makeExamples(p){
    const j=i+p.n*3;
    let x;
    if(["think","think-not","sure","afraid","wonder","know","opinion","think-q","that-why"].includes(p.kind)) {
-     const c=p.kind==="afraid"?choose(negativeClaims,i,p.n):choose(rawClaims,i,p.n);x=buildClaim(p,c,i);
+     const c=p.kind==="afraid"?choose(negativeClaims,i,p.n):choose(rawClaims,i,p.n);x=p.kind==="afraid"&&i>=10?buildAction({...p,kind:"afraid-action"},choose(rawActions,i,p.n),i):buildClaim(p,c,i);
    }else if(p.kind==="is-there") {const n=choose(nouns,i,p.n);x=pair("Is there "+n[0]+"?","Có "+n[1]+" không?");}
    else if(p.kind==="are-there"){const n=choose(plurals,i,p.n);x=pair("Are there "+n[0]+"?","Có "+n[1]+" không?");}
    else if(p.kind==="how-was"){const n=choose(times,i,p.n);x=pair("How was "+n[0]+"?",""+upper(n[1])+" thế nào?");}
@@ -132,8 +141,18 @@ function makeExamples(p){
    if(x)add(...x);
  }
  // Expand naturally contextualized variants when the source bank contains fewer unique examples.
- for(let i=0;arr.length<40&&i<120;i++){
+ for(let i=0;arr.length<40&&i<180;i++){
    const base=arr[i%arr.length];
+   if(["how-was","is-there","are-there","what-kind","what-happened"].includes(p.kind)){
+     const prefix=["So, ","By the way, ","Excuse me, ","Just to clarify, "][Math.floor(i/20)%4];
+     add(prefix+lc(base[0]),"Cho tôi hỏi: "+lc(base[1]));
+     continue;
+   }
+   if(p.kind==="agree"){add(base[0].replace(/^I agree with/,"I completely agree with"),base[1].replace(/^Tôi đồng ý với/,"Tôi hoàn toàn đồng ý với"));continue;}
+   if(p.kind==="thanks"){add(base[0].replace(/^Thank you for/,"Thank you so much for"),base[1].replace(/^Cảm ơn bạn vì đã/,"Cảm ơn bạn rất nhiều vì đã"));continue;}
+   if(p.kind==="sorry"){add(base[0].replace(/^I'm sorry for/,"I'm truly sorry for"),base[1].replace(/^Tôi xin lỗi vì đã/,"Tôi thật lòng xin lỗi vì đã"));continue;}
+   if(p.kind==="reminds"){add(base[0].replace(/^It reminds me of/,"That really reminds me of"),base[1].replace(/^Nó làm tôi nhớ đến/,"Điều đó thực sự làm tôi nhớ đến"));continue;}
+
    const mod=prep[i%prep.length],vi=prepVi[i%prep.length];
    if(base[0].endsWith("?")) continue;
    add(base[0].replace(/[.]$/,"")+" "+mod+".",base[1].replace(/[.]$/,"")+" "+vi+".");
