@@ -644,7 +644,7 @@ window.PATTERN_SPECS_13_80=[
     "vi": "Tôi có hứng / muốn…",
     "kind": "ing",
     "tip": "Dùng với V-ing khi muốn làm gì; với danh từ khi thấy có cảm giác.",
-    "question": true,
+    "question": false,
     "special": [
       [
         "I feel like taking a walk.",
