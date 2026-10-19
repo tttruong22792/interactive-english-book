@@ -120,10 +120,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261020-patterns-80.js'
+        ? 'runtime-20261020-patterns-80-final.js'
         : 'runtime.js?v=20261020-patterns-80-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261020-patterns-80';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261020-patterns-80-final';
       script.async = false;
       document.body.appendChild(script);
     }());

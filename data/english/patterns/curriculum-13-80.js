@@ -121,10 +121,101 @@ function buildClaim(p,c,i){
  default:return null;
  }
 }
+function refinedExamples(order){
+ if(order===61){
+ const reasons=[
+ ["the traffic jam","tắc đường","I arrived late for work","tôi đi làm muộn","I'll leave earlier tomorrow","ngày mai tôi sẽ đi sớm hơn"],
+ ["the heavy rain","mưa lớn","we canceled the picnic","chúng tôi đã hủy chuyến dã ngoại","the roads were flooded","đường bị ngập"],
+ ["a technical outage","sự cố kỹ thuật","we couldn't open the dashboard","chúng tôi không mở được màn hình giám sát","the demonstration was delayed","buổi demo bị hoãn"],
+ ["the sudden schedule change","lịch trình thay đổi đột ngột","I had to reschedule the appointment","tôi phải đổi lịch hẹn","we updated the team calendar","chúng tôi cập nhật lịch của nhóm"],
+ ["rising prices","giá cả tăng","we're spending less on takeout","chúng tôi giảm ăn đồ mua ngoài","I'm comparing more options before buying","tôi so sánh thêm các lựa chọn trước khi mua"],
+ ["a family emergency","việc gia đình đột xuất","I left work early","tôi rời chỗ làm sớm","I couldn't join the call","tôi không thể tham gia cuộc gọi"],
+ ["the public holiday","ngày lễ","the bank is closed today","hôm nay ngân hàng đóng cửa","the office will open later","văn phòng sẽ mở cửa muộn hơn"],
+ ["my child's fever","con tôi bị sốt","I'm staying home today","hôm nay tôi ở nhà","we postponed the family outing","chúng tôi hoãn buổi đi chơi gia đình"],
+ ["road construction","công trình đường bộ","the main road is closed","đường chính bị đóng","the bus has to take a detour","xe buýt phải đi đường vòng"],
+ ["the power outage","mất điện","the computer shut down unexpectedly","máy tính bị tắt đột ngột","we had to restart the server","chúng tôi phải khởi động lại máy chủ"],
+ ["the flight delay","chuyến bay bị trễ","we missed our connection","chúng tôi lỡ chuyến bay nối chuyến","we had to change our travel plans","chúng tôi phải đổi kế hoạch đi lại"],
+ ["a delivery problem","sự cố giao hàng","the package arrived late","gói hàng đến muộn","I contacted customer support","tôi đã liên hệ bộ phận hỗ trợ"],
+ ["lack of sleep","thiếu ngủ","I couldn't focus at work","tôi không tập trung được khi làm việc","I need to get some rest","tôi cần nghỉ ngơi một chút"],
+ ["the tight deadline","hạn chót gấp","we had to work overtime","chúng tôi phải làm thêm giờ","I prioritized the most urgent tasks","tôi ưu tiên các công việc gấp nhất"],
+ ["scheduled maintenance","bảo trì theo lịch","the service is temporarily unavailable","dịch vụ tạm thời không hoạt động","some features are disabled today","hôm nay một số tính năng bị tắt"],
+ ["unexpected expenses","chi phí phát sinh","I postponed buying a new laptop","tôi hoãn mua laptop mới","we need to save a little more","chúng tôi cần tiết kiệm thêm"],
+ ["the bad weather forecast","dự báo thời tiết xấu","we planned an indoor activity","chúng tôi lên kế hoạch hoạt động trong nhà","I brought an umbrella","tôi mang theo ô"],
+ ["the company's security policy","quy định bảo mật của công ty","I had to reset my password","tôi phải đặt lại mật khẩu","we can't use personal email accounts","chúng tôi không được dùng email cá nhân"],
+ ["traffic restrictions","hạn chế giao thông","I took another route","tôi đi tuyến đường khác","we left home a little earlier","chúng tôi rời nhà sớm hơn một chút"],
+ ["a misunderstanding","sự hiểu lầm","I clarified the requirements","tôi đã làm rõ các yêu cầu","we sent a follow-up email","chúng tôi gửi email trao đổi tiếp"]
+ ];
+ return reasons.flatMap(r=>[
+  ["Because of "+r[0]+", "+r[2]+".","Vì "+r[1]+", "+r[3]+"."],
+  ["Because of "+r[0]+", "+r[4]+".","Vì "+r[1]+", "+r[5]+"."]
+ ]);
+ }
+ if(order===65){
+ const purposes=[
+ ["write down the address","ghi lại địa chỉ","I don't forget it","tôi không quên địa chỉ"],
+ ["speak a little more slowly","nói chậm hơn một chút","everyone can follow","mọi người có thể theo kịp"],
+ ["save a backup copy","lưu một bản sao dự phòng","we don't lose the data","chúng tôi không mất dữ liệu"],
+ ["leave home early","rời nhà sớm","we can avoid rush-hour traffic","chúng tôi có thể tránh giờ cao điểm"],
+ ["check the details twice","kiểm tra chi tiết hai lần","we can catch any mistakes","chúng tôi có thể phát hiện sai sót"],
+ ["set a reminder","đặt lời nhắc","I don't miss the appointment","tôi không quên cuộc hẹn"],
+ ["put some money aside","để dành một ít tiền","we have something for emergencies","chúng tôi có tiền dự phòng"],
+ ["prepare everything tonight","chuẩn bị mọi thứ tối nay","tomorrow morning is less stressful","sáng mai bớt căng thẳng"],
+ ["explain it with an example","giải thích bằng ví dụ","the children can understand","các con có thể hiểu"],
+ ["write a clear summary","viết bản tóm tắt rõ ràng","the team knows what to do next","cả nhóm biết bước tiếp theo"],
+ ["turn on notifications","bật thông báo","I don't miss important messages","tôi không bỏ lỡ tin nhắn quan trọng"],
+ ["keep the receipt","giữ hóa đơn","we can return the item if necessary","chúng tôi có thể đổi trả nếu cần"],
+ ["practice speaking every day","luyện nói mỗi ngày","I become more confident","tôi tự tin hơn"],
+ ["compare several options","so sánh vài lựa chọn","we can make a better decision","chúng tôi có thể quyết định tốt hơn"],
+ ["ask a follow-up question","hỏi thêm một câu","I understand the issue correctly","tôi hiểu đúng vấn đề"],
+ ["keep the documents organized","sắp xếp giấy tờ gọn gàng","we can find them quickly","chúng tôi tìm được chúng nhanh"],
+ ["book a table in advance","đặt bàn trước","we don't have to wait","chúng tôi không phải chờ"],
+ ["share the updated schedule","chia sẻ lịch trình mới","everyone knows the meeting time","mọi người biết giờ họp"],
+ ["charge the phone now","sạc điện thoại ngay","the battery lasts until tonight","pin đủ dùng đến tối"],
+ ["review the lesson again","ôn lại bài học","I remember the new expressions","tôi nhớ những cách diễn đạt mới"]
+ ];
+ return purposes.flatMap(r=>[
+  ["I'll "+r[0]+" so that "+r[2]+".","Tôi sẽ "+r[1]+" để "+r[3]+"."],
+  ["Let's "+r[0]+" so that "+r[2]+".","Chúng ta hãy "+r[1]+" để "+r[3]+"."]
+ ]);
+ }
+ if(order===78){
+ const reassurance=[
+ ["rush into a decision","vội vàng quyết định"],
+ ["worry about a small mistake","lo lắng về một lỗi nhỏ"],
+ ["print every document","in tất cả giấy tờ"],
+ ["buy anything today","mua gì hôm nay"],
+ ["call me right away","gọi cho tôi ngay"],
+ ["stay late tonight","ở lại làm muộn tối nay"],
+ ["wait outside","chờ bên ngoài"],
+ ["pay in advance","thanh toán trước"],
+ ["start from scratch","bắt đầu lại từ đầu"],
+ ["fix everything at once","sửa tất cả mọi thứ cùng lúc"],
+ ["memorize every single word","học thuộc từng từ một"],
+ ["panic over the delay","hoảng hốt vì bị trễ"],
+ ["translate every sentence","dịch từng câu một"],
+ ["drive all the way there","lái xe đến tận nơi đó"],
+ ["cancel the appointment","hủy lịch hẹn"],
+ ["repeat the entire lesson","làm lại cả bài học"],
+ ["ask for permission again","xin phép lại lần nữa"],
+ ["keep the old version","giữ phiên bản cũ"],
+ ["make a final decision today","đưa ra quyết định cuối cùng hôm nay"],
+ ["send another email","gửi thêm email nữa"]
+ ];
+ return reassurance.flatMap(r=>[
+  ["There is no need to "+r[0]+".","Không cần phải "+r[1]+"."],
+  ["There's really no need to "+r[0]+".","Thực sự không cần "+r[1]+"."]
+ ]);
+ }
+ return [];
+}
 function makeExamples(p){
  const arr=[];
  function add(e,v){if(!e||!v)return;const key=e.toLowerCase().replace(/[^a-z ]/g,"");if(arr.some(x=>x[0].toLowerCase().replace(/[^a-z ]/g,"")===key))return;arr.push(pair(e,v));}
  (p.special||[]).forEach(x=>add(x[0],x[1]));
+ if([61,65,78].includes(p.n)){
+   refinedExamples(p.n).forEach(x=>add(x[0],x[1]));
+   return arr.slice(0,40);
+ }
  for(let i=0;arr.length<40&&i<190;i++){
    const j=i+p.n*3;
    let x;
