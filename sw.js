@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v91-patterns-80-final';
+const APP_CACHE='language-studio-v92-chunk-rich-v54';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261020-patterns-80-final.js',
+  './runtime-20261020-chunk-rich-v54.js',
   './app-shell-v53.css',
   './manifest.webmanifest',
   './icons/icon.svg'

@@ -164,6 +164,7 @@ const runtimeFiles = [
   "catalog.js",
   "ai-tts.js",
   ...sourceMatches,
+  "data/english/patterns/supplements-13-80.js",
   "cloud-sync.js",
   "ai-coach.js",
   "personalization-engine.js",
@@ -229,6 +230,7 @@ await writeFile(join(dist, "runtime-20261013-daily-v52.js"), runtimeSource, "utf
 await writeFile(join(dist, "runtime-20261019-app-v53.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261020-patterns-80.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261020-patterns-80-final.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261020-chunk-rich-v54.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
@@ -305,6 +307,12 @@ function addManifestAudio(text, kind, lessonId) {
 Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
   addManifestAudio(normalizeText(word), "word", "core-dictionary");
 });
+
+// Supplement packs rely on the same lesson source loaded above.
+{
+  const extras = await readFile(join(root, "data/english/patterns/supplements-13-80.js"), "utf8");
+  vm.runInContext(extras, context, { filename: "data/english/patterns/supplements-13-80.js" });
+}
 
 // The chunk trainer and commute player speak the exact Flashcard material.
 // Allow every chunk plus every full example sentence used by the active-study cards.

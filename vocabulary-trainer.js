@@ -275,8 +275,10 @@
     return rest||clean(fullVi);
   }
 
+  const supplementalCache=new WeakMap();
   function usageSupplementChunks(pack){
     if(!pack) return [];
+    if(supplementalCache.has(pack)) return supplementalCache.get(pack);
     const parents=studyChunks(pack).filter(card=>card.kind!=='building');
     const grouped=new Map();
 
@@ -324,7 +326,52 @@
       });
     });
 
-    return [...grouped.values()];
+    // Extra phrases have their own stable VI→EN cards and bilingual contexts.
+    // Keep pre-existing derived supplement keys unchanged to preserve reviews.
+    (pack.supplementChunks||[]).forEach((row,index)=>{
+      if(!Array.isArray(row)||!row[0]||!row[1]) return;
+      const part=String(row[0]).trim();
+      const meaning=String(row[1]).trim();
+      if(!usefulUsageSupplement(part)) return;
+      const key=normalize(part);
+      const en=String(row[2]||part).trim();
+      const vi=String(row[3]||meaning).trim();
+      if(!grouped.has(key)){
+        grouped.set(key,{
+          id:`usage-addon:${pack.lessonId}:${slug(part)}`,
+          key:`usage-addon:${pack.lessonId}:${slug(part)}`,
+          pack,
+          index:grouped.size,
+          priority:'supplement',
+          kind:'usage-addon',
+          baseEn:part,
+          baseVi:meaning,
+          modelEn:part,
+          modelVi:meaning,
+          phraseEn:part,
+          phraseVi:meaning,
+          examples:[],
+          usageExamples:[],
+          parentEn:pack.pattern,
+          parentVi:pack.meaning,
+          contextEn:en,
+          contextVi:vi,
+          contexts:[]
+        });
+      }
+      const card=grouped.get(key);
+      card.contexts.push({
+        parentEn:pack.pattern,
+        parentVi:pack.meaning,
+        en,vi,
+        cueVi:meaning,
+        exampleIndex:index
+      });
+    });
+
+    const result=[...grouped.values()];
+    supplementalCache.set(pack,result);
+    return result;
   }
 
   function trainerDefaults(){
