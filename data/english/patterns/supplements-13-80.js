@@ -147,57 +147,89 @@ const enrichmentThemes=[
 ["send a reminder before the meeting","gửi lời nhắc trước cuộc họp"],["look for a more affordable option","tìm lựa chọn hợp túi tiền hơn"]
 ];
 function contextual(p,action,meaning){
- const kind=p.kind;
- const special={
- "think":["I think we should ","Tôi nghĩ chúng ta nên "],
- "think-not":["I don't think we need to ","Tôi không nghĩ chúng ta cần "],
- "sure":["I'm sure we can ","Tôi chắc chúng ta có thể "],
- "afraid":["I'm afraid we can't ","Tôi e rằng chúng ta không thể "],
- "opinion":["In my opinion, we should ","Theo tôi, chúng ta nên "],
- "think-q":["Do you think we should ","Bạn nghĩ chúng ta có nên "],
- "wonder":["I'm wondering if we can ","Tôi đang tự hỏi liệu chúng ta có thể "],
- "know":["As far as I know, we need to ","Theo tôi biết, chúng ta cần "],
- "that-why":["That's why we need to ","Đó là lý do chúng ta cần "],
- "is-there":["Is there a way to ","Có cách nào để "],
- "are-there":["Are there any ways to ","Có những cách nào để "],
- "what-kind":["What kind of help do you need to ","Bạn cần trợ giúp kiểu nào để "],
- "have-you":["Have you ever had to ","Bạn đã từng phải "],
- "how-was":["How was it when you had to ","Mọi việc thế nào khi bạn phải "],
- "what-happened":["What happened when you tried to ","Chuyện gì xảy ra khi bạn cố "],
- "reminds":["It reminds me of the time we had to ","Nó làm tôi nhớ đến lần chúng ta phải "],
- "although":["Although it's difficult, I'll ","Mặc dù khó, tôi sẽ "],
- "even-if":["Even if it takes time, I'll ","Dù mất thời gian, tôi vẫn sẽ "],
- "as-long":["As long as we have time, we can ","Miễn là có thời gian, chúng ta có thể "],
- "if":["If you ","Nếu bạn "],
- "unless":["Unless you ","Trừ khi bạn "],
- "in-order":["In order to ","Để "],
- "as-soon":["As soon as I ","Ngay khi tôi "],
- "before":["Before you ","Trước khi bạn "],
- "after":["After I ","Sau khi tôi "],
- "while":["While I was busy trying to ","Trong lúc tôi đang cố "],
- "time":["It takes time to ","Cần thời gian để "],
- "long":["How long does it take to ","Mất bao lâu để "],
- "possible":["Is it possible to ","Có thể "],
- "necessary":["It's necessary to ","Cần thiết phải "],
- "responsible":["I'm in charge of ","Tôi phụ trách việc "],
- "used":["I used to ","Trước đây tôi từng "],
- "used-ing":["I'm getting used to ","Tôi đang dần quen với việc "],
- "busy":["I'm busy trying to ","Tôi đang bận cố "],
- "dont-know":["I have no idea how to ","Tôi không biết cách "],
- "explain-how":["Can you show me how to ","Bạn chỉ tôi cách "],
- "okay-if":["Is it okay if I ","Tôi "],
- "mind-if":["Do you mind if I ","Bạn có phiền nếu tôi "],
- "its-time":["It's time to ","Đến lúc "],
- "otherwise":["Otherwise, we may have to ","Nếu không, chúng ta có thể phải "],
- "that-why":["That's why we need to ","Đó là lý do chúng ta cần "],
- "have-to":["I have to ","Tôi phải "]
+ const ing=term=>{
+   const tokens=term.split(/\s+/),head=tokens.shift();
+   const irregular={get:'getting',take:'taking',make:'making',have:'having',give:'giving',come:'coming',write:'writing',put:'putting',set:'setting',cut:'cutting',run:'running',plan:'planning',sit:'sitting',drive:'driving',leave:'leaving',keep:'keeping',pay:'paying',try:'trying'};
+   let form=irregular[head]||(/[^e]e$/.test(head)?head.slice(0,-1)+'ing':/[^aeiou]y$/.test(head)?head.slice(0,-1)+'ying':head+'ing');
+   return [form,...tokens].join(' ');
  };
- const result=special[kind]||[p.t.replace(/[…?.,\s]+$/g,"")+" ",""+(p.vi.replace(/[…?.,\s]+$/g,""))+" "];
- // Safer default: familiar grammar rather than a poorly formed generic stem.
- if(!special[kind]&&!/^(?:I|You|Let|Can|Could|Will|Shall|May|Please|Don't|There)/i.test(result[0]))return ["I need to "+action+".","Tôi cần "+meaning+"."];
- const q=/^(?:Is |Are |Do |Did |When |How |Can |Could |May |Will |Shall |Would |Why )/i.test(result[0]);
- const baseEn=(result[0]+action).trim();
- return [baseEn+(q?"?":"."),(result[1]+meaning).trim()+(q?"?":".")];
+ const patterns={
+  think:["I think we should ","Tôi nghĩ chúng ta nên "],
+  "think-not":["I don't think we need to ","Tôi không nghĩ chúng ta cần "],
+  sure:["I'm sure we can ","Tôi chắc chúng ta có thể "],
+  afraid:["I'm afraid we can't ","Tôi e rằng chúng ta không thể "],
+  opinion:["In my opinion, we should ","Theo tôi, chúng ta nên "],
+  "think-q":["Do you think we should ","Bạn có nghĩ chúng ta nên "],
+  wonder:["I'm wondering if we can ","Tôi đang tự hỏi liệu chúng ta có thể "],
+  know:["As far as I know, we need to ","Theo tôi biết, chúng ta cần "],
+  "that-why":["That's why we need to ","Đó là lý do chúng ta cần "],
+  "is-there":["Is there a way to ","Có cách nào để "],
+  "are-there":["Are there any ways to ","Có những cách nào để "],
+  "how-was":["How was it when you had to ","Bạn thấy thế nào khi phải "],
+  "what-happened":["What happened when you tried to ","Chuyện gì xảy ra khi bạn cố "],
+  "what-kind":["What kind of support would help you ","Kiểu hỗ trợ nào sẽ giúp bạn "],
+  reminds:["It reminds me of the time we had to ","Điều đó làm tôi nhớ đến lần chúng ta phải "],
+  agree:["I agree with your idea to ","Tôi đồng ý với ý tưởng "],
+  "as-soon":["As soon as I ","Ngay khi tôi "],
+  before:["Before you ","Trước khi bạn "],
+  after:["After I ","Sau khi tôi "],
+  while:["While I was trying to ","Trong lúc tôi đang cố "],
+  if:["If you ","Nếu bạn "],
+  unless:["Unless you ","Trừ khi bạn "],
+  "even-if":["Even if it takes more time, I'll ","Dù tốn thêm thời gian, tôi vẫn sẽ "],
+  "as-long":["As long as we have time, we can ","Miễn là đủ thời gian, chúng ta có thể "],
+  although:["Although I'm busy, I'll ","Dù đang bận, tôi vẫn sẽ "],
+  "in-order":["In order to ","Để "],
+  time:["It takes time to ","Cần thời gian để "],
+  long:["How long does it take to ","Mất bao lâu để "],
+  able:["Are you ready to ","Bạn đã sẵn sàng "],
+  responsible:["I'm in charge of ","Tôi phụ trách việc "],
+  used:["I used to ","Trước đây tôi từng "],
+  "used-ing":["I'm used to ","Tôi đã quen với việc "],
+  busy:["I'm busy ","Tôi đang bận "],
+  "dont-know":["I have no idea how to ","Tôi không biết cách "],
+  "explain-how":["Can you show me how to ","Bạn có thể chỉ tôi cách "],
+  "okay-if":["Is it okay if I ","Tôi "],
+  "mind-if":["Do you mind if I ","Bạn có phiền nếu tôi "],
+  "its-time":["It's time to ","Đến lúc "],
+  otherwise:["Otherwise, we might need to ","Nếu không, chúng ta có thể phải "],
+  necessary:["It's necessary to ","Cần "],
+  possible:["Is it possible to ","Có thể "],
+  "did-i":["Did I ","Tôi đã "],
+  "did-you":["Did you ","Bạn đã "],
+  when:["When did you ","Bạn đã "],
+  frequency:["How often do you ","Bạn thường "],
+  "have-you":["Have you ever had to ","Bạn từng phải "],
+  ever:["Have you ever had to ","Bạn từng phải "],
+  "afraid-action":["I'm afraid we won't be able to ","Tôi e rằng chúng ta không thể "]
+ };
+ let prefix,viPrefix,verb=action;
+ if(p.kind==='v'||p.kind==='askv'){
+   prefix=p.t.replace(/[.…?,\s]+$/g,'')+' ';
+   viPrefix=String(p.vi).replace(/[…?.,\s]+$/g,'')+' ';
+ }else if(p.kind==='ing'){
+   prefix=p.n===28?'Would you mind ':'I feel like ';
+   viPrefix=p.n===28?'Bạn có phiền ':'Tôi muốn ';
+   verb=ing(action);
+ }else if(p.kind==='thanks'||p.kind==='sorry'){
+   prefix=p.kind==='thanks'?'Thank you for ':"I'm sorry for not ";
+   viPrefix=p.kind==='thanks'?'Cảm ơn bạn đã ':'Tôi xin lỗi vì chưa ';
+   verb=ing(action);
+ }else if(p.kind==='so-that'||p.kind==='because'){
+   prefix='I need to ';viPrefix='Tôi cần ';
+ }else{
+   [prefix,viPrefix]=patterns[p.kind]||['I need to ','Tôi cần '];
+   if(['used-ing','busy','responsible'].includes(p.kind))verb=ing(action);
+ }
+ const q=/^(?:Is |Are |Do |Did |When |How |Can |Could |May |Will |Shall |Would |Why )/i.test(prefix);
+ let english=prefix+verb;
+ if(p.kind==='as-soon'||p.kind==='after')english+=", I'll let you know";
+ else if(p.kind==='before')english+=", make sure everything is ready";
+ else if(p.kind==='while')english+=", I noticed something important";
+ else if(p.kind==='if')english+=", please let me know";
+ else if(p.kind==='unless')english+=", we may have to change the plan";
+ else if(p.kind==='in-order')english+=", I need to plan ahead";
+ return [english+(q?'?':'.'),viPrefix+meaning+(q?'?':'.')];
 }
 function makeExtras(p){
  const lesson=W.CONTENT_REGISTRY?.["en-pattern-"+String(p.n).padStart(3,"0")];
