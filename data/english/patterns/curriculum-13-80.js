@@ -62,6 +62,13 @@ function vietnameseStem(p){
  const map={13:"Để tôi",14:"Chúng ta hãy",15:"Bạn nên",16:"Tôi nhất định phải",18:"Chúng ta",19:"Hay là chúng ta",20:"Bạn nên",21:"Tôi có thể",22:"Bạn có thể",23:"Tôi xin phép",25:"Tôi có thể",26:"Tôi không thể",27:"Bạn sẽ",28:"Bạn có phiền",29:"Bạn có phiền nếu tôi",30:"Hãy nhớ",43:"Tôi nghĩ rằng",44:"Tôi không nghĩ rằng",45:"Bạn có nghĩ rằng",46:"Tôi muốn",47:"Tôi chắc rằng",48:"Tôi e rằng",49:"Theo tôi,",55:"Ngay khi",56:"Trong lúc tôi đang",57:"Trước khi bạn",58:"Sau khi tôi",61:"Bởi vì",62:"Đó là lý do",63:"Nếu bạn",64:"Để",65:"Để",66:"Trừ khi bạn",67:"Ngay cả khi",68:"Miễn là",69:"Mặc dù",70:"Nếu không,",75:"Đừng ngần ngại",78:"Không cần",79:"Tôi đang tự hỏi liệu",80:"Theo những gì tôi biết,"};
  return map[p.n]||p.vi.replace(/[…?]+.*$/g,"").trim();
 }
+function actionPool(p){
+ const all=rawActions;
+ if([18,19,21,22,23,27,28].includes(p.n))return all.filter(row=>!/\b(my|I)\b/.test(row[0])&&!/\bbefore Friday\b/.test(row[0]));
+ if(p.n===46){const re=/take a short break|get some fresh air|spend time|visit my parents|find a quieter place|buy groceries|prepare dinner|practice speaking English|clean up the kitchen|make a reservation|talk it over|leave a little earlier|take a different approach|look for a better opportunity|organize my desk|talk to my manager|check the weather|make some changes|build a better daily routine|work on my pronunciation|take the car|find out more|book a doctor's appointment/;return all.filter(row=>re.test(row[0]));}
+ if(p.n===76){const re=/report|problem|paperwork|request|issue|solution|schedule|customer|logs|settings|documents|meeting|email|desk|feature|software|files|expenses|plan|appointment|instructions|team|tasks|system|contract|decision|budget|backup|notifications|project|service|changes/;return all.filter(row=>re.test(row[0]));}
+ return all;
+}
 function actionPairs(spec){const list=[];for(let i=0;i<70;i++){const action=choose(rawActions,i,spec.n);const p=buildAction(spec,action,i);if(p)list.push(p);}return list;}
 function buildAction(p,a,i){
  const [v,vi]=a,ing=gerund(v),pp=participle(v);
@@ -137,7 +144,7 @@ function makeExamples(p){
    else if(p.kind==="necessary"){const n=choose(rawActions,i,p.n);x=pair("It's necessary to "+n[0]+".","Việc "+n[1]+" là cần thiết.");}
    else if(p.kind==="possible"){const n=choose(rawActions,i,p.n);x=pair("Is it possible to "+n[0]+"?","Có thể "+n[1]+" không?");}
    else if(p.kind==="afraid-action"){const n=choose(rawActions,i,p.n);x=pair("I'm afraid that we won't be able to "+n[0]+".","Tôi e rằng chúng ta sẽ không thể "+n[1]+".");}
-   else x=buildAction(p,choose(rawActions,i,p.n),i);
+   else x=buildAction(p,choose(actionPool(p),i,p.n),i);
    if(x)add(...x);
  }
  // Expand naturally contextualized variants when the source bank contains fewer unique examples.
@@ -164,11 +171,40 @@ function chunksFor(p){
  const ten=[];
  let i=0;
  while(ten.length<10&&i<200){
-  const row=choose(rawActions,i,p.n,p.n*2);
+  const row=choose(actionPool(p),i,p.n,p.n*2);
   if(!ten.some(x=>x[0]===row[0])) ten.push(row);
   i++;
  }
  return ten;
+}
+function chunkModel(p,c,i){
+ const easy=buildAction(p,c,i);
+ if(easy)return easy;
+ const en=c[0],vi=c[1];
+ const formats={
+  "think":["I think we should ","Tôi nghĩ chúng ta nên "],
+  "think-not":["I don't think we should ","Tôi không nghĩ chúng ta nên "],
+  "sure":["I'm sure that we can ","Tôi chắc rằng chúng ta có thể "],
+  "afraid":["I'm afraid that we can't ","Tôi e rằng chúng ta không thể "],
+  "opinion":["In my opinion, we should ","Theo tôi, chúng ta nên "],
+  "know":["As far as I know, we need to ","Theo tôi biết, chúng ta cần "],
+  "wonder":["I'm wondering if we can ","Tôi đang tự hỏi liệu chúng ta có thể "],
+  "think-q":["Do you think we should ","Bạn có nghĩ chúng ta nên "],
+  "that-why":["That's why we need to ","Đó là lý do chúng ta cần "],
+  "is-there":["Is there a way to ","Có cách nào để "],
+  "are-there":["Are there any ways to ","Có những cách nào để "],
+  "how-was":["How was it when you had to ","Cảm giác thế nào khi bạn phải "],
+  "what-happened":["What happened when you tried to ","Điều gì xảy ra khi bạn cố "],
+  "what-kind":["What kind of help would you need to ","Bạn cần kiểu trợ giúp nào để "],
+  "reminds":["It reminds me of the time we had to ","Nó làm tôi nhớ đến lần chúng ta phải "],
+  "agree":["I agree with your suggestion to ","Tôi đồng ý với đề xuất "],
+  "thanks":["Thank you for ","Cảm ơn bạn vì đã "],
+  "sorry":["I'm sorry for not ","Tôi xin lỗi vì chưa "]
+ };
+ const [start,translation]=formats[p.kind]||["I need to ","Tôi cần "];
+ const action=(p.kind==="thanks"||p.kind==="sorry")?gerund(en):en;
+ const trailing=["think-q","is-there","are-there","how-was","what-happened","what-kind"].includes(p.kind)?"?":".";
+ return pair(start+action+trailing,translation+vi+trailing);
 }
 function render(p){
  const samples=makeExamples(p),chunks=chunksFor(p);
@@ -240,7 +276,7 @@ W.BULK_CHUNK_USAGE={};
 W.BULK_CHUNK_USAGE_VI={};
 for(const p of SPECS){
  const chunks=chunksFor(p),samples=makeExamples(p),id="en-pattern-"+String(p.n).padStart(3,"0");
- const full=chunks.map((c,i)=>[c[0],c[1],"I need to "+c[0]+".","Tôi cần "+c[1]+"."]);
+ const full=chunks.map((c,i)=>[c[0],c[1],...chunkModel(p,c,i)]);
  const pack={lessonId:id,order:p.n,pattern:p.t,meaning:p.vi,activeChunks:full.slice(0,6),
   recognitionChunks:full.slice(6),deepSentences:samples.slice(0,10),
   buildingBlocks:chunks.slice(0,5).map(c=>[c[0],c[1],full.find(x=>x[0]===c[0])[2],full.find(x=>x[0]===c[0])[3]])};
