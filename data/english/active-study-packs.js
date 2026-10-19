@@ -1293,3 +1293,11 @@ window.CHUNK_USAGE_EXAMPLES = {
 };
 
 window.ACTIVE_STUDY_PACK_LIST = Object.values(window.ACTIVE_STUDY_PACKS).sort((a,b)=>a.order-b.order);
+
+
+/* Patterns 13–80: add structured Chunk Family cards without changing existing IDs. */
+if(window.BULK_PATTERN_PACKS){
+  Object.assign(window.ACTIVE_STUDY_PACKS,window.BULK_PATTERN_PACKS);
+  Object.assign(window.CHUNK_USAGE_EXAMPLES,window.BULK_CHUNK_USAGE||{});
+  window.ACTIVE_STUDY_PACK_LIST=Object.values(window.ACTIVE_STUDY_PACKS).sort((a,b)=>a.order-b.order);
+}
