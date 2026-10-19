@@ -78,7 +78,7 @@ for(const examples of Object.values(usage)){
     assert.ok(item.modules.includes('chunks'),'Chunk source tag missing: '+en);
   }
 }
-assert.equal(usageCount,470,'Expected all 470 practical chunk examples');
+assert.equal(usageCount,520,'Expected all 520 practical chunk examples');
 
 const guide=context.window.TENSES_GUIDE||{};
 const tensePairs=[];

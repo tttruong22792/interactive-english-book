@@ -295,6 +295,110 @@ window.ACTIVE_STUDY_PACKS = {
       ["I need to take care of this first, then I'll get back to you.","Tôi cần xử lý việc này trước, rồi tôi sẽ phản hồi lại bạn."],
       ["I need to think this through before I make a decision.","Tôi cần suy nghĩ kỹ việc này trước khi đưa ra quyết định."]
     ]
+  },
+  "en-pattern-012": {
+    "lessonId": "en-pattern-012",
+    "order": 12,
+    "pattern": "I have to…",
+    "meaning": "Tôi phải…",
+    "activeChunks": [
+      [
+        "catch up on",
+        "làm bù / giải quyết nốt",
+        "I have to catch up on some housework.",
+        "Tôi phải làm nốt vài việc nhà."
+      ],
+      [
+        "keep an eye on",
+        "trông chừng / để mắt đến",
+        "I have to keep an eye on the kids.",
+        "Tôi phải trông chừng các con."
+      ],
+      [
+        "follow up on",
+        "theo dõi / kiểm tra tiếp",
+        "I have to follow up on my email.",
+        "Tôi phải theo dõi tiếp email của mình."
+      ],
+      [
+        "deal with",
+        "xử lý / đối phó",
+        "I have to deal with an unexpected problem.",
+        "Tôi phải xử lý một vấn đề ngoài dự kiến."
+      ],
+      [
+        "come up with",
+        "nghĩ ra / đề xuất",
+        "I have to come up with a better solution.",
+        "Tôi phải nghĩ ra giải pháp tốt hơn."
+      ],
+      [
+        "stick to a budget",
+        "giữ đúng ngân sách",
+        "I have to stick to a budget this month.",
+        "Tháng này tôi phải chi tiêu đúng ngân sách."
+      ]
+    ],
+    "recognitionChunks": [
+      [
+        "get ready for work",
+        "chuẩn bị đi làm"
+      ],
+      [
+        "reschedule an appointment",
+        "dời lịch hẹn"
+      ],
+      [
+        "make a final decision",
+        "đưa ra quyết định cuối cùng"
+      ],
+      [
+        "think things through",
+        "suy nghĩ thấu đáo"
+      ]
+    ],
+    "deepSentences": [
+      [
+        "I have to catch up on housework before the weekend.",
+        "Tôi phải làm nốt việc nhà trước cuối tuần."
+      ],
+      [
+        "I have to keep an eye on the kids while I'm cooking.",
+        "Tôi phải trông chừng các con khi nấu ăn."
+      ],
+      [
+        "I have to follow up on the request I sent yesterday.",
+        "Tôi phải kiểm tra tiếp yêu cầu đã gửi hôm qua."
+      ],
+      [
+        "I have to deal with the issue before the customer arrives.",
+        "Tôi phải xử lý sự cố trước khi khách hàng đến."
+      ],
+      [
+        "I have to come up with a practical solution today.",
+        "Hôm nay tôi phải nghĩ ra giải pháp khả thi."
+      ],
+      [
+        "I have to stick to my budget to save more money.",
+        "Tôi phải giữ đúng ngân sách để tiết kiệm nhiều hơn."
+      ],
+      [
+        "I have to get ready for work earlier tomorrow.",
+        "Ngày mai tôi phải chuẩn bị đi làm sớm hơn."
+      ],
+      [
+        "I have to reschedule my appointment because of work.",
+        "Tôi phải đổi lịch hẹn vì công việc."
+      ],
+      [
+        "I have to make a final decision by Friday.",
+        "Tôi phải quyết định cuối cùng trước thứ Sáu."
+      ],
+      [
+        "I have to think things through before we make any changes.",
+        "Tôi phải suy nghĩ thấu đáo trước khi chúng ta thay đổi bất cứ điều gì."
+      ]
+    ]
   }
 };
 
@@ -353,7 +457,11 @@ const RECOGNITION_CHUNK_EXAMPLES = {
   "11|sort something out":["I need to sort this out today.","Tôi cần giải quyết việc này hôm nay."],
   "11|keep track of something":["I need to keep track of the changes.","Tôi cần theo dõi các thay đổi."],
   "11|think something through":["I need to think this through carefully.","Tôi cần suy nghĩ kỹ việc này."],
-  "11|go over something":["I need to go over the details again.","Tôi cần xem lại các chi tiết lần nữa."]
+  "11|go over something":["I need to go over the details again.","Tôi cần xem lại các chi tiết lần nữa."],
+  "12|get ready for work":["I have to get ready for work.","Tôi phải chuẩn bị đi làm."],
+  "12|reschedule an appointment":["I have to reschedule my appointment.","Tôi phải dời lịch hẹn."],
+  "12|make a final decision":["I have to make a final decision today.","Hôm nay tôi phải đưa ra quyết định cuối cùng."],
+  "12|think things through":["I have to think things through.","Tôi phải suy nghĩ thấu đáo."]
 };
 
 Object.values(window.ACTIVE_STUDY_PACKS).forEach(pack=>{
@@ -442,7 +550,9 @@ const MICRO_BUILDING_BLOCKS = {
     ["a few things","một vài việc","I need to take care of a few things.","Tôi cần xử lý một vài việc."],
     ["before lunch","trước giờ trưa","I need to get back to him before lunch.","Tôi cần phản hồi lại anh ấy trước giờ trưa."],
     ["by the end of the day","trước cuối ngày","I need to get this done by the end of the day.","Tôi cần hoàn thành việc này trước cuối ngày."]
-  ]
+  ],
+  12:[["before we leave","trước khi chúng ta đi","I have to get everything ready before we leave.","Tôi phải chuẩn bị mọi thứ trước khi đi."],["by tomorrow","chậm nhất ngày mai","I have to pay the bill by tomorrow.","Tôi phải thanh toán hóa đơn chậm nhất ngày mai."],["on my way home","trên đường về nhà","I have to stop by the store on my way home.","Tôi phải ghé cửa hàng trên đường về nhà."],["instead of rushing","thay vì vội vàng","I have to think things through instead of rushing.","Tôi phải suy nghĩ kỹ thay vì vội."],["before making a decision","trước khi quyết định","I have to take a closer look before making a decision.","Tôi phải xem xét kỹ trước khi quyết định."]]
+
 };
 
 Object.values(window.ACTIVE_STUDY_PACKS).forEach(pack=>{
@@ -1108,7 +1218,78 @@ window.CHUNK_USAGE_EXAMPLES = {
     "Work with my manager.",
     "Work with an expert.",
     "Work with different people."
+  ],
+  "catch up on": [
+    "Catch up on housework this weekend.",
+    "Catch up on emails after lunch.",
+    "Catch up on the lessons I missed.",
+    "Catch up on paperwork before Friday.",
+    "Catch up on sleep during the weekend."
+  ],
+  "keep an eye on": [
+    "Keep an eye on the kids.",
+    "Keep an eye on the oven.",
+    "Keep an eye on the weather.",
+    "Keep an eye on the delivery status.",
+    "Keep an eye on the system logs."
+  ],
+  "follow up on": [
+    "Follow up on the email tomorrow.",
+    "Follow up on the customer request.",
+    "Follow up on the issue after lunch.",
+    "Follow up on yesterday's meeting.",
+    "Follow up on the test results."
+  ],
+  "deal with": [
+    "Deal with an urgent problem.",
+    "Deal with a difficult customer.",
+    "Deal with unexpected changes.",
+    "Deal with the paperwork today.",
+    "Deal with the consequences."
+  ],
+  "come up with": [
+    "Come up with a better solution.",
+    "Come up with a new idea.",
+    "Come up with an alternative plan.",
+    "Come up with a practical approach.",
+    "Come up with an answer by Friday."
+  ],
+  "stick to a budget": [
+    "Stick to a budget this month.",
+    "Stick to a budget on vacation.",
+    "Stick to a budget when shopping.",
+    "Stick to a budget for six months.",
+    "Stick to a budget despite rising prices."
+  ],
+  "get ready for work": [
+    "Get ready for work early.",
+    "Get ready for work after breakfast.",
+    "Get ready for work in ten minutes.",
+    "Get ready for work before the kids wake up.",
+    "Get ready for work without rushing."
+  ],
+  "reschedule an appointment": [
+    "Reschedule an appointment for Monday.",
+    "Reschedule an appointment with the doctor.",
+    "Reschedule an appointment because of work.",
+    "Reschedule an appointment for next week.",
+    "Reschedule an appointment as soon as possible."
+  ],
+  "make a final decision": [
+    "Make a final decision today.",
+    "Make a final decision after the meeting.",
+    "Make a final decision together.",
+    "Make a final decision after checking the details.",
+    "Make a final decision by Friday."
+  ],
+  "think things through": [
+    "Think things through before deciding.",
+    "Think things through with my family.",
+    "Think things through before making changes.",
+    "Think things through instead of rushing.",
+    "Think things through one step at a time."
   ]
+
 };
 
 window.ACTIVE_STUDY_PACK_LIST = Object.values(window.ACTIVE_STUDY_PACKS).sort((a,b)=>a.order-b.order);

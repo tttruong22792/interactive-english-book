@@ -656,5 +656,76 @@ window.CHUNK_USAGE_EXAMPLE_VI = {
     "làm việc với quản lý của tôi.",
     "làm việc với một chuyên gia.",
     "làm việc với nhiều người khác nhau."
+  ],
+  "catch up on": [
+    "làm nốt việc nhà cuối tuần này.",
+    "xử lý nốt email sau bữa trưa.",
+    "học bù những bài tôi đã bỏ lỡ.",
+    "xử lý nốt giấy tờ trước thứ Sáu.",
+    "ngủ bù vào cuối tuần."
+  ],
+  "keep an eye on": [
+    "trông chừng các con.",
+    "để mắt đến lò nướng.",
+    "theo dõi thời tiết.",
+    "theo dõi trạng thái giao hàng.",
+    "để ý các bản ghi hệ thống."
+  ],
+  "follow up on": [
+    "theo dõi tiếp email vào ngày mai.",
+    "theo dõi tiếp yêu cầu của khách hàng.",
+    "theo dõi vấn đề sau bữa trưa.",
+    "theo dõi các việc sau cuộc họp hôm qua.",
+    "theo dõi kết quả kiểm thử."
+  ],
+  "deal with": [
+    "xử lý một vấn đề khẩn cấp.",
+    "xử lý một khách hàng khó tính.",
+    "xử lý những thay đổi bất ngờ.",
+    "giải quyết giấy tờ hôm nay.",
+    "đối mặt với những hậu quả."
+  ],
+  "come up with": [
+    "nghĩ ra giải pháp tốt hơn.",
+    "nghĩ ra ý tưởng mới.",
+    "đề xuất một kế hoạch thay thế.",
+    "nghĩ ra cách tiếp cận khả thi.",
+    "tìm ra câu trả lời trước thứ Sáu."
+  ],
+  "stick to a budget": [
+    "chi tiêu đúng ngân sách tháng này.",
+    "giữ đúng ngân sách khi đi du lịch.",
+    "giữ đúng ngân sách khi mua sắm.",
+    "duy trì ngân sách trong sáu tháng.",
+    "giữ đúng ngân sách dù giá cả tăng."
+  ],
+  "get ready for work": [
+    "chuẩn bị đi làm từ sớm.",
+    "chuẩn bị đi làm sau bữa sáng.",
+    "chuẩn bị đi làm trong mười phút.",
+    "chuẩn bị đi làm trước khi các con dậy.",
+    "chuẩn bị đi làm mà không vội vàng."
+  ],
+  "reschedule an appointment": [
+    "đổi lịch hẹn sang thứ Hai.",
+    "đổi lịch hẹn với bác sĩ.",
+    "đổi lịch hẹn vì công việc.",
+    "đổi lịch hẹn sang tuần sau.",
+    "đổi lịch hẹn sớm nhất có thể."
+  ],
+  "make a final decision": [
+    "đưa ra quyết định cuối cùng hôm nay.",
+    "đưa ra quyết định cuối cùng sau cuộc họp.",
+    "cùng nhau đưa ra quyết định cuối cùng.",
+    "đưa ra quyết định sau khi xem kỹ chi tiết.",
+    "đưa ra quyết định cuối cùng trước thứ Sáu."
+  ],
+  "think things through": [
+    "suy nghĩ thấu đáo trước khi quyết định.",
+    "cùng gia đình suy nghĩ kỹ mọi việc.",
+    "suy nghĩ thấu đáo trước khi thay đổi.",
+    "suy nghĩ kỹ thay vì vội vàng.",
+    "suy nghĩ thấu đáo từng bước."
   ]
+
 };
