@@ -61,6 +61,8 @@ jobs:
           node --check data/english/patterns/specs-13-80.js
           node --check data/english/patterns/curriculum-13-80.js
           node --check scripts/test-patterns-13-80.mjs
+          node --check data/english/patterns/supplements-13-80.js
+          node --check scripts/test-pattern-supplements-13-80.mjs
           node --check data/english/active-study-packs.js
           node --check data/english/chunk-usage-vi.js
           node --check cloud-sync.js
@@ -99,6 +101,10 @@ jobs:
       - name: Test English patterns 13–80
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-patterns-13-80.mjs
+
+      - name: Test enriched supplementary chunks for Patterns 13–80
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-pattern-supplements-13-80.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
