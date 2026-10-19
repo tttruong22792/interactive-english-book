@@ -167,6 +167,21 @@ window.CONTENT_INDEX = [
     featured: true
   },
   {
+    id: "en-pattern-012",
+    language: "en",
+    category: "patterns",
+    order: 12,
+    title: "I have to…",
+    meaning: "Tôi phải…",
+    description: "Nói về trách nhiệm, quy định, thời hạn và những việc buộc phải làm; kèm 40 câu và Chunk Family.",
+    status: "available",
+    renderer: "english-pattern",
+    source: "./data/english/patterns/012.js",
+    route: "lesson/12",
+    accent: "purple",
+    featured: true
+  },
+  {
     id: "ja-daily-001",
     language: "ja",
     category: "n2-grammar",
