@@ -293,3 +293,16 @@ html.vocab-trainer-open .vocab-trainer-root{
 @media(prefers-reduced-motion:reduce){
  .app-shell *, .app-shell *:before,.app-shell *:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+/* Short phone heights keep all controls reachable inside the workspace. */
+@media(max-width:760px) and (max-height:675px){
+  .native-chunk-hub .vocab-hub-screen:has(.chunk-app-dashboard){overflow-y:auto;overscroll-behavior:contain}
+  .chunk-app-dashboard{height:auto;min-height:380px;grid-template-rows:minmax(185px,1fr) auto auto}
+}
+@media(max-width:620px){
+  html.vocab-keyboard-open .vocab-trainer-root .chunk-study-card{
+    min-height:max(340px,calc(var(--vocab-visual-height,100dvh) - 150px));
+    padding-top:76px
+  }
+  html.vocab-keyboard-open .vocab-trainer-root .vocab-trainer-stage{padding-bottom:24px}
+}
