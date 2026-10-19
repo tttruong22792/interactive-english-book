@@ -275,8 +275,10 @@
     return rest||clean(fullVi);
   }
 
+  const supplementalCache=new WeakMap();
   function usageSupplementChunks(pack){
     if(!pack) return [];
+    if(supplementalCache.has(pack)) return supplementalCache.get(pack);
     const parents=studyChunks(pack).filter(card=>card.kind!=='building');
     const grouped=new Map();
 
@@ -367,7 +369,9 @@
       });
     });
 
-    return [...grouped.values()];
+    const result=[...grouped.values()];
+    supplementalCache.set(pack,result);
+    return result;
   }
 
   function trainerDefaults(){
