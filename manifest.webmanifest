@@ -1,19 +1,42 @@
 {
-  "name":"Language Studio – English + Japanese",
-  "short_name":"Language Studio",
-  "description":"Interactive self-study platform for English, Japanese, vocabulary, listening and speaking.",
-  "start_url":"./index.html#home",
-  "scope":"./",
-  "display":"standalone",
-  "orientation":"any",
-  "background_color":"#f4f0e8",
-  "theme_color":"#8f7cf7",
-  "lang":"vi",
-  "icons":[{"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],
-  "shortcuts":[
-    {"name":"English","url":"./index.html#patterns"},
-    {"name":"Japanese","url":"./index.html#japanese"},
-    {"name":"Saved Vocabulary","url":"./index.html#vocab"},
-    {"name":"Practice","url":"./index.html#practice"}
+  "name": "Language Studio – English + Japanese",
+  "short_name": "Language Studio",
+  "description": "Interactive self-study platform for English, Japanese, vocabulary, listening and speaking.",
+  "start_url": "./index.html#vocab",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f7fb",
+  "theme_color": "#f7f7fb",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Cụm chủ động",
+      "short_name": "Cụm",
+      "url": "./index.html#vocab"
+    },
+    {
+      "name": "Hôm nay 25 phút",
+      "short_name": "Hôm nay",
+      "url": "./index.html#daily"
+    },
+    {
+      "name": "80 mẫu câu",
+      "short_name": "Mẫu câu",
+      "url": "./index.html#patterns"
+    },
+    {
+      "name": "Tiếng Nhật",
+      "short_name": "Japanese",
+      "url": "./index.html#japanese"
+    }
   ]
 }
