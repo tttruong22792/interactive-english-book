@@ -306,3 +306,13 @@ html.vocab-trainer-open .vocab-trainer-root{
   }
   html.vocab-keyboard-open .vocab-trainer-root .vocab-trainer-stage{padding-bottom:24px}
 }
+
+/* Only while typing outside Chunk Trainer: make the visible iPhone viewport the workspace. */
+@media(max-width:760px){
+  html.ls-app-keyboard-open #app.app-shell{
+    height:var(--ls-app-visual-height,100dvh);
+    max-height:var(--ls-app-visual-height,100dvh)
+  }
+  html.ls-app-keyboard-open .app-shell .bottom-nav{display:none}
+  html.ls-app-keyboard-open .app-shell .main-view{margin-bottom:0;padding-bottom:20px}
+}
