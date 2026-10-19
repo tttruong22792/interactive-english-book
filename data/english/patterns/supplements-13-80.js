@@ -112,7 +112,11 @@ function extractSentence(pair,p){
  if(/^Let me know\b/i.test(en)){phrase=tidy(en);meaning=tidy(vi.replace(/^Hãy\s+/i,""));}
  if(/^i(?:'ll|\b)/.test(phrase))phrase=phrase[0].toUpperCase()+phrase.slice(1);
  if(phrase.length<8||phrase.split(/\s+/).length<2||phrase.split(/\s+/).length>12)return null;
- if(meaning.length<5)return null;
+ if(p.n===55&&/^As soon as I get home\b/i.test(en))meaning="về đến nhà";
+ if(p.n===77&&/^It reminds me of the first time we met\b/i.test(en))meaning="lần đầu chúng ta gặp nhau";
+ if(p.n===65&&/^i saved a copy$/i.test(phrase))phrase="I saved a copy";
+ if(p.n===22&&/give me a hand with this/i.test(phrase))meaning="giúp tôi một tay với việc này";
+  if(meaning.length<5)return null;
  if(/\b(?:the|a|to|of|and|or|if|when|with)$/i.test(phrase))return null;
  if(/[.?!]/.test(phrase))return null;
  return [phrase.charAt(0).toLowerCase()+phrase.slice(1),meaning.charAt(0).toLowerCase()+meaning.slice(1),pair[0],pair[1]];
@@ -221,7 +225,7 @@ function contextual(p,action,meaning){
    [prefix,viPrefix]=patterns[p.kind]||['I need to ','Tôi cần '];
    if(['used-ing','busy','responsible'].includes(p.kind))verb=ing(action);
  }
- const q=/^(?:Is |Are |Do |Did |When |How |Can |Could |May |Will |Shall |Would |Why )/i.test(prefix);
+ const q=/^(?:Is |Are |Do |Did |When |How |What |Can |Could |May |Will |Shall |Would |Why )/i.test(prefix);
  let english=prefix+verb;
  if(p.kind==='as-soon'||p.kind==='after')english+=", I'll let you know";
  else if(p.kind==='before')english+=", make sure everything is ready";
