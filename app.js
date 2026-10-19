@@ -470,8 +470,9 @@
       bindGenericRoutes();
     }
     updateGlobalUI();
+    // The v53 app shell scrolls the workspace rather than the browser window.
+    $('#mainView').scrollTop=0;
     $('#mainView').focus({preventScroll:true});
-    window.scrollTo({top:0, behavior:'instant'});
   }
 
   async function ensureContent(id){
