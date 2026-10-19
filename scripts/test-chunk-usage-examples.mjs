@@ -31,7 +31,7 @@ for(const pack of packs){
   }
 }
 
-assert.equal(important,110,'Expected 10 important chunks across 11 lessons');
+assert.equal(important,120,'Expected 10 important chunks across 12 lessons');
 assert.deepEqual(
   Array.from(usage['take a closer look']),
   [
@@ -52,4 +52,4 @@ assert.deepEqual(
     'suy nghĩ kỹ rồi phản hồi lại cho tôi.'
   ]
 );
-console.log('PASS: 110 important chunk cards have five EN examples and five Vietnamese meanings');
+console.log('PASS: 120 important chunk cards have five EN examples and five Vietnamese meanings');
