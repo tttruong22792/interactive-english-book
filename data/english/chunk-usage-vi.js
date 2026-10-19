@@ -729,3 +729,9 @@ window.CHUNK_USAGE_EXAMPLE_VI = {
   ]
 
 };
+
+
+/* Phrase meanings corresponding to the expanded 80-pattern Chunk Families. */
+if(window.BULK_CHUNK_USAGE_VI){
+  Object.assign(window.CHUNK_USAGE_EXAMPLE_VI,window.BULK_CHUNK_USAGE_VI);
+}

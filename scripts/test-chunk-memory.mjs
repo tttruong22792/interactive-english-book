@@ -4,6 +4,8 @@ import {runInNewContext} from 'node:vm';
 
 const context={window:{},console,Date,Math,Set,Map,Array,Object,String,Number,RegExp,JSON};
 for(const file of [
+  '../data/english/patterns/specs-13-80.js',
+  '../data/english/patterns/curriculum-13-80.js',
   '../data/english/active-study-packs.js',
   '../data/english/chunk-usage-vi.js',
   '../vocabulary-trainer.js'
@@ -15,7 +17,7 @@ const trainer=context.window.VocabularyTrainer;
 assert.ok(trainer?.recordMemory,'Memory recall recorder is exported');
 
 const packs=trainer.packs();
-assert.equal(packs.length,12,'Expected 12 English pattern packs');
+assert.equal(packs.length,80,'Expected 80 English pattern packs');
 
 const important=[];
 for(const pack of packs){
@@ -25,7 +27,7 @@ for(const pack of packs){
   important.push(...cards);
 }
 
-assert.equal(important.length,120,'Expected 120 important chunk occurrences across lessons');
+assert.equal(important.length,800,'Expected 120 important chunk occurrences across lessons');
 const unique=new Map(important.map(card=>[String(card.baseEn).toLowerCase(),card]));
 assert.ok(unique.size>=94,'Preserve 94 unique chunks');
 

@@ -19,6 +19,8 @@ const context={
 
 for(const file of [
   '../data/english/tenses.js',
+  '../data/english/patterns/specs-13-80.js',
+  '../data/english/patterns/curriculum-13-80.js',
   '../data/english/active-study-packs.js',
   '../data/english/chunk-usage-vi.js',
   '../vocabulary-trainer.js',
@@ -78,7 +80,7 @@ for(const examples of Object.values(usage)){
     assert.ok(item.modules.includes('chunks'),'Chunk source tag missing: '+en);
   }
 }
-assert.equal(usageCount,520,'Expected all 520 practical chunk examples');
+assert.equal(usageCount,895,'Expected 895 practical chunk examples across 80 lessons');
 
 const guide=context.window.TENSES_GUIDE||{};
 const tensePairs=[];

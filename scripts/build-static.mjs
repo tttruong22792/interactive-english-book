@@ -157,7 +157,8 @@ const sourceMatches = [...indexSource.matchAll(/source:\s*"([^"]+\.js)"/g)]
 const runtimeFiles = [
   "data/content-index.js",
   "data/content-loader.js",
-  "data/english/core-dictionary.js",
+  "data/english/patterns/specs-13-80.js",
+    "data/english/core-dictionary.js",
   "data/english/tenses.js",
   "platform-data.js",
   "catalog.js",
@@ -231,13 +232,18 @@ await writeFile(join(dist, "runtime-20261019-app-v53.js"), runtimeSource, "utf8"
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
 const context = vm.createContext({ window: { CONTENT_REGISTRY: {} } });
 {
+  const specs = await readFile(join(root, "data/english/patterns/specs-13-80.js"),"utf8");
+  vm.runInContext(specs,context,{filename:"data/english/patterns/specs-13-80.js"});
+}
+
+{
   const dictionarySource = await readFile(join(root, "data/english/core-dictionary.js"), "utf8");
   vm.runInContext(dictionarySource, context, { filename: "data/english/core-dictionary.js" });
 
   const tensesSource = await readFile(join(root, "data/english/tenses.js"), "utf8");
   vm.runInContext(tensesSource, context, { filename: "data/english/tenses.js" });
 }
-for (const relative of sourceMatches.filter((p) => p.startsWith("data/english/patterns/"))) {
+for (const relative of [...new Set(sourceMatches.filter((p) => p.startsWith("data/english/patterns/")))]) {
   const source = await readFile(join(root, relative), "utf8");
   vm.runInContext(source, context, { filename: relative });
 }
