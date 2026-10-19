@@ -44,7 +44,7 @@ const prep=["before dinner","after the meeting","on the way home","as soon as po
 const prepVi=["trước bữa tối","sau cuộc họp","trên đường về nhà","sớm nhất có thể","trước cuối ngày","trước thứ Sáu","cuối tuần này","lát nữa hôm nay","khi tôi có thời gian","khi mọi người đã sẵn sàng"];
 const irreg={be:["being","been"],get:["getting","gotten"],go:["going","gone"],take:["taking","taken"],make:["making","made"],give:["giving","given"],come:["coming","come"],see:["seeing","seen"],buy:["buying","bought"],write:["writing","written"],do:["doing","done"],have:["having","had"],find:["finding","found"],leave:["leaving","left"],think:["thinking","thought"],spend:["spending","spent"],set:["setting","set"],keep:["keeping","kept"],pay:["paying","paid"],send:["sending","sent"],drive:["driving","driven"],put:["putting","put"],choose:["choosing","chosen"],build:["building","built"],catch:["catching","caught"],meet:["meeting","met"]};
 function gerund(v){
-  const p=v.split(" ");const first=p.shift();let g=irreg[first]?.[0];
+  const p=v.split(" ");const first=p.shift();let g=irreg[first]?.[0];if(first==="cut")g="cutting";
   if(!g){g=/ie$/.test(first)?first.slice(0,-2)+"ying":/[^e]e$/.test(first)?first.slice(0,-1)+"ing":/^(stop|plan|run|sit|swim)$/.test(first)?first+first.slice(-1)+"ing":first+"ing";}
   return [g,...p].join(" ");
 }
@@ -246,10 +246,10 @@ for(const p of SPECS){
   buildingBlocks:chunks.slice(0,5).map(c=>[c[0],c[1],full.find(x=>x[0]===c[0])[2],full.find(x=>x[0]===c[0])[3]])};
  W.BULK_PATTERN_PACKS[id]=pack;
  for(const c of chunks){
-   const key=lc(c[0]);
+   const key=c[0].toLowerCase();
    if(!W.BULK_CHUNK_USAGE[key]){
-     W.BULK_CHUNK_USAGE[key]=[upper(c[0])+".","I need to "+c[0]+".","Could you "+c[0]+"?","I'm going to "+c[0]+" tomorrow.","We should "+c[0]+" before Friday."];
-     W.BULK_CHUNK_USAGE_VI[key]=[upper(c[1])+".","Tôi cần "+c[1]+".","Bạn có thể "+c[1]+" không?","Ngày mai tôi sẽ "+c[1]+".","Chúng ta nên "+c[1]+" trước thứ Sáu."];
+     W.BULK_CHUNK_USAGE[key]=[upper(c[0])+".","I need to "+c[0]+".","Could you "+c[0]+"?","I'm going to "+c[0]+".","We should "+c[0]+"."];
+     W.BULK_CHUNK_USAGE_VI[key]=[upper(c[1])+".","Tôi cần "+c[1]+".","Bạn có thể "+c[1]+" không?","Tôi sẽ "+c[1]+".","Chúng ta nên "+c[1]+"."];
    }
  }
 }
