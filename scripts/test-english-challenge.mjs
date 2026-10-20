@@ -72,17 +72,26 @@ for(const row of lessonRows){
 const shadow=byEn.get("i'd like to take a closer look.");
 assert.ok(shadow?.modules.includes('shadowing'),'Shadowing example must be present');
 
-const usage=context.window.CHUNK_USAGE_EXAMPLES||{};
+// Only the globally owned learnable chunks belong in the practice challenge.
+// Historical example sources may remain for backwards compatibility without
+// reappearing as duplicated learning cards in a different lesson.
+const owned=context.window.VocabularyTrainer.packs().flatMap(pack=>
+  context.window.VocabularyTrainer.studyChunks(pack).filter(card=>card.kind==='main')
+);
+assert.equal(owned.length,800,'80 lessons each own ten main chunks');
 let usageCount=0;
-for(const examples of Object.values(usage)){
-  for(const en of examples){
+for(const card of owned){
+  for(const example of card.usageExamples||[]){
+    const en=typeof example==='string'?example:example?.en;
+    const vi=typeof example==='string'?'':example?.vi;
+    assert.ok(en&&vi,'Bilingual example missing: '+card.baseEn);
     usageCount++;
     const item=byEn.get(String(en).toLowerCase().replace(/[’]/g,"'"));
-    assert.ok(item,'Every five-use chunk example must be in Challenge: '+en);
+    assert.ok(item,'Learnable five-use example must be in Challenge: '+en);
     assert.ok(item.modules.includes('chunks'),'Chunk source tag missing: '+en);
   }
 }
-assert.ok(usageCount>=895,'Preserve all previous five-use examples while expanding unique chunks');
+assert.equal(usageCount,4000,'Exactly 4000 contextual examples for 800 owned main chunks');
 
 const guide=context.window.TENSES_GUIDE||{};
 const tensePairs=[];
