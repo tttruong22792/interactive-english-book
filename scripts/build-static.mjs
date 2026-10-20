@@ -165,12 +165,14 @@ const runtimeFiles = [
   "ai-tts.js",
   ...sourceMatches,
   "data/english/patterns/supplements-13-80.js",
+  "data/english/unique-chunk-bank.js",
   "cloud-sync.js",
   "ai-coach.js",
   "personalization-engine.js",
   "data/english/active-study-packs.js",
   "data/english/chunk-usage-vi.js",
   "vocabulary-trainer.js",
+  "data/english/unique-study-chunks.js",
   "shadowing-v2.js",
   "chunk-listener.js",
   "english-challenge.js",
@@ -349,6 +351,10 @@ Object.keys(context.window.CORE_DICTIONARY || {}).forEach((word) => {
   vm.runInContext(usageViSource, context, { filename: "data/english/chunk-usage-vi.js" });
   const trainerSource = await readFile(join(root, "vocabulary-trainer.js"), "utf8");
   vm.runInContext(trainerSource, context, { filename: "vocabulary-trainer.js" });
+  for (const relative of ["data/english/unique-chunk-bank.js", "data/english/unique-study-chunks.js"]) {
+    const code=await readFile(join(root,relative),"utf8");
+    vm.runInContext(code,context,{filename:relative});
+  }
   Object.values(context.window.ACTIVE_STUDY_PACKS || {}).forEach((pack) => {
     (context.window.VocabularyTrainer?.usageSupplementChunks?.(pack) || []).forEach((card) => {
       if (typeof card?.baseEn === "string" && card.baseEn.trim()) {
