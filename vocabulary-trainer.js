@@ -369,7 +369,9 @@
       });
     });
 
-    const result=[...grouped.values()];
+    const allowed=Array.isArray(pack.allowedSupplementKeys)
+      ?new Set(pack.allowedSupplementKeys.map(normalize)):null;
+    const result=[...grouped.values()].filter(card=>!allowed||allowed.has(normalize(card.baseEn)));
     supplementalCache.set(pack,result);
     return result;
   }
@@ -397,7 +399,12 @@
   }
 
   function progressFor(card,saved=env?.state?.saved||{}){
-    const raw=saved?.[card.key]?.trainer||{};
+    const aliasKeys=window.CHUNK_CANONICAL_SAVED_ALIASES?.[card.key]||[];
+    const record=[card.key,...aliasKeys]
+      .map(key=>saved?.[key]).filter(item=>item?.trainer)
+      .sort((a,b)=>Number(b.trainer?.reviewCount||0)-Number(a.trainer?.reviewCount||0)||
+        Number(b.trainer?.updatedAt||0)-Number(a.trainer?.updatedAt||0))[0];
+    const raw=record?.trainer||{};
     const base=trainerDefaults();
     const next={
       ...base,
@@ -1942,6 +1949,7 @@
     packs,
     studyChunks,
     usageSupplementChunks,
+    progressFor,
     usageVariablePart,
     recordMemory,
     usageExampleMarkup,
