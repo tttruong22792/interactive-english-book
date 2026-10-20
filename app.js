@@ -2158,7 +2158,7 @@
     }
 
     function chunkMemoryRecall(group){
-      return Math.max(0,...group.cards.map(card=>Number(state.saved?.[card.key]?.trainer?.skills?.recall||0)));
+      return Math.max(0,...group.cards.map(card=>Number(window.VocabularyTrainer?.progressFor?.(card,state.saved)?.skills?.recall||0)));
     }
 
     function chunkMemoryScreen(){

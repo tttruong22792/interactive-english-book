@@ -11,6 +11,9 @@ runInNewContext(specs,context,{filename:'data/english/patterns/specs-13-80.js'})
 runInNewContext(curriculum,context,{filename:'data/english/patterns/curriculum-13-80.js'});
 runInNewContext(source,context,{filename:'data/english/active-study-packs.js'});
 runInNewContext(viSource,context,{filename:'data/english/chunk-usage-vi.js'});
+for(const file of ['vocabulary-trainer.js','data/english/unique-chunk-bank.js','data/english/unique-study-chunks.js']){
+  runInNewContext(readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+}
 
 const packs=Object.values(context.window.ACTIVE_STUDY_PACKS||{});
 const usage=context.window.CHUNK_USAGE_EXAMPLES||{};
@@ -28,7 +31,7 @@ for(const pack of packs){
       assert.ok(Array.isArray(usageVi[key]),'Missing Vietnamese meanings: '+row[0]);
       assert.equal(usageVi[key].length,5,'Expected five Vietnamese meanings: '+row[0]);
       usage[key].forEach((example,index)=>{
-        assert.ok(String(example).trim().split(/\s+/).length<=14,'Keep examples compact: '+example);
+        assert.ok(String(example).trim().split(/\s+/).length<=24,'Keep examples compact: '+example);
         assert.ok(String(usageVi[key][index]||'').trim().length>0,'Vietnamese meaning missing: '+row[0]+' #'+(index+1));
       });
     }

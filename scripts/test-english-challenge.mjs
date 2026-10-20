@@ -24,6 +24,8 @@ for(const file of [
   '../data/english/active-study-packs.js',
   '../data/english/chunk-usage-vi.js',
   '../vocabulary-trainer.js',
+  '../data/english/unique-chunk-bank.js',
+  '../data/english/unique-study-chunks.js',
   '../english-challenge.js'
 ]){
   const source=readFileSync(new URL(file,import.meta.url),'utf8');
@@ -80,7 +82,7 @@ for(const examples of Object.values(usage)){
     assert.ok(item.modules.includes('chunks'),'Chunk source tag missing: '+en);
   }
 }
-assert.equal(usageCount,895,'Expected 895 practical chunk examples across 80 lessons');
+assert.ok(usageCount>=895,'Preserve all previous five-use examples while expanding unique chunks');
 
 const guide=context.window.TENSES_GUIDE||{};
 const tensePairs=[];

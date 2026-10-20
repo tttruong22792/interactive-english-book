@@ -8,7 +8,9 @@ for(const file of [
   '../data/english/patterns/curriculum-13-80.js',
   '../data/english/active-study-packs.js',
   '../data/english/chunk-usage-vi.js',
-  '../vocabulary-trainer.js'
+  '../vocabulary-trainer.js',
+  '../data/english/unique-chunk-bank.js',
+  '../data/english/unique-study-chunks.js'
 ]){
   runInNewContext(readFileSync(new URL(file,import.meta.url),'utf8'),context,{filename:file});
 }
@@ -27,16 +29,16 @@ for(const pack of packs){
   important.push(...cards);
 }
 
-assert.equal(important.length,800,'Expected 120 important chunk occurrences across lessons');
+assert.equal(important.length,800,'Expected 800 important chunks across 80 lessons');
 const unique=new Map(important.map(card=>[String(card.baseEn).toLowerCase(),card]));
-assert.ok(unique.size>=94,'Preserve 94 unique chunks');
+assert.equal(unique.size,800,'All 800 main chunks must be different across 80 lessons');
 
 const supplements=packs.flatMap(pack=>trainer.usageSupplementChunks(pack));
-assert.ok(supplements.length>=508,'Preserve all existing supplement cards');
+assert.equal(supplements.length,3200,'Each lesson owns exactly 40 supplement cards');
 const supplementUnique=new Map(supplements.map(card=>[String(card.baseEn).toLowerCase(),card]));
-assert.ok(supplementUnique.size>=383,'Preserve unique supplements');
+assert.equal(supplementUnique.size,3200,'All 3200 supplemental chunks must be distinct');
 const combined=new Map([...important,...supplements].map(card=>[String(card.baseEn).toLowerCase(),card]));
-assert.ok(combined.size>=476,'Preserve all existing combined chunks');
+assert.equal(combined.size,4000,'Zero duplicates between main and supplemental chunks');
 
 for(const expected of ['for five minutes','after this','before we continue','from work','and get some fresh air']){
   assert.ok(supplementUnique.has(expected),'Missing highlighted supplement: '+expected);
@@ -68,4 +70,4 @@ assert.match(supplementCard.contextEn,/Take a break for five minutes/i);
 trainer.recordMemory(env,supplementCard,true);
 assert.ok(env.state.saved[supplementCard.key].trainer.skills.recall>=1,'Supplement recall is tracked independently');
 
-console.log('PASS: Memory deck = 94 main + 383 highlighted supplements / 476 unique combined; VI→EN ratings update Recall progress.');
+console.log('PASS: 800 main + 3200 supplementary = 4000 unique chunks across 80 lessons; VI→EN recall works.');
