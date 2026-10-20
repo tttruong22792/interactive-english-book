@@ -36,8 +36,8 @@ for(const pack of packs){
  added+=pack.supplementChunks.length;
 }
 assert.ok(prior.every(x=>x>=30),'Earlier lessons 1–12 retain their rich supplemental examples');
-assert.equal(added,68*44,'Forty-four new carefully contextualized chunks per lesson');
+assert.equal(added,68*40,'Forty distinct supplemental chunks per lesson after global assignment');
 const example=packs.find(p=>p.order===13);
 assert.ok(trainer.usageSupplementChunks(example).some(x=>x.baseEn==='take a closer look at the report'));
 assert.ok(trainer.usageSupplementChunks(example).some(x=>x.baseEn==='let me know if anything changes'));
-console.log('PASS: lessons 13–80 each have 48–52 supplementary chunks; old lessons and saved keys preserved');
+console.log('PASS: lessons 13–80 each have 40 non-repeating supplemental chunks, old saved keys aliased');
