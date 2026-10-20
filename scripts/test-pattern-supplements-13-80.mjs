@@ -8,7 +8,9 @@ for(const path of [
  '../data/english/patterns/supplements-13-80.js',
  '../data/english/active-study-packs.js',
  '../data/english/chunk-usage-vi.js',
- '../vocabulary-trainer.js'
+ '../vocabulary-trainer.js',
+ '../data/english/unique-chunk-bank.js',
+ '../data/english/unique-study-chunks.js'
 ]){
  runInNewContext(readFileSync(new URL(path,import.meta.url),'utf8'),ctx,{filename:path});
 }
