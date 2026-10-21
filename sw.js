@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v95-reading-v57';
+const APP_CACHE='language-studio-v96-easy-play-v58';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,9 +8,10 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261021-reading-v57.js',
+  './runtime-20261022-easy-play-v58.js',
   './app-shell-v53.css',
   './reading-studio.css',
+  './easy-play-theme-v58.css',
   './manifest.webmanifest',
   './icons/icon.svg'
 ];

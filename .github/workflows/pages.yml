@@ -77,6 +77,7 @@ jobs:
           node --check daily-learning-v52.js
           node --check scripts/test-daily-v52.mjs
           node --check scripts/test-app-shell-v53.mjs
+          node --check scripts/test-easy-play-theme-v58.mjs
 
       - name: Test listening lesson switching
         if: steps.head_guard.outputs.deploy == 'true'
@@ -105,6 +106,10 @@ jobs:
       - name: Test v53 app shell and navigation
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-app-shell-v53.mjs
+
+      - name: Verify Easy Play v58 responsive design and app navigation
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-easy-play-theme-v58.mjs
 
       - name: Test English patterns 13–80
         if: steps.head_guard.outputs.deploy == 'true'
