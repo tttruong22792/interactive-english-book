@@ -164,3 +164,8 @@
 @media(prefers-reduced-motion:reduce){
  .reading-shell *{scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
+
+/* Reading becomes the fifth global app tab, without hiding any existing route. */
+@media(max-width:760px){
+ .app-shell .bottom-nav.mobile-only{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
