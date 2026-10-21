@@ -170,6 +170,7 @@ function daily(state,now=Date.now()){
  const reviewCompleted=reviewRemaining.length===0;
  const patternSuccess=all.filter(p=>mission.patternProof[p.lessonId]?.passed).length;
  const reviewSuccess=all.filter(p=>mission.patternProof[p.lessonId]?.reviewPassed).length;
+ const attempted=cards.filter(c=>proofStatus(mission.chunkProof[c.key],today).seen).length;
  const certified=cards.filter(c=>proofStatus(mission.chunkProof[c.key],today).passed).length;
  const mastered=cards.filter(c=>proofStatus(mission.chunkProof[c.key],today).mastered).length;
  const readSuccess=stories.filter(s=>mission.readingProof[s.id]?.passed).length;
@@ -192,7 +193,7 @@ function daily(state,now=Date.now()){
   cards,all,stories,pending,todayChunks,chunkTodayDone,backlog,
   reviews,dueTotal:due.length,reviewCompleted,reviewRemaining,
   todaysPacks,pendingPatterns,patternTodayDone,readingToday,pendingReading,
-  patternSuccess,reviewSuccess,certified,mastered,readSuccess,
+  patternSuccess,reviewSuccess,attempted,certified,mastered,readSuccess,
   accuracy,eventsToday,dayPassed};
 }
 window.Mission60Core={TOTAL_DAYS,normalize,equal,localDay,after,elapsed,fixedQuota,planDay,
