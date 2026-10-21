@@ -58,6 +58,7 @@ function assess(expected,answer){
  return Boolean(left&&right&&left===right);
 }
 function saveAttempt(p,day,answers,focus){
+ if(p.passed[day])return {at:p.passed[day],correct:focus.length,total:focus.length,passed:true,results:[]};
  let correct=0;const results=focus.map((card,i)=>{
   const valid=assess(card.baseEn,answers[i]||"");
   if(valid)correct++;
@@ -99,8 +100,8 @@ function renderPlan(content,p,day,info){
  (locked?'<div class="plan60-lock">Ngày '+day+' chưa mở. Phải vượt bài kiểm tra ngày '+cur+' trước. Không có nút bỏ qua.</div>':
  '<div class="plan60-daily"><div class="plan60-title"><span>🎯</span><div><h2>Nhiệm vụ ngày '+day+'</h2><p>Học theo đúng thứ tự: nạp đầu vào → nhớ lại → kiểm tra → ôn.</p></div></div>'+
  task('01 · Học mẫu câu',spec.patterns.length?spec.patterns.map(n=>'Mẫu '+n).join(' và '):'Ôn toàn bộ mẫu câu đã học',
- spec.patterns.length?'lesson/'+spec.patterns[0]:'patterns','🧩',past)+
- task('02 · Tiếp xúc cụm từ','67 cụm / ngày · đã lên danh sách theo thứ tự bài','vocab','📚',Boolean(p.covered[day]))+
+ spec.patterns.length?'lesson/'+spec.patterns[0]:'patterns','🧩',false)+
+ task('02 · Tiếp xúc cụm từ',spec.exposure.length+' cụm / ngày · theo thứ tự toàn kho','vocab','📚',Boolean(p.covered[day]))+
  task('03 · Nghe & đọc','Một bài đọc vào ngày chẵn; xen kẽ ôn câu đã học',spec.story?'reading/'+spec.story.id:'reading','🎧',Boolean(p.readings[day]))+
  task('04 · Ôn đến hạn','Cụm đến lịch: '+reviewDue(content,env.state).length+' · phải luyện tự nhớ','vocab','🔁',false)+
  task('05 · Kiểm tra không gợi ý','12 cụm Việt → Anh; cần đúng ít nhất 11/12. Sai thì luyện và thi lại.',null,'🏁',past)+
