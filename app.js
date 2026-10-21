@@ -461,7 +461,8 @@
     setNavActive(r.name==='vocab'?'vocab':['lesson','tenses','shadowing','practice','challenge'].includes(r.name)?'patterns':r.name);
     try {
       if (r.name === 'home') renderHome();
-      else if (r.name === 'daily') renderDailyV52();
+      else if (r.name === 'daily') renderMission60();
+      else if (r.name === 'coach') renderDailyV52();
       else if (r.name === 'reading') renderReadingStudio(r.id);
       else if (r.name === 'patterns') renderPatterns();
       else if (r.name === 'tenses') renderTenses();
@@ -527,6 +528,14 @@
     },id);
   }
 
+  function renderMission60(){
+    if(!window.Mission60UI?.render){
+      setHeader('Hôm nay','Lộ trình chưa được tải');
+      $('#mainView').innerHTML='<section class="page-hero"><h1>Chưa tải được kế hoạch 60 ngày</h1><p>Hãy tải lại ứng dụng.</p></section>';
+      return;
+    }
+    window.Mission60UI.render({main:$('#mainView'),state,saveState,setHeader,speak,toast});
+  }
   function renderDailyV52(){
     if(!window.DailyLearningV52?.render){
       setHeader('English › Hôm nay','Chưa tải được v52');
@@ -552,9 +561,9 @@
     const due=Math.max(0,Number(current.due)||0);
     const readDone=Object.values(state.readingStudio?.items||{}).filter(item=>item?.completed).length;
     const choices=[
-      {icon:'🎯',title:'Cụm chủ động',desc:'Nhớ và sử dụng cụm từ trong tình huống thật',route:'vocab'},
+      {icon:'☀️',title:'Kế hoạch 60 ngày',desc:'Hôm nay cần học gì và kết quả kiểm tra ra sao',route:'daily'},
+      {icon:'🎯',title:'Cụm chủ động',desc:'Luyện sâu các cụm từ được phân bổ mỗi ngày',route:'vocab'},
       {icon:'📚',title:'Đọc & Nghe',desc:'Bài đọc, nghe từng câu và kiểm tra hiểu bài',route:'reading'},
-      {icon:'☀️',title:'Học hôm nay',desc:'Lộ trình học và ôn tập trong 25 phút',route:'daily'},
       {icon:'🧩',title:'80 mẫu câu',desc:'Học mẫu câu rồi ghép với cụm đã biết',route:'patterns'},
       {icon:'🎧',title:'Shadowing',desc:'Nghe, bắt chước nhịp và nói tự nhiên',route:'shadowing'},
       {icon:'🏅',title:'Thử thách',desc:'Kiểm tra phản xạ từ các bài đã học',route:'challenge'}
@@ -571,7 +580,7 @@
           '<div><span class="easy-play-kicker">LANGUAGE STUDIO · PLAY & LEARN</span>'+
             '<h1>Một chút mỗi ngày.<br>Tiếng Anh sẽ thành phản xạ.</h1>'+
             '<p>Chọn một hoạt động, học theo từng lượt ngắn và dùng cụm từ trong cuộc sống thực tế.</p>'+
-            '<button type="button" class="easy-play-go" data-go="vocab">▶ Bắt đầu với Cụm chủ động</button>'+
+            '<button type="button" class="easy-play-go" data-go="daily">▶ Mở kế hoạch học hôm nay</button>'+
           '</div><div class="easy-play-home-icon" aria-hidden="true">📖</div>'+
         '</header>'+
         '<div class="easy-play-section-title"><h2>Hôm nay bạn muốn học gì?</h2><span>Chọn một thẻ để bắt đầu</span></div>'+
@@ -3473,7 +3482,7 @@
     }
   }
   window.__LS_RENDERED=false;
-  if(!location.hash) location.hash='#vocab';
+  if(!location.hash) location.hash='#daily';
   Promise.resolve(render())
     .then(async()=>{
       window.__LS_RENDERED=true;
