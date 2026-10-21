@@ -13,7 +13,7 @@ const reading=read('reading-studio.css');
 new vm.Script(app,{filename:'app.js'});
 
 const style='easy-play-theme-v58.css';
-const runtime='runtime-20261022-easy-play-v58.js';
+const runtime='runtime-20261022-mission60-v59.js';
 assert.ok(html.includes(style+'?v=20261022-v58'),'v58 styles must load in HTML');
 assert.ok(html.indexOf(style)>html.indexOf('reading-studio.css'),'new theme must override earlier app CSS');
 assert.ok(build.includes('"'+style+'"'),'new theme must be copied to published site');
@@ -35,7 +35,7 @@ assert.ok(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),'phone h
 assert.ok(css.includes('grid-template-columns:repeat(5,minmax(0,1fr))'),'the five mobile tabs remain available');
 assert.ok(base.includes('height:100dvh')&&base.includes('overscroll-behavior-y:contain'),'full-screen app shell remains intact');
 assert.ok(reading.includes('.reading-player'),'reading controls remain installed');
-assert.ok(app.includes("if(!location.hash) location.hash='#vocab';"),'Cụm chủ động remains the default');
+assert.ok(app.includes("if(!location.hash) location.hash='#daily';"),'Daily mission is the default while chunks stay accessible');
 for(const route of ['vocab','reading','daily','patterns','shadowing','challenge']){
  assert.ok(app.includes("route:'"+route+"'"),'card for existing '+route+' module is wired');
 }
