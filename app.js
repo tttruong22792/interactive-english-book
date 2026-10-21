@@ -545,93 +545,44 @@
 
   function renderHome(){
     L=null;
-    setHeader('Trang chủ','Language Studio');
-    const pct=lessonPercent();
-    const availableEnglish=(STORE?.index||[]).filter(item=>item.language==='en'&&item.category==='patterns'&&item.status==='available').length;
-    const tracks=(PLATFORM.tracks||[]).map(trackCard).join('');
-    const indexedModules=(STORE?.index||[]).filter(item=>item.featured).map(item=>({
-      lang:item.language==='en'?'English':item.language==='ja'?'Japanese':item.language,
-      tag:item.status==='available'?'Có bài':item.status==='next'?'Tiếp theo':'Chuẩn bị',
-      title:item.title,desc:item.meaning||item.description||'',route:item.route||'home',accent:item.accent||'purple'
-    }));
-    const modules=[...indexedModules,...(PLATFORM.utilityModules||[])].map(moduleCard).join('');
-    $('#mainView').innerHTML = `
-      <section class="landing-hero">
-        <div class="hero-copy-new">
-          <div class="landing-kicker">ENGLISH · GRAMMAR · VOCABULARY · SHADOWING</div>
-          <h1 class="display-title">Học tiếng Anh theo <span class="marker marker-purple">hệ thống</span>,<br>dùng được trong <span class="marker marker-green">đời sống thật</span>.</h1>
-          <p class="hero-lead">Language Studio kết hợp mẫu câu thực tế, ngữ pháp trực quan, từ vựng có ngữ cảnh, audio tự nhiên và shadowing trong một trải nghiệm học thống nhất.</p>
-          <div class="hero-actions">
-            <button class="primary-button" data-go="daily">Học hôm nay · 25 phút →</button>
-            <button class="secondary-button" data-go="patterns">Thư viện English</button>
-            <button class="secondary-button" data-go="shadowing">Luyện Shadowing</button>
-          </div>
-          <div class="hero-mini-stats">
-            <div><strong>${availableEnglish}</strong><span>Bài mẫu câu</span></div>
-            <div><strong>12</strong><span>Thì tiếng Anh</span></div>
-            <div><strong>3</strong><span>Cấp độ Shadowing</span></div>
-          </div>
-        </div>
-        <div class="hero-showcase">
-          <div class="showcase-window">
-            <div class="window-top"><span></span><span></span><span></span><b>Interactive English Lesson</b></div>
-            <div class="showcase-body">
-              <div class="showcase-side"><div class="tiny-logo">LS</div><span class="active"></span><span></span><span></span><span></span></div>
-              <div class="showcase-main">
-                <div class="tiny-label">PATTERN LESSON</div><h3>I look forward to…</h3><p>Tôi mong chờ… / Tôi rất mong…</p>
-                <div class="mini-sentence">${sentenceRow("I look forward to working with you.","Tôi mong được làm việc cùng bạn.")}</div>
-                <div class="showcase-progress"><i style="width:72%"></i></div>
-                <div class="showcase-tags"><span>Listen</span><span>Words</span><span>Speak</span><span>Review</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="float-shape shape-a"></div><div class="float-shape shape-b"></div>
-          <div class="float-note">AI<br><small>Audio<br>Practice</small></div>
-        </div>
-      </section>
-
-      <section class="big-statement">
-        <h2>Từ hiểu câu đến <span class="marker marker-purple">nói được câu</span>.<br>Mỗi kỹ năng nằm trong <span class="marker marker-yellow">cùng một lộ trình</span>.</h2>
-        <p>Người học đi theo một vòng lặp rõ ràng: hiểu → nghe → tra từ → nói theo → tự nhớ lại → ôn tập. Mỗi module dùng chung nội dung và tiến độ học.</p>
-        <div class="scribble" aria-hidden="true">⌁⌁⌁  ↗  ⌁⌁⌁</div>
-      </section>
-
-      <section class="landing-section">
-        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING TRACKS</span><h2>Một nền tảng, nhiều kỹ năng</h2></div><p>Mẫu câu, ngữ pháp, từ vựng, luyện nghe nói và shadowing được tổ chức thành các module có thể mở rộng theo lộ trình.</p></div>
-        <div class="track-grid-new">${tracks}</div>
-      </section>
-
-      <section class="purple-band">
-        <div><span class="landing-kicker light">INTERACTIVE LEARNING</span><h2>Đọc như một cuốn sách.<br>Chạm vào là học.</h2></div>
-        <div class="band-features">
-          <div><b>01</b><strong>Nghe câu</strong><span>Click câu để phát âm và highlight từ.</span></div>
-          <div><b>02</b><strong>Tra từ</strong><span>Click một từ để xem IPA, nghĩa và ví dụ.</span></div>
-          <div><b>03</b><strong>Lưu & ôn</strong><span>Lưu từ rồi ôn lại bằng flashcard.</span></div>
-          <div><b>04</b><strong>Nói lại</strong><span>Dùng micro trong bài luyện trên trình duyệt hỗ trợ.</span></div>
-        </div>
-      </section>
-
-      <section class="landing-section">
-        <div class="landing-section-head"><div><span class="landing-kicker">LEARNING LIBRARY</span><h2>Thư viện bài học & công cụ</h2></div><p>Các bài học và công cụ luyện tập được tổ chức độc lập để dễ mở rộng thành nhiều khóa học và cấp độ.</p></div>
-        <div class="module-grid-new">${modules}</div>
-      </section>
-
-      <section class="split-promo">
-        <div class="promo-copy"><span class="landing-kicker">REAL-LIFE PATTERNS</span><h2>Học câu dùng được ngay</h2><p>Mỗi bài đi từ ý nghĩa, cách đọc và ví dụ thực tế đến luyện toàn bài và shadowing. Nội dung được thiết kế để tái sử dụng trong nhiều tình huống.</p><button class="primary-button" data-go="patterns">Xem các mẫu câu</button></div>
-        <div class="promo-preview"><div class="preview-label">Tap to listen</div>
-          ${sentenceRow("I look forward to hearing from you.","Tôi mong nhận được phản hồi từ bạn.")}
-          ${sentenceRow("I'd rather wait until tomorrow.","Tôi muốn đợi đến ngày mai hơn.")}
-          ${sentenceRow("Do you want to give it another try?","Bạn có muốn thử lại không?")}
-        </div>
-      </section>
-
-      <section class="device-banner">
-        <div><span class="landing-kicker">PHONE + PC</span><h2>Học linh hoạt trên nhiều thiết bị</h2><p>Giao diện được tối ưu cho điện thoại và máy tính. Dữ liệu học có thể sao lưu và khôi phục khi chuyển thiết bị.</p></div>
-        <button class="primary-button" data-go="settings">Dữ liệu học →</button>
-      </section>
-    `;
+    setHeader('Thư viện','Chọn hoạt động');
+    const count=window.VocabularyTrainer?.packs?.().length||80;
+    const readingCount=window.ReadingStudio?.stories?.length||30;
+    const current=window.VocabularyTrainer?.curriculumSummary?.(state.saved||{})||{};
+    const due=Math.max(0,Number(current.due)||0);
+    const readDone=Object.values(state.readingStudio?.items||{}).filter(item=>item?.completed).length;
+    const choices=[
+      {icon:'🎯',title:'Cụm chủ động',desc:'Nhớ và sử dụng cụm từ trong tình huống thật',route:'vocab'},
+      {icon:'📚',title:'Đọc & Nghe',desc:'Bài đọc, nghe từng câu và kiểm tra hiểu bài',route:'reading'},
+      {icon:'☀️',title:'Học hôm nay',desc:'Lộ trình học và ôn tập trong 25 phút',route:'daily'},
+      {icon:'🧩',title:'80 mẫu câu',desc:'Học mẫu câu rồi ghép với cụm đã biết',route:'patterns'},
+      {icon:'🎧',title:'Shadowing',desc:'Nghe, bắt chước nhịp và nói tự nhiên',route:'shadowing'},
+      {icon:'🏅',title:'Thử thách',desc:'Kiểm tra phản xạ từ các bài đã học',route:'challenge'}
+    ];
+    const cards=choices.map(c=>
+      '<button class="easy-play-activity" type="button" data-go="'+escAttr(c.route)+'">'+
+      '<span class="easy-play-activity-icon" aria-hidden="true">'+c.icon+'</span>'+
+      '<span class="easy-play-arrow" aria-hidden="true">↗</span>'+
+      '<strong>'+esc(c.title)+'</strong><small>'+esc(c.desc)+'</small></button>'
+    ).join('');
+    $('#mainView').innerHTML=
+      '<section class="easy-play-home" aria-label="Chọn hoạt động học">'+
+        '<header class="easy-play-home-hero">'+
+          '<div><span class="easy-play-kicker">LANGUAGE STUDIO · PLAY & LEARN</span>'+
+            '<h1>Một chút mỗi ngày.<br>Tiếng Anh sẽ thành phản xạ.</h1>'+
+            '<p>Chọn một hoạt động, học theo từng lượt ngắn và dùng cụm từ trong cuộc sống thực tế.</p>'+
+            '<button type="button" class="easy-play-go" data-go="vocab">▶ Bắt đầu với Cụm chủ động</button>'+
+          '</div><div class="easy-play-home-icon" aria-hidden="true">📖</div>'+
+        '</header>'+
+        '<div class="easy-play-section-title"><h2>Hôm nay bạn muốn học gì?</h2><span>Chọn một thẻ để bắt đầu</span></div>'+
+        '<div class="easy-play-activities">'+cards+'</div>'+
+        '<div class="easy-play-home-foot">'+
+          '<span>📘 '+count+' mẫu câu</span>'+
+          '<span>📖 '+readingCount+' bài đọc · '+readDone+' đã hoàn thành</span>'+
+          '<span>⏰ '+due+' cụm đến hạn ôn</span>'+
+        '</div>'+
+      '</section>';
     bindGenericRoutes();
-    hydrateSentences($('#mainView'));
   }
 
   function trackCard(item){
