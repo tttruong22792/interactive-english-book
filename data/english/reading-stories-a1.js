@@ -65,7 +65,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "get ready for school",
+      "get the kids ready for school",
       "take a closer look",
       "on my way to work"
     ]
@@ -350,7 +350,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
     ],
     "targetChunks": [
       "check the settings",
-      "ask for help",
+      "ask my friend for help",
       "restart the router"
     ]
   },
