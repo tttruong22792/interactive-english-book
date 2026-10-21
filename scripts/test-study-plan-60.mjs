@@ -20,7 +20,7 @@ for(let day=1;day<=60;day++){
  assert.equal(p.focus.length,12,'12 deep recall items/day');
  focusTotal+=p.focus.length;exposureTotal+=p.exposure.length;
  assert.ok(p.exposure.length>0);
- if(day<=40)assert.deepEqual([...p.patterns],[2*day-1,2*day]);
+ if(day<=40)assert.equal(p.patterns.join(','),[2*day-1,2*day].join(','));
  else assert.equal(p.patterns.length,0);
  assert.ok(p.story?(day%2===0):day%2===1,'Reading every second day');
  for(const x of p.focus){
