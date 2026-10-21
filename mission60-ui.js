@@ -228,8 +228,9 @@ function readingQuiz(){
 function render(nextEnv){
  if(nextEnv)env=nextEnv;
  if(!env||!Core)return;
- const m=Core.ensure(env.state);
- if(!env.state.mission60?.startDate){env.state.mission60=m;save();}
+ const hadStart=!!env.state.mission60?.startDate;
+ Core.ensure(env.state);
+ if(!hadStart)save();
  if(view==="dashboard"||!session)dashboard();else renderSession();
 }
 function resetUI(){view="dashboard";session=null;lastResult=null;showRoadmap=false;}
