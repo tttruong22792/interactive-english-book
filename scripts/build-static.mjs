@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -163,6 +163,9 @@ const runtimeFiles = [
   "platform-data.js",
   "catalog.js",
   "ai-tts.js",
+  "data/english/reading-stories-a1.js",
+  "data/english/reading-stories-a2.js",
+  "data/english/reading-stories-b1-b2.js",
   ...sourceMatches,
   "data/english/patterns/supplements-13-80.js",
   "data/english/unique-chunk-bank.js",
@@ -177,6 +180,7 @@ const runtimeFiles = [
   "chunk-listener.js",
   "english-challenge.js",
   "daily-learning-v52.js",
+  "reading-studio.js",
   "app.js"
 ];
 
@@ -234,6 +238,7 @@ await writeFile(join(dist, "runtime-20261020-patterns-80.js"), runtimeSource, "u
 await writeFile(join(dist, "runtime-20261020-patterns-80-final.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261020-chunk-rich-v54.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261020-unique-chunks-v55.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261021-reading-v56.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
@@ -302,6 +307,22 @@ function addManifestAudio(text, kind, lessonId) {
     lessonIds: lessonId ? [lessonId] : [],
     kinds: [kind]
   };
+}
+
+// 30 original graded readers share our existing cached/cloud TTS pipeline.
+// Sentence-level clips are hash-allowlisted but only generated when played.
+{
+  const readerWindow={READING_STORIES:[]};
+  const readerContext=vm.createContext({window:readerWindow});
+  for(const file of ["reading-stories-a1.js","reading-stories-a2.js","reading-stories-b1-b2.js"]){
+    const relative="data/english/"+file;
+    const source=await readFile(join(root,relative),"utf8");
+    vm.runInContext(source,readerContext,{filename:relative});
+  }
+  for(const story of readerWindow.READING_STORIES){
+    for(const row of story.lines||[])addManifestAudio(row[0],"reading-sentence",story.id);
+    for(const phrase of story.targetChunks||[])addManifestAudio(phrase,"reading-phrase",story.id);
+  }
 }
 
 // Individual dictionary words are allowed for on-demand mobile pronunciation.
