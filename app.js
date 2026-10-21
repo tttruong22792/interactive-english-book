@@ -502,8 +502,8 @@
       return;
     }
     const hydrateReadingWords=root=>{
-      $('.reading-en[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
-      $('.reading-en .word-token',root).forEach(word=>word.addEventListener('click',async e=>{
+      $$('.reading-en[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
+      $$('.reading-en .word-token',root).forEach(word=>word.addEventListener('click',async e=>{
         e.stopPropagation();
         try{
           if(!L||L.language!=='en')await ensureCoreEnglish();
