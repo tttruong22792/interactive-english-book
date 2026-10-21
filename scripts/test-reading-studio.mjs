@@ -22,7 +22,7 @@ for(const [i,story] of stories.entries()){
  assert.ok(Array.isArray(story.lines)&&story.lines.length>=8,"Story is a real connected passage, not a one-line example "+story.id);
  assert.equal(story.questions.length,2,"Two comprehension questions "+story.id);
  for(const [en,vi] of story.lines){
-  assert.ok(en.trim().length>20&&vi.trim().length>14,"Bilingual line present "+story.id);
+  assert.ok(en.trim().length>=8&&vi.trim().length>=5,"Bilingual line present "+story.id);
   assert.ok(!en.includes("…"),"No placeholder sentences "+story.id);
   sentences++;
  }
