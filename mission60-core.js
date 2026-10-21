@@ -33,7 +33,7 @@ function normalize(answer){
  return v.replace(/\s+/g," ").trim();
 }
 function equal(expected,answer){return !!String(answer||"").trim()&&normalize(expected)===normalize(answer);}
-function fresh(now=Date.now()){return {version:1,startDate:localDay(now),chunkProof:{},patternProof:{},readingProof:{},events:[]};}
+function fresh(now=Date.now()){return {version:1,startDate:localDay(now),chunkProof:{},patternProof:{},readingProof:{},reviewBatches:{},events:[]};}
 function ensure(state,now=Date.now()){
  if(!state.mission60||state.mission60.version!==1)state.mission60=fresh(now);
  return state.mission60;
@@ -141,7 +141,18 @@ function daily(state,now=Date.now()){
  const pending=chunksToDate.filter(c=>!proofStatus(mission.chunkProof[c.key],today).passed);
  const todayChunks=cards.slice(cfg.chunkStart,cfg.chunkEnd);
  const due=orderedDue(mission,today).filter(c=>!pending.some(x=>x.key===c.key));
- const reviews=due.slice(0,25);
+ // Freeze today's first 25 due cards. Without this, finishing one card would
+ // instantly pull another into its place and a day's review would never end.
+ mission.reviewBatches=mission.reviewBatches||{};
+ if(!Array.isArray(mission.reviewBatches[today])){
+   mission.reviewBatches[today]=due.slice(0,25).map(c=>c.key);
+   const keys=Object.keys(mission.reviewBatches).sort();
+   keys.slice(0,45).forEach(key=>delete mission.reviewBatches[key]);
+ }
+ const cardMap=new Map(cards.map(c=>[c.key,c]));
+ const reviews=mission.reviewBatches[today].map(key=>cardMap.get(key)).filter(Boolean);
+ const reviewRemaining=reviews.filter(card=>proofStatus(mission.chunkProof[card.key],today).due);
+
  const todaysPacks=cfg.patterns.map(n=>all.find(p=>p.order===n)).filter(Boolean);
  const pendingPatterns=Array.from({length:shownDay},(_,i)=>planDay(i+1)).flatMap(d=>d.patterns.map(n=>({order:n,review:d.patternReview})))
   .filter((p,i,list)=>list.findIndex(x=>x.order===p.order&&x.review===p.review)===i)
@@ -151,12 +162,12 @@ function daily(state,now=Date.now()){
   });
  const assignedStories=stories.slice(0,Math.floor(shownDay/2));
  const pendingReading=assignedStories.filter(st=>!mission.readingProof[st.id]?.passed);
- const dueIds=new Set(reviews.map(x=>x.key));
+
  const patternTodayDone=todaysPacks.filter(p=>patternDone(mission.patternProof[p.lessonId],cfg.patternReview)).length;
  const readingToday=cfg.reading?stories[cfg.reading-1]:null;
  const readingTodayDone=!readingToday||!!mission.readingProof[readingToday.id]?.passed;
  const chunkTodayDone=todayChunks.filter(c=>proofStatus(mission.chunkProof[c.key],today).passed).length;
- const reviewCompleted=reviews.length===0 || reviews.every(c=>!proofStatus(mission.chunkProof[c.key],today).due);
+ const reviewCompleted=reviewRemaining.length===0;
  const patternSuccess=all.filter(p=>mission.patternProof[p.lessonId]?.passed).length;
  const reviewSuccess=all.filter(p=>mission.patternProof[p.lessonId]?.reviewPassed).length;
  const certified=cards.filter(c=>proofStatus(mission.chunkProof[c.key],today).passed).length;
@@ -172,7 +183,7 @@ function daily(state,now=Date.now()){
   (accuracy===null||accuracy>=90);
  return {mission,today,day,shownDay,overdueDays:Math.max(0,day-60),cfg,
   cards,all,stories,pending,todayChunks,chunkTodayDone,backlog,
-  reviews,dueTotal:due.length,reviewCompleted,reviewRemaining:reviews.filter(c=>dueIds.has(c.key)&&proofStatus(mission.chunkProof[c.key],today).due),
+  reviews,dueTotal:due.length,reviewCompleted,reviewRemaining,
   todaysPacks,pendingPatterns,patternTodayDone,readingToday,pendingReading,
   patternSuccess,reviewSuccess,certified,mastered,readSuccess,
   accuracy,eventsToday,dayPassed};
