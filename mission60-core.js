@@ -174,7 +174,14 @@ function daily(state,now=Date.now()){
  const mastered=cards.filter(c=>proofStatus(mission.chunkProof[c.key],today).mastered).length;
  const readSuccess=stories.filter(s=>mission.readingProof[s.id]?.passed).length;
  const eventsToday=mission.events.filter(x=>x.day===today);
- const scored=eventsToday.filter(x=>!x.reveal && x.type!=='reading');
+ // Grade only the FIRST attempt for each question today. Viewing the answer
+ // counts as an error, and spamming retries cannot inflate the pass score.
+ const firstAttempts=new Map();
+ eventsToday.filter(x=>x.type!=="reading").forEach(event=>{
+  const key=event.type+":"+event.id;
+  if(!firstAttempts.has(key))firstAttempts.set(key,event);
+ });
+ const scored=[...firstAttempts.values()];
  const accuracy=scored.length?Math.round(scored.filter(x=>x.ok).length/scored.length*100):null;
  // A completed lesson plan isn't a blanket claim of language mastery.
  const backlog=pending.filter(c=>!todayChunks.some(t=>t.key===c.key));
