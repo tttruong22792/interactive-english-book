@@ -528,19 +528,13 @@
   }
 
   function renderDailyV52(){
-    if(!window.DailyLearningV52?.render){
-      setHeader('English › Hôm nay','Chưa tải được v52');
-      $('#mainView').innerHTML='<section class="page-hero"><h1>Không tải được bài Hôm nay.</h1><p>Hãy tải lại trang và kiểm tra kết nối.</p></section>';
+    const planner=window.StudyPlan60;
+    if(!planner?.render){
+      setHeader('English › Hôm nay','Chưa tải được lộ trình');
+      $('#mainView').innerHTML='<section class="page-hero"><h1>Không tải được lộ trình.</h1><p>Hãy tải lại trang.</p></section>';
       return;
     }
-    const dailyEnv={
-      state,setHeader,saveState,queueVocabUpsert,speak,startRecognition,esc,escAttr,uiIcon,toast,
-      openTrainer:(options={})=>window.VocabularyTrainer?.open?.({
-        state,main:$('#mainView'),setHeader,saveState,queueVocabUpsert,speak,uiIcon,esc,escAttr,toast,
-        renderVocab:()=>window.DailyLearningV52.render(dailyEnv)
-      },options)
-    };
-    window.DailyLearningV52.render(dailyEnv);
+    planner.render({main:$('#mainView'),state,saveState,setHeader,speak,toast});
   }
 
   function renderHome(){
