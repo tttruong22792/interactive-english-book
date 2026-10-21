@@ -69,7 +69,7 @@ function saveAttempt(p,day,answers,focus){
  if(passed){p.passed[day]=record.at;p.lastDay=Math.max(day+1,Number(p.lastDay)||1);}
  return record;
 }
-let env=null,currentDay=1,view="plan",result=null,answers=[],promptIndex=0,showMeaning=false;
+let env=null,currentDay=0,view="plan",result=null,answers=[],promptIndex=0,showMeaning=false;
 function openRoute(route){location.hash="#"+route;}
 function countMastered(content,state){
  const tr=window.VocabularyTrainer,sv=state.saved||{};
