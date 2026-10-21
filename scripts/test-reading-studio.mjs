@@ -6,6 +6,7 @@ for(const file of [
  "../data/english/reading-stories-a1.js",
  "../data/english/reading-stories-a2.js",
  "../data/english/reading-stories-b1-b2.js",
+ "../data/english/reading-phrase-meanings.js",
  "../reading-studio.js"
 ]){
  runInNewContext(readFileSync(new URL(file,import.meta.url),"utf8"),ctx,{filename:file});
@@ -31,6 +32,12 @@ for(const [i,story] of stories.entries()){
   assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<3,"Correct answer selected "+story.id);
  }
  assert.ok(story.targetChunks.length>=3,"Contextual chunks "+story.id);
+ assert.equal(ctx.window.READING_STORY_CHUNK_VI?.[story.id]?.length,story.targetChunks.length,
+  "Every highlighted phrase has its own Vietnamese meaning "+story.id);
+ for(const term of story.targetChunks){
+  assert.ok(story.lines.some(([en])=>en.toLowerCase().includes(term.toLowerCase())),
+    "Highlighted chunk must appear verbatim in story "+story.id+": "+term);
+ }
  assert.ok(story.patterns.length>=2&&story.patterns.every(n=>n>=1&&n<=80),"Crosslinks to existing 80 patterns "+story.id);
 }
 assert.ok(sentences>=250,"At least 250 individually playable bilingual lines");
@@ -42,7 +49,8 @@ const sw=readFileSync(new URL("../sw.js",import.meta.url),"utf8");
 assert.ok(appSource.includes("r.name === 'reading'")&&appSource.includes("renderReadingStudio"),"Reader route is integrated");
 assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio.css"),"iOS and tablet navigation");
 assert.ok(builder.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS hash allowlist covers reader sentences");
-assert.ok(sw.includes("runtime-20261021-reading-v56.js")&&sw.includes("reading-studio.css"),"Installed PWA cache refreshes");
+assert.ok(sw.includes("runtime-20261021-reading-v57.js")&&sw.includes("reading-studio.css"),"Installed PWA cache refreshes");
 assert.ok(readerSource.includes("beginAudioSequence")&&readerSource.includes("audioSequenceActive"),"Audio cannot leak between routes");
 assert.ok(readerSource.includes("reader-line")&&readerSource.includes('data-reading-answer'),"Highlight and active comprehension");
+assert.ok(readerSource.includes("data-reading-save")&&appSource.includes("saveReadingPhrase"),"Unowned phrases can be saved to personal vocabulary");
 console.log("PASS Reading Studio: 30 graded stories, "+sentences+" sentence clips, 60 comprehension checks, on-device progress and PWA wiring");
