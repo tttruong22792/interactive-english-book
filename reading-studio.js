@@ -97,11 +97,13 @@
   function findChunks(story){
     if(!corpus)corpus=buildCorpus();
     const phrases=story.targetChunks||[],sentences=story.lines.map(x=>x[0]).join(" ").toLowerCase();
-    return phrases.map(name=>{
+    return phrases.map((name,index)=>{
       const lower=clean(name);
       const owned=corpus.get(lower)||null;
       const seen=sentences.includes(String(name).toLowerCase());
-      return {name,owned,seen,meaning:owned?.card?.baseVi||""};
+      const meaning=window.READING_STORY_CHUNK_VI?.[story.id]?.[index]||owned?.card?.baseVi||"";
+      const savedKey="p:"+name.toLowerCase().replace(/\s+/g," ").trim();
+      return {name,owned,seen,meaning,savedKey};
     });
   }
   function renderLibrary(){
@@ -175,7 +177,8 @@
         '<div class="reading-chunk-list">'+chunks.map(ch=>'<article class="reading-chunk-card"><div><strong>'+esc(ch.name)+'</strong>'+
            (ch.meaning?'<p>'+esc(ch.meaning)+'</p>':'<p>Cụm dùng trong câu chuyện</p>')+
            '</div><div class="reading-chunk-actions"><button type="button" data-reading-speak="'+esc(ch.name)+'">♫ Nghe</button>'+
-           (ch.owned?'<button type="button" data-reading-vocab="'+esc(ch.owned.pack.lessonId)+'">Học trong kho →</button>':'')+
+           (ch.owned?'<button type="button" data-reading-vocab="'+esc(ch.owned.pack.lessonId)+'">Học trong kho →</button>':
+           '<button type="button" data-reading-save="'+esc(ch.name)+'">'+(env.state.saved?.[ch.savedKey]?'★ Đã lưu':'☆ Lưu cụm')+'</button>')+
            '</div></article>').join('')+'</div>'+
         '<div class="reading-pattern-ref"><h3>Mẫu câu liên quan</h3><div>'+
         (story.patterns||[]).map(n=>'<button data-reading-pattern="'+n+'" type="button">Mẫu '+String(n).padStart(2,"0")+'</button>').join('')+'</div></div></div>'
@@ -216,7 +219,13 @@
       // Tap a sentence's text (except word tokens) to play it from that point.
       $$(".reader-line-copy").forEach(node=>node.onclick=e=>{if(e.target.closest(".word-token"))return;void playFrom(+node.closest(".reader-line").dataset.index);});
     } else if(mode==="chunks"){
-      $$("[data-reading-speak]").forEach(btn=>btn.onclick=()=>env.speak(btn.dataset.readingSpeak));
+      $("[data-reading-speak]").forEach(btn=>btn.onclick=()=>env.speak(btn.dataset.readingSpeak));
+      $("[data-reading-save]").forEach(btn=>btn.onclick=()=>{
+        const ch=chunks.find(item=>item.name===btn.dataset.readingSave);
+        if(!ch)return;
+        const added=env.saveReadingPhrase?.(ch.name,ch.meaning,story);
+        if(added)btn.textContent="★ Đã lưu";
+      });
       $$("[data-reading-vocab]").forEach(btn=>btn.onclick=()=>{
         env.state.vocabHubLessonId=btn.dataset.readingVocab;env.state.vocabHubView="learn";
         env.saveState();location.hash="#vocab";

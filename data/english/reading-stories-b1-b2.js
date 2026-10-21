@@ -145,8 +145,8 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
     ],
     "targetChunks": [
       "take on another task",
-      "unfinished tasks pile up",
-      "realistic plan"
+      "unfinished tasks began to pile up",
+      "the plan was now realistic"
     ]
   },
   {
@@ -220,8 +220,8 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
     ],
     "targetChunks": [
       "try a different approach",
-      "identify what you know",
-      "solve it yourself"
+      "identify what she already knew",
+      "solved it herself"
     ]
   },
   {
@@ -294,7 +294,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "break into smaller tasks",
+      "break the project into tasks",
       "stay consistent",
       "working prototype"
     ]
@@ -677,7 +677,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "break the problem into smaller questions",
+      "broke the problem into smaller questions",
       "reasoning",
       "work through uncertainty"
     ]
