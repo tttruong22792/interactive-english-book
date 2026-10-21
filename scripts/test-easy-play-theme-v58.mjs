@@ -13,7 +13,7 @@ const reading=read('reading-studio.css');
 new vm.Script(app,{filename:'app.js'});
 
 const style='easy-play-theme-v58.css';
-const runtime='runtime-20261022-easy-play-v58.js';
+const runtime=html.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0]||'';
 assert.ok(html.includes(style+'?v=20261022-v58'),'v58 styles must load in HTML');
 assert.ok(html.indexOf(style)>html.indexOf('reading-studio.css'),'new theme must override earlier app CSS');
 assert.ok(build.includes('"'+style+'"'),'new theme must be copied to published site');
