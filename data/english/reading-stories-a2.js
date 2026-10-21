@@ -140,8 +140,8 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "go over the latest version",
-      "suggest a simple solution",
+      "went over the latest version",
+      "suggesting a simple solution",
       "clear communication"
     ]
   },
@@ -282,7 +282,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "review family expenses",
+      "reviewed our family expenses",
       "set aside some money",
       "stick to the plan"
     ]
@@ -428,7 +428,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "compare travel times",
+      "compared the travel times",
       "would rather explore",
       "in the end"
     ]
@@ -571,7 +571,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
     ],
     "targetChunks": [
       "technical diagram",
-      "go over the drawing",
+      "went over the drawing",
       "taking the time to explain"
     ]
   },
@@ -716,7 +716,7 @@ window.READING_STORIES = (window.READING_STORIES || []).concat([
       }
     ],
     "targetChunks": [
-      "book a table",
+      "booked a table for four",
       "confirmation email",
       "became available"
     ]
