@@ -78,7 +78,7 @@ function dayCard(viewModel){
  '<p><b>Đã học</b> = đã tiếp xúc. <b>Đạt</b> = nhập đúng trọn câu/cụm không gợi ý. <b>Thuộc vững</b> = nhớ đúng ≥3 ngày, cách nhau tổng cộng ≥7 ngày. Đọc hiểu cần trả lời đúng toàn bộ câu hỏi.</p></div></div>'+
  '<div class="m60-truth-data">'+badge(c.dayPassed,'Ngày đạt')+
  '<span>Chưa đạt thì nhiệm vụ sẽ tiếp tục xuất hiện.</span></div></section>'+
- '<footer class="m60-foot"><span>Khối lượng này rất nặng: ~67 cụm/ngày, cộng ôn cũ và bài đọc. Có thể cần từ 2–3 giờ mỗi ngày hoặc hơn.</span>'+
+ '<footer class="m60-foot"><span>Khối lượng này rất nặng: ~67 cụm/ngày, cộng ôn cũ và bài đọc. Có thể cần từ 2–3 giờ mỗi ngày hoặc hơn. Kết quả kiểm tra của lộ trình hiện lưu trên thiết bị này; chưa phải điểm chấm kỹ năng nói/phát âm.</span>'+
  '<button type="button" data-m60-route="coach">Luyện AI 25 phút (bổ sung) →</button></footer>';
 }
 function roadmap(c){
