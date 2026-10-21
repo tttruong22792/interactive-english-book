@@ -50,6 +50,11 @@ jobs:
         if: steps.head_guard.outputs.deploy == 'true'
         run: |
           node --check app.js
+          node --check reading-studio.js
+          node --check data/english/reading-stories-a1.js
+          node --check data/english/reading-stories-a2.js
+          node --check data/english/reading-stories-b1-b2.js
+          node --check scripts/test-reading-studio.mjs
           node --check vocabulary-trainer.js
           node --check chunk-listener.js
           node --check scripts/test-chunk-listener.mjs
@@ -112,6 +117,10 @@ jobs:
       - name: Validate zero duplicate chunks across all 80 lessons
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-unique-chunk-curriculum.mjs
+
+      - name: Validate 30 Reading & Listening lessons
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-reading-studio.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'

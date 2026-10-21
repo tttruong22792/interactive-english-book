@@ -429,6 +429,10 @@
   }
   function parseRoute(){
     const hash = (location.hash || '#home').slice(1);
+    if (hash.startsWith('reading/')){
+      const id=hash.split('/')[1]||'';
+      return {name:'reading',id};
+    }
     if (hash.startsWith('lesson/')){
       const parts=hash.split('/');
       return {name:'lesson', id:Number(parts[1])||1, view:parts[2]||'overview'};
@@ -448,6 +452,7 @@
     if(!window.VocabularyTrainer?.isOpen?.()){
       document.documentElement.classList.remove('vocab-trainer-open');
     }
+    window.ReadingStudio?.stop?.();
     stopSpeech();
     window.ChunkListener?.stop?.(true);
     closePopover();
@@ -457,6 +462,7 @@
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'daily') renderDailyV52();
+      else if (r.name === 'reading') renderReadingStudio(r.id);
       else if (r.name === 'patterns') renderPatterns();
       else if (r.name === 'tenses') renderTenses();
       else if (r.name === 'japanese') await renderJapanese(r.view||'home',r.id||1);
@@ -487,6 +493,28 @@
   async function ensureCoreEnglish(){
     if(!L || L.id!==CORE_LESSON_ID) L=await ensureContent(CORE_LESSON_ID);
     return L;
+  }
+
+  function renderReadingStudio(id=''){
+    if(!window.ReadingStudio?.render){
+      setHeader('English › Đọc & Nghe','Chưa tải được bài đọc');
+      $('#mainView').innerHTML='<section class="page-hero"><h1>Chưa tải được thư viện bài đọc</h1><p>Vui lòng tải lại ứng dụng.</p></section>';
+      return;
+    }
+    const hydrateReadingWords=root=>{
+      $('.reading-en[data-en]',root).forEach(el=>buildWordSpans(el,el.dataset.en));
+      $('.reading-en .word-token',root).forEach(word=>word.addEventListener('click',async e=>{
+        e.stopPropagation();
+        try{
+          if(!L||L.language!=='en')await ensureCoreEnglish();
+          openLookup(word.dataset.word,'word');
+        }catch(error){toast(error.message||'Chưa tra được từ.');}
+      }));
+    };
+    window.ReadingStudio.render({
+      main:$('#mainView'),state,saveState,setHeader,hydrateReadingWords,
+      beginAudioSequence,audioSequenceActive,speak,stopSpeech,toast
+    },id);
   }
 
   function renderDailyV52(){
