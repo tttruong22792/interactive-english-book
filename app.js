@@ -511,8 +511,18 @@
         }catch(error){toast(error.message||'Chưa tra được từ.');}
       }));
     };
+    const saveReadingPhrase=(term,meaning,story)=>{
+      const key='p:'+normalizeText(term);
+      if(!meaning){toast('Cụm này chưa có nghĩa tiếng Việt để lưu.');return false;}
+      if(state.saved[key]){toast('Cụm này đã có trong kho cá nhân.');return true;}
+      const example=story?.lines?.find(([en])=>en.toLowerCase().includes(term.toLowerCase()))?.[0]||term;
+      state.saved[key]={key,term,speechText:term,ipa:'',meaning,example,type:'phrase',
+        source:'reading',readingStoryId:story?.id||'',savedAt:Date.now()};
+      saveState();queueVocabUpsert(state.saved[key]);toast('Đã lưu cụm vào kho cá nhân.');
+      return true;
+    };
     window.ReadingStudio.render({
-      main:$('#mainView'),state,saveState,setHeader,hydrateReadingWords,
+      main:$('#mainView'),state,saveState,setHeader,hydrateReadingWords,saveReadingPhrase,
       beginAudioSequence,audioSequenceActive,speak,stopSpeech,toast
     },id);
   }
