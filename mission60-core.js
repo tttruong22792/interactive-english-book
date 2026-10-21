@@ -147,7 +147,7 @@ function daily(state,now=Date.now()){
  if(!Array.isArray(mission.reviewBatches[today])){
    mission.reviewBatches[today]=due.slice(0,25).map(c=>c.key);
    const keys=Object.keys(mission.reviewBatches).sort();
-   keys.slice(0,45).forEach(key=>delete mission.reviewBatches[key]);
+   keys.slice(0,Math.max(0,keys.length-45)).forEach(key=>delete mission.reviewBatches[key]);
  }
  const cardMap=new Map(cards.map(c=>[c.key,c]));
  const reviews=mission.reviewBatches[today].map(key=>cardMap.get(key)).filter(Boolean);
