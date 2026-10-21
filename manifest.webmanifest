@@ -24,6 +24,11 @@
       "url": "./index.html#vocab"
     },
     {
+      "name": "Đọc và nghe tiếng Anh",
+      "short_name": "Đọc & Nghe",
+      "url": "./index.html#reading"
+    },
+    {
       "name": "Hôm nay 25 phút",
       "short_name": "Hôm nay",
       "url": "./index.html#daily"
