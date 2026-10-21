@@ -75,6 +75,8 @@ jobs:
           node --check data/english/chunk-usage-vi.js
           node --check cloud-sync.js
           node --check daily-learning-v52.js
+          node --check study-plan-60.js
+          node --check scripts/test-study-plan-60.mjs
           node --check scripts/test-daily-v52.mjs
           node --check scripts/test-app-shell-v53.mjs
           node --check scripts/test-easy-play-theme-v58.mjs
@@ -126,6 +128,10 @@ jobs:
       - name: Validate 30 Reading & Listening lessons
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-reading-studio.mjs
+
+      - name: Test the strict 60-day learning path
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-study-plan-60.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
