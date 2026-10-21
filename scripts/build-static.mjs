@@ -166,6 +166,7 @@ const runtimeFiles = [
   "data/english/reading-stories-a1.js",
   "data/english/reading-stories-a2.js",
   "data/english/reading-stories-b1-b2.js",
+  "data/english/reading-phrase-meanings.js",
   ...sourceMatches,
   "data/english/patterns/supplements-13-80.js",
   "data/english/unique-chunk-bank.js",
@@ -239,6 +240,7 @@ await writeFile(join(dist, "runtime-20261020-patterns-80-final.js"), runtimeSour
 await writeFile(join(dist, "runtime-20261020-chunk-rich-v54.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261020-unique-chunks-v55.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261021-reading-v56.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261021-reading-v57.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
