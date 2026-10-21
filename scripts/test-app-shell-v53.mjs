@@ -22,12 +22,12 @@ const tests=[
  ["Legacy trainer keyboard protection kept",css.includes("html.vocab-keyboard-open")],
  ["Compact chunk dashboard and 4 core quick actions",app.includes('class="chunk-app-dashboard"')&&["Học chunk","Tự nhớ","Phản xạ","Nghe cụm"].every(v=>app.includes(v))],
  ["All previous chunk screens still have routes",["today","listen","learn","remember","lesson","automate","use","library"].every(v=>app.includes("normalizedView==='"+v+"'"))],
- ["Routing defaults to chunk studio",app.includes("if(!location.hash) location.hash='#vocab';")],
+ ["Routing defaults to one daily study plan",app.includes("if(!location.hash) location.hash='#daily';")],
  ["Workspace scroll resets on route navigation",app.includes("$('#mainView').scrollTop=0;")],
  ["New CSS included in build and HTML",builder.includes('"app-shell-v53.css"')&&html.includes('app-shell-v53.css?v=20261019-app-v53')],
  ["Versioned runtime present in build and HTML",!!versionedRuntime&&builder.includes('"'+versionedRuntime+'"')],
  ["PWA pre-caches current CSS and JS",!!versionedRuntime&&sw.includes("'./app-shell-v53.css'")&&sw.includes("'./"+versionedRuntime+"'")],
- ["Installed PWA opens chunks",manifest.start_url.endsWith("#vocab")],
+ ["Installed PWA opens Hôm nay",manifest.start_url.endsWith("#daily")],
 ];
 for(const [name,success] of tests){assert.ok(success,name);console.log("OK",name);}
 console.log("v53 app shell:",tests.length,"static integration checks passed");
