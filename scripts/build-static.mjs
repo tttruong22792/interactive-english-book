@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -181,6 +181,7 @@ const runtimeFiles = [
   "chunk-listener.js",
   "english-challenge.js",
   "daily-learning-v52.js",
+  "study-plan-60.js",
   "reading-studio.js",
   "app.js"
 ];
@@ -242,6 +243,7 @@ await writeFile(join(dist, "runtime-20261020-unique-chunks-v55.js"), runtimeSour
 await writeFile(join(dist, "runtime-20261021-reading-v56.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261021-reading-v57.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261022-easy-play-v58.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261022-strict60-v59.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.

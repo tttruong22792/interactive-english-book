@@ -1,0 +1,91 @@
+/* Language Studio v59 — one focused daily mission instead of sprawling modules. */
+.plan60-root{--p-ink:#32404c;--p-accent:#e77750;--p-edge:#eee2d7;display:flex;flex-direction:column;gap:14px;max-width:920px;margin:0 auto;color:var(--p-ink)}
+.plan60-eyebrow{font-size:10px;letter-spacing:.13em;font-weight:900;color:#c47754}
+.plan60-head{display:flex;gap:12px;justify-content:space-between;align-items:start}
+.plan60-head h1{margin:0;font-size:clamp(23px,3vw,34px);letter-spacing:-.04em;font-weight:900;line-height:1.15}
+.plan60-head p{font-size:12px;color:#857e77;margin:7px 0 0}
+.plan60-root button{cursor:pointer;font-family:inherit}
+.plan60-root button:disabled{opacity:.58;cursor:not-allowed}
+.plan60-outline{border:1px solid #ecdacb;background:#fffdfa;border-radius:12px;padding:10px 14px;color:#976c52;font-weight:800}
+.plan60-progress{background:#fff;border:1px solid var(--p-edge);padding:15px 17px;border-radius:19px;display:grid;gap:12px}
+.plan60-progress-copy{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.plan60-progress-copy strong{font-size:15px}.plan60-progress-copy small{color:#887f76;font-size:11px}
+.plan60-progress-line,.plan60-test-progress{width:100%;display:block;height:9px;border-radius:99px;background:#f2e9df;overflow:hidden}
+.plan60-progress-line i,.plan60-test-progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f7be68,#e97b56)}
+.plan60-counter{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800}
+.plan60-counter>span:last-child{border-radius:999px;background:#fff0e4;color:#bc6c4b;padding:6px 13px}
+.plan60-day-nav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px}
+.plan60-day-nav button,.plan60-day-nav select{border:1px solid #e8dcd0;background:#fffefa;border-radius:12px;padding:11px;font-size:12px;color:#705f56;min-width:0}
+.plan60-day-nav select{font-weight:850;text-align:center}
+.plan60-daily{display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid #efe3d8;border-radius:25px;padding:20px;box-shadow:0 5px 0 #efe7de}
+.plan60-title{display:flex;align-items:center;gap:13px;margin-bottom:6px}
+.plan60-title>span{font-size:30px;width:60px;height:60px;display:grid;place-items:center;background:#fff1d9;border-radius:19px}
+.plan60-title h2{margin:0;font-size:23px;letter-spacing:-.035em}
+.plan60-title p{margin:4px 0 0;font-size:12px;color:#867c74}
+.plan60-task{display:flex;align-items:center;gap:12px;min-height:75px;border:1px solid #eee5dd;background:#fffdf8;border-radius:17px;padding:12px}
+.plan60-task:nth-of-type(3){background:#eff8ec}
+.plan60-task:nth-of-type(4){background:#eef6ff}
+.plan60-task:nth-of-type(5){background:#fff0df}
+.plan60-task:nth-of-type(6){background:#f3eeff}
+.plan60-task:nth-of-type(7){background:#fff1ed}
+.plan60-task.is-done{border-color:#badfc1}
+.plan60-task-icon{flex:0 0 43px;width:43px;height:43px;display:grid;place-items:center;border-radius:14px;background:#ffffffbd;font-size:21px}
+.plan60-task>div{flex:1;min-width:0}
+.plan60-task strong{font-size:13px;display:block;font-weight:900}
+.plan60-task small{display:block;color:#797b7b;font-size:11px;line-height:1.5;margin-top:3px}
+.plan60-task button{flex:0 0 auto;background:#fff;border:1px solid #e9ddd3;color:#b56a4e;border-radius:12px;padding:9px 13px;font-size:12px;font-weight:850}
+.plan60-task>b{color:#3d945d}.plan60-wait{font-size:10px;color:#92857b}
+.plan60-actions{display:flex;gap:9px;flex-wrap:wrap;padding-top:5px}
+.plan60-primary{border:0;border-radius:15px;background:linear-gradient(135deg,#f59160,#e67851);color:#fff;font-size:14px;font-weight:900;min-height:49px;padding:13px 20px;box-shadow:0 4px 0 #f0d5bd}
+.plan60-actions .plan60-primary{flex:1 1 245px}
+.plan60-actions .plan60-outline{flex:1 1 160px}
+.plan60-last{font-size:12px;color:#7d7170;margin:4px 0 0}
+.plan60-notice{padding:15px 18px;font-size:12px;line-height:1.65;background:#fff7e9;border:1px solid #f1e0ca;border-radius:17px;color:#826c55}
+.plan60-timeline{border:1px solid #e9e2d8;background:#fff;border-radius:19px;padding:19px}
+.plan60-timeline h2{font-size:18px;margin:0 0 7px}.plan60-timeline p{font-size:12px;color:#807b77;line-height:1.65}
+.plan60-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}
+.plan60-metrics>div{border-radius:14px;background:#f6f4ee;padding:13px 7px;text-align:center;display:grid;gap:3px}
+.plan60-metrics>div:nth-child(2){background:#f1eafe}.plan60-metrics>div:nth-child(3){background:#e9f7ed}.plan60-metrics>div:nth-child(4){background:#ebf4ff}
+.plan60-metrics b{font-size:21px}.plan60-metrics span{font-size:10px;color:#807972}
+.plan60-lock{border:1px solid #f1dec5;border-radius:18px;padding:20px;text-align:center;background:#fff3de;color:#a96a46;font-size:13px;font-weight:800}
+.plan60-study,.plan60-test,.plan60-results{display:flex;flex-direction:column;gap:13px}
+.plan60-study,.plan60-test{background:#fff;border:1px solid #ebe1d8;padding:20px;border-radius:23px}
+.plan60-study h2{font-size:22px;margin:0}.plan60-study p{font-size:13px;line-height:1.6;color:#79736e}
+.plan60-vocab-list{overflow-y:auto;max-height:min(530px,62vh);display:grid;gap:7px;padding:3px;overscroll-behavior:contain}
+.plan60-vocab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;background:#fbfaf6;border:1px solid #f0e8df;border-radius:13px}
+.plan60-vocab b{font-size:12px}.plan60-vocab span{font-size:12px;color:#7f7870}
+.plan60-vocab button{background:#fff0e0;border:0;border-radius:10px;padding:8px;color:#bc7857;font-weight:850}
+.plan60-test-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.plan60-test-head strong{font-size:16px}.plan60-test-head small{color:#837b72;font-size:10px}
+.plan60-question{margin:12px 0;background:linear-gradient(145deg,#fff2df,#f5f1ff);padding:clamp(18px,3vw,38px);border-radius:23px;border:1px solid #eadccf;display:grid;gap:16px}
+.plan60-question>span{letter-spacing:.08em;font-weight:850;font-size:10px;color:#ac795a}
+.plan60-question h2{font-size:clamp(23px,3.5vw,35px);margin:0;letter-spacing:-.02em;line-height:1.35}
+.plan60-question label{font-size:12px;font-weight:800}
+.plan60-question input{min-height:53px;width:100%;box-sizing:border-box;font-size:16px;padding:13px;border:1px solid #d9c8b9;border-radius:13px;background:#fff}
+.plan60-question small{font-size:11px;color:#8a7771}
+.plan60-result{text-align:center;border-radius:23px;background:#edf7ed;border:1px solid #cde6d0;padding:22px}
+.plan60-result.failed{background:#fff1ec;border-color:#f1d0c2}
+.plan60-result>span{font-size:37px}.plan60-result h2{font-size:23px;margin:6px 0}.plan60-result>strong{font-size:33px;display:block;color:#3b8261}
+.plan60-result.failed>strong{color:#ba5b4d}.plan60-result p{font-size:12px;line-height:1.5;color:#79746d;max-width:540px;margin:8px auto}
+.plan60-results>div{display:grid;gap:6px;background:#fff;border:1px solid #dce5db;border-radius:14px;padding:12px 15px}
+.plan60-results>div.incorrect{background:#fff5f2;border-color:#e9c8be}
+.plan60-results b,.plan60-results span,.plan60-results small{font-size:12px}
+.plan60-results small{color:#a75948}
+@media(max-width:760px){
+ .plan60-root{gap:10px}.plan60-head h1{font-size:22px}.plan60-head p{font-size:11px}
+ .plan60-head>.plan60-outline{font-size:10px;padding:8px;white-space:nowrap}
+ .plan60-daily{padding:12px;border-radius:19px;gap:8px}
+ .plan60-title>span{width:47px;height:47px;font-size:24px;border-radius:14px}
+ .plan60-title h2{font-size:19px}.plan60-task{min-height:67px;padding:9px;gap:8px}
+ .plan60-task-icon{flex-basis:35px;width:35px;height:35px;font-size:17px}
+ .plan60-task strong{font-size:12px}.plan60-task small{font-size:10px}
+ .plan60-task button{padding:8px;font-size:11px}
+ .plan60-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .plan60-study,.plan60-test{padding:12px;border-radius:18px}
+ .plan60-vocab{grid-template-columns:minmax(0,1fr) auto;gap:5px}
+ .plan60-vocab span{grid-column:1;grid-row:2}.plan60-vocab button{grid-column:2;grid-row:1/3}
+ .plan60-question{padding:17px;gap:11px}.plan60-question h2{font-size:23px}
+ .plan60-day-nav button{padding:9px 6px;font-size:11px}
+ .plan60-vocab-list{max-height:50vh}
+}
+@media(max-height:675px) and (max-width:760px){.plan60-root{min-height:0}.plan60-head p{display:none}.plan60-task{min-height:60px}.plan60-daily{padding:10px}}
