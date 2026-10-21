@@ -54,6 +54,19 @@ assert.ok(C.recordChunk(m,c.key,c.baseEn,c.baseEn,later1));
 assert.ok(C.recordChunk(m,c.key,c.baseEn,c.baseEn,later3));
 assert.ok(C.recordChunk(m,c.key,c.baseEn,c.baseEn,later7));
 assert.equal(C.proofStatus(m.chunkProof[c.key],later7).mastered,true,"Proof of mastery needs independent spaced days");
+const reviewDay=new Date("2026-11-03T08:00:00+09:00").getTime();
+const firstBatch=C.daily(state,reviewDay);
+const assigned=firstBatch.reviews.map(c=>c.key);
+if(assigned.length){
+ const card=firstBatch.reviews[0];
+ assert.ok(C.recordChunk(m,card.key,card.baseEn,card.baseEn,firstBatch.today));
+ const repeated=C.daily(state,reviewDay);
+ assert.deepEqual(repeated.reviews.map(c=>c.key),assigned,
+   "Review assignment must not grow forever as individual cards are completed");
+ assert.equal(repeated.reviewRemaining.length,firstBatch.reviewRemaining.length-1,
+   "Completed assigned reviews must be counted accurately");
+}
+
 C.recordChunk(m,c.key,c.baseEn,"wrong",later7);
 assert.equal(C.proofStatus(m.chunkProof[c.key],later7).mastered,false,"A failure revokes mastery");
 const p=d.todaysPacks[0],probes=C.probes(p,false);
