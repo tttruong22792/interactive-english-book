@@ -36,9 +36,10 @@ assert.ok(css.includes('grid-template-columns:repeat(5,minmax(0,1fr))'),'the fiv
 assert.ok(base.includes('height:100dvh')&&base.includes('overscroll-behavior-y:contain'),'full-screen app shell remains intact');
 assert.ok(reading.includes('.reading-player'),'reading controls remain installed');
 assert.ok(app.includes("if(!location.hash) location.hash='#daily';"),'Daily mission is the default');
-for(const route of ['vocab','reading','daily','patterns','shadowing','challenge']){
- assert.ok(app.includes("route:'"+route+"'"),'card for existing '+route+' module is wired');
+for(const route of ['vocab','reading','patterns','shadowing','challenge']){
+ assert.ok(app.includes("route:'"+route+"'"),'Archived '+route+' module is wired');
 }
+assert.ok(app.includes("window.Daily80V60.render")&&html.includes('data-route="daily"'),"New daily mission is the primary navigation");
 assert.ok(app.includes('bindGenericRoutes();'),'home cards attach click handlers');
 assert.ok(app.includes("route:'settings'")&&app.includes("route:'daily-v52'"),'old settings and v52 remain reachable in archive');
 
