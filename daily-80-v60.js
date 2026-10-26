@@ -168,7 +168,7 @@ function dashboardHTML(root,day){
  const last=data.attempts[data.attempts.length-1],complete=!!data.completedAt;
  return '<div class="day80-dash">'+
  '<header class="day80-hero"><div class="day80-kicker">MỘT LỘ TRÌNH DUY NHẤT · 60 NGÀY</div><h1>Hôm nay: 80 mẫu câu</h1>'+
- '<p>Ngày '+day+' · Chủ đề gợi ý: '+THEMES[(day-1)%THEMES.length][0]+' · '+(day<=20?'Nền tảng dễ':day<=40?'Tình huống thực tế':'Diễn đạt nâng cao')+'</p>'+
+ '<p>Ngày '+day+' · Chủ đề gợi ý: '+THEMES[(day-1)%THEMES.length][0]+' · '+(day<=20?'Nền tảng dễ':day<=40?'Tình huống thực tế':'Diễn đạt nâng cao')+'</p><p class="day80-session-hint">Đề xuất: 4 lượt học × 20 phút. Mỗi lượt hoàn thành 2 chặng, sau đó làm bài kiểm tra 16 câu.</p>'+
  '<div class="day80-hero-stats"><div><strong>'+seen+'/80</strong><span>Câu đã luyện hôm nay</span></div><div><strong>'+(last?last.correct+'/16':'—')+'</strong><span>Kiểm tra gần nhất</span></div><div><strong>'+info.solid+'/80</strong><span>Mẫu vững thật sự</span></div></div>'+
  '<div class="day80-meter"><i style="width:'+(seen/80*100)+'%"></i></div>'+
  '<button class="day80-mainbtn" id="day80Resume">'+(complete?'✓ Đã hoàn thành hôm nay':seen>=80?'Bắt đầu kiểm tra 16 câu →':'▶ Tiếp tục học câu '+Math.min(80,seen+1)+' / 80')+'</button></header>'+
@@ -252,7 +252,7 @@ function bind(root,day,items,active){
  $('#day80Exit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  $('#day80Previous')?.addEventListener('click',()=>{index=Math.max(0,index-1);render();});
  $('#day80Speak')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
- $('#day80Slow')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
+ $('#day80Slow')?.addEventListener('click',()=>{env.speak?.(items[index].en,null,0.7);});
  $('#day80SpeakChunk')?.addEventListener('click',()=>{env.speak?.(items[index].chunk?.[0]);});
  $('#day80Translate')?.addEventListener('click',()=>{$('#day80Translation')?.classList.toggle('is-hidden');});
  $('#day80Next')?.addEventListener('click',()=>{
@@ -272,7 +272,7 @@ function bind(root,day,items,active){
   result=examResult(root,day,quiz,answers);
   env.saveState();mode='result';render();
  });
- $('#day80Return')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
+ $('#day80Return')?.addEventListener('click',()=>{viewDay=0;examDay=0;mode='home';render();});
  $('#day80Retry')?.addEventListener('click',()=>{beginQuiz(root,day,items);});
 }
 window.Daily80V60={render,lessonItems,sourcePool,selectedExample,courseDays:TOTAL_DAYS,grade,examResult,stateFor,dayData,currentDay,mastery,stats,chooseQuiz,GROUPS};
