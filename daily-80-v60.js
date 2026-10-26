@@ -54,7 +54,12 @@ function sourcePool(order){
   if(!en||!vi||en.length<9||vi.length<5||seen.has(norm(en)))continue;
   seen.add(norm(en));all.push({en,vi});
  }
- return all;
+ // Each daily example must actually model its numbered structure; earlier
+ // published lessons include contrast questions that do not use that structure.
+ const pack=(window.VocabularyTrainer?.packs?.()||[]).find(p=>p.order===order);
+ const stem=norm(pack?.pattern||lesson.title||"");
+ const grammatical=all.filter(row=>norm(row.en).startsWith(stem));
+ return grammatical.length>=2?grammatical:all;
 }
 function complexity(row){
  const s=row.en,words=s.match(/[a-zA-Z']+/g)||[];
