@@ -157,7 +157,16 @@ function stats(root){
  }
  return {day,done,recalled,remembered,solid,weak};
 }
-function dashboardHTML(root,day){
+function masteryMapHTML(root,items){
+ const labels={seen:'Chưa kiểm tra',weak:'Cần ôn lại',recalled:'Đã nhớ lại một lần',remembered:'Đang củng cố',solid:'Đã vững'};
+ return '<details class="day80-mastery-map"><summary><strong>Chi tiết năng lực 80 mẫu câu</strong><small>Chạm để xem mẫu nào cần ôn</small></summary>'+
+ '<div class="day80-mastery-legend"><span>○ Chưa kiểm tra</span><span>! Cần ôn</span><span>● Nhớ một lần</span><span>● Đang củng cố</span><span>★ Vững</span></div>'+
+ GROUPS.map((group,g)=>'<div class="day80-mastery-group"><b>'+group.icon+' '+group.title+'</b><div class="day80-mastery-cells">'+items.slice(g*10,g*10+10).map(item=>{
+  const status=mastery(root.skills[item.id]||{successes:{}});
+  return '<button type="button" data-day80-pattern="'+item.id+'" class="day80-skill '+status+'" title="'+escape(item.pattern)+' — '+labels[status]+'" aria-label="Mẫu '+item.id+': '+escape(item.pattern)+'. '+labels[status]+'">'+item.id+'</button>';
+ }).join('')+'</div></div>').join('')+'</details>';
+}
+function dashboardHTML(root,day,items){
  const data=dayData(root,day),info=stats(root),seen=data.seen.length,chunkSeen=Object.keys(root.chunkSeen||{}).length;
  const last=data.attempts[data.attempts.length-1],complete=!!data.completedAt;
  return '<div class="day80-dash">'+
@@ -174,7 +183,7 @@ function dashboardHTML(root,day){
  '<section class="day80-bottom"><div><h2>Hôm nay đã đạt đến đâu?</h2><p><b>Đã học:</b> câu bạn đã thực sự đi qua · <b>Nhớ lại:</b> kiểm tra Việt → Anh đúng · <b>Vững:</b> trả lời đúng ít nhất 3 ngày khác nhau, trải tối thiểu 7 ngày và 2 ví dụ.</p></div>'+
  '<div class="day80-bottom-metrics"><span>'+info.done+'/60 ngày đạt</span><span>'+info.recalled+'/80 mẫu đã nhớ lại</span><span>'+info.weak+' mẫu cần ôn</span><span>'+chunkSeen+'/4000 cụm đã tiếp xúc</span></div>'+
  '<button id="day80Calendar" class="day80-quiet">Xem lộ trình 60 ngày ↗</button>'+
- '<button id="day80Legacy" class="day80-link">Kho công cụ cũ · bài đọc · cụm từ · thử thách</button></section>'+
+ '<button id="day80Legacy" class="day80-link">Kho công cụ cũ · bài đọc · cụm từ · thử thách</button></section>'+masteryMapHTML(root,items)+
  (last?'<p class="day80-past">Bài kiểm tra gần nhất: '+last.correct+'/16 · '+(last.passed?'Đạt ngưỡng điểm':'Chưa đạt')+'. Ngày chỉ hoàn thành khi đã luyện đủ 80 câu và đạt ít nhất 14/16.</p>':'')+
  '</div>';
 }
@@ -225,7 +234,7 @@ function render(nextEnv){
  const active=dayData(root,today);
  if(mode==='learn'&&index>=80){mode='home';index=79;}
  const html=mode==='learn'?studyHTML(items,root,today,index):mode==='quiz'?quizHTML(quiz,answers,quizIndex):
- mode==='result'&&result?resultHTML(root,today,result):mode==='calendar'?calendarHTML(root):dashboardHTML(root,today);
+ mode==='result'&&result?resultHTML(root,today,result):mode==='calendar'?calendarHTML(root):dashboardHTML(root,today,items);
  env.main.innerHTML='<div class="day80-app">'+html+'</div>';
  bind(root,today,items,active);
 }
@@ -239,7 +248,8 @@ function bind(root,day,items,active){
   if(active.seen.length===80){beginQuiz(root,day,items);return;}
   index=items.findIndex(x=>!active.seen.includes(x.id));index=Math.max(0,index);mode='learn';render();
  });
- $$('[data-day80-group]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Group)*10;mode='learn';render();});
+ $('[data-day80-group]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Group)*10;mode='learn';render();});
+ $('[data-day80-pattern]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Pattern)-1;mode='learn';render();});
  $('#day80Calendar')?.addEventListener('click',()=>{mode='calendar';render();});
  $('#day80CalendarBack')?.addEventListener('click',()=>{mode='home';render();});
  $('#day80Legacy')?.addEventListener('click',()=>{location.hash='#home';});
