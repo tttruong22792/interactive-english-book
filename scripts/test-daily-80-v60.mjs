@@ -100,10 +100,36 @@ new vm.Script(app);
 assert.ok(app.includes("if(!location.hash) location.hash='#daily';"));
 assert.ok(app.includes("r.name === 'legacy-daily'")&&app.includes("r.name === 'daily-v52'"),'Both older daily learning systems remain reachable');
 assert.ok(app.includes("route:'japanese'")&&app.includes("route:'settings'"),'Old Japanese and settings screens remain accessible');
-assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261027-daily80-v61b.js'),'New assets in HTML');
+assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261027-daily80-v61c.js'),'New assets in HTML');
 assert.ok(build.includes('"daily-80-v60.js"')&&build.includes('"daily-80-v60.css"'),'New assets in Pages builder');
 assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261027-daily80-v61b.js'"));
 assert.ok(manifest.start_url.endsWith('#daily'));
 assert.ok(css.includes('.day80-focus')&&css.includes('.day80-quiz')&&css.includes('@media(max-width:760px)'));
 assert.ok(css.includes('.day80-mastery-map')&&read('daily-80-v60.js').includes('data-day80-pattern')&&read('daily-80-v60.js').includes('masteryMapHTML'),'The 80-pattern mastery drill-down must remain available');
-console.log('PASS v61: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');
+assert.ok(css.includes('.day80-review-answer.is-hidden')&&read('daily-80-v60.js').includes('day80ReviewSaved'),'Incorrect answers persist for revision');
+const screen={innerHTML:''},listeners={},input={value:'wrong answer'};
+ctx.document={
+ querySelector(selector){
+  if(selector==='#day80Input'&&screen.innerHTML.includes('id="day80Input"'))return input;
+  if(!selector.startsWith('#')||!screen.innerHTML.includes('id="'+selector.slice(1)+'"'))return null;
+  return {disabled:false,hidden:false,classList:{remove(){}},addEventListener(_name,callback){listeners[selector]=callback;}};
+ },
+ querySelectorAll(){return [];}
+};
+const liveState={daily80v60:{version:60,start:'2026-10-27',days:{1:{seen:Array.from({length:80},(_,i)=>i+1),attempts:[],completedAt:null}},skills:{},chunkSeen:{}}};
+d.render({main:screen,state:liveState,setHeader(){},saveState(){},speak(){}});
+assert.ok(screen.innerHTML.includes('day80-mastery-map'),'Dashboard must render mastery map');
+assert.ok(listeners['#day80Resume'],'Dashboard binds controls without throwing');
+listeners['#day80Resume']();
+assert.ok(screen.innerHTML.includes('id="day80QuizNext"'),'Quiz starts after 80 cards');
+for(let i=0;i<16;i++){input.value='wrong answer';assert.ok(listeners['#day80QuizNext']);listeners['#day80QuizNext']();}
+assert.ok(screen.innerHTML.includes('id="day80ReviewWrong"'),'Result has button to review mistakes');
+listeners['#day80ReviewWrong']();
+assert.ok(screen.innerHTML.includes('id="day80ReviewReveal"'),'Failed answers open recall screen');
+listeners['#day80ReviewExit']();
+assert.ok(screen.innerHTML.includes('id="day80ReviewWrong"'),'Exiting review returns to the right result');
+listeners['#day80Return']();
+assert.ok(screen.innerHTML.includes('id="day80ReviewSaved"'),'Mistakes remain accessible after leaving results');
+listeners['#day80ReviewSaved']();
+assert.ok(screen.innerHTML.includes('id="day80ReviewReveal"'),'Saved mistakes can be reopened');
+console.log('PASS v61c: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');

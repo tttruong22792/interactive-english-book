@@ -194,3 +194,17 @@
 .day80-mastery-cells button.solid{background:#226f50;border-color:#226f50;color:#fff}
 .day80-mastery-cells button:focus-visible{outline:3px solid #f3ae69;outline-offset:2px}
 @media(max-width:760px){.day80-mastery-map{padding:12px}.day80-mastery-group{grid-template-columns:1fr;gap:5px;margin:14px 0}.day80-mastery-cells{gap:4px}.day80-mastery-cells button{font-size:11px;min-height:31px}.day80-mastery-map summary small{font-size:11px}}
+
+/* v61c · recall practice for the exact answers missed in a test */
+.day80-review{display:flex;flex-direction:column;gap:14px;max-width:840px;margin:0 auto;min-height:calc(100dvh - 185px)}
+.day80-review-body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;flex:1;border:1px solid var(--edge);border-radius:24px;background:#fff;padding:clamp(19px,4vw,42px);text-align:center}
+.day80-review-body>h2{font-size:clamp(22px,3.7vw,34px);line-height:1.43;max-width:670px;margin:0;color:var(--ink)}
+.day80-review-body>p{font-size:14px;color:#786d66;line-height:1.6;margin:0}
+.day80-review-answer{background:#edf8f1;border:1px solid #b9ddc6;border-radius:17px;padding:20px;width:100%;text-align:left}
+.day80-review-answer.is-hidden{display:none}
+.day80-review-answer>span{font-size:11px;font-weight:900;letter-spacing:.08em;color:#317451}
+.day80-review-answer h3{font-size:clamp(21px,3.3vw,29px);color:#225d45;margin:10px 0;line-height:1.35}
+.day80-review-answer p{font-size:13px;line-height:1.5;color:#385a4b;margin:8px 0}
+.day80-review-answer button{margin-top:10px;border:1px solid #a3c9b1;background:#fff;color:#2b6b49;border-radius:11px;padding:11px 17px;font-weight:750}
+.day80-review [hidden]{display:none!important}
+@media(max-width:760px){.day80-review{min-height:calc(100dvh - 160px);gap:9px}.day80-review-body{padding:18px 15px;gap:14px;border-radius:19px}.day80-review-body>h2{font-size:23px}.day80-review-body>p{font-size:12px}.day80-review-answer{padding:15px}.day80-review .day80-focus-actions button{font-size:12px}}

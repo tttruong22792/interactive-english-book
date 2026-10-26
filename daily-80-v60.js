@@ -183,7 +183,9 @@ function dashboardHTML(root,day,items){
  '<section class="day80-bottom"><div><h2>Hôm nay đã đạt đến đâu?</h2><p><b>Đã học:</b> câu bạn đã thực sự đi qua · <b>Nhớ lại:</b> kiểm tra Việt → Anh đúng · <b>Vững:</b> trả lời đúng ít nhất 3 ngày khác nhau, trải tối thiểu 7 ngày và 2 ví dụ.</p></div>'+
  '<div class="day80-bottom-metrics"><span>'+info.done+'/60 ngày đạt</span><span>'+info.recalled+'/80 mẫu đã nhớ lại</span><span>'+info.weak+' mẫu cần ôn</span><span>'+chunkSeen+'/4000 cụm đã tiếp xúc</span></div>'+
  '<button id="day80Calendar" class="day80-quiet">Xem lộ trình 60 ngày ↗</button>'+
- '<button id="day80Legacy" class="day80-link">Kho công cụ cũ · bài đọc · cụm từ · thử thách</button></section>'+masteryMapHTML(root,items)+
+ '<button id="day80Legacy" class="day80-link">Kho công cụ cũ · bài đọc · cụm từ · thử thách</button>'+
+ (last?.results?.some(x=>!x.correct)?'<button id="day80ReviewSaved" class="day80-quiet">Ôn '+last.results.filter(x=>!x.correct).length+' câu sai của bài kiểm tra gần nhất</button>':'')+
+ '</section>'+masteryMapHTML(root,items)+
  (last?'<p class="day80-past">Bài kiểm tra gần nhất: '+last.correct+'/16 · '+(last.passed?'Đạt ngưỡng điểm':'Chưa đạt')+'. Ngày chỉ hoàn thành khi đã luyện đủ 80 câu và đạt ít nhất 14/16.</p>':'')+
  '</div>';
 }
@@ -215,7 +217,25 @@ function resultHTML(root,day,result){
  '<h2>'+(completed?'NGÀY '+day+' ĐÃ HOÀN THÀNH':result.passed?'ĐẠT BÀI THI · CÒN CÂU CHƯA HỌC':'CHƯA ĐẠT · CẦN ÔN LẠI')+'</h2><strong>'+result.correct+'/16</strong>'+
  '<p>Đã tiếp xúc '+seen+'/80 câu. Điều kiện hoàn thành: đã đi qua 80 câu và đúng ít nhất 14/16 câu. Chấm tự động không thể đánh giá mọi cách diễn đạt tương đương.</p></div>'+
  '<div class="day80-result-list">'+result.results.map((r,i)=>'<div class="'+(r.correct?'ok':'wrong')+'"><b>'+(i+1)+'. '+(r.correct?'✓':'✕')+' '+escape(r.vi)+'</b><span>Đáp án: '+escape(r.expected)+'</span>'+(r.correct?'':'<small>Bạn viết: '+escape(r.answer||'(trống)')+'</small>')+'</div>').join('')+'</div>'+
- '<div class="day80-result-buttons"><button id="day80Return" class="day80-mainbtn">Về nhiệm vụ hôm nay</button><button id="day80Retry">Ôn & kiểm tra lại</button></div></section>';
+ '<div class="day80-result-buttons"><button id="day80Return" class="day80-mainbtn">Về nhiệm vụ hôm nay</button>'+
+ (result.results.some(x=>!x.correct)?'<button type="button" id="day80ReviewWrong">Ôn ngay '+result.results.filter(x=>!x.correct).length+' câu sai</button>':'')+
+ '<button id="day80Retry">Kiểm tra lại 16 câu</button></div></section>';
+}
+function reviewHTML(day,items,failures,at){
+ const fail=failures[at],card=fail&&items.find(x=>x.id===fail.id);
+ if(!fail||!card)return '<section class="day80-error">Không tìm thấy câu cần ôn. Vui lòng quay lại kết quả.</section>';
+ return '<section class="day80-review"><header class="day80-focus-top"><button id="day80ReviewExit" class="day80-quiet">← Kết quả kiểm tra</button>'+
+ '<div><b>Ôn những câu chưa nhớ</b><small>Ngày '+day+' · Mẫu '+fail.id+' · '+escape(card.pattern)+'</small></div><span>'+(at+1)+'/'+failures.length+'</span></header>'+
+ '<div class="day80-focus-progress"><i style="width:'+((at+1)/failures.length*100)+'%"></i></div>'+
+ '<div class="day80-review-body"><span class="day80-step-label">TỰ NHỚ LẠI · VIỆT → ANH</span>'+
+ '<h2>'+escape(fail.vi)+'</h2><p>Thử tự nói hoặc viết toàn bộ câu tiếng Anh trước khi xem đáp án.</p>'+
+ '<button type="button" id="day80ReviewReveal" class="day80-mainbtn">Xem đáp án sau khi tự nhớ</button>'+
+ '<div id="day80ReviewAnswer" class="day80-review-answer is-hidden"><span>ĐÁP ÁN CẦN GHI NHỚ</span><h3>'+escape(fail.expected)+'</h3>'+
+ '<p><b>Mẫu câu:</b> '+escape(card.pattern)+'</p>'+
+ (card.chunk?'<p><b>Cụm bổ sung:</b> '+escape(card.chunk[0])+' — '+escape(card.chunk[1])+'</p>':'')+
+ '<button type="button" id="day80ReviewSpeak">♫ Nghe lại câu</button></div></div>'+
+ '<footer class="day80-focus-actions"><button type="button" id="day80ReviewPrevious" '+(at===0?'disabled':'')+'>← Câu sai trước</button>'+
+ '<button type="button" id="day80ReviewNext" class="day80-mainbtn" disabled>'+(at===failures.length-1?'Đã ôn · Về kết quả':'Đã ôn · Câu tiếp →')+'</button></footer></section>';
 }
 function calendarHTML(root){
  const complete=Object.values(root.days).filter(d=>d.completedAt).length;
@@ -225,22 +245,22 @@ function calendarHTML(root){
  '<div class="day80-calendar-grid">'+Array.from({length:60},(_,i)=>{const n=i+1,d=root.days[n];return '<span class="'+(d?.completedAt?'done':n===currentDay(root)?'current':'')+'">Ngày '+n+(d?.completedAt?' ✓':'')+'</span>';}).join('')+'</div>'+
  '<strong>'+complete+'/60 ngày hoàn thành</strong><p>Không bắt buộc học bù bằng cách bỏ qua bài; bạn có thể tiếp tục đúng ngày chưa đạt.</p></section>';
 }
-let env,mode='home',index=0,quizIndex=0,quiz=[],answers=[],result=null,viewDay=0,examDay=0;
+let env,mode='home',index=0,quizIndex=0,quiz=[],answers=[],result=null,viewDay=0,examDay=0,reviewFailures=[],reviewIndex=0;
 function render(nextEnv){
  if(nextEnv)env=nextEnv;if(!env?.main||!env?.state)return;
- const root=stateFor(env.state),day=currentDay(root),today=viewDay||((mode==='result'||mode==='quiz')&&examDay?examDay:day),items=lessonItems(today);
+ const root=stateFor(env.state),day=currentDay(root),today=viewDay||((mode==='result'||mode==='quiz'||mode==='review')&&examDay?examDay:day),items=lessonItems(today);
  env.setHeader?.('Học hôm nay','80 mẫu câu · 1 lộ trình');
  if(items.length!==80){env.main.innerHTML='<div class="day80-error">Thiếu dữ liệu 80 mẫu câu. Vui lòng tải lại phiên bản mới. Các bài học cũ chưa bị thay đổi.</div>';return;}
  const active=dayData(root,today);
  if(mode==='learn'&&index>=80){mode='home';index=79;}
  const html=mode==='learn'?studyHTML(items,root,today,index):mode==='quiz'?quizHTML(quiz,answers,quizIndex):
- mode==='result'&&result?resultHTML(root,today,result):mode==='calendar'?calendarHTML(root):dashboardHTML(root,today,items);
+ mode==='result'&&result?resultHTML(root,today,result):mode==='review'&&reviewFailures.length?reviewHTML(today,items,reviewFailures,reviewIndex):mode==='calendar'?calendarHTML(root):dashboardHTML(root,today,items);
  env.main.innerHTML='<div class="day80-app">'+html+'</div>';
  bind(root,today,items,active);
 }
 function beginQuiz(root,day,items){
  viewDay=day;
- quiz=chooseQuiz(items,root,day);answers=Array(TEST_SIZE).fill('');quizIndex=0;examDay=day;mode='quiz';result=null;render();
+ quiz=chooseQuiz(items,root,day);answers=Array(TEST_SIZE).fill('');quizIndex=0;examDay=day;mode='quiz';result=null;reviewFailures=[];reviewIndex=0;render();
 }
 function bind(root,day,items,active){
  $('#day80Resume')?.addEventListener('click',()=>{
@@ -248,11 +268,17 @@ function bind(root,day,items,active){
   if(active.seen.length===80){beginQuiz(root,day,items);return;}
   index=items.findIndex(x=>!active.seen.includes(x.id));index=Math.max(0,index);mode='learn';render();
  });
- $('[data-day80-group]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Group)*10;mode='learn';render();});
- $('[data-day80-pattern]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Pattern)-1;mode='learn';render();});
+ $$('[data-day80-group]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Group)*10;mode='learn';render();});
+ $$('[data-day80-pattern]').forEach(button=>button.onclick=()=>{index=Number(button.dataset.day80Pattern)-1;mode='learn';render();});
  $('#day80Calendar')?.addEventListener('click',()=>{mode='calendar';render();});
  $('#day80CalendarBack')?.addEventListener('click',()=>{mode='home';render();});
  $('#day80Legacy')?.addEventListener('click',()=>{location.hash='#home';});
+ $('#day80ReviewSaved')?.addEventListener('click',()=>{
+  const last=active.attempts[active.attempts.length-1];
+  if(!last?.results?.some(x=>!x.correct))return;
+  result=last;reviewFailures=last.results.filter(x=>!x.correct);reviewIndex=0;
+  examDay=day;viewDay=day;mode='review';render();
+ });
  $('#day80Exit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  $('#day80Previous')?.addEventListener('click',()=>{index=Math.max(0,index-1);render();});
  $('#day80Speak')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
@@ -278,6 +304,27 @@ function bind(root,day,items,active){
  });
  $('#day80Return')?.addEventListener('click',()=>{viewDay=0;examDay=0;mode='home';render();});
  $('#day80Retry')?.addEventListener('click',()=>{beginQuiz(root,day,items);});
+ $('#day80ReviewWrong')?.addEventListener('click',()=>{
+  if(!result?.results?.some(x=>!x.correct))return;
+  reviewFailures=result.results.filter(x=>!x.correct);reviewIndex=0;viewDay=day;mode='review';render();
+ });
+ $('#day80ReviewExit')?.addEventListener('click',()=>{mode='result';render();});
+ $('#day80ReviewReveal')?.addEventListener('click',()=>{
+  $('#day80ReviewAnswer')?.classList.remove('is-hidden');
+  const next=$('#day80ReviewNext'),btn=$('#day80ReviewReveal');
+  if(next)next.disabled=false;
+  if(btn)btn.hidden=true;
+ });
+ $('#day80ReviewSpeak')?.addEventListener('click',()=>{
+  const card=items.find(x=>x.id===reviewFailures[reviewIndex]?.id);
+  if(card)env.speak?.(card.en);
+ });
+ $('#day80ReviewPrevious')?.addEventListener('click',()=>{reviewIndex=Math.max(0,reviewIndex-1);render();});
+ $('#day80ReviewNext')?.addEventListener('click',()=>{
+  if(reviewIndex<reviewFailures.length-1)reviewIndex++;
+  else mode='result';
+  render();
+ });
 }
 window.Daily80V60={render,lessonItems,sourcePool,selectedExample,courseDays:TOTAL_DAYS,grade,examResult,stateFor,dayData,currentDay,mastery,stats,chooseQuiz,GROUPS};
 })();
