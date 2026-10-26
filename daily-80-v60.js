@@ -228,6 +228,7 @@ function render(nextEnv){
  bind(root,today,items,active);
 }
 function beginQuiz(root,day,items){
+ viewDay=day;
  quiz=chooseQuiz(items,root,day);answers=Array(TEST_SIZE).fill('');quizIndex=0;mode='quiz';result=null;render();
 }
 function bind(root,day,items,active){
@@ -240,10 +241,10 @@ function bind(root,day,items,active){
  $('#day80Calendar')?.addEventListener('click',()=>{mode='calendar';render();});
  $('#day80CalendarBack')?.addEventListener('click',()=>{mode='home';render();});
  $('#day80Legacy')?.addEventListener('click',()=>{location.hash='#home';});
- $('#day80Exit')?.addEventListener('click',()=>{mode='home';render();});
+ $('#day80Exit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  $('#day80Previous')?.addEventListener('click',()=>{index=Math.max(0,index-1);render();});
  $('#day80Speak')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
- $('#day80Slow')?.addEventListener('click',()=>{env.speak?.(items[index].en,0.7);});
+ $('#day80Slow')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
  $('#day80Translate')?.addEventListener('click',()=>{$('#day80Translation')?.classList.toggle('is-hidden');});
  $('#day80Next')?.addEventListener('click',()=>{
   const id=items[index].id;
@@ -251,7 +252,7 @@ function bind(root,day,items,active){
   if(index>=79){mode='home';}else{index++;}
   render();
  });
- $('#day80QuizExit')?.addEventListener('click',()=>{mode='home';render();});
+ $('#day80QuizExit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  const field=$('#day80Input');
  if(field){field.oninput=()=>{answers[quizIndex]=field.value;};field.focus();}
  $('#day80QuizNext')?.addEventListener('click',()=>{
@@ -260,7 +261,7 @@ function bind(root,day,items,active){
   result=examResult(root,day,quiz,answers);
   env.saveState();mode='result';render();
  });
- $('#day80Return')?.addEventListener('click',()=>{if(active.completedAt){viewDay=0;}mode='home';render();});
+ $('#day80Return')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  $('#day80Retry')?.addEventListener('click',()=>{beginQuiz(root,day,items);});
 }
 window.Daily80V60={render,lessonItems,sourcePool,selectedExample,courseDays:TOTAL_DAYS,grade,examResult,stateFor,dayData,currentDay,mastery,stats,chooseQuiz,GROUPS};
