@@ -102,7 +102,7 @@ assert.ok(app.includes("r.name === 'legacy-daily'")&&app.includes("r.name === 'd
 assert.ok(app.includes("route:'japanese'")&&app.includes("route:'settings'"),'Old Japanese and settings screens remain accessible');
 assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261027-daily80-v61.js'),'New assets in HTML');
 assert.ok(build.includes('"daily-80-v60.js"')&&build.includes('"daily-80-v60.css"'),'New assets in Pages builder');
-assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261027-daily80-v60b.js'"));
+assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261027-daily80-v61.js'"));
 assert.ok(manifest.start_url.endsWith('#daily'));
 assert.ok(css.includes('.day80-focus')&&css.includes('.day80-quiz')&&css.includes('@media(max-width:760px)'));
 console.log('PASS v61: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');
