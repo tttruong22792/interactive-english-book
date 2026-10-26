@@ -23,6 +23,17 @@ const early=d.lessonItems(1),late=d.lessonItems(60);
 assert.equal(early.length,80,'Day one teaches exactly one example for each of 80 patterns');
 assert.equal(late.length,80,'Last day teaches exactly one example for each pattern');
 assert.ok(totalWords(late)>totalWords(early),'Later-day examples should be measurably more complex on average');
+assert.ok(early.find(x=>x.id===3).en.startsWith('I want to '),'Pattern 3 must teach I want to, not a contrast question');
+assert.ok(early.find(x=>x.id===6).en.startsWith('Would you like to '),'Pattern 6 must teach the polite question');
+const uniquelyScheduled=new Set();
+for(let day=1;day<=50;day++){
+ for(const item of d.lessonItems(day)){
+  assert.ok(item.chunkKey&&item.chunk?.[0]&&item.chunk?.[1],'Missing daily chunk, day '+day+' pattern '+item.id);
+  assert.ok(!uniquelyScheduled.has(item.chunkKey),'Repeated chunk assigned to two daily learning cards: '+item.chunkKey);
+  uniquelyScheduled.add(item.chunkKey);
+ }
+}
+assert.equal(uniquelyScheduled.size,4000,'All 4,000 unique chunks get a scheduled first exposure in days 1–50');
 for(const day of [1,2,3,15,20,21,40,41,55,60]){
  const items=d.lessonItems(day);
  assert.equal(items.length,80,'80 examples each day '+day);
@@ -59,6 +70,7 @@ const cleared=d.examResult(root,1,quiz,quiz.map((x,i)=>i<14?x.en:'wrong'),'2026-
 assert.ok(root.days[1].completedAt,'Full exposure + 14/16 unlocks next day');
 assert.equal(d.currentDay(root),2);
 assert.equal(root.days[1].attempts.length,3,'Keep honest history, including failed attempts');
+assert.equal(Object.keys(root.chunkSeen).length,0,'A quiz does not fake chunk exposure');
 const examples=['I want to go home','I would like to leave','I hope to finish'].map(x=>x.toLowerCase());
 assert.equal(d.mastery({successes:{'2026-10-26':examples[0]}}),'recalled');
 assert.equal(d.mastery({successes:{'2026-10-26':examples[0],'2026-10-28':examples[0]}}),'remembered');
@@ -69,9 +81,9 @@ new vm.Script(app);
 assert.ok(app.includes("if(!location.hash) location.hash='#daily';"));
 assert.ok(app.includes("r.name === 'legacy-daily'")&&app.includes("r.name === 'daily-v52'"),'Both older daily learning systems remain reachable');
 assert.ok(app.includes("route:'japanese'")&&app.includes("route:'settings'"),'Old Japanese and settings screens remain accessible');
-assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261026-daily80-v60.js'),'New assets in HTML');
+assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261027-daily80-v60b.js'),'New assets in HTML');
 assert.ok(build.includes('"daily-80-v60.js"')&&build.includes('"daily-80-v60.css"'),'New assets in Pages builder');
-assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261026-daily80-v60.js'"));
+assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261027-daily80-v60b.js'"));
 assert.ok(manifest.start_url.endsWith('#daily'));
 assert.ok(css.includes('.day80-focus')&&css.includes('.day80-quiz')&&css.includes('@media(max-width:760px)'));
 console.log('PASS v60: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');

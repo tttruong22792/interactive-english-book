@@ -169,3 +169,9 @@
  .app-shell .bottom-nav.mobile-only{grid-template-columns:repeat(4,minmax(0,1fr));}
  .day80-tools-head h1{font-size:22px}
 }
+
+/* v60 daily memory cues and short-session pacing */
+.day80-hero .day80-session-hint{font-size:12px;color:#806b62;line-height:1.5;margin:4px 0 12px;font-weight:750}
+.day80-chunk{display:flex;align-items:center;gap:6px 9px;justify-content:center;flex-wrap:wrap}
+.day80-chunk button{border:1px solid #cce3c9;border-radius:9px;background:#fff;color:#49845d;padding:7px 10px;font-weight:800;font-size:11px}
+@media(max-width:760px){.day80-hero .day80-session-hint{font-size:10px;margin:2px 0 8px}.day80-chunk{font-size:11px;line-height:1.4}}

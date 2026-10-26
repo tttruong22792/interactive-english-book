@@ -54,7 +54,12 @@ function sourcePool(order){
   if(!en||!vi||en.length<9||vi.length<5||seen.has(norm(en)))continue;
   seen.add(norm(en));all.push({en,vi});
  }
- return all;
+ // Each daily example must actually model its numbered structure; earlier
+ // published lessons include contrast questions that do not use that structure.
+ const pack=(window.VocabularyTrainer?.packs?.()||[]).find(p=>p.order===order);
+ const stem=norm(pack?.pattern||lesson.title||"");
+ const grammatical=all.filter(row=>norm(row.en).startsWith(stem));
+ return grammatical.length>=2?grammatical:all;
 }
 function complexity(row){
  const s=row.en,words=s.match(/[a-zA-Z']+/g)||[];
@@ -83,15 +88,17 @@ function lessonItems(day){
  for(let id=1;id<=80;id++){
   const pair=selectedExample(id,day),pack=byId.get(id);
   if(!pair||!pack)return [];
-  const exampleChunks=[...(pack.activeChunks||[]),...(pack.recognitionChunks||[])].filter(c=>pair.en.toLowerCase().includes(String(c[0]).toLowerCase()));
-  list.push({id,group:Math.floor((id-1)/10),pattern:pack.pattern,meaning:pack.meaning,en:pair.en,vi:pair.vi,chunk:exampleChunks[0]||null});
+  const tr=window.VocabularyTrainer;
+  const chunks=[...tr.studyChunks(pack).filter(c=>c.kind!=="building"),...tr.usageSupplementChunks(pack)];
+  const chunk=chunks[(day-1)%chunks.length];
+  list.push({id,group:Math.floor((id-1)/10),pattern:pack.pattern,meaning:pack.meaning,en:pair.en,vi:pair.vi,chunk:chunk?[chunk.baseEn,chunk.baseVi]:null,chunkKey:chunk?.key||null});
  }
  return list;
 }
 function stateFor(state){
- if(!state.daily80v60||typeof state.daily80v60!=='object')state.daily80v60={version:60,start:dayStamp(),days:{},skills:{}};
+ if(!state.daily80v60||typeof state.daily80v60!=='object')state.daily80v60={version:60,start:dayStamp(),days:{},skills:{},chunkSeen:{}};
  const root=state.daily80v60;
- root.days=root.days||{};root.skills=root.skills||{};
+ root.days=root.days||{};root.skills=root.skills||{};root.chunkSeen=root.chunkSeen||{};
  return root;
 }
 function dayData(root,day){
@@ -157,11 +164,11 @@ function stats(root){
  return {day,done,recalled,remembered,solid};
 }
 function dashboardHTML(root,day){
- const data=dayData(root,day),info=stats(root),seen=data.seen.length;
+ const data=dayData(root,day),info=stats(root),seen=data.seen.length,chunkSeen=Object.keys(root.chunkSeen||{}).length;
  const last=data.attempts[data.attempts.length-1],complete=!!data.completedAt;
  return '<div class="day80-dash">'+
  '<header class="day80-hero"><div class="day80-kicker">MỘT LỘ TRÌNH DUY NHẤT · 60 NGÀY</div><h1>Hôm nay: 80 mẫu câu</h1>'+
- '<p>Ngày '+day+' · Chủ đề gợi ý: '+THEMES[(day-1)%THEMES.length][0]+' · '+(day<=20?'Nền tảng dễ':day<=40?'Tình huống thực tế':'Diễn đạt nâng cao')+'</p>'+
+ '<p>Ngày '+day+' · Chủ đề gợi ý: '+THEMES[(day-1)%THEMES.length][0]+' · '+(day<=20?'Nền tảng dễ':day<=40?'Tình huống thực tế':'Diễn đạt nâng cao')+'</p><p class="day80-session-hint">Đề xuất: 4 lượt học × 20 phút. Mỗi lượt hoàn thành 2 chặng, sau đó làm bài kiểm tra 16 câu.</p>'+
  '<div class="day80-hero-stats"><div><strong>'+seen+'/80</strong><span>Câu đã luyện hôm nay</span></div><div><strong>'+(last?last.correct+'/16':'—')+'</strong><span>Kiểm tra gần nhất</span></div><div><strong>'+info.solid+'/80</strong><span>Mẫu vững thật sự</span></div></div>'+
  '<div class="day80-meter"><i style="width:'+(seen/80*100)+'%"></i></div>'+
  '<button class="day80-mainbtn" id="day80Resume">'+(complete?'✓ Đã hoàn thành hôm nay':seen>=80?'Bắt đầu kiểm tra 16 câu →':'▶ Tiếp tục học câu '+Math.min(80,seen+1)+' / 80')+'</button></header>'+
@@ -171,7 +178,7 @@ function dashboardHTML(root,day){
  return '<button type="button" data-day80-group="'+i+'" class="day80-group g'+i+'"><span class="day80-group-icon">'+g.icon+'</span><div><strong>'+(i+1)+'. '+g.title+'</strong><small>'+g.subtitle+'</small></div><b>'+n+'/10</b><span class="day80-group-line"><i style="width:'+(n*10)+'%"></i></span></button>';
  }).join('')+'</div></section>'+
  '<section class="day80-bottom"><div><h2>Hôm nay đã đạt đến đâu?</h2><p><b>Đã học:</b> câu bạn đã thực sự đi qua · <b>Nhớ lại:</b> kiểm tra Việt → Anh đúng · <b>Vững:</b> trả lời đúng ít nhất 3 ngày khác nhau, trải tối thiểu 7 ngày và 2 ví dụ.</p></div>'+
- '<div class="day80-bottom-metrics"><span>'+info.done+'/60 ngày đạt</span><span>'+info.recalled+'/80 mẫu đã nhớ lại</span><span>'+info.remembered+'/80 mẫu nhớ nhiều ngày</span></div>'+
+ '<div class="day80-bottom-metrics"><span>'+info.done+'/60 ngày đạt</span><span>'+info.recalled+'/80 mẫu đã nhớ lại</span><span>'+chunkSeen+'/4000 cụm đã tiếp xúc</span></div>'+
  '<button id="day80Calendar" class="day80-quiet">Xem lộ trình 60 ngày ↗</button>'+
  '<button id="day80Legacy" class="day80-link">Kho công cụ cũ · bài đọc · cụm từ · thử thách</button></section>'+
  (last?'<p class="day80-past">Bài kiểm tra gần nhất: '+last.correct+'/16 · '+(last.passed?'Đạt ngưỡng điểm':'Chưa đạt')+'. Ngày chỉ hoàn thành khi đã luyện đủ 80 câu và đạt ít nhất 14/16.</p>':'')+
@@ -185,7 +192,8 @@ function studyHTML(items,root,day,index){
  '<h2>'+escape(x.pattern)+'</h2><p class="day80-pattern-meaning">'+escape(x.meaning)+'</p>'+
  '<article class="day80-sentence"><span>CÂU VÍ DỤ HÔM NAY</span><h3>'+escape(x.en)+'</h3><p id="day80Translation">'+escape(x.vi)+'</p>'+
  '<div class="day80-speakrow"><button id="day80Speak">♫ Nghe câu</button><button id="day80Translate">Ẩn/hiện nghĩa</button><button id="day80Slow">Nghe chậm</button></div></article>'+
- (x.chunk?'<p class="day80-chunk">Cụm đáng chú ý: <strong>'+escape(x.chunk[0])+'</strong> · '+escape(x.chunk[1])+'</p>':'')+
+ (x.chunk?'<p class="day80-chunk">Cụm bổ sung hôm nay: <strong>'+escape(x.chunk[0])+'</strong> · '+escape(x.chunk[1])+
+ ' <button id="day80SpeakChunk" type="button">♫ Nghe cụm</button></p>':'')+
  '<div class="day80-method"><b>Cách luyện:</b> ① Nghe câu · ② Nói theo 2 lần · ③ Che bản dịch và nói lại. Bấm tiếp chỉ ghi nhận <b>đã tiếp xúc</b>, không tự công nhận đã thuộc.</div></div>'+
  '<footer class="day80-focus-actions"><button id="day80Previous" '+(index===0?'disabled':'')+'>← Câu trước</button><button id="day80Next" class="day80-mainbtn">Đã luyện · '+(index===79?'Về bảng tổng kết':'Câu tiếp →')+'</button></footer></section>';
 }
@@ -214,10 +222,10 @@ function calendarHTML(root){
  '<div class="day80-calendar-grid">'+Array.from({length:60},(_,i)=>{const n=i+1,d=root.days[n];return '<span class="'+(d?.completedAt?'done':n===currentDay(root)?'current':'')+'">Ngày '+n+(d?.completedAt?' ✓':'')+'</span>';}).join('')+'</div>'+
  '<strong>'+complete+'/60 ngày hoàn thành</strong><p>Không bắt buộc học bù bằng cách bỏ qua bài; bạn có thể tiếp tục đúng ngày chưa đạt.</p></section>';
 }
-let env,mode='home',index=0,quizIndex=0,quiz=[],answers=[],result=null,viewDay=0;
+let env,mode='home',index=0,quizIndex=0,quiz=[],answers=[],result=null,viewDay=0,examDay=0;
 function render(nextEnv){
  if(nextEnv)env=nextEnv;if(!env?.main||!env?.state)return;
- const root=stateFor(env.state),day=currentDay(root),today=viewDay||day,items=lessonItems(today);
+ const root=stateFor(env.state),day=currentDay(root),today=viewDay||((mode==='result'||mode==='quiz')&&examDay?examDay:day),items=lessonItems(today);
  env.setHeader?.('Học hôm nay','80 mẫu câu · 1 lộ trình');
  if(items.length!==80){env.main.innerHTML='<div class="day80-error">Thiếu dữ liệu 80 mẫu câu. Vui lòng tải lại phiên bản mới. Các bài học cũ chưa bị thay đổi.</div>';return;}
  const active=dayData(root,today);
@@ -229,7 +237,7 @@ function render(nextEnv){
 }
 function beginQuiz(root,day,items){
  viewDay=day;
- quiz=chooseQuiz(items,root,day);answers=Array(TEST_SIZE).fill('');quizIndex=0;mode='quiz';result=null;render();
+ quiz=chooseQuiz(items,root,day);answers=Array(TEST_SIZE).fill('');quizIndex=0;examDay=day;mode='quiz';result=null;render();
 }
 function bind(root,day,items,active){
  $('#day80Resume')?.addEventListener('click',()=>{
@@ -244,24 +252,27 @@ function bind(root,day,items,active){
  $('#day80Exit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  $('#day80Previous')?.addEventListener('click',()=>{index=Math.max(0,index-1);render();});
  $('#day80Speak')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
- $('#day80Slow')?.addEventListener('click',()=>{env.speak?.(items[index].en);});
+ $('#day80Slow')?.addEventListener('click',()=>{env.speak?.(items[index].en,null,0.7);});
+ $('#day80SpeakChunk')?.addEventListener('click',()=>{env.speak?.(items[index].chunk?.[0]);});
  $('#day80Translate')?.addEventListener('click',()=>{$('#day80Translation')?.classList.toggle('is-hidden');});
  $('#day80Next')?.addEventListener('click',()=>{
   const id=items[index].id;
-  if(!active.seen.includes(id)){active.seen.push(id);active.seen.sort((a,b)=>a-b);env.saveState();}
+  if(!active.seen.includes(id)){active.seen.push(id);active.seen.sort((a,b)=>a-b);}
+  const chunkKey=items[index].chunkKey;if(chunkKey&&!root.chunkSeen[chunkKey])root.chunkSeen[chunkKey]=dayStamp();
+  env.saveState();
   if(index>=79){mode='home';}else{index++;}
   render();
  });
  $('#day80QuizExit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  const field=$('#day80Input');
- if(field){field.oninput=()=>{answers[quizIndex]=field.value;};field.focus();}
+ if(field){field.oninput=()=>{answers[quizIndex]=field.value;};}
  $('#day80QuizNext')?.addEventListener('click',()=>{
   answers[quizIndex]=field?.value||'';
   if(quizIndex<TEST_SIZE-1){quizIndex++;render();return;}
   result=examResult(root,day,quiz,answers);
   env.saveState();mode='result';render();
  });
- $('#day80Return')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
+ $('#day80Return')?.addEventListener('click',()=>{viewDay=0;examDay=0;mode='home';render();});
  $('#day80Retry')?.addEventListener('click',()=>{beginQuiz(root,day,items);});
 }
 window.Daily80V60={render,lessonItems,sourcePool,selectedExample,courseDays:TOTAL_DAYS,grade,examResult,stateFor,dayData,currentDay,mastery,stats,chooseQuiz,GROUPS};
