@@ -152,3 +152,20 @@
  .day80-hero-stats>div{padding:7px}
 }
 @media(prefers-reduced-motion:reduce){.day80-app *{transition:none!important;animation:none!important}}
+
+/* Primary navigation now follows the daily mission; old routes live in #home. */
+.app-shell .sidebar .side-progress{display:none}
+.app-shell .brand{cursor:pointer}
+.app-shell .nav-list{padding-top:9px}
+.app-shell .nav-item[data-route="daily"]{order:-1}
+.app-shell .bottom-nav.mobile-only{grid-template-columns:repeat(4,minmax(0,1fr))}
+.app-shell .bottom-nav button[data-route="daily"].active{color:#cf6d48}
+.day80-tools-head{border:1px solid #f2dcc6;border-radius:25px;padding:clamp(18px,3vw,30px);background:linear-gradient(120deg,#fff1dc,#eaf8ec)}
+.day80-tools-head h1{font-size:clamp(22px,3vw,32px);letter-spacing:-.035em;max-width:700px;margin:10px 0;font-weight:900}
+.day80-tools-head p{font-size:13px;line-height:1.6;color:#756e68;margin-bottom:15px}
+.day80-tools-head .easy-play-go{border:0;border-radius:14px;background:#ec7952;color:white;font-size:13px;font-weight:850;padding:13px 18px}
+@media(max-width:760px){
+ .day80-tools-head{border-radius:19px;padding:15px}
+ .app-shell .bottom-nav.mobile-only{grid-template-columns:repeat(4,minmax(0,1fr));}
+ .day80-tools-head h1{font-size:22px}
+}
