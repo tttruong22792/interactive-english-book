@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v99-daily80-v60b';
+const APP_CACHE='language-studio-v100-daily80-v61';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261027-daily80-v60b.js',
+  './runtime-20261027-daily80-v61.js',
   './app-shell-v53.css',
   './reading-studio.css',
   './easy-play-theme-v58.css',

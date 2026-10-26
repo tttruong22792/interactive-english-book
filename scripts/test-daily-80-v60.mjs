@@ -50,6 +50,16 @@ for(const day of [1,2,3,15,20,21,40,41,55,60]){
  assert.equal(new Set(quiz.map(x=>x.id)).size,16,'No duplicated prompts');
  for(let g=0;g<8;g++)assert.equal(quiz.filter(x=>x.group===g).length,2,'Two prompts per group');
 }
+for(let start=1;start<=60;start+=5){
+ const checked=new Set();
+ for(let day=start;day<start+5;day++){
+  for(const card of d.chooseQuiz(d.lessonItems(day),{days:{},skills:{}},day)){
+   assert.ok(!checked.has(card.id),'Repeated before all 80 examined: '+card.id);
+   checked.add(card.id);
+  }
+ }
+ assert.equal(checked.size,80,'Five-day assessment must cover all 80 structures');
+}
 assert.ok(d.grade("I'd like to take a break.","I would like to take a break"));
 assert.ok(!d.grade("I have to take a break.","I have take a break"));
 assert.ok(!d.grade("I want to leave.","I want to go."),'Different sentence must fail');
@@ -76,14 +86,23 @@ assert.equal(d.mastery({successes:{'2026-10-26':examples[0]}}),'recalled');
 assert.equal(d.mastery({successes:{'2026-10-26':examples[0],'2026-10-28':examples[0]}}),'remembered');
 assert.equal(d.mastery({successes:{'2026-10-26':examples[0],'2026-10-28':examples[1],'2026-11-03':examples[2]}}),'solid');
 assert.equal(d.mastery({successes:{'2026-10-26':examples[0],'2026-10-27':examples[1],'2026-10-28':examples[2]}}),'remembered','Three quick successes are not long-term mastery');
+assert.equal(d.mastery({successes:{'2026-10-20':'one','2026-10-22':'two','2026-10-27':'three'},lastFail:'2026-10-28'}),'weak','Incorrect recall revokes solid badge');
+assert.equal(d.mastery({successes:{'2026-10-20':'one','2026-10-22':'two','2026-10-27':'three','2026-10-28':'four'},lastFail:'2026-10-28'}),'recalled','Retry restarts mastery streak');
+const retake=d.stateFor({});
+const retakeQuiz=d.chooseQuiz(d.lessonItems(1),retake,1),allCorrect=retakeQuiz.map(x=>x.en);
+d.examResult(retake,1,retakeQuiz,allCorrect,'2026-10-27');
+d.examResult(retake,1,retakeQuiz,['bad answer',...allCorrect.slice(1)],'2026-10-27');
+assert.equal(d.mastery(retake.skills[retakeQuiz[0].id]),'weak','Failed same-day retry resets credit');
+d.examResult(retake,1,retakeQuiz,allCorrect,'2026-10-27');
+assert.equal(d.mastery(retake.skills[retakeQuiz[0].id]),'recalled');
 const html=read('index.html'),app=read('app.js'),build=read('scripts/build-static.mjs'),sw=read('sw.js'),css=read('daily-80-v60.css'),manifest=JSON.parse(read('manifest.webmanifest'));
 new vm.Script(app);
 assert.ok(app.includes("if(!location.hash) location.hash='#daily';"));
 assert.ok(app.includes("r.name === 'legacy-daily'")&&app.includes("r.name === 'daily-v52'"),'Both older daily learning systems remain reachable');
 assert.ok(app.includes("route:'japanese'")&&app.includes("route:'settings'"),'Old Japanese and settings screens remain accessible');
-assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261027-daily80-v60b.js'),'New assets in HTML');
+assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261027-daily80-v61.js'),'New assets in HTML');
 assert.ok(build.includes('"daily-80-v60.js"')&&build.includes('"daily-80-v60.css"'),'New assets in Pages builder');
 assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261027-daily80-v60b.js'"));
 assert.ok(manifest.start_url.endsWith('#daily'));
 assert.ok(css.includes('.day80-focus')&&css.includes('.day80-quiz')&&css.includes('@media(max-width:760px)'));
-console.log('PASS v60: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');
+console.log('PASS v61: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');

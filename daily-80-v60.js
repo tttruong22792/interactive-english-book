@@ -1,4 +1,4 @@
-/* Language Studio v60: one learning path, 80 structures every day.
+/* Language Studio v61 (v60 curriculum core): one learning path, 80 structures every day.
    Source examples come from the existing 80 published English lessons.
    Viewing a card never implies mastery. Only independent tested recall counts.
    Legacy screens, localStorage and older plans stay intact. */
@@ -112,8 +112,9 @@ function skill(root,id){
  const s=root.skills[id];s.successes=s.successes||{};return s;
 }
 function mastery(skill){
- const dates=Object.keys(skill.successes||{}).sort();
- if(dates.length===0)return 'seen';
+ // An incorrect answer invalidates the verified recall streak.
+ const dates=Object.keys(skill.successes||{}).filter(d=>!skill.lastFail||d>=skill.lastFail).sort();
+ if(!dates.length)return skill.lastFail?'weak':'seen';
  if(dates.length<2)return 'recalled';
  const examples=new Set(dates.map(d=>skill.successes[d]));
  if(dates.length>=3&&examples.size>=2&&diffDays(dates[0],dates[dates.length-1])>=7)return 'solid';
@@ -121,19 +122,11 @@ function mastery(skill){
 }
 function chooseQuiz(items,root,day){
  const selection=[];
- const old=root.days[day]?.attempts||[];
- const last=old[old.length-1],recentFailed=new Set(last?.results?.filter(r=>!r.correct).map(r=>r.id)||[]);
+ // Eight groups, two different patterns from each group per day.
+ // Every group of ten is fully assessed every five days.
  for(let g=0;g<8;g++){
-  const first=((day-1)*2)%10;
-  const group=items.slice(g*10,g*10+10);
-  const planned=group[first];
-  const weak=group.filter(x=>x.id!==planned.id).sort((a,b)=>{
-   const sa=skill(root,a.id),sb=skill(root,b.id);
-   const score=s=>Object.keys(s.successes||{}).length*3-s.errors*2;
-   return Number(recentFailed.has(b.id))-Number(recentFailed.has(a.id))||score(sa)-score(sb)||
-     Math.abs((a.id-1)%10-((first+1)%10))-Math.abs((b.id-1)%10-((first+1)%10));
-  })[0];
-  selection.push(planned,weak);
+  const group=items.slice(g*10,g*10+10),first=((day-1)*2)%10;
+  selection.push(group[first],group[(first+1)%10]);
  }
  return selection;
 }
@@ -141,27 +134,28 @@ function grade(expected,answer){return !!norm(answer)&&norm(expected)===norm(ans
 function examResult(root,day,quiz,answers,when){
  const date=when||dayStamp(),results=quiz.map((x,i)=>({id:x.id,correct:grade(x.en,answers[i]),expected:x.en,answer:String(answers[i]||''),vi:x.vi}));
  const correct=results.filter(x=>x.correct).length;
- const summary={date,correct,total:quiz.length,passed:correct>=14,results};
+ const summary={date,correct,total:quiz.length,passed:correct>=PASS_MIN,results};
  const target=dayData(root,day);
  target.attempts.push(summary);
  for(let i=0;i<quiz.length;i++){
   const s=skill(root,quiz[i].id);
   if(results[i].correct){s.successes[date]=norm(quiz[i].en);s.lastSuccess=date;}
-  else{s.errors++;s.lastFail=date;}
+  else{delete s.successes[date];s.errors++;s.lastFail=date;}
  }
  if(summary.passed&&target.seen.length===80)target.completedAt=date;
  return summary;
 }
 function stats(root){
  const day=currentDay(root),done=Object.values(root.days).filter(d=>d.completedAt).length;
- let recalled=0,remembered=0,solid=0;
+ let recalled=0,remembered=0,solid=0,weak=0;
  for(let i=1;i<=80;i++){
   const x=mastery(root.skills[i]||{successes:{}});
   if(x==='solid')solid++;
+  if(x==='weak')weak++;
   if(x==='remembered'||x==='solid')remembered++;
-  if(x!=='seen')recalled++;
+  if(x!=='seen'&&x!=='weak')recalled++;
  }
- return {day,done,recalled,remembered,solid};
+ return {day,done,recalled,remembered,solid,weak};
 }
 function dashboardHTML(root,day){
  const data=dayData(root,day),info=stats(root),seen=data.seen.length,chunkSeen=Object.keys(root.chunkSeen||{}).length;
@@ -178,7 +172,7 @@ function dashboardHTML(root,day){
  return '<button type="button" data-day80-group="'+i+'" class="day80-group g'+i+'"><span class="day80-group-icon">'+g.icon+'</span><div><strong>'+(i+1)+'. '+g.title+'</strong><small>'+g.subtitle+'</small></div><b>'+n+'/10</b><span class="day80-group-line"><i style="width:'+(n*10)+'%"></i></span></button>';
  }).join('')+'</div></section>'+
  '<section class="day80-bottom"><div><h2>Hôm nay đã đạt đến đâu?</h2><p><b>Đã học:</b> câu bạn đã thực sự đi qua · <b>Nhớ lại:</b> kiểm tra Việt → Anh đúng · <b>Vững:</b> trả lời đúng ít nhất 3 ngày khác nhau, trải tối thiểu 7 ngày và 2 ví dụ.</p></div>'+
- '<div class="day80-bottom-metrics"><span>'+info.done+'/60 ngày đạt</span><span>'+info.recalled+'/80 mẫu đã nhớ lại</span><span>'+chunkSeen+'/4000 cụm đã tiếp xúc</span></div>'+
+ '<div class="day80-bottom-metrics"><span>'+info.done+'/60 ngày đạt</span><span>'+info.recalled+'/80 mẫu đã nhớ lại</span><span>'+info.weak+' mẫu cần ôn</span><span>'+chunkSeen+'/4000 cụm đã tiếp xúc</span></div>'+
  '<button id="day80Calendar" class="day80-quiet">Xem lộ trình 60 ngày ↗</button>'+
  '<button id="day80Legacy" class="day80-link">Kho công cụ cũ · bài đọc · cụm từ · thử thách</button></section>'+
  (last?'<p class="day80-past">Bài kiểm tra gần nhất: '+last.correct+'/16 · '+(last.passed?'Đạt ngưỡng điểm':'Chưa đạt')+'. Ngày chỉ hoàn thành khi đã luyện đủ 80 câu và đạt ít nhất 14/16.</p>':'')+
