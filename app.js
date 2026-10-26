@@ -462,6 +462,8 @@
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'daily') renderDailyV52();
+      else if (r.name === 'legacy-daily') renderLegacyPlan60();
+      else if (r.name === 'daily-v52') renderLegacyV52();
       else if (r.name === 'reading') renderReadingStudio(r.id);
       else if (r.name === 'patterns') renderPatterns();
       else if (r.name === 'tenses') renderTenses();
@@ -528,54 +530,51 @@
   }
 
   function renderDailyV52(){
-    const planner=window.StudyPlan60;
-    if(!planner?.render){
-      setHeader('English › Hôm nay','Chưa tải được lộ trình');
-      $('#mainView').innerHTML='<section class="page-hero"><h1>Không tải được lộ trình.</h1><p>Hãy tải lại trang.</p></section>';
+    if(!window.Daily80V60?.render){
+      setHeader('Hôm nay','Chưa tải được bài học');
+      $('#mainView').innerHTML='<section class="page-hero"><h1>Không tải được lộ trình 80 mẫu câu.</h1><p>Hãy tải lại trang để cập nhật.</p></section>';
       return;
     }
-    planner.render({main:$('#mainView'),state,saveState,setHeader,speak,toast});
+    window.Daily80V60.render({main:$('#mainView'),state,setHeader,saveState,speak,toast});
+  }
+  function renderLegacyPlan60(){
+    window.StudyPlan60?.render?.({main:$('#mainView'),state,setHeader,saveState,speak,toast});
+  }
+  function renderLegacyV52(){
+    if(!window.DailyLearningV52?.render){toast('Chế độ cũ chưa được tải.');return;}
+    const legacyEnv={state,setHeader,saveState,queueVocabUpsert,speak,startRecognition,esc,escAttr,uiIcon,toast,
+      openTrainer:(options={})=>window.VocabularyTrainer?.open?.({
+        state,main:$('#mainView'),setHeader,saveState,queueVocabUpsert,speak,uiIcon,esc,escAttr,toast,
+        renderVocab:()=>window.DailyLearningV52.render(legacyEnv)
+      },options)};
+    window.DailyLearningV52.render(legacyEnv);
   }
 
   function renderHome(){
-    L=null;
-    setHeader('Thư viện','Chọn hoạt động');
-    const count=window.VocabularyTrainer?.packs?.().length||80;
-    const readingCount=window.ReadingStudio?.stories?.length||30;
-    const current=window.VocabularyTrainer?.curriculumSummary?.(state.saved||{})||{};
-    const due=Math.max(0,Number(current.due)||0);
-    const readDone=Object.values(state.readingStudio?.items||{}).filter(item=>item?.completed).length;
+    L=null;setHeader('Kho công cụ','Chức năng mở rộng');
     const choices=[
-      {icon:'🎯',title:'Cụm chủ động',desc:'Nhớ và sử dụng cụm từ trong tình huống thật',route:'vocab'},
-      {icon:'📚',title:'Đọc & Nghe',desc:'Bài đọc, nghe từng câu và kiểm tra hiểu bài',route:'reading'},
-      {icon:'☀️',title:'Học hôm nay',desc:'Lộ trình học và ôn tập trong 25 phút',route:'daily'},
-      {icon:'🧩',title:'80 mẫu câu',desc:'Học mẫu câu rồi ghép với cụm đã biết',route:'patterns'},
-      {icon:'🎧',title:'Shadowing',desc:'Nghe, bắt chước nhịp và nói tự nhiên',route:'shadowing'},
-      {icon:'🏅',title:'Thử thách',desc:'Kiểm tra phản xạ từ các bài đã học',route:'challenge'}
+      {icon:'🎯',title:'Cụm chủ động',desc:'Kho 4.000 cụm và bài luyện chuyên sâu',route:'vocab'},
+      {icon:'📚',title:'Đọc & Nghe',desc:'30 bài đọc theo cấp độ, có nghe và kiểm tra',route:'reading'},
+      {icon:'🧩',title:'80 mẫu câu',desc:'Xem toàn bộ bài giải thích, ví dụ và luyện tập',route:'patterns'},
+      {icon:'🎧',title:'Shadowing',desc:'Luyện bắt chước ngữ điệu',route:'shadowing'},
+      {icon:'🏅',title:'Thử thách',desc:'Luyện toàn bộ câu trong kho',route:'challenge'},
+      {icon:'📝',title:'Luyện câu',desc:'Các chế độ luyện tập riêng',route:'practice'},
+      {icon:'📅',title:'Lộ trình cũ v59',desc:'Kế hoạch 60 ngày phiên bản trước',route:'legacy-daily'},
+      {icon:'🤖',title:'Bài học AI v52',desc:'Chế độ hội thoại và ôn tập cũ',route:'daily-v52'},
+      {icon:'🇯🇵',title:'Tiếng Nhật N2',desc:'Bài học tiếng Nhật đã xây dựng',route:'japanese'},
+      {icon:'📊',title:'Thống kê cũ',desc:'Tiến độ các bài và kho học',route:'progress'},
+      {icon:'⚙️',title:'Cài đặt',desc:'Âm thanh, tài khoản và tùy chọn',route:'settings'}
     ];
-    const cards=choices.map(c=>
-      '<button class="easy-play-activity" type="button" data-go="'+escAttr(c.route)+'">'+
+    const cards=choices.map(c=>'<button class="easy-play-activity" type="button" data-go="'+escAttr(c.route)+'">'+
       '<span class="easy-play-activity-icon" aria-hidden="true">'+c.icon+'</span>'+
       '<span class="easy-play-arrow" aria-hidden="true">↗</span>'+
-      '<strong>'+esc(c.title)+'</strong><small>'+esc(c.desc)+'</small></button>'
-    ).join('');
-    $('#mainView').innerHTML=
-      '<section class="easy-play-home" aria-label="Chọn hoạt động học">'+
-        '<header class="easy-play-home-hero">'+
-          '<div><span class="easy-play-kicker">LANGUAGE STUDIO · PLAY & LEARN</span>'+
-            '<h1>Một chút mỗi ngày.<br>Tiếng Anh sẽ thành phản xạ.</h1>'+
-            '<p>Chọn một hoạt động, học theo từng lượt ngắn và dùng cụm từ trong cuộc sống thực tế.</p>'+
-            '<button type="button" class="easy-play-go" data-go="vocab">▶ Bắt đầu với Cụm chủ động</button>'+
-          '</div><div class="easy-play-home-icon" aria-hidden="true">📖</div>'+
-        '</header>'+
-        '<div class="easy-play-section-title"><h2>Hôm nay bạn muốn học gì?</h2><span>Chọn một thẻ để bắt đầu</span></div>'+
-        '<div class="easy-play-activities">'+cards+'</div>'+
-        '<div class="easy-play-home-foot">'+
-          '<span>📘 '+count+' mẫu câu</span>'+
-          '<span>📖 '+readingCount+' bài đọc · '+readDone+' đã hoàn thành</span>'+
-          '<span>⏰ '+due+' cụm đến hạn ôn</span>'+
-        '</div>'+
-      '</section>';
+      '<strong>'+esc(c.title)+'</strong><small>'+esc(c.desc)+'</small></button>').join('');
+    $('#mainView').innerHTML='<section class="easy-play-home">'+
+      '<header class="day80-tools-head"><div><span class="easy-play-kicker">KHO CHỨC NĂNG ĐƯỢC GIỮ NGUYÊN</span>'+
+      '<h1>Khi cần, bạn vẫn dùng được mọi công cụ cũ</h1>'+
+      '<p>Mặc định hãy học theo Hôm nay để tập trung. Những chế độ dưới đây không bị xóa.</p>'+
+      '<button class="easy-play-go" data-go="daily">← Trở về bài học hôm nay</button></div></header>'+
+      '<div class="easy-play-activities">'+cards+'</div></section>';
     bindGenericRoutes();
   }
 
@@ -3467,7 +3466,7 @@
     }
   }
   window.__LS_RENDERED=false;
-  if(!location.hash) location.hash='#vocab';
+  if(!location.hash) location.hash='#daily';
   Promise.resolve(render())
     .then(async()=>{
       window.__LS_RENDERED=true;
