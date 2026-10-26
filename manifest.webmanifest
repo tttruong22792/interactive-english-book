@@ -2,7 +2,7 @@
   "name": "Language Studio – English + Japanese",
   "short_name": "Language Studio",
   "description": "Interactive self-study platform for English, Japanese, vocabulary, listening and speaking.",
-  "start_url": "./index.html#vocab",
+  "start_url": "./index.html#daily",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
