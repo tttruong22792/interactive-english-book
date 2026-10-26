@@ -76,6 +76,8 @@ jobs:
           node --check cloud-sync.js
           node --check daily-learning-v52.js
           node --check study-plan-60.js
+          node --check daily-80-v60.js
+          node --check scripts/test-daily-80-v60.mjs
           node --check scripts/test-study-plan-60.mjs
           node --check scripts/test-daily-v52.mjs
           node --check scripts/test-app-shell-v53.mjs
@@ -132,6 +134,10 @@ jobs:
       - name: Test the strict 60-day learning path
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-study-plan-60.mjs
+
+      - name: Test daily 80-pattern focused curriculum
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-daily-80-v60.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
