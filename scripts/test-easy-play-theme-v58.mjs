@@ -35,11 +35,11 @@ assert.ok(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),'phone h
 assert.ok(css.includes('grid-template-columns:repeat(5,minmax(0,1fr))'),'the five mobile tabs remain available');
 assert.ok(base.includes('height:100dvh')&&base.includes('overscroll-behavior-y:contain'),'full-screen app shell remains intact');
 assert.ok(reading.includes('.reading-player'),'reading controls remain installed');
-assert.ok(app.includes("if(!location.hash) location.hash='#vocab';"),'Cụm chủ động remains the default');
+assert.ok(app.includes("if(!location.hash) location.hash='#daily';"),'Daily mission is the default');
 for(const route of ['vocab','reading','daily','patterns','shadowing','challenge']){
  assert.ok(app.includes("route:'"+route+"'"),'card for existing '+route+' module is wired');
 }
 assert.ok(app.includes('bindGenericRoutes();'),'home cards attach click handlers');
-assert.ok(html.includes('data-ui-menu')&&html.includes('data-route="settings"'),'all settings remain reachable');
+assert.ok(app.includes("route:'settings'")&&app.includes("route:'daily-v52'"),'old settings and v52 remain reachable in archive');
 
 console.log('PASS v58: pastel game-card shell, clickable home cards, core chunks, responsive iPad/iPhone styles and safe PWA update.');
