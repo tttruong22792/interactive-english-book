@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="reading-studio.css?v=20261021-v56" />
   <link rel="stylesheet" href="easy-play-theme-v58.css?v=20261022-v58" />
   <link rel="stylesheet" href="study-plan-60.css?v=20261022-v59" />
-  <link rel="stylesheet" href="daily-80-v60.css?v=20261027-v61c" />
+  <link rel="stylesheet" href="daily-80-v60.css?v=20261028-v62" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -124,10 +124,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261028-daily80-v61d.js'
+        ? 'runtime-20261028-daily80-v62.js'
         : 'runtime.js?v=20261020-patterns-80-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261028-v61d-recovery1';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261028-v62';
       script.async = false;
       script.onerror = function () {
         // A stale iOS PWA cache may miss this versioned filename.
@@ -136,7 +136,7 @@
         if (window.__LS_FALLBACK_ATTEMPTED) return;
         window.__LS_FALLBACK_ATTEMPTED = true;
         var backup = document.createElement('script');
-        backup.src = 'runtime.js?fallback=20261028-v61d-recovery1';
+        backup.src = 'runtime.js?fallback=20261028-v62';
         backup.async = false;
         backup.onerror = function () {
           window.__LS_BOOT_ERRORS.push('Tệp dự phòng cũng không tải được. Kiểm tra kết nối Internet.');
