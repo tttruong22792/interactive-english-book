@@ -290,8 +290,12 @@ function bind(root,day,items,active){
   if(!active.seen.includes(id)){active.seen.push(id);active.seen.sort((a,b)=>a-b);}
   const chunkKey=items[index].chunkKey;if(chunkKey&&!root.chunkSeen[chunkKey])root.chunkSeen[chunkKey]=dayStamp();
   env.saveState();
-  if(index>=79){mode='home';}else{index++;}
+  if(index>=79){mode='home';render();return;}
+  index++;
   render();
+  // Play in the originating tap for iOS Safari/PWA audio permission.
+  // The existing speak() cancels any previous utterance first.
+  env.speak?.(items[index].en,null,0.7);
  });
  $('#day80QuizExit')?.addEventListener('click',()=>{viewDay=0;mode='home';render();});
  const field=$('#day80Input');
