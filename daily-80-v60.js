@@ -376,13 +376,13 @@ function bind(root,day,items,active){
   index=items.findIndex(x=>x.group===blocked&&!active.seen.includes(x.id));
   index=Math.max(0,index);mode='learn';render();
  });
- $('[data-day80-group]').forEach(button=>button.onclick=()=>{
+ $$('[data-day80-group]').forEach(button=>button.onclick=()=>{
   const chosen=Number(button.dataset.day80Group),blocked=firstBlockedStage(active,items);
   if(chosen>blocked&&blocked<8){if(stageItems(items,blocked).every(x=>active.seen.includes(x.id)))openCheckpoint(blocked);else{index=blocked*10;mode='learn';render();}return;}
   if(stageItems(items,chosen).every(x=>active.seen.includes(x.id))){openCheckpoint(chosen);return;}
   index=chosen*10;mode='learn';render();
  });
- $('[data-day80-pattern]').forEach(button=>button.onclick=()=>{
+ $$('[data-day80-pattern]').forEach(button=>button.onclick=()=>{
   const wanted=Number(button.dataset.day80Pattern)-1,blocked=firstBlockedStage(active,items);
   if(Math.floor(wanted/10)>blocked&&blocked<8){if(stageItems(items,blocked).every(x=>active.seen.includes(x.id)))openCheckpoint(blocked);else{index=blocked*10;mode='learn';render();}return;}
   index=wanted;mode='learn';render();
@@ -416,7 +416,7 @@ function bind(root,day,items,active){
  });
 
  $('#day80GateBack')?.addEventListener('click',()=>{stopGateSpeech();gateType='overview';mode='home';render();});
- $('[data-day80-gate-kind]').forEach(button=>button.onclick=()=>openGateKind(active,items,button.dataset.day80GateKind));
+ $$('[data-day80-gate-kind]').forEach(button=>button.onclick=()=>openGateKind(active,items,button.dataset.day80GateKind));
  $('#day80GateOverview')?.addEventListener('click',()=>{stopGateSpeech();gateType='overview';gateFeedback=null;render();});
  $('#day80GateContinue')?.addEventListener('click',()=>{
   if(!stageComplete(active,gateStage,items))return;
@@ -424,7 +424,7 @@ function bind(root,day,items,active){
   index=(gateStage+1)*10;mode='learn';render();
   env.speak?.(items[index].en,null,0.7);
  });
- $('[data-day80-gate-input]').forEach(button=>button.onclick=()=>{
+ $$('[data-day80-gate-input]').forEach(button=>button.onclick=()=>{
   if(gateFeedback)return;
   const selected=button.dataset.day80GateInput;
   if(selected==='speak'&&!(window.SpeechRecognition||window.webkitSpeechRecognition))return;
