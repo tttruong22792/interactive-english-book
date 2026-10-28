@@ -167,8 +167,8 @@ assert.ok(d.checkpointHTML(gateDay,0,d.lessonItems(1),'sentence',1).includes('da
 assert.ok(!d.checkpointHTML(gateDay,0,d.lessonItems(1),'sentence',1).includes('I\'d like to order this.'),'English answer must not be visible before recall');
 assert.ok(css.includes('.day80-gate-question'),'Recall checkpoint has a mobile-friendly separate screen');
 const originalStage=d.lessonItems(1),reviewSentence=d.gateStudyHTML(0,originalStage,'sentence',0),reviewChunk=d.gateStudyHTML(0,originalStage,'chunk',0);
-assert.ok(reviewSentence.includes(originalStage[0].en)&&reviewSentence.includes('day80GateStudySpeak'),'Sentence preview includes the original English and audio');
-assert.ok(reviewChunk.includes(originalStage[0].chunk[0])&&!reviewChunk.includes('<h2>'+originalStage[0].en+'</h2>'),'Chunk preview shows the independent chunk only');
+assert.ok(reviewSentence.includes('ÔN LẠI CÂU TIẾNG ANH')&&reviewSentence.includes('day80GateStudySpeak')&&reviewSentence.includes('day80GateStudySlow'),'Sentence preview includes separate reading/listening controls');
+assert.ok(reviewChunk.includes('ÔN LẠI CỤM TỪ TIẾNG ANH')&&reviewChunk.includes('day80GateStudySpeak')&&!reviewChunk.includes('ÔN LẠI CÂU TIẾNG ANH'),'Chunk review stays independent from sentence review');
 assert.ok(d.checkpointHTML(gateDay,0,originalStage).includes('data-day80-gate-review="sentence"')&&d.checkpointHTML(gateDay,0,originalStage).includes('data-day80-gate-review="chunk"'),'Both sections have a separate re-study action');
 assert.ok(d.checkpointHTML(gateDay,0,originalStage,'sentence',0).includes('id="day80GateStudyOpen"'),'Each recall question has a forgotten button');
 const previousCheckpoint=JSON.stringify(gateDay.checkpoints);
