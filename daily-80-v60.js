@@ -157,6 +157,22 @@ function recordCheckpoint(root,day,stage,kind,item,answer,method='write',when){
  }
  return {correct:success,expected,answer:String(answer||''),method};
 }
+function gateStudyHTML(stage,items,kind,position){
+ const card=stageItems(items,stage)[position],sentence=kind==='sentence';
+ const en=sentence?card.en:card.chunk?.[0],vi=sentence?card.vi:card.chunk?.[1];
+ return '<section class="day80-gate day80-gate-study"><header class="day80-gate-head"><button id="day80GateStudyBack" type="button" class="day80-quiet">← Quay lại luyện nhớ</button>'+
+ '<div><strong>Học lại chặng '+(stage+1)+'/8</strong><small>'+(sentence?'Câu hoàn chỉnh':'Cụm bổ sung')+' · '+(position+1)+'/10</small></div></header>'+
+ '<div class="day80-gate-study-progress"><i style="width:'+((position+1)*10)+'%"></i></div>'+
+ '<article class="day80-gate-study-card"><span>'+(sentence?'ÔN LẠI CÂU TIẾNG ANH':'ÔN LẠI CỤM TỪ TIẾNG ANH')+'</span>'+
+ (sentence?'<small>Mẫu '+card.id+' · '+escape(card.pattern)+'</small>':'')+
+ '<h2>'+escape(en||'')+'</h2><p>'+escape(vi||'')+'</p>'+
+ '<div class="day80-gate-study-audio"><button id="day80GateStudySpeak" type="button">♫ Nghe</button><button id="day80GateStudySlow" type="button">♫ Nghe chậm</button></div>'+
+ '<p class="day80-gate-study-hint">Đọc thành tiếng hai lần, che tiếng Anh và tự nói lại. Xem lại chưa được tính là đã thuộc.</p></article>'+
+ '<footer class="day80-gate-study-actions"><button id="day80GateStudyPrevious" type="button" '+(position===0?'disabled':'')+'>← Câu trước</button>'+
+ '<button id="day80GateStudyNext" type="button" '+(position===9?'disabled':'')+'>Câu tiếp →</button></footer>'+
+ '<button id="day80GateStudyDone" type="button" class="day80-mainbtn">Đã ôn · Quay lại tự nhớ →</button></section>';
+}
+
 function checkpointHTML(day,stage,items,kind='overview',position=0,feedback=null,inputMode='write'){
  const part=stageItems(items,stage),g=GROUPS[stage];
  const sc=stageProgress(day,stage,'sentence',items),cc=stageProgress(day,stage,'chunk',items);
@@ -165,8 +181,8 @@ function checkpointHTML(day,stage,items,kind='overview',position=0,feedback=null
  if(kind==='overview'){
   return '<section class="day80-gate">'+heading+
    '<div class="day80-gate-intro"><span>NHỚ CHỦ ĐỘNG · VIỆT → ANH</span><h2>Đã xem chưa phải là đã thuộc</h2><p>Hai phần luyện độc lập. Hãy tự viết hoặc nói tiếng Anh; phần nào chưa đúng sẽ quay lại để luyện tiếp.</p></div>'+
-   '<div class="day80-gate-choices"><article><span class="day80-gate-type">01 · CÂU HOÀN CHỈNH</span><h3>Nhớ lại 10 câu</h3><p>Diễn đạt trọn vẹn từ tiếng Việt</p><strong>'+sc+'/10 đúng</strong><button type="button" data-day80-gate-kind="sentence">'+(sc===10?'✓ Đã đạt':'Luyện câu →')+'</button></article>'+
-   '<article><span class="day80-gate-type">02 · CỤM TỪ</span><h3>Nhớ lại 10 cụm</h3><p>Nhớ riêng cụm bổ sung hôm nay</p><strong>'+cc+'/10 đúng</strong><button type="button" data-day80-gate-kind="chunk">'+(cc===10?'✓ Đã đạt':'Luyện cụm →')+'</button></article></div>'+
+   '<div class="day80-gate-choices"><article><span class="day80-gate-type">01 · CÂU HOÀN CHỈNH</span><h3>Nhớ lại 10 câu</h3><p>Diễn đạt trọn vẹn từ tiếng Việt</p><strong>'+sc+'/10 đúng</strong><button type="button" data-day80-gate-review="sentence" class="day80-gate-review-link">↶ Học lại 10 câu</button><button type="button" data-day80-gate-kind="sentence">'+(sc===10?'✓ Đã đạt':'Luyện câu →')+'</button></article>'+
+   '<article><span class="day80-gate-type">02 · CỤM TỪ</span><h3>Nhớ lại 10 cụm</h3><p>Nhớ riêng cụm bổ sung hôm nay</p><strong>'+cc+'/10 đúng</strong><button type="button" data-day80-gate-review="chunk" class="day80-gate-review-link">↶ Học lại 10 cụm</button><button type="button" data-day80-gate-kind="chunk">'+(cc===10?'✓ Đã đạt':'Luyện cụm →')+'</button></article></div>'+
    '<p class="day80-gate-note">Chỉ câu/cụm trả lời đúng mà không xem đáp án mới được tính. Nhận dạng giọng nói có thể sai; hãy kiểm tra chữ máy nghe được.</p>'+
    '<button type="button" id="day80GateContinue" class="day80-mainbtn" '+(completed?'':'disabled')+'>'+(stage===7?'Hoàn thành 8 chặng · Về bài kiểm tra':'Tiếp tục chặng '+(stage+2)+' →')+'</button></section>';
  }
@@ -188,7 +204,7 @@ function checkpointHTML(day,stage,items,kind='overview',position=0,feedback=null
   '<textarea id="day80GateInput" rows="'+(isSentence?3:2)+'" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tự nhớ rồi nhập câu trả lời..."></textarea>'+
   '<button type="button" id="day80GateCheck" class="day80-mainbtn">Kiểm tra câu trả lời</button>':
   '<button type="button" id="day80GateMic" class="day80-mainbtn">● Bấm để nói tiếng Anh</button><p id="day80GateSpeechStatus" class="day80-gate-speech-status" role="status">Nói rõ '+(isSentence?'cả câu':'cụm từ')+'. Hệ thống tự kiểm tra khi nhận được giọng nói.</p>')+
-  '</article><footer class="day80-gate-footer"><button id="day80GateOverview" class="day80-quiet">← Hai phần luyện</button><span>Mục '+(position+1)+'/10 · '+(isSentence?'Câu':'Cụm')+'</span></footer></section>';
+  '</article><footer class="day80-gate-footer"><button id="day80GateOverview" class="day80-quiet">← Hai phần luyện</button><button id="day80GateStudyOpen" type="button" class="day80-gate-forgot">↶ Quên rồi · Xem lại '+(isSentence?'câu':'cụm')+'</button><span>Mục '+(position+1)+'/10 · '+(isSentence?'Câu':'Cụm')+'</span></footer></section>';
 }
 
 function currentDay(root){for(let i=1;i<=TOTAL_DAYS;i++){if(!root.days[i]?.completedAt)return i;}return TOTAL_DAYS;}
@@ -330,7 +346,7 @@ function calendarHTML(root){
  '<div class="day80-calendar-grid">'+Array.from({length:60},(_,i)=>{const n=i+1,d=root.days[n];return '<span class="'+(d?.completedAt?'done':n===currentDay(root)?'current':'')+'">Ngày '+n+(d?.completedAt?' ✓':'')+'</span>';}).join('')+'</div>'+
  '<strong>'+complete+'/60 ngày hoàn thành</strong><p>Không bắt buộc học bù bằng cách bỏ qua bài; bạn có thể tiếp tục đúng ngày chưa đạt.</p></section>';
 }
-let env,mode='home',index=0,quizIndex=0,quiz=[],answers=[],result=null,viewDay=0,examDay=0,reviewFailures=[],reviewIndex=0,gateStage=0,gateType='overview',gatePosition=0,gateFeedback=null,gateInputMode='write',gateRecognizer=null;
+let env,mode='home',index=0,quizIndex=0,quiz=[],answers=[],result=null,viewDay=0,examDay=0,reviewFailures=[],reviewIndex=0,gateStage=0,gateType='overview',gatePosition=0,gateFeedback=null,gateInputMode='write',gateRecognizer=null,gateStudyMode=false;
 function render(nextEnv){
  if(nextEnv)env=nextEnv;if(!env?.main||!env?.state)return;
  const root=stateFor(env.state),day=currentDay(root),today=viewDay||((mode==='result'||mode==='quiz'||mode==='review')&&examDay?examDay:day),items=lessonItems(today);
@@ -338,7 +354,7 @@ function render(nextEnv){
  if(items.length!==80){env.main.innerHTML='<div class="day80-error">Thiếu dữ liệu 80 mẫu câu. Vui lòng tải lại phiên bản mới. Các bài học cũ chưa bị thay đổi.</div>';return;}
  const active=dayData(root,today);
  if(mode==='learn'&&index>=80){mode='home';index=79;}
- const html=mode==='learn'?studyHTML(items,root,today,index):mode==='checkpoint'?checkpointHTML(active,gateStage,items,gateType,gatePosition,gateFeedback,gateInputMode):mode==='quiz'?quizHTML(quiz,answers,quizIndex):
+ const html=mode==='learn'?studyHTML(items,root,today,index):mode==='checkpoint'?(gateStudyMode?gateStudyHTML(gateStage,items,gateType,gatePosition):checkpointHTML(active,gateStage,items,gateType,gatePosition,gateFeedback,gateInputMode)):mode==='quiz'?quizHTML(quiz,answers,quizIndex):
  mode==='result'&&result?resultHTML(root,today,result):mode==='review'&&reviewFailures.length?reviewHTML(today,items,reviewFailures,reviewIndex):mode==='calendar'?calendarHTML(root):dashboardHTML(root,today,items);
  env.main.innerHTML='<div class="day80-app">'+html+'</div>';
  bind(root,today,items,active);
@@ -347,13 +363,23 @@ function stopGateSpeech(){
  if(gateRecognizer){const r=gateRecognizer;gateRecognizer=null;r.onresult=null;r.onerror=null;r.onend=null;try{r.abort();}catch(e){}}
 }
 function openCheckpoint(stage){
- stopGateSpeech();gateStage=stage;gateType='overview';gatePosition=0;gateFeedback=null;gateInputMode='write';mode='checkpoint';render();
+ stopGateSpeech();gateStage=stage;gateType='overview';gatePosition=0;gateFeedback=null;gateInputMode='write';gateStudyMode=false;mode='checkpoint';render();
 }
 function openGateKind(day,items,kind){
- stopGateSpeech();gateType=kind;gateFeedback=null;gateInputMode='write';
+ stopGateSpeech();gateType=kind;gateFeedback=null;gateInputMode='write';gateStudyMode=false;
  gatePosition=pendingIndex(day,gateStage,kind,items,0);
  if(gatePosition<0){gateType='overview';gatePosition=0;}
  render();
+}
+function openGateStudy(kind,fromStart=false){
+ stopGateSpeech();
+ if(kind!=='sentence'&&kind!=='chunk')return;
+ gateType=kind;
+ if(fromStart)gatePosition=0;
+ gateFeedback=null;gateStudyMode=true;render();
+}
+function returnFromGateStudy(){
+ gateStudyMode=false;gateFeedback=null;gateInputMode='write';render();
 }
 function gateAnswer(root,day,items,answer,method){
  if(gateFeedback)return;
@@ -415,9 +441,23 @@ function bind(root,day,items,active){
   env.speak?.(items[index].en,null,0.7);
  });
 
- $('#day80GateBack')?.addEventListener('click',()=>{stopGateSpeech();gateType='overview';mode='home';render();});
+ $('#day80GateBack')?.addEventListener('click',()=>{stopGateSpeech();gateStudyMode=false;gateType='overview';mode='home';render();});
  $$('[data-day80-gate-kind]').forEach(button=>button.onclick=()=>openGateKind(active,items,button.dataset.day80GateKind));
- $('#day80GateOverview')?.addEventListener('click',()=>{stopGateSpeech();gateType='overview';gateFeedback=null;render();});
+ $$('[data-day80-gate-review]').forEach(button=>button.onclick=()=>openGateStudy(button.dataset.day80GateReview,true));
+ $('#day80GateStudyOpen')?.addEventListener('click',()=>openGateStudy(gateType));
+ $('#day80GateStudyBack')?.addEventListener('click',returnFromGateStudy);
+ $('#day80GateStudyDone')?.addEventListener('click',returnFromGateStudy);
+ $('#day80GateStudyPrevious')?.addEventListener('click',()=>{gatePosition=Math.max(0,gatePosition-1);render();});
+ $('#day80GateStudyNext')?.addEventListener('click',()=>{gatePosition=Math.min(9,gatePosition+1);render();});
+ $('#day80GateStudySpeak')?.addEventListener('click',()=>{
+  const card=stageItems(items,gateStage)[gatePosition];
+  env.speak?.(gateType==='sentence'?card.en:card.chunk?.[0]);
+ });
+ $('#day80GateStudySlow')?.addEventListener('click',()=>{
+  const card=stageItems(items,gateStage)[gatePosition];
+  env.speak?.(gateType==='sentence'?card.en:card.chunk?.[0],null,0.7);
+ });
+ $('#day80GateOverview')?.addEventListener('click',()=>{stopGateSpeech();gateStudyMode=false;gateType='overview';gateFeedback=null;render();});
  $('#day80GateContinue')?.addEventListener('click',()=>{
   if(!stageComplete(active,gateStage,items))return;
   if(gateStage===7){mode='home';render();return;}
@@ -498,5 +538,5 @@ function bind(root,day,items,active){
   render();
  });
 }
-window.Daily80V60={render,lessonItems,sourcePool,selectedExample,courseDays:TOTAL_DAYS,grade,examResult,stateFor,dayData,currentDay,mastery,stats,chooseQuiz,GROUPS,checkpoint,stageProgress,stageComplete,firstBlockedStage,pendingIndex,recordCheckpoint,checkpointHTML};
+window.Daily80V60={render,lessonItems,sourcePool,selectedExample,courseDays:TOTAL_DAYS,grade,examResult,stateFor,dayData,currentDay,mastery,stats,chooseQuiz,GROUPS,checkpoint,stageProgress,stageComplete,firstBlockedStage,pendingIndex,recordCheckpoint,checkpointHTML,gateStudyHTML};
 })();

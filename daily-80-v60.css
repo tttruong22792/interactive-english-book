@@ -263,3 +263,22 @@
  .day80-gate-question h2{font-size:23px}
  .day80-gate-question textarea{font-size:16px}
 }
+
+/* v62b: focused re-study from either recall section, no extra app tabs. */
+.day80-gate-choices button.day80-gate-review-link{border:none;background:transparent;color:#8d725f;font-size:12px;text-align:left;padding:5px 0;box-shadow:none;text-decoration:underline;text-underline-offset:3px}
+.day80-gate-footer{flex-wrap:wrap}
+.day80-gate-forgot{font-size:12px;font-weight:800;color:#9d664c;border:1px solid #e7d5c4;border-radius:12px;padding:10px 13px;background:#fffaf4}
+.day80-gate-study-card{background:#fff;border:1px solid #e8ddd3;border-radius:23px;min-height:315px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:25px 22px;flex:1}
+.day80-gate-study-card>span{font-size:12px;font-weight:850;letter-spacing:.08em;color:#bb7656}
+.day80-gate-study-card>small{font-size:12px;color:#84746b}
+.day80-gate-study-card h2{font-size:clamp(24px,3.7vw,36px);line-height:1.4;color:#283949;margin:4px 0 0;max-width:650px}
+.day80-gate-study-card>p{font-size:17px;line-height:1.55;color:#8b766b;margin:0}
+.day80-gate-study-card .day80-gate-study-hint{font-size:12px;color:#887d71;margin-top:5px}
+.day80-gate-study-audio{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:4px 0}
+.day80-gate-study-audio button{background:#fffaf4;color:#ac7156;border:1px solid #e8cfbf;border-radius:12px;padding:11px 18px;font-weight:800}
+.day80-gate-study-progress{height:7px;background:#ebe6df;border-radius:8px;overflow:hidden}
+.day80-gate-study-progress i{display:block;height:100%;background:#ec936a;border-radius:8px}
+.day80-gate-study-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.day80-gate-study-actions button{border:1px solid #e3d6c8;background:#fff;border-radius:13px;padding:13px;color:#9e6f58;font-weight:800}
+.day80-gate-study-actions button:disabled{opacity:.38}
+@media(max-width:760px){.day80-gate-study-card{padding:22px 15px;min-height:300px;gap:11px}.day80-gate-study-card h2{font-size:25px}.day80-gate-study-card>p{font-size:15px}.day80-gate-footer{gap:7px}.day80-gate-forgot{order:2;flex:1}.day80-gate-study-actions button{font-size:13px}}
