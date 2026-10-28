@@ -112,7 +112,7 @@ assert.ok(app.includes("r.name === 'legacy-daily'")&&app.includes("r.name === 'd
 assert.ok(app.includes("route:'japanese'")&&app.includes("route:'settings'"),'Old Japanese and settings screens remain accessible');
 assert.ok(html.includes('daily-80-v60.css')&&html.includes('runtime-20261028-daily80-v62.js'),'New assets in HTML');
 assert.ok(build.includes('"daily-80-v60.js"')&&build.includes('"daily-80-v60.css"'),'New assets in Pages builder');
-assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261028-daily80-v61d.js'"));
+assert.ok(sw.includes("'./daily-80-v60.css'")&&sw.includes("'./runtime-20261028-daily80-v62.js'"));
 assert.ok(manifest.start_url.endsWith('#daily'));
 assert.ok(css.includes('.day80-focus')&&css.includes('.day80-quiz')&&css.includes('@media(max-width:760px)'));
 assert.ok(css.includes('.day80-mastery-map')&&read('daily-80-v60.js').includes('data-day80-pattern')&&read('daily-80-v60.js').includes('masteryMapHTML'),'The 80-pattern mastery drill-down must remain available');
