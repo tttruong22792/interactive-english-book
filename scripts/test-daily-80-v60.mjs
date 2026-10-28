@@ -135,4 +135,6 @@ assert.ok(screen.innerHTML.includes('id="day80ReviewReveal"'),'Saved mistakes ca
 const engineText=read('daily-80-v60.js');
 assert.ok(engineText.includes('env.speak?.(items[index].en,null,0.7);'),'Next sentence must automatically play at slow speed');
 assert.ok(engineText.includes("if(index>=79){mode='home';render();return;}"),'Last sentence should return home without auto-playing');
-console.log('PASS v61d: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');
+assert.ok(html.includes("script.onerror = function ()")&&html.includes("runtime.js?fallback=20261028-v61d-recovery1"),'A failed versioned script should fall back to same-build runtime');
+assert.ok(html.includes('id="lsRetryBoot"'),'Boot failures should offer an explicit retry without deleting progress');
+console.log('PASS v61d recovery: 60-day progressive real-content curriculum, 80 structures per day, 8 functional groups, 16-item strict exam, honest recall mastery and archived legacy modules.');

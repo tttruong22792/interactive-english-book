@@ -115,7 +115,10 @@
         '<section class="page-hero"><div class="eyebrow">STARTUP DIAGNOSTIC</div>' +
         '<h1>Language Studio chưa khởi động được</h1>' +
         '<p>' + details.replace(/[&<>]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];}) + '</p>' +
-        '<p style="margin-top:12px">Mở /api/asset-check nếu cần kiểm tra file.</p></section>';
+        '<p style="margin-top:12px">Ứng dụng chưa tải đủ dữ liệu. Hãy thử kết nối mạng và tải lại. Tiến độ học vẫn được giữ nguyên.</p>' +
+        '<button type="button" id="lsRetryBoot" style="margin-top:14px;padding:12px 19px;border-radius:12px;border:1px solid #d5a28a;background:#fff;color:#86533c;font-weight:700">Tải lại ứng dụng</button></section>';
+      var retry = document.getElementById('lsRetryBoot');
+      if (retry) retry.onclick = function () { window.location.reload(); };
     }, 3500);
   </script>
   <script>
@@ -124,8 +127,22 @@
         ? 'runtime-20261028-daily80-v61d.js'
         : 'runtime.js?v=20261020-patterns-80-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261028-daily80-v61d';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261028-v61d-recovery1';
       script.async = false;
+      script.onerror = function () {
+        // A stale iOS PWA cache may miss this versioned filename.
+        // runtime.js is generated from the SAME build and offers a safe fallback.
+        window.__LS_BOOT_ERRORS.push('Tệp phiên bản không tải được, đang thử bản dự phòng.');
+        if (window.__LS_FALLBACK_ATTEMPTED) return;
+        window.__LS_FALLBACK_ATTEMPTED = true;
+        var backup = document.createElement('script');
+        backup.src = 'runtime.js?fallback=20261028-v61d-recovery1';
+        backup.async = false;
+        backup.onerror = function () {
+          window.__LS_BOOT_ERRORS.push('Tệp dự phòng cũng không tải được. Kiểm tra kết nối Internet.');
+        };
+        document.body.appendChild(backup);
+      };
       document.body.appendChild(script);
     }());
   </script>

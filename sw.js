@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v103-daily80-v61d';
+const APP_CACHE='language-studio-v104-daily80-v61d-recovery';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
