@@ -195,8 +195,8 @@
            (ch.owned?'<button type="button" data-reading-vocab="'+esc(ch.owned.pack.lessonId)+'">Học trong kho →</button>':
            '<button type="button" data-reading-save="'+esc(ch.name)+'">'+(env.state.saved?.[ch.savedKey]?'★ Đã lưu':'☆ Lưu cụm')+'</button>')+
            '</div></article>').join('')+'</div>'+
-        '<div class="reading-pattern-ref"><h3>Mẫu câu liên quan</h3><div>'+
-        (story.patterns||[]).map(n=>'<button data-reading-pattern="'+n+'" type="button">Mẫu '+String(n).padStart(2,"0")+'</button>').join('')+'</div></div></div>'
+        ((story.patterns||[]).length?'<div class="reading-pattern-ref"><h3>Mẫu câu liên quan</h3><div>'+
+        (story.patterns||[]).map(n=>'<button data-reading-pattern="'+n+'" type="button">Mẫu '+String(n).padStart(2,"0")+'</button>').join('')+'</div></div>':'')+'</div>'
        :mode==="practice"?'<div class="reading-quiz-panel reading-speaking-practice"><span class="reading-eyebrow">SPEAKING · RETRIEVAL</span>'+
         '<h2>Tự nói lại bài Day '+String(story.day).padStart(2,"0")+'</h2>'+
         '<p>Không cần thuộc từng chữ. Hãy nhớ ý chính và sử dụng lại những cách diễn đạt tự nhiên trong bài.</p>'+
@@ -230,7 +230,7 @@
          '<label class="reading-rate"><span>Tốc độ</span><select id="readingRate"><option value="0.75" '+(st.rate===.75?'selected':'')+'>0.75×</option>'+
          '<option value="0.88" '+(st.rate===.88?'selected':'')+'>0.88×</option>'+
          '<option value="1" '+(st.rate===1?'selected':'')+'>1×</option></select></label>'+
-         '<button id="readingComplete" type="button" class="reading-mark-complete">'+(p.completed?'✓ Đã đọc':'Đánh dấu đã đọc')+'</button></div>'+
+         '<button id="readingComplete" type="button" class="reading-mark-complete">'+(isSpeakingProgram?(p.completed?'✓ Đã nghe':'Đánh dấu đã nghe'):(p.completed?'✓ Đã đọc':'Đánh dấu đã đọc'))+'</button></div>'+
       '</div></section>';
     env.hydrateReadingWords?.(root);
     $("#readingBack").onclick=()=>{stop();location.hash="#reading";};
@@ -244,8 +244,8 @@
       // Tap a sentence's text (except word tokens) to play it from that point.
       $$(".reader-line-copy").forEach(node=>node.onclick=e=>{if(e.target.closest(".word-token"))return;void playFrom(+node.closest(".reader-line").dataset.index);});
     } else if(mode==="chunks"){
-      $("[data-reading-speak]").forEach(btn=>btn.onclick=()=>env.speak(btn.dataset.readingSpeak));
-      $("[data-reading-save]").forEach(btn=>btn.onclick=()=>{
+      $$("[data-reading-speak]").forEach(btn=>btn.onclick=()=>env.speak(btn.dataset.readingSpeak));
+      $$("[data-reading-save]").forEach(btn=>btn.onclick=()=>{
         const ch=chunks.find(item=>item.name===btn.dataset.readingSave);
         if(!ch)return;
         const added=env.saveReadingPhrase?.(ch.name,ch.meaning,story);
@@ -260,7 +260,7 @@
       $("#readingPracticeListen").onclick=()=>void playFrom(0);
       $("#readingPracticeDone").onclick=()=>{p.practiced=!p.practiced;remember(story);renderReader(story);};
     } else {
-      $("[data-reading-answer]").forEach(input=>input.onchange=()=>{
+      $$("[data-reading-answer]").forEach(input=>input.onchange=()=>{
         p.answers=p.answers||{};p.answers[+input.dataset.readingAnswer]=+input.value;remember(story);
         renderReader(story);
       });

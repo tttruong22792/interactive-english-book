@@ -53,7 +53,7 @@ assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio
 assert.ok(ui.includes("readingWeekSelect")&&ui.includes("WEEK ")&&ui.includes("reading-week-heading"),"Fourteen-week browsing");
 assert.ok(ui.includes("readingPracticeListen")&&ui.includes("readingPracticeDone"),"Read, listen, shadow and retell");
 assert.ok(ui.includes("beginAudioSequence")&&ui.includes("audioSequenceActive"),"Audio playback remains interruptible");
-assert.ok(ui.includes('$$("[data-reading-speak]")')&&ui.includes('$$("[data-reading-save]")'),"All chunk buttons are correctly bound");
+assert.ok(ui.includes('$$("[data-reading-speak]")')&&ui.includes('$$("[data-reading-save]")')&&ui.includes('$$("[data-reading-answer]")'),"All buttons and answers bind to collections");
 assert.ok(ui.includes("story.lines.map(([en,vi],i)")&&ui.includes("hydrateReadingWords"),"Individual line playback and dictionary retained");
 assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available for a rollback");
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
