@@ -71,7 +71,7 @@ assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follo
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
 assert.ok(ui.includes('st.loop=!st.loop;env.saveState();updatePlayer()'),"Loop choice can be switched while listening and is saved");
-assert.ok(ui.includes('if(!settings().loop)break;')&&ui.includes('i=0;'),"On reaching last sentence, loop returns to sentence one");
+assert.ok(ui.includes('if(!config.loop)break;')&&ui.includes('i=0;')&&ui.includes('position.completed=true;'),"The final sentence can loop to the first sentence in full-passage mode");
 assert.ok(ui.includes('playFrom(0)')&&ui.includes('env.audioSequenceActive(playToken)'),"Replay restarts at first sentence and respects sequence cancellation");
 assert.ok(ui.includes('data-reading-play-mode="whole"')&&ui.includes('data-reading-play-mode="sentence"'),"Switch between full passage and single sentence playback");
 assert.ok(ui.includes('config.playMode==="sentence"')&&ui.includes('if(!config.loop)break;'),"Individual sentences repeat until switched or stopped");
