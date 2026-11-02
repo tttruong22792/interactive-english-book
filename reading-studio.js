@@ -19,6 +19,8 @@
     if(!state.readingStudio.items||typeof state.readingStudio.items!=="object")state.readingStudio.items={};
     state.readingStudio.rate=Number(state.readingStudio.rate)||.88;
     if(typeof state.readingStudio.showVi!=="boolean")state.readingStudio.showVi=false;
+    // Speaking passages replay automatically, but the user can turn this off.
+    if(typeof state.readingStudio.loop!=="boolean")state.readingStudio.loop=isSpeakingProgram;
     if(!["read","chunks",isSpeakingProgram?"practice":"quiz"].includes(state.readingStudio.tab))state.readingStudio.tab="read";
     return state.readingStudio;
   }
@@ -50,6 +52,12 @@
       start.textContent=playing?"⏸ Tạm dừng":"▶ Nghe tiếp";
       start.setAttribute("aria-pressed",String(playing));
     }
+    const repeat=$("#readingLoop");
+    if(repeat){
+      const on=settings().loop;
+      repeat.textContent=on?"↻ Lặp lại: Bật":"↻ Lặp lại: Tắt";
+      repeat.setAttribute("aria-pressed",String(on));
+    }
     const counter=$("#readingPosition");
     if(counter)counter.textContent=(Math.min(activeStory.lines.length,Math.max(0,p.index+1)))+" / "+activeStory.lines.length;
     const bar=$("#readingPositionBar");
@@ -62,13 +70,14 @@
   }
   async function playFrom(first){
     if(!activeStory||!env)return;
-    const story=activeStory,position=progress(story);
+    const story=activeStory,position=progress(story),count=story.lines.length;
+    if(!count)return;
     stop();
     playing=true;const run=playRun;
     playToken=env.beginAudioSequence();
     updatePlayer();
-    for(let i=first;i<story.lines.length;i++){
-      if(run!==playRun||!env.audioSequenceActive(playToken)||activeStory!==story)return;
+    let i=Math.min(count-1,Math.max(0,Number(first)||0)),failed=false;
+    while(run===playRun&&env.audioSequenceActive(playToken)&&activeStory===story){
       position.index=i;
       remember(story);
       updatePlayer();
@@ -76,14 +85,22 @@
       if(line?.scrollIntoView)line.scrollIntoView({block:"nearest",behavior:"smooth"});
       const highlighted=line?.querySelector(".reading-en")||null;
       try{await env.speak(story.lines[i][0],highlighted,settings().rate,playToken);}
-      catch(error){console.warn("Reading audio could not be played",error);env.toast("Chưa phát được âm thanh. Hãy thử lại hoặc dùng giọng trình duyệt.");break;}
+      catch(error){console.warn("Reading audio could not be played",error);env.toast("Chưa phát được âm thanh. Hãy thử lại hoặc dùng giọng trình duyệt.");failed=true;break;}
       if(run!==playRun||!env.audioSequenceActive(playToken)||activeStory!==story)return;
-      if(i===story.lines.length-1){
+      if(i===count-1){
         position.completed=true;
         remember(story);
-      }
+        if(!settings().loop)break;
+        // Briefly yield on repeat so unavailable voices cannot cause a tight loop.
+        await new Promise(resolve=>setTimeout(resolve,250));
+        if(run!==playRun||!env.audioSequenceActive(playToken)||activeStory!==story)return;
+        i=0;
+      }else i++;
     }
-    if(run===playRun){playing=false;playToken=0;updatePlayer();if(progress(story).completed)env.toast("Đã hoàn thành phần nghe! Hãy thử trả lời câu hỏi.");}
+    if(run===playRun){
+      playing=false;playToken=0;updatePlayer();
+      if(!failed&&!settings().loop&&position.completed)env.toast("Đã nghe hết bài. Bấm Nghe lại từ đầu nếu muốn ôn thêm.");
+    }
   }
   function buildCorpus(){
     const t=window.VocabularyTrainer;if(!t?.packs)return new Map();
@@ -230,6 +247,8 @@
          '<option value="0.88" '+(st.rate===.88?'selected':'')+'>0.88×</option>'+
          '<option value="1" '+(st.rate===1?'selected':'')+'>1×</option></select></label>'+
          '<button id="readingComplete" type="button" class="reading-mark-complete">'+(isSpeakingProgram?(p.completed?'✓ Đã nghe':'Đánh dấu đã nghe'):(p.completed?'✓ Đã đọc':'Đánh dấu đã đọc'))+'</button></div>'+
+         '<div class="reading-repeat-actions"><button id="readingReplay" type="button">↺ Nghe lại từ đầu</button>'+
+         '<button id="readingLoop" type="button" aria-pressed="'+String(st.loop)+'">'+(st.loop?'↻ Lặp lại: Bật':'↻ Lặp lại: Tắt')+'</button></div>'+
       '</div></section>';
     env.hydrateReadingWords?.(root);
     $("#readingBack").onclick=()=>{stop();location.hash="#reading";};
@@ -268,6 +287,8 @@
     $("#readingPrev").onclick=()=>{stop();p.index=Math.max(0,p.index-1);remember(story);updatePlayer();};
     $("#readingNext").onclick=()=>{stop();p.index=Math.min(story.lines.length-1,p.index+1);remember(story);updatePlayer();};
     $("#readingPlay").onclick=()=>{if(playing)stop();else void playFrom(p.index);};
+    $("#readingReplay").onclick=()=>void playFrom(0);
+    $("#readingLoop").onclick=()=>{st.loop=!st.loop;env.saveState();updatePlayer();};
     $("#readingRate").onchange=e=>{st.rate=Number(e.target.value)||.88;env.saveState();if(playing)stop();};
     $("#readingComplete").onclick=()=>{p.completed=!p.completed;remember(story);renderReader(story);};
     updatePlayer();

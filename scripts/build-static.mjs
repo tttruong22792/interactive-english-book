@@ -255,6 +255,7 @@ await writeFile(join(dist, "runtime-20261028-daily80-v62.js"), runtimeSource, "u
 await writeFile(join(dist, "runtime-20261028-daily80-v62b.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261102-speaking70.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261102-speaking70-vi.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261103-speaking70-loop.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
