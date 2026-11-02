@@ -170,8 +170,7 @@
        '<button class="reading-back" type="button" id="readingBack">← Thư viện</button>'+
        '<div class="reading-detail-title"><span class="reading-eyebrow">'+(isSpeakingProgram?'DAY '+String(story.day).padStart(2,"0")+' · WEEK '+String(story.week).padStart(2,"0"):'BÀI '+String(stories.indexOf(story)+1).padStart(2,"0")+' · '+esc(story.level))+' · '+totalWords+' TỪ</span>'+
        '<h1>'+esc(story.title)+'</h1><p>'+esc(story.viTitle)+'</p></div>'+
-       (isSpeakingProgram?'<span class="reading-language-note">Bài nói gốc · tiếng Anh</span>':
-       '<button id="readingToggleVi" type="button" class="reading-vi-toggle" aria-pressed="'+st.showVi+'">'+(st.showVi?'Ẩn nghĩa Việt':'Hiện nghĩa Việt')+'</button>')+
+       '<button id="readingToggleVi" type="button" class="reading-vi-toggle" aria-pressed="'+st.showVi+'">'+(st.showVi?'Ẩn nghĩa Việt':'Hiện nghĩa Việt')+'</button>'+
       '</header>'+
       '<nav class="reading-subtabs" aria-label="Các bước đọc bài">'+tabRows.map(([id,label])=>
        '<button type="button" data-reading-tab="'+id+'" class="'+(mode===id?'active':'')+'" aria-current="'+(mode===id?'page':'false')+'">'+label+'</button>').join('')+'</nav>'+
@@ -184,7 +183,7 @@
         '</div><button class="reader-line-speak" type="button" data-speak-line="'+i+'" aria-label="Nghe câu '+(i+1)+'">♫</button></div>').join('')+
         '</div>'+
         '<aside class="reading-side-panel"><span class="reading-eyebrow">CÁCH LUYỆN</span><h2>'+(isSpeakingProgram?'Nghe → nói → dùng':'Nghe → hiểu → nhớ')+'</h2>'+
-        '<p>'+(isSpeakingProgram?'Nghe cả đoạn ở 0.88×, đọc nhại theo từng câu, sau đó tự kể lại. Các câu gốc đang ở tiếng Anh; chạm từ để tra nghĩa.':'Chọn một câu để phát từ câu đó. Bản dịch có thể ẩn để luyện hiểu trực tiếp.')+'</p>'+
+        '<p>'+(isSpeakingProgram?'Nghe cả đoạn ở 0.88×, đọc nhại theo từng câu, sau đó tự kể lại. Bật nghĩa Việt khi cần và ẩn đi để luyện nghe hiểu trực tiếp.':'Chọn một câu để phát từ câu đó. Bản dịch có thể ẩn để luyện hiểu trực tiếp.')+'</p>'+
         '<div class="reading-tips"><span>① Nghe trọn đoạn và tập bắt nhịp</span><span>② Nhại từng câu, ghi nhớ những cụm mới</span><span>③ Che bản gốc và tự nói lại bằng lời của bạn</span></div>'+
         '<button type="button" class="reading-inline-next" id="readingGoChunks">Xem cụm trong bài →</button></aside>'
        :mode==="chunks"?'<div class="reading-chunk-panel"><h2>Những cụm xuất hiện trong câu chuyện</h2>'+
@@ -234,7 +233,7 @@
       '</div></section>';
     env.hydrateReadingWords?.(root);
     $("#readingBack").onclick=()=>{stop();location.hash="#reading";};
-    if(!isSpeakingProgram)$("#readingToggleVi").onclick=()=>{st.showVi=!st.showVi;env.saveState();renderReader(story);};
+    $("#readingToggleVi").onclick=()=>{st.showVi=!st.showVi;env.saveState();renderReader(story);};
     $$("[data-reading-tab]").forEach(btn=>btn.onclick=()=>{
       st.tab=btn.dataset.readingTab;env.saveState();renderReader(story);
     });

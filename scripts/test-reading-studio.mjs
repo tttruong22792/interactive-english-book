@@ -8,6 +8,10 @@ for(let week=1;week<=14;week++){
  const file="../data/english/speaking-week-"+String(week).padStart(2,"0")+".js";
  runInNewContext(read(file),ctx,{filename:file});
 }
+for(let first=1;first<=70;first+=10){
+ const file="../data/english/speaking-vi-"+String(first).padStart(2,"0")+"-"+String(first+9).padStart(2,"0")+".js";
+ runInNewContext(read(file),ctx,{filename:file});
+}
 runInNewContext(read("../data/english/speaking-program.js"),ctx,{filename:"speaking-program.js"});
 runInNewContext(read("../reading-studio.js"),ctx,{filename:"reading-studio.js"});
 
@@ -27,7 +31,8 @@ for(let day=1;day<=70;day++){
  assert.ok(!ids.has(story.id)&&!titles.has(story.title),"Unique day and topic");
  ids.add(story.id);titles.add(story.title);
  assert.ok(story.lines.length>=6&&story.lines.every(row=>Array.isArray(row)&&row.length===2),"Connected passage "+day);
- assert.ok(story.lines.every(([en,vi])=>en.length>=8&&vi===""),"Original English preserved; never invent Vietnamese sentence translations");
+ assert.ok(story.lines.every(([en,vi])=>en.length>=8&&vi.length>=8),"Each English line has meaningful Vietnamese translation, Day "+day);
+ assert.equal(ctx.window.SPEAKING_PROGRAM_VI?.[day]?.length,story.lines.length,"Translations aligned one to one for Day "+day);
  const text=story.lines.map(row=>row[0]).join(" ").replace(/[’‘]/g,"'").toLowerCase();
  assert.ok(story.targetChunks.length>=2,"Useful phrases for every lesson "+day);
  for(const phrase of story.targetChunks){
@@ -51,6 +56,8 @@ const ui=read("../reading-studio.js"),app=read("../app.js"),index=read("../index
 assert.ok(app.includes("r.name === 'reading'")&&app.includes("renderReadingStudio"),"Original reading route retained");
 assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio.css"),"Phone navigation retained");
 assert.ok(ui.includes("readingWeekSelect")&&ui.includes("WEEK ")&&ui.includes("reading-week-heading"),"Fourteen-week browsing");
+assert.ok(ui.includes('id="readingToggleVi"')&&ui.includes('st.showVi=!st.showVi;env.saveState();renderReader(story)'),'Restore native visible/hidden Vietnamese meaning control');
+assert.ok(ui.includes('st.showVi&&vi?')&&ui.includes('class="reading-vi"'),'Translations displayed under respective English line only when enabled');
 assert.ok(ui.includes("readingPracticeListen")&&ui.includes("readingPracticeDone"),"Read, listen, shadow and retell");
 assert.ok(ui.includes("beginAudioSequence")&&ui.includes("audioSequenceActive"),"Audio playback remains interruptible");
 assert.ok(ui.includes('$$("[data-reading-speak]")')&&ui.includes('$$("[data-reading-save]")')&&ui.includes('$$("[data-reading-answer]")'),"All buttons and answers bind to collections");
@@ -62,4 +69,4 @@ const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
 assert.equal(asset,"runtime-20261102-speaking70.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
-console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" playable sentences, "+chunks+" curated chunks, English originals preserved.");
+console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" bilingual sentences, "+chunks+" chunks; Vietnamese toggle restored.");

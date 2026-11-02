@@ -51,7 +51,7 @@ jobs:
         run: |
           node --check app.js
           node --check reading-studio.js
-          for f in data/english/speaking-week-*.js data/english/speaking-program.js; do node --check "$f"; done
+          for f in data/english/speaking-week-*.js data/english/speaking-vi-*.js data/english/speaking-program.js; do node --check "$f"; done
           node --check data/english/reading-stories-a1.js
           node --check data/english/reading-stories-a2.js
           node --check data/english/reading-stories-b1-b2.js

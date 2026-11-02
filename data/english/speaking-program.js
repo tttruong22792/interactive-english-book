@@ -11,6 +11,6 @@
   return {id:"speaking-"+String(item.day).padStart(2,"0"),day:item.day,week:item.week,
    weekTitle:item.weekTitle,weekVi:weekTitles[item.week-1],title:item.title,viTitle:titles[item.day-1],
    level:"W"+String(item.week).padStart(2,"0"),topic:"Tuần "+item.week+" · "+weekTitles[item.week-1],program:true,
-   lines:item.lines.map(en=>[en,""]),patterns:[],targetChunks:chunks,questions:[]};
+   lines:item.lines.map((en,i)=>[en,(window.SPEAKING_PROGRAM_VI?.[item.day]||[])[i]||""]),patterns:[],targetChunks:chunks,questions:[]};
  });
 })();
