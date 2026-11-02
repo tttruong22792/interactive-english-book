@@ -194,3 +194,9 @@
 .reading-repeat-actions #readingLoop[aria-pressed="true"]{border-color:#b8d7c5;background:#eaf6ee;color:#34724e}
 .reading-repeat-actions #readingReplay{background:#f5f1fd}
 @media(max-width:760px){.reading-repeat-actions{margin-top:7px;gap:7px}.reading-repeat-actions button{flex:1 1 130px;min-width:0;padding:10px 9px;font-size:12px}}
+
+/* Choose full-passage playback or active sentence looping, without another screen. */
+.reading-playback-mode{display:flex;gap:3px;padding:3px;background:#f2effa;border:1px solid #e7e0f2;border-radius:12px}
+.reading-repeat-actions .reading-playback-mode button{min-height:32px;padding:5px 12px;border:0;border-radius:9px;background:transparent;color:#70618f;font:inherit;font-size:12px;font-weight:800}
+.reading-repeat-actions .reading-playback-mode button.selected{background:#fff;color:#403176;box-shadow:0 1px 5px #443c6720}
+@media(max-width:760px){.reading-repeat-actions .reading-playback-mode{flex:1 1 100%;justify-content:center}.reading-repeat-actions .reading-playback-mode button{flex:1;max-width:190px;min-height:34px}.reading-repeat-actions #readingReplay,.reading-repeat-actions #readingLoop{flex:1 1 0}}

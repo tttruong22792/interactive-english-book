@@ -66,11 +66,14 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261103-speaking70-loop.js");
+assert.equal(asset,"runtime-20261103-speaking70-two-modes.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
 assert.ok(ui.includes('st.loop=!st.loop;env.saveState();updatePlayer()'),"Loop choice can be switched while listening and is saved");
 assert.ok(ui.includes('if(!settings().loop)break;')&&ui.includes('i=0;'),"On reaching last sentence, loop returns to sentence one");
 assert.ok(ui.includes('playFrom(0)')&&ui.includes('env.audioSequenceActive(playToken)'),"Replay restarts at first sentence and respects sequence cancellation");
-console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" bilingual sentences; loop and replay controls.");
+assert.ok(ui.includes('data-reading-play-mode="whole"')&&ui.includes('data-reading-play-mode="sentence"'),"Switch between full passage and single sentence playback");
+assert.ok(ui.includes('config.playMode==="sentence"')&&ui.includes('if(!config.loop)break;'),"Individual sentences repeat until switched or stopped");
+assert.ok(ui.includes('st.playMode=selected')&&ui.includes('if(wasPlaying)void playFrom(at)'),"Changing modes persists and restarts without overlapping playback");
+console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" bilingual sentences; two listening modes.");

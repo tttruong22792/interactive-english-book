@@ -21,6 +21,7 @@
     if(typeof state.readingStudio.showVi!=="boolean")state.readingStudio.showVi=false;
     // Speaking passages replay automatically, but the user can turn this off.
     if(typeof state.readingStudio.loop!=="boolean")state.readingStudio.loop=isSpeakingProgram;
+    if(!["whole","sentence"].includes(state.readingStudio.playMode))state.readingStudio.playMode="whole";
     if(!["read","chunks",isSpeakingProgram?"practice":"quiz"].includes(state.readingStudio.tab))state.readingStudio.tab="read";
     return state.readingStudio;
   }
@@ -49,15 +50,22 @@
     const p=progress(activeStory);
     const start=$("#readingPlay");
     if(start){
-      start.textContent=playing?"⏸ Tạm dừng":"▶ Nghe tiếp";
+      start.textContent=playing?"⏸ Tạm dừng":settings().playMode==="sentence"?"▶ Nghe câu":"▶ Nghe tiếp";
       start.setAttribute("aria-pressed",String(playing));
     }
     const repeat=$("#readingLoop");
     if(repeat){
       const on=settings().loop;
-      repeat.textContent=on?"↻ Lặp lại: Bật":"↻ Lặp lại: Tắt";
+      repeat.textContent=on?(settings().playMode==="sentence"?"↻ Lặp câu: Bật":"↻ Lặp bài: Bật"):(settings().playMode==="sentence"?"↻ Lặp câu: Tắt":"↻ Lặp bài: Tắt");
       repeat.setAttribute("aria-pressed",String(on));
     }
+    $$("[data-reading-play-mode]").forEach(button=>{
+      const selected=button.dataset.readingPlayMode===settings().playMode;
+      button.setAttribute("aria-pressed",String(selected));
+      button.classList.toggle("selected",selected);
+    });
+    const replay=$("#readingReplay");
+    if(replay)replay.textContent=settings().playMode==="sentence"?"↺ Nghe lại câu đầu":"↺ Nghe lại từ đầu";
     const counter=$("#readingPosition");
     if(counter)counter.textContent=(Math.min(activeStory.lines.length,Math.max(0,p.index+1)))+" / "+activeStory.lines.length;
     const bar=$("#readingPositionBar");
@@ -87,11 +95,18 @@
       try{await env.speak(story.lines[i][0],highlighted,settings().rate,playToken);}
       catch(error){console.warn("Reading audio could not be played",error);env.toast("Chưa phát được âm thanh. Hãy thử lại hoặc dùng giọng trình duyệt.");failed=true;break;}
       if(run!==playRun||!env.audioSequenceActive(playToken)||activeStory!==story)return;
-      if(i===count-1){
+      // Each-sentence mode keeps the same sentence until the learner advances.
+      // Whole-passage mode advances naturally and can loop after the last line.
+      const config=settings();
+      if(config.playMode==="sentence"){
+        if(!config.loop)break;
+        await new Promise(resolve=>setTimeout(resolve,250));
+        if(run!==playRun||!env.audioSequenceActive(playToken)||activeStory!==story)return;
+      }else if(i===count-1){
         position.completed=true;
         remember(story);
-        if(!settings().loop)break;
-        // Briefly yield on repeat so unavailable voices cannot cause a tight loop.
+        if(!config.loop)break;
+        // Yield between rounds to avoid a busy loop if a TTS voice fails.
         await new Promise(resolve=>setTimeout(resolve,250));
         if(run!==playRun||!env.audioSequenceActive(playToken)||activeStory!==story)return;
         i=0;
@@ -99,7 +114,7 @@
     }
     if(run===playRun){
       playing=false;playToken=0;updatePlayer();
-      if(!failed&&!settings().loop&&position.completed)env.toast("Đã nghe hết bài. Bấm Nghe lại từ đầu nếu muốn ôn thêm.");
+      if(!failed&&settings().playMode==="whole"&&!settings().loop&&position.completed)env.toast("Đã nghe hết bài. Bấm Nghe lại từ đầu nếu muốn ôn thêm.");
     }
   }
   function buildCorpus(){
@@ -247,8 +262,12 @@
          '<option value="0.88" '+(st.rate===.88?'selected':'')+'>0.88×</option>'+
          '<option value="1" '+(st.rate===1?'selected':'')+'>1×</option></select></label>'+
          '<button id="readingComplete" type="button" class="reading-mark-complete">'+(isSpeakingProgram?(p.completed?'✓ Đã nghe':'Đánh dấu đã nghe'):(p.completed?'✓ Đã đọc':'Đánh dấu đã đọc'))+'</button></div>'+
-         '<div class="reading-repeat-actions"><button id="readingReplay" type="button">↺ Nghe lại từ đầu</button>'+
-         '<button id="readingLoop" type="button" aria-pressed="'+String(st.loop)+'">'+(st.loop?'↻ Lặp lại: Bật':'↻ Lặp lại: Tắt')+'</button></div>'+
+         '<div class="reading-repeat-actions"><div class="reading-playback-mode" role="group" aria-label="Chế độ nghe">'+
+         '<button type="button" data-reading-play-mode="whole" aria-pressed="'+String(st.playMode==="whole")+'" class="'+(st.playMode==="whole"?'selected':'')+'">Cả bài</button>'+
+         '<button type="button" data-reading-play-mode="sentence" aria-pressed="'+String(st.playMode==="sentence")+'" class="'+(st.playMode==="sentence"?'selected':'')+'">Từng câu</button></div>'+
+         '<button id="readingReplay" type="button">'+(st.playMode==="sentence"?'↺ Nghe lại câu đầu':'↺ Nghe lại từ đầu')+'</button>'+
+         '<button id="readingLoop" type="button" aria-pressed="'+String(st.loop)+'">'+
+         (st.playMode==="sentence"?(st.loop?'↻ Lặp câu: Bật':'↻ Lặp câu: Tắt'):(st.loop?'↻ Lặp bài: Bật':'↻ Lặp bài: Tắt'))+'</button></div>'+
       '</div></section>';
     env.hydrateReadingWords?.(root);
     $("#readingBack").onclick=()=>{stop();location.hash="#reading";};
@@ -284,10 +303,26 @@
       });
       $("#readingBackToText").onclick=()=>{st.tab="read";env.saveState();renderReader(story);};
     }
-    $("#readingPrev").onclick=()=>{stop();p.index=Math.max(0,p.index-1);remember(story);updatePlayer();};
-    $("#readingNext").onclick=()=>{stop();p.index=Math.min(story.lines.length-1,p.index+1);remember(story);updatePlayer();};
+    const moveTo=(delta)=>{
+      const next=Math.max(0,Math.min(story.lines.length-1,p.index+delta));
+      // When listening, switch immediately and restart the new sentence without overlap.
+      if(playing)void playFrom(next);
+      else{stop();p.index=next;remember(story);updatePlayer();}
+    };
+    $("#readingPrev").onclick=()=>moveTo(-1);
+    $("#readingNext").onclick=()=>moveTo(1);
     $("#readingPlay").onclick=()=>{if(playing)stop();else void playFrom(p.index);};
     $("#readingReplay").onclick=()=>void playFrom(0);
+    $$("[data-reading-play-mode]").forEach(button=>button.onclick=()=>{
+      const selected=button.dataset.readingPlayMode;
+      if(!["whole","sentence"].includes(selected)||selected===st.playMode)return;
+      const wasPlaying=playing,at=p.index;
+      stop();
+      st.playMode=selected;
+      if(selected==="sentence")st.loop=true;
+      env.saveState();updatePlayer();
+      if(wasPlaying)void playFrom(at);
+    });
     $("#readingLoop").onclick=()=>{st.loop=!st.loop;env.saveState();updatePlayer();};
     $("#readingRate").onchange=e=>{st.rate=Number(e.target.value)||.88;env.saveState();if(playing)stop();};
     $("#readingComplete").onclick=()=>{p.completed=!p.completed;remember(story);renderReader(story);};
