@@ -163,9 +163,8 @@ const runtimeFiles = [
   "platform-data.js",
   "catalog.js",
   "ai-tts.js",
-  "data/english/reading-stories-a1.js",
-  "data/english/reading-stories-a2.js",
-  "data/english/reading-stories-b1-b2.js",
+  ...Array.from({length:14},(_,i)=>"data/english/speaking-week-"+String(i+1).padStart(2,"0")+".js"),
+  "data/english/speaking-program.js",
   "data/english/reading-phrase-meanings.js",
   ...sourceMatches,
   "data/english/patterns/supplements-13-80.js",
@@ -253,6 +252,7 @@ await writeFile(join(dist, "runtime-20261027-daily80-v61c.js"), runtimeSource, "
 await writeFile(join(dist, "runtime-20261028-daily80-v61d.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261028-daily80-v62.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261028-daily80-v62b.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261102-speaking70.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
@@ -323,17 +323,19 @@ function addManifestAudio(text, kind, lessonId) {
   };
 }
 
-// 30 original graded readers share our existing cached/cloud TTS pipeline.
-// Sentence-level clips are hash-allowlisted but only generated when played.
+// Allowlist all 70 user-supplied mini-speech sentences and their collocations.
 {
-  const readerWindow={READING_STORIES:[]};
+  const readerWindow={SPEAKING_PROGRAM_RAW:[]};
   const readerContext=vm.createContext({window:readerWindow});
-  for(const file of ["reading-stories-a1.js","reading-stories-a2.js","reading-stories-b1-b2.js"]){
-    const relative="data/english/"+file;
+  for(const relative of [
+    ...Array.from({length:14},(_,i)=>"data/english/speaking-week-"+String(i+1).padStart(2,"0")+".js"),
+    "data/english/speaking-program.js"
+  ]){
     const source=await readFile(join(root,relative),"utf8");
     vm.runInContext(source,readerContext,{filename:relative});
   }
-  for(const story of readerWindow.READING_STORIES){
+  if(readerWindow.SPEAKING_PROGRAM?.length!==70)throw Error("Expected 70 complete speaking lessons in TTS manifest");
+  for(const story of readerWindow.SPEAKING_PROGRAM){
     for(const row of story.lines||[])addManifestAudio(row[0],"reading-sentence",story.id);
     for(const phrase of story.targetChunks||[])addManifestAudio(phrase,"reading-phrase",story.id);
   }

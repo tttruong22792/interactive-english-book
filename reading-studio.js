@@ -1,8 +1,11 @@
 (function(){
   "use strict";
-  const stories=(window.READING_STORIES||[]).slice();
+  const speakingProgram=(window.SPEAKING_PROGRAM||[]).slice();
+  const isSpeakingProgram=speakingProgram.length===70;
+  // Keep the old graded-reader source and progress untouched for rollback.
+  const stories=isSpeakingProgram?speakingProgram:(window.READING_STORIES||[]).slice();
   const storyById=new Map(stories.map(s=>[s.id,s]));
-  const LEVELS=["all","A1","A2","B1","B2"];
+  const LEVELS=isSpeakingProgram?["all",...Array.from({length:14},(_,i)=>"W"+String(i+1).padStart(2,"0"))]:["all","A1","A2","B1","B2"];
   let env=null,activeStory=null,playing=false,playRun=0,playToken=0;
   let levelFilter="all",searchQuery="";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -16,7 +19,7 @@
     if(!state.readingStudio.items||typeof state.readingStudio.items!=="object")state.readingStudio.items={};
     state.readingStudio.rate=Number(state.readingStudio.rate)||.88;
     if(typeof state.readingStudio.showVi!=="boolean")state.readingStudio.showVi=false;
-    if(!["read","chunks","quiz"].includes(state.readingStudio.tab))state.readingStudio.tab="read";
+    if(!["read","chunks",isSpeakingProgram?"practice":"quiz"].includes(state.readingStudio.tab))state.readingStudio.tab="read";
     return state.readingStudio;
   }
   function progress(story){
@@ -108,30 +111,40 @@
   }
   function renderLibrary(){
     activeStory=null;
-    env.setHeader("English › Đọc & Nghe","Thư viện bài đọc");
+    env.setHeader(isSpeakingProgram?"100-Day English":"English › Đọc & Nghe",isSpeakingProgram?"70 bài nói theo ngày":"Thư viện bài đọc");
     const root=env.main;
     const filtered=stories.filter(story=>
       (levelFilter==="all"||story.level===levelFilter)&&
-      (!searchQuery||[story.title,story.viTitle,story.topic,story.level].join(" ").toLowerCase().includes(searchQuery))
+      (!searchQuery||[story.title,story.viTitle,story.topic,story.level,story.weekTitle,story.weekVi,"Day "+story.day].join(" ").toLowerCase().includes(searchQuery))
     );
     const grouped=settings().items;
     root.innerHTML='<section class="reading-shell reading-library">'+
       '<header class="reading-library-head"><div><span class="reading-eyebrow">READ · LISTEN · RECALL</span>'+
-      '<h1>Đọc & Nghe</h1><p>30 câu chuyện tiếng Anh thực tế. Nghe, chạm từ để hiểu, rồi tự trả lời câu hỏi.</p></div>'+
+      '<h1>'+(isSpeakingProgram?'100-Day English Speaking Program':'Đọc & Nghe')+'</h1>'+
+      '<p>'+(isSpeakingProgram?'70 bài nói thực tế · 14 tuần · 5 bài mới và 2 ngày ôn mỗi tuần. Đọc, nghe từng câu, luyện nói và học cụm từ.':'30 câu chuyện tiếng Anh thực tế. Nghe, chạm từ để hiểu, rồi tự trả lời câu hỏi.')+'</p></div>'+
       '<div class="reading-totals"><strong>'+completedCount()+'<small> / '+stories.length+'</small></strong><span>Bài hoàn thành</span></div></header>'+
-      '<div class="reading-library-toolbar"><div class="reading-levels" role="group" aria-label="Lọc trình độ">'+
-      LEVELS.map(v=>'<button type="button" data-reading-level="'+v+'" class="'+(levelFilter===v?'active':'')+'">'+(v==="all"?"Tất cả":v)+'</button>').join('')+
-      '</div><label class="reading-search"><span class="sr-only">Tìm bài đọc</span><input id="readingSearch" type="search" placeholder="Tìm chủ đề hoặc bài đọc..." value="'+esc(searchQuery)+'"></label></div>'+
-      '<div class="reading-library-list" id="readingLibraryList">'+(filtered.length?filtered.map(story=>{
+      '<div class="reading-library-toolbar">'+
+      (isSpeakingProgram?'<label class="reading-week-select"><span>Chọn tuần</span><select id="readingWeekSelect" aria-label="Lọc theo tuần">'+
+       LEVELS.map(v=>'<option value="'+v+'" '+(levelFilter===v?'selected':'')+'>'+(v==='all'?'Tất cả 14 tuần':'Tuần '+Number(v.slice(1)))+'</option>').join('')+'</select></label>':
+       '<div class="reading-levels" role="group" aria-label="Lọc trình độ">'+
+       LEVELS.map(v=>'<button type="button" data-reading-level="'+v+'" class="'+(levelFilter===v?'active':'')+'">'+(v==="all"?"Tất cả":v)+'</button>').join('')+'</div>')+
+      '<label class="reading-search"><span class="sr-only">Tìm bài đọc</span><input id="readingSearch" type="search" placeholder="Tìm Day 01, cuộc họp, SCADA..." value="'+esc(searchQuery)+'"></label></div>'+
+      '<div class="reading-library-list" id="readingLibraryList">'+(filtered.length?filtered.map((story,idx)=>{
         const p=grouped[story.id]||{};
+        const weekHeading=isSpeakingProgram&&(idx===0||filtered[idx-1].week!==story.week)?
+          '<div class="reading-week-heading"><strong>WEEK '+String(story.week).padStart(2,"0")+' · '+esc(story.weekTitle)+'</strong>'+
+          '<small>'+esc(story.weekVi)+' · 5 bài mới + 2 ngày ôn</small></div>':'';
         const length=story.lines.map(row=>row[0].split(/\s+/).length).reduce((a,b)=>a+b,0);
-        return '<button type="button" class="reading-story-card" data-open-story="'+esc(story.id)+'">'+
+        return weekHeading+'<button type="button" class="reading-story-card" data-open-story="'+esc(story.id)+'">'+
           '<span class="reading-story-index">'+String(stories.indexOf(story)+1).padStart(2,"0")+'</span>'+
-          '<span class="reading-story-main"><span class="reading-story-meta">'+esc(story.level)+' · '+esc(story.topic)+' · '+length+' từ</span>'+
+          '<span class="reading-story-main"><span class="reading-story-meta">'+(isSpeakingProgram?'Day '+String(story.day).padStart(2,"0")+' · ':esc(story.level)+' · ')+length+' từ</span>'+
           '<strong>'+esc(story.title)+'</strong><small>'+esc(story.viTitle)+'</small></span>'+
-          '<span class="reading-story-status">'+(p.completed?'✓ Đã đọc':p.updatedAt?'↗ Tiếp tục':'Bắt đầu')+'</span></button>';
+          '<span class="reading-story-status">'+(p.practiced&&isSpeakingProgram?'✓ Đã luyện nói':p.completed?'✓ Đã nghe':p.updatedAt?'↗ Tiếp tục':'Bắt đầu')+'</span></button>';
       }).join(''):'<div class="reading-empty">Chưa có bài nào phù hợp. Hãy chọn cấp độ khác.</div>')+'</div></section>';
-    $$("[data-reading-level]",root).forEach(btn=>btn.onclick=()=>{levelFilter=btn.dataset.readingLevel;renderLibrary();});
+    if(isSpeakingProgram){
+      const picker=$("#readingWeekSelect",root);
+      if(picker)picker.onchange=()=>{levelFilter=picker.value;renderLibrary();};
+    }else $("[data-reading-level]",root).forEach(btn=>btn.onclick=()=>{levelFilter=btn.dataset.readingLevel;renderLibrary();});
     const search=$("#readingSearch",root);
     if(search)search.oninput=()=>{
       searchQuery=search.value.toLowerCase().trim();
@@ -145,18 +158,20 @@
   }
   function renderReader(story){
     stop();activeStory=story;
-    env.setHeader("Đọc & Nghe › "+story.level,story.title);
+    env.setHeader(isSpeakingProgram?"100-Day English › Day "+String(story.day).padStart(2,"0"):"Đọc & Nghe › "+story.level,story.title);
     const st=settings(),p=progress(story),root=env.main;
     const chunks=findChunks(story);
     const mode=st.tab||"read";
     const totalWords=story.lines.map(row=>row[0].split(/\s+/).length).reduce((a,b)=>a+b,0);
-    const tabRows=[["read","Bài đọc"],["chunks","Cụm cần chú ý"],["quiz","Hiểu bài"]];
+    const tabRows=isSpeakingProgram?[["read","Đọc & Nghe"],["chunks","Cụm đáng học"],["practice","Luyện nói"]]:
+      [["read","Bài đọc"],["chunks","Cụm cần chú ý"],["quiz","Hiểu bài"]];
     root.innerHTML='<section class="reading-shell reading-detail" id="readingRoot">'+
       '<header class="reading-detail-head">'+
        '<button class="reading-back" type="button" id="readingBack">← Thư viện</button>'+
-       '<div class="reading-detail-title"><span class="reading-eyebrow">BÀI '+String(stories.indexOf(story)+1).padStart(2,"0")+' · '+esc(story.level)+' · '+esc(story.topic)+' · '+totalWords+' TỪ</span>'+
+       '<div class="reading-detail-title"><span class="reading-eyebrow">'+(isSpeakingProgram?'DAY '+String(story.day).padStart(2,"0")+' · WEEK '+String(story.week).padStart(2,"0"):'BÀI '+String(stories.indexOf(story)+1).padStart(2,"0")+' · '+esc(story.level))+' · '+totalWords+' TỪ</span>'+
        '<h1>'+esc(story.title)+'</h1><p>'+esc(story.viTitle)+'</p></div>'+
-       '<button id="readingToggleVi" type="button" class="reading-vi-toggle" aria-pressed="'+st.showVi+'">'+(st.showVi?'Ẩn nghĩa Việt':'Hiện nghĩa Việt')+'</button>'+
+       (isSpeakingProgram?'<span class="reading-language-note">Bài nói gốc · tiếng Anh</span>':
+       '<button id="readingToggleVi" type="button" class="reading-vi-toggle" aria-pressed="'+st.showVi+'">'+(st.showVi?'Ẩn nghĩa Việt':'Hiện nghĩa Việt')+'</button>')+
       '</header>'+
       '<nav class="reading-subtabs" aria-label="Các bước đọc bài">'+tabRows.map(([id,label])=>
        '<button type="button" data-reading-tab="'+id+'" class="'+(mode===id?'active':'')+'" aria-current="'+(mode===id?'page':'false')+'">'+label+'</button>').join('')+'</nav>'+
@@ -165,12 +180,12 @@
         story.lines.map(([en,vi],i)=>'<div class="reader-line '+(i===p.index?'active':'')+'" data-index="'+i+'" role="listitem" aria-current="'+(i===p.index?'true':'false')+'">'+
         '<span class="reader-line-number">'+String(i+1).padStart(2,"0")+'</span>'+
         '<div class="reader-line-copy"><div class="reading-en" lang="en" data-en="'+esc(en)+'"></div>'+
-        (st.showVi?'<div class="reading-vi" lang="vi">'+esc(vi)+'</div>':'')+
+        (st.showVi&&vi?'<div class="reading-vi" lang="vi">'+esc(vi)+'</div>':'')+
         '</div><button class="reader-line-speak" type="button" data-speak-line="'+i+'" aria-label="Nghe câu '+(i+1)+'">♫</button></div>').join('')+
         '</div>'+
-        '<aside class="reading-side-panel"><span class="reading-eyebrow">CÁCH LUYỆN</span><h2>Nghe → hiểu → nhớ</h2>'+
-        '<p>Chọn một câu để phát từ câu đó. Bản dịch có thể ẩn để luyện hiểu trực tiếp.</p>'+
-        '<div class="reading-tips"><span>① Nghe một lượt không nhìn tiếng Việt</span><span>② Đọc lại câu khó và chạm từ để tra</span><span>③ Tóm tắt nội dung bằng lời của bạn</span></div>'+
+        '<aside class="reading-side-panel"><span class="reading-eyebrow">CÁCH LUYỆN</span><h2>'+(isSpeakingProgram?'Nghe → nói → dùng':'Nghe → hiểu → nhớ')+'</h2>'+
+        '<p>'+(isSpeakingProgram?'Nghe cả đoạn ở 0.88×, đọc nhại theo từng câu, sau đó tự kể lại. Các câu gốc đang ở tiếng Anh; chạm từ để tra nghĩa.':'Chọn một câu để phát từ câu đó. Bản dịch có thể ẩn để luyện hiểu trực tiếp.')+'</p>'+
+        '<div class="reading-tips"><span>① Nghe trọn đoạn và tập bắt nhịp</span><span>② Nhại từng câu, ghi nhớ những cụm mới</span><span>③ Che bản gốc và tự nói lại bằng lời của bạn</span></div>'+
         '<button type="button" class="reading-inline-next" id="readingGoChunks">Xem cụm trong bài →</button></aside>'
        :mode==="chunks"?'<div class="reading-chunk-panel"><h2>Những cụm xuất hiện trong câu chuyện</h2>'+
         '<p>Các cụm này giúp bạn nối kiến thức đã học với tình huống thực tế. Nếu đã có trong Cụm chủ động, chúng sẽ liên kết đúng bài học gốc.</p>'+
@@ -182,6 +197,16 @@
            '</div></article>').join('')+'</div>'+
         '<div class="reading-pattern-ref"><h3>Mẫu câu liên quan</h3><div>'+
         (story.patterns||[]).map(n=>'<button data-reading-pattern="'+n+'" type="button">Mẫu '+String(n).padStart(2,"0")+'</button>').join('')+'</div></div></div>'
+       :mode==="practice"?'<div class="reading-quiz-panel reading-speaking-practice"><span class="reading-eyebrow">SPEAKING · RETRIEVAL</span>'+
+        '<h2>Tự nói lại bài Day '+String(story.day).padStart(2,"0")+'</h2>'+
+        '<p>Không cần thuộc từng chữ. Hãy nhớ ý chính và sử dụng lại những cách diễn đạt tự nhiên trong bài.</p>'+
+        '<div class="reading-speaking-steps"><p><b>1.</b> Nghe bài trọn vẹn ít nhất một lần.</p>'+
+        '<p><b>2.</b> Đọc nhại từng câu với tốc độ 0.75× hoặc 0.88×.</p>'+
+        '<p><b>3.</b> Che bản tiếng Anh, tự trình bày lại nội dung trong khoảng 1–2 phút.</p></div>'+
+        '<div class="reading-speaking-actions"><button id="readingPracticeListen" type="button">▶ Nghe từ đầu</button>'+
+        '<button id="readingPracticeDone" type="button" class="'+(p.practiced?'completed':'')+'">'+(p.practiced?'✓ Đã luyện nói':'Tôi đã tự nói lại bài')+'</button></div>'+
+        '<details class="reading-speaking-transcript"><summary>Xem lại nội dung để tự đối chiếu</summary>'+
+        '<ol>'+story.lines.map(([en])=>'<li>'+esc(en)+'</li>').join('')+'</ol></details></div>'
        :'<div class="reading-quiz-panel"><span class="reading-eyebrow">COMPREHENSION</span><h2>Bạn hiểu câu chuyện đến đâu?</h2>'+
           '<p>Trả lời theo nội dung đã nghe hoặc đọc, không cần dịch từng từ.</p>'+
           story.questions.map((question,i)=>{
@@ -209,7 +234,7 @@
       '</div></section>';
     env.hydrateReadingWords?.(root);
     $("#readingBack").onclick=()=>{stop();location.hash="#reading";};
-    $("#readingToggleVi").onclick=()=>{st.showVi=!st.showVi;env.saveState();renderReader(story);};
+    if(!isSpeakingProgram)$("#readingToggleVi").onclick=()=>{st.showVi=!st.showVi;env.saveState();renderReader(story);};
     $$("[data-reading-tab]").forEach(btn=>btn.onclick=()=>{
       st.tab=btn.dataset.readingTab;env.saveState();renderReader(story);
     });
@@ -231,8 +256,11 @@
         env.saveState();location.hash="#vocab";
       });
       $$("[data-reading-pattern]").forEach(btn=>btn.onclick=()=>{location.hash="#lesson/"+btn.dataset.readingPattern;});
+    }else if(mode==="practice"){
+      $("#readingPracticeListen").onclick=()=>void playFrom(0);
+      $("#readingPracticeDone").onclick=()=>{p.practiced=!p.practiced;remember(story);renderReader(story);};
     } else {
-      $$("[data-reading-answer]").forEach(input=>input.onchange=()=>{
+      $("[data-reading-answer]").forEach(input=>input.onchange=()=>{
         p.answers=p.answers||{};p.answers[+input.dataset.readingAnswer]=+input.value;remember(story);
         renderReader(story);
       });
@@ -251,5 +279,5 @@
     if(safeId(storyId))renderReader(storyById.get(storyId));
     else{stop();renderLibrary();}
   }
-  window.ReadingStudio={render,stop,stories,findChunks:(id)=>storyById.has(id)?findChunks(storyById.get(id)):[]};
+  window.ReadingStudio={render,stop,stories,isSpeakingProgram,findChunks:(id)=>storyById.has(id)?findChunks(storyById.get(id)):[]};
 })();
