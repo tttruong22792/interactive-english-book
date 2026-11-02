@@ -66,7 +66,7 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261102-speaking70.js");
+assert.equal(asset,"runtime-20261102-speaking70-vi.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" bilingual sentences, "+chunks+" chunks; Vietnamese toggle restored.");
