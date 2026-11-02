@@ -1,57 +1,65 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {runInNewContext} from "node:vm";
-const ctx={window:{},console};
-for(const file of [
- "../data/english/reading-stories-a1.js",
- "../data/english/reading-stories-a2.js",
- "../data/english/reading-stories-b1-b2.js",
- "../data/english/reading-phrase-meanings.js",
- "../reading-studio.js"
-]){
- runInNewContext(readFileSync(new URL(file,import.meta.url),"utf8"),ctx,{filename:file});
+
+const read=path=>readFileSync(new URL(path,import.meta.url),"utf8");
+const ctx={window:{SPEAKING_PROGRAM_RAW:[]},console};
+for(let week=1;week<=14;week++){
+ const file="../data/english/speaking-week-"+String(week).padStart(2,"0")+".js";
+ runInNewContext(read(file),ctx,{filename:file});
 }
-const stories=ctx.window.READING_STORIES||[];
-const reader=ctx.window.ReadingStudio;
-assert.ok(reader?.render&&reader?.stop,"Reading and audio controls are available");
-assert.equal(stories.length,30,"Exactly 30 graded reader lessons");
-assert.deepEqual(Array.from(["A1","A2","B1","B2"].map(level=>stories.filter(s=>s.level===level).length)),[10,10,7,3]);
-let sentences=0;
-for(const [i,story] of stories.entries()){
- assert.ok(story.id&&story.title&&story.viTitle&&story.topic,"Story metadata "+i);
- assert.equal(story.id.match(/^([a-z][0-9])-(\d+)$/)?.[2],String(i+1).padStart(2,"0"),"Ordered story "+i);
- assert.ok(Array.isArray(story.lines)&&story.lines.length>=8,"Story is a real connected passage, not a one-line example "+story.id);
- assert.equal(story.questions.length,2,"Two comprehension questions "+story.id);
- for(const [en,vi] of story.lines){
-  assert.ok(en.trim().length>=8&&vi.trim().length>=5,"Bilingual line present "+story.id);
-  assert.ok(!en.includes("…"),"No placeholder sentences "+story.id);
-  sentences++;
+runInNewContext(read("../data/english/speaking-program.js"),ctx,{filename:"speaking-program.js"});
+runInNewContext(read("../reading-studio.js"),ctx,{filename:"reading-studio.js"});
+
+const stories=ctx.window.SPEAKING_PROGRAM||[],reader=ctx.window.ReadingStudio;
+assert.equal(stories.length,70,"Exactly 70 daily speaking passages");
+assert.ok(reader?.render&&reader?.stop&&reader.isSpeakingProgram,"Speaking program is the active Read & Listen catalog");
+assert.equal(reader.stories.length,70,"Only 70 new lessons are visible; old stories remain in source files");
+let lines=0,words=0,chunks=0;
+const ids=new Set(),titles=new Set();
+for(let day=1;day<=70;day++){
+ const story=stories[day-1],week=Math.ceil(day/5);
+ assert.equal(story.day,day,"Consecutive day order "+day);
+ assert.equal(story.week,week,"Exactly 5 lessons per week "+day);
+ assert.equal(story.id,"speaking-"+String(day).padStart(2,"0"));
+ assert.equal(story.level,"W"+String(week).padStart(2,"0"));
+ assert.ok(story.weekTitle&&story.weekVi&&story.title&&story.viTitle,"Bilingual headings for "+day);
+ assert.ok(!ids.has(story.id)&&!titles.has(story.title),"Unique day and topic");
+ ids.add(story.id);titles.add(story.title);
+ assert.ok(story.lines.length>=6&&story.lines.every(row=>Array.isArray(row)&&row.length===2),"Connected passage "+day);
+ assert.ok(story.lines.every(([en,vi])=>en.length>=8&&vi===""),"Original English preserved; never invent Vietnamese sentence translations");
+ const text=story.lines.map(row=>row[0]).join(" ").replace(/[’‘]/g,"'").toLowerCase();
+ assert.ok(story.targetChunks.length>=2,"Useful phrases for every lesson "+day);
+ for(const phrase of story.targetChunks){
+  assert.ok(text.includes(phrase.replace(/[’‘]/g,"'").toLowerCase()),"Chunk must occur in user-provided passage: Day "+day+" "+phrase);
  }
- for(const q of story.questions){
-  assert.ok(q.prompt&&q.choices.length===3,"Comprehension question format "+story.id);
-  assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<3,"Correct answer selected "+story.id);
- }
- assert.ok(story.targetChunks.length>=3,"Contextual chunks "+story.id);
- assert.equal(ctx.window.READING_STORY_CHUNK_VI?.[story.id]?.length,story.targetChunks.length,
-  "Every highlighted phrase has its own Vietnamese meaning "+story.id);
- for(const term of story.targetChunks){
-  assert.ok(story.lines.some(([en])=>en.toLowerCase().includes(term.toLowerCase())),
-    "Highlighted chunk must appear verbatim in story "+story.id+": "+term);
- }
- assert.ok(story.patterns.length>=2&&story.patterns.every(n=>n>=1&&n<=80),"Crosslinks to existing 80 patterns "+story.id);
+ chunks+=story.targetChunks.length;
+ lines+=story.lines.length;
+ words+=story.lines.reduce((s,row)=>s+row[0].split(/\s+/).length,0);
+ assert.equal(story.questions.length,0,"No invented multiple-choice question for user-supplied speech");
 }
-assert.ok(sentences>=250,"At least 250 individually playable bilingual lines");
-const readerSource=readFileSync(new URL("../reading-studio.js",import.meta.url),"utf8");
-const appSource=readFileSync(new URL("../app.js",import.meta.url),"utf8");
-const index=readFileSync(new URL("../index.html",import.meta.url),"utf8");
-const builder=readFileSync(new URL("../scripts/build-static.mjs",import.meta.url),"utf8");
-const sw=readFileSync(new URL("../sw.js",import.meta.url),"utf8");
-assert.ok(appSource.includes("r.name === 'reading'")&&appSource.includes("renderReadingStudio"),"Reader route is integrated");
-assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio.css"),"iOS and tablet navigation");
-assert.ok(builder.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS hash allowlist covers reader sentences");
-const currentRuntime=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.ok(currentRuntime&&sw.includes(currentRuntime)&&sw.includes("reading-studio.css"),"Installed PWA cache refreshes");
-assert.ok(readerSource.includes("beginAudioSequence")&&readerSource.includes("audioSequenceActive"),"Audio cannot leak between routes");
-assert.ok(readerSource.includes("reader-line")&&readerSource.includes('data-reading-answer'),"Highlight and active comprehension");
-assert.ok(readerSource.includes("data-reading-save")&&appSource.includes("saveReadingPhrase"),"Unowned phrases can be saved to personal vocabulary");
-console.log("PASS Reading Studio: 30 graded stories, "+sentences+" sentence clips, 60 comprehension checks, on-device progress and PWA wiring");
+assert.equal(lines,545,"All 545 English spoken lines are present");
+assert.ok(words>6500,"Full spoken texts, not short summaries");
+assert.ok(chunks>=200,"Curated collocations across all 70 lessons");
+assert.equal(stories[0].title,"Introducing My Work");
+assert.equal(stories[35].title,"Asking a Colleague for Help");
+assert.equal(stories[69].title,"My Work, My Progress, and My Future Goals");
+assert.equal(stories[0].lines[0][0],"Hi everyone.");
+assert.equal(stories[69].lines.at(-1)[0],"Thank you for listening.");
+
+const ui=read("../reading-studio.js"),app=read("../app.js"),index=read("../index.html"),sw=read("../sw.js"),build=read("../scripts/build-static.mjs");
+assert.ok(app.includes("r.name === 'reading'")&&app.includes("renderReadingStudio"),"Original reading route retained");
+assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio.css"),"Phone navigation retained");
+assert.ok(ui.includes("readingWeekSelect")&&ui.includes("WEEK ")&&ui.includes("reading-week-heading"),"Fourteen-week browsing");
+assert.ok(ui.includes("readingPracticeListen")&&ui.includes("readingPracticeDone"),"Read, listen, shadow and retell");
+assert.ok(ui.includes("beginAudioSequence")&&ui.includes("audioSequenceActive"),"Audio playback remains interruptible");
+assert.ok(ui.includes('$$("[data-reading-speak]")')&&ui.includes('$$("[data-reading-save]")'),"All chunk buttons are correctly bound");
+assert.ok(ui.includes("story.lines.map(([en,vi],i)")&&ui.includes("hydrateReadingWords"),"Individual line playback and dictionary retained");
+assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available for a rollback");
+assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
+assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
+const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
+assert.equal(asset,"runtime-20261102-speaking70.js");
+assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
+assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
+console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" playable sentences, "+chunks+" curated chunks, English originals preserved.");
