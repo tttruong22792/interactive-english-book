@@ -51,6 +51,7 @@ jobs:
         run: |
           node --check app.js
           node --check reading-studio.js
+          for f in data/english/speaking-week-*.js data/english/speaking-program.js; do node --check "$f"; done
           node --check data/english/reading-stories-a1.js
           node --check data/english/reading-stories-a2.js
           node --check data/english/reading-stories-b1-b2.js
@@ -127,7 +128,7 @@ jobs:
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-unique-chunk-curriculum.mjs
 
-      - name: Validate 30 Reading & Listening lessons
+      - name: Validate 70 speaking and listening lessons
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-reading-studio.mjs
 
