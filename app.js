@@ -32,6 +32,7 @@
   let flashIndex = 0;
   let installPrompt = null;
   let sequenceRun = 0;
+  let browserSpeechFinish = null;
   let practiceLessons = [];
   let shadowLessons = [];
   let shadowSession = {items:[],index:0,playing:false,settings:null};
@@ -1226,6 +1227,9 @@
   function stopSpeech(cancelSequence=true){
     if(cancelSequence) sequenceRun++;
     if(window.AITTS) window.AITTS.stop();
+    const finish=browserSpeechFinish;
+    browserSpeechFinish=null;
+    if(finish)finish();
     if('speechSynthesis' in window) speechSynthesis.cancel();
     $$('.speaking').forEach(x=>x.classList.remove('speaking'));
     $$('.playing').forEach(x=>x.classList.remove('playing'));
@@ -1246,19 +1250,26 @@
         if(!highlightEl || typeof e.charIndex!=='number') return;
         $$('.word-token',highlightEl).forEach(w=>{const a=+w.dataset.start,b=+w.dataset.end;w.classList.toggle('speaking',e.charIndex>=a && e.charIndex<b);});
       };
+      let settled=false;
       const done=()=>{
-        if(highlightEl) $$('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking'));
+        if(settled)return;
+        settled=true;
+        if(browserSpeechFinish===done)browserSpeechFinish=null;
+        if(highlightEl) $('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking'));
         if(card) card.classList.remove('playing');
         resolve();
       };
+      browserSpeechFinish=done;
       u.onend=done;
       u.onerror=done;
-      speechSynthesis.speak(u);
+      try{speechSynthesis.speak(u);}catch(e){done();}
     });
   }
 
   async function speak(text,highlightEl=null,rate=state.rate,sequenceToken=null){
     stopSpeech(sequenceToken===null);
+    const requestToken=sequenceToken===null?sequenceRun:sequenceToken;
+    if(requestToken!==sequenceRun)return;
     const card=highlightEl?.closest?.('[data-sentence-card]');
     if(card) card.classList.add('playing');
 
@@ -1267,10 +1278,11 @@
         // AITTS checks the shared static MP3 cache first.
         // Only when the file is missing does it call the dynamic OpenAI backend.
         await window.AITTS.speak(text,{rate,language:detectSpeechLang(text),highlightEl});
+        if(requestToken!==sequenceRun)return;
         if(card) card.classList.remove('playing');
         return;
       }catch(error){
-        if(sequenceToken!==null && sequenceToken!==sequenceRun){
+        if(requestToken!==sequenceRun || error?.name==='AbortError'){
           if(card) card.classList.remove('playing');
           return;
         }
@@ -1278,7 +1290,7 @@
       }
     }
 
-    if(sequenceToken!==null && sequenceToken!==sequenceRun){
+    if(requestToken!==sequenceRun){
       if(card) card.classList.remove('playing');
       return;
     }

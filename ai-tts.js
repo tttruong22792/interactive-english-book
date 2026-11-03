@@ -16,6 +16,11 @@
   var activeAudio = null;
   var activeObjectUrl = null;
   var activeTimer = null;
+  var playbackEpoch = 0;
+  var activeCancel = null;
+  var pendingController = null;
+  function cancelled(){var error=new Error("Audio playback stopped");error.name="AbortError";return error;}
+  function ensureCurrent(epoch){if(typeof epoch==="number" && epoch!==playbackEpoch)throw cancelled();}
 
   var K = [
     0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
@@ -161,7 +166,8 @@
     if(activeObjectUrl){URL.revokeObjectURL(activeObjectUrl);activeObjectUrl=null;}
   }
 
-  function playAudioSource(src,text,options,isObjectUrl){
+  function playAudioSource(src,text,options,isObjectUrl,epoch){
+    ensureCurrent(epoch);
     options=options||{};
     cleanupAudio();
     var audio=new Audio(src);
@@ -183,9 +189,12 @@
           URL.revokeObjectURL(src);
           activeObjectUrl=null;
         }
+        if(activeCancel===cancel)activeCancel=null;
       }
       function finish(){if(settled)return;settled=true;cleanup();resolve();}
       function fail(){if(settled)return;settled=true;cleanup();reject(new Error("Could not play AI audio"));}
+      function cancel(){if(settled)return;settled=true;cleanup();reject(cancelled());}
+      activeCancel=cancel;
 
       audio.addEventListener("loadedmetadata",function(){
         if(highlightEl && isFinite(audio.duration) && audio.duration>0){
@@ -241,56 +250,80 @@
     return cloudAudioUrl(hash)+(cloudAudioUrl(hash).includes("?")?"&":"?")+"ready="+Date.now();
   }
 
-  async function ensureCloudAudio(hash){
-    var response=await fetch(CLOUD_TTS_ENDPOINT,{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({hash:hash}),
-      cache:"no-store"
-    });
-
-    var data=null;
-    try{data=await response.json();}catch(e){}
-
-    if(!response.ok){
-      var message=(data&&data.message)||(data&&data.error)||"Cloud AI voice request failed";
-      throw new Error(message);
+  async function ensureCloudAudio(hash,epoch){
+    ensureCurrent(epoch);
+    var controller=(typeof epoch==="number" && typeof AbortController==="function")?new AbortController():null;
+    if(controller)pendingController=controller;
+    try{
+      var request={
+        method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({hash:hash}),cache:"no-store"
+      };
+      if(controller)request.signal=controller.signal;
+      var response=await fetch(CLOUD_TTS_ENDPOINT,request);
+      ensureCurrent(epoch);
+      var data=null;
+      try{data=await response.json();}catch(e){}
+      ensureCurrent(epoch);
+      if(!response.ok){
+        var message=(data&&data.message)||(data&&data.error)||"Cloud AI voice request failed";
+        throw new Error(message);
+      }
+      return data||{ok:true};
+    }finally{
+      if(pendingController===controller)pendingController=null;
     }
-    return data||{ok:true};
   }
 
-  async function speakLocal(text,language,voice,hash,options){
+  async function speakLocal(text,language,voice,hash,options,epoch){
+    ensureCurrent(epoch);
     var known=knownLocal(hash);
     if(known===true){
-      return playAudioSource(localAudioUrl(hash),text,options,false);
+      await playAudioSource(localAudioUrl(hash),text,options,false,epoch);
+      ensureCurrent(epoch);
+      return;
     }
-    return speakCloud(text,language,voice,hash,options);
+    return speakCloud(text,language,voice,hash,options,epoch);
   }
 
-  async function speakCloud(text,language,voice,hash,options){
+  async function speakCloud(text,language,voice,hash,options,epoch){
+    ensureCurrent(epoch);
     try{
-      return await playAudioSource(cloudAudioUrl(hash),text,options,false);
-    }catch(firstError){}
-
-    await ensureCloudAudio(hash);
-
-    // Avoid any short-lived negative HTTP cache after the initial 404.
+      await playAudioSource(cloudAudioUrl(hash),text,options,false,epoch);
+      ensureCurrent(epoch);
+      return;
+    }catch(firstError){
+      // An intentional Stop is not a failed download; never retry it.
+      ensureCurrent(epoch);
+      if(firstError?.name==="AbortError")throw firstError;
+    }
+    await ensureCloudAudio(hash,epoch);
+    ensureCurrent(epoch);
     var readyUrl=cloudAudioUrl(hash)+(cloudAudioUrl(hash).includes("?")?"&":"?")+"ready="+Date.now();
-    return playAudioSource(readyUrl,text,options,false);
+    await playAudioSource(readyUrl,text,options,false,epoch);
+    ensureCurrent(epoch);
   }
 
   async function speak(text,options){
+    stop();
+    var epoch=playbackEpoch;
     options=options||{};
     var language=options.language||detectLanguage(text);
     var voice=options.voice||voiceFor(language);
     var hash=cacheHash(text,language,voice);
-
-    if(isLocalHost()) return speakLocal(text,language,voice,hash,options);
-    return speakCloud(text,language,voice,hash,options);
+    if(isLocalHost())return speakLocal(text,language,voice,hash,options,epoch);
+    return speakCloud(text,language,voice,hash,options,epoch);
   }
 
   function stop(){
-    cleanupAudio();
+    playbackEpoch++;
+    var controller=pendingController;
+    pendingController=null;
+    if(controller){try{controller.abort();}catch(e){}}
+    var cancel=activeCancel;
+    activeCancel=null;
+    cleanupAudio(); // Immediately silence the HTMLAudioElement, including iOS Safari.
+    if(cancel)cancel(); // Settle the pending playback so it cannot restart.
     Array.prototype.forEach.call(document.querySelectorAll(".word-token.speaking"),function(el){el.classList.remove("speaking");});
   }
 
