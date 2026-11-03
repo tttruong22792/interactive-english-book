@@ -1255,7 +1255,7 @@
         if(settled)return;
         settled=true;
         if(browserSpeechFinish===done)browserSpeechFinish=null;
-        if(highlightEl) $('.word-token',highlightEl).forEach(w=>w.classList.remove('speaking'));
+        if(highlightEl) highlightEl.querySelectorAll('.word-token').forEach(w=>w.classList.remove('speaking'));
         if(card) card.classList.remove('playing');
         resolve();
       };
