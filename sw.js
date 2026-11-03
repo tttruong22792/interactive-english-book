@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v110-speaking70-two-modes';
+const APP_CACHE='language-studio-v111-audio-stop-fix';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261103-speaking70-two-modes.js',
+  './runtime-20261104-audio-stop-fix.js',
   './app-shell-v53.css',
   './reading-studio.css',
   './easy-play-theme-v58.css',

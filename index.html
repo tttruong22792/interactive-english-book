@@ -124,10 +124,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261103-speaking70-two-modes.js'
+        ? 'runtime-20261104-audio-stop-fix.js'
         : 'runtime.js?v=20261020-patterns-80-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261103-speaking70-two-modes';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261104-audio-stop-fix';
       script.async = false;
       script.onerror = function () {
         // A stale iOS PWA cache may miss this versioned filename.

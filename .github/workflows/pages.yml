@@ -50,7 +50,9 @@ jobs:
         if: steps.head_guard.outputs.deploy == 'true'
         run: |
           node --check app.js
+          node --check ai-tts.js
           node --check reading-studio.js
+          node --check scripts/test-audio-stop.mjs
           for f in data/english/speaking-week-*.js data/english/speaking-vi-*.js data/english/speaking-program.js; do node --check "$f"; done
           node --check data/english/reading-stories-a1.js
           node --check data/english/reading-stories-a2.js
@@ -131,6 +133,10 @@ jobs:
       - name: Validate 70 speaking and listening lessons
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-reading-studio.mjs
+
+      - name: Verify Stop cancels speech and pending retries
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-audio-stop.mjs
 
       - name: Test the strict 60-day learning path
         if: steps.head_guard.outputs.deploy == 'true'
