@@ -265,3 +265,59 @@
  .reading-grammar-card summary{padding:12px 11px}
  .reading-reference-actions button{font-size:11px}
 }
+
+/* v73 - lightweight Vietnamese → English typed recall inside Vocabulary */
+.reading-write-entry{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px;padding:12px 14px;border-radius:13px;border:1px solid #cbd9ed;background:#f5f8ff}
+.reading-write-entry button{border:0;border-radius:10px;padding:11px 15px;min-height:42px;background:#6654b4;color:#fff;font:inherit;font-size:13px;font-weight:850}
+.reading-write-entry small{font-size:11px;color:#736c84;line-height:1.5;flex:1;min-width:170px}
+.reading-write-panel{max-width:850px;margin:auto}
+.reading-write-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reading-write-top button{border:1px solid #e8dccc;border-radius:11px;background:#fff7ec;color:#ae6449;min-height:38px;padding:8px 12px;font-size:12px;font-weight:800}
+.reading-write-top span{font-size:10px;letter-spacing:.09em;color:#a87d6b;font-weight:850}
+.reading-write-panel h2{font-size:clamp(20px,3vw,28px);color:#332d49;line-height:1.3;letter-spacing:-.02em;margin:18px 0 7px}
+.reading-write-intro{font-size:12px;color:#756e84;line-height:1.7;margin:0 0 16px}
+.reading-write-progress{padding:14px;border:1px solid #e6e1f0;border-radius:13px;background:#faf9ff;margin-bottom:14px}
+.reading-write-progress>div:first-child{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.reading-write-progress strong{font-size:13px;color:#65539f}
+.reading-write-progress div:first-child span{font-size:11px;color:#8e8398}
+.reading-write-track{height:7px;background:#e8e3ef;border-radius:100px;overflow:hidden}
+.reading-write-track span{display:block;height:100%;border-radius:100px;background:#79b698;transition:width .18s ease}
+.reading-write-card{border:1px solid #e7e1f1;background:#fff;border-radius:17px;padding:clamp(16px,3vw,26px);box-shadow:0 5px 22px #3626540a}
+.reading-write-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:10px;font-weight:850;color:#9681a8;letter-spacing:.06em}
+.reading-write-vi{font-size:clamp(21px,4.2vw,30px);font-weight:850;color:#373049;line-height:1.45;margin:23px 0}
+.reading-write-context{margin:0 0 20px;font-size:12px;color:#756987;background:#f7f5fb;border-radius:10px;padding:9px 12px}
+.reading-write-context summary{font-weight:750;cursor:pointer}
+.reading-write-context p{font-size:12px;line-height:1.6;margin:9px 0 2px}
+.reading-write-card form{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.reading-write-card form label{width:100%;font-size:12px;color:#6f6581;font-weight:800}
+.reading-write-card input{flex:1 1 220px;min-width:0;box-sizing:border-box;min-height:48px;padding:10px 14px;border:1px solid #ddd5ea;border-radius:11px;font:inherit;font-size:16px;background:white;color:#302a42;outline-offset:2px}
+.reading-write-card input:focus{border-color:#8167c7;box-shadow:0 0 0 3px #8974cc21}
+.reading-write-card input[readonly]{background:#f2f8f4;color:#356d4f}
+.reading-write-card form button{flex:0 0 auto;border:0;border-radius:11px;padding:11px 20px;min-height:48px;font:inherit;font-size:14px;font-weight:850;background:#e96e48;color:white}
+.reading-write-card form button:disabled{background:#e0efe5;color:#2c7650}
+.reading-write-feedback{font-size:13px;line-height:1.55;min-height:18px;margin:11px 0;color:#706a82}
+.reading-write-feedback.success{color:#2c7650}
+.reading-write-feedback.error{color:#bd4d3b}
+.reading-write-feedback.hint{color:#6b52ae}
+.reading-write-actions{display:flex;flex-wrap:wrap;gap:8px;padding-top:4px}
+.reading-write-actions button,.reading-write-finished button{font:inherit;font-size:12px;font-weight:800;border:1px solid #ded4ee;background:white;color:#6653a4;padding:10px 12px;border-radius:10px;min-height:41px}
+.reading-write-actions #readingRecallNext{background:#6654b4;border-color:#6654b4;color:#fff}
+.reading-write-actions button[hidden]{display:none}
+.reading-write-note{font-size:11px;color:#978c9e;line-height:1.65;margin:14px 2px}
+.reading-write-finished{text-align:center;padding:24px 14px 26px;border-radius:15px;border:1px solid #c6decf;background:#f6fbf7}
+.reading-write-finished strong{display:block;color:#31784f;font-size:17px;line-height:1.5}
+.reading-write-finished p{font-size:12px;color:#6e7a72;line-height:1.65;margin:12px auto 20px}
+.reading-write-finished button{margin:4px}
+.reading-write-finished #readingRecallRead{background:#537e66;border-color:#537e66;color:white}
+@media(max-width:760px){
+ .reading-write-entry{gap:8px}
+ .reading-write-entry button{width:100%}
+ .reading-write-entry small{min-width:0}
+ .reading-write-top span{font-size:9px}
+ .reading-write-panel h2{font-size:21px}
+ .reading-write-vi{font-size:25px;margin:20px 0}
+ .reading-write-card{padding:16px 13px}
+ .reading-write-card form button{width:100%}
+ .reading-write-actions button{flex:1 1 100px}
+ .reading-write-note{margin-bottom:24px}
+}

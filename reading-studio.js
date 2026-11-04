@@ -29,6 +29,8 @@
     if(typeof state.readingStudio.refShowEn!=="boolean")state.readingStudio.refShowEn=true;
     if(typeof state.readingStudio.refShowVi!=="boolean")state.readingStudio.refShowVi=true;
     if(!["words","phrases"].includes(state.readingStudio.vocabKind))state.readingStudio.vocabKind="words";
+    if(!["list","write"].includes(state.readingStudio.vocabView))state.readingStudio.vocabView="list";
+    if(!state.readingStudio.vocabRecall||typeof state.readingStudio.vocabRecall!=="object")state.readingStudio.vocabRecall={};
     return state.readingStudio;
   }
   function progress(story){
