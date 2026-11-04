@@ -150,6 +150,7 @@
     });
   }
   function renderLibrary(){
+    window.ReadingReferenceUI?.clearRecallViewport?.();
     activeStory=null;
     env.setHeader(isSpeakingProgram?"100-Day English":"English › Đọc & Nghe",isSpeakingProgram?"70 bài nói theo ngày":"Thư viện bài đọc");
     const root=env.main;
@@ -197,15 +198,17 @@
     $$("[data-open-story]",root).forEach(btn=>btn.onclick=()=>{location.hash="#reading/"+btn.dataset.openStory;});
   }
   function renderReader(story){
+    window.ReadingReferenceUI?.clearRecallViewport?.();
     stop();activeStory=story;
     env.setHeader(isSpeakingProgram?"100-Day English › Day "+String(story.day).padStart(2,"0"):"Đọc & Nghe › "+story.level,story.title);
     const st=settings(),p=progress(story),root=env.main;
     const chunks=findChunks(story);
     const mode=st.tab||"read";
+    const isWritingRecall=mode==="vocab"&&st.vocabKind!=="phrases"&&st.vocabView==="write";
     const totalWords=story.lines.map(row=>row[0].split(/\s+/).length).reduce((a,b)=>a+b,0);
     const tabRows=isSpeakingProgram?[["vocab","Từ vựng & cụm từ"],["read","Đọc & Nghe"],["patterns","Mẫu câu"]]:
       [["read","Bài đọc"],["chunks","Cụm cần chú ý"],["quiz","Hiểu bài"]];
-    root.innerHTML='<section class="reading-shell reading-detail" id="readingRoot">'+
+    root.innerHTML='<section class="reading-shell reading-detail '+(isWritingRecall?'reading-writing-mode':'')+'" id="readingRoot">'+
       '<header class="reading-detail-head">'+
        '<button class="reading-back" type="button" id="readingBack">← Thư viện</button>'+
        '<div class="reading-detail-title"><span class="reading-eyebrow">'+(isSpeakingProgram?'DAY '+String(story.day).padStart(2,"0")+' · WEEK '+String(story.week).padStart(2,"0"):'BÀI '+String(stories.indexOf(story)+1).padStart(2,"0")+' · '+esc(story.level))+' · '+totalWords+' TỪ</span>'+
