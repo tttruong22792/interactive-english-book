@@ -206,7 +206,8 @@
     const mode=st.tab||"read";
     const isWritingRecall=mode==="vocab"&&st.vocabKind!=="phrases"&&st.vocabView==="write";
     const totalWords=story.lines.map(row=>row[0].split(/\s+/).length).reduce((a,b)=>a+b,0);
-    const tabRows=isSpeakingProgram?[["vocab","Từ vựng & cụm từ"],["read","Đọc & Nghe"],["patterns","Mẫu câu"]]:
+    const deepReady=isSpeakingProgram&&!!window.SPEAKING_DEEP_UI?.entriesFor(story);
+    const tabRows=isSpeakingProgram?[["vocab","Từ vựng & cụm từ"],["read","Đọc & Nghe"],["patterns",deepReady?"Hiểu sâu từng câu":"Mẫu câu"]]:
       [["read","Bài đọc"],["chunks","Cụm cần chú ý"],["quiz","Hiểu bài"]];
     root.innerHTML='<section class="reading-shell reading-detail '+(isWritingRecall?'reading-writing-mode':'')+'" id="readingRoot">'+
       '<header class="reading-detail-head">'+
@@ -255,7 +256,7 @@
           (Object.keys(p.answers||{}).length===story.questions.length?' · '+story.questions.filter((q,i)=>p.answers[i]===q.answer).length+' câu đúng':'')+'</div>'+
           '<button type="button" class="reading-inline-next" id="readingBackToText">← Đọc lại bài</button></div>')+
       '</div>'+
-      (mode==="vocab"?'':'<div class="reading-player">'+
+      (mode==="vocab"||(isSpeakingProgram&&mode==="patterns")?'':'<div class="reading-player">'+
          '<div class="reading-player-meter"><div class="reading-player-progress"><span id="readingPositionBar" style="width:'+Math.round((p.index+1)/story.lines.length*100)+'%"></span></div>'+
          '<small id="readingPosition">'+(p.index+1)+' / '+story.lines.length+'</small></div>'+
          '<div class="reading-player-actions"><button id="readingPrev" type="button" aria-label="Câu trước">⟵</button>'+
@@ -309,7 +310,7 @@
       $("#readingBackToText").onclick=()=>{st.tab="read";env.saveState();renderReader(story);};
     }
     // Vocabulary is a dedicated learning tab; it must never render or bind the reader player.
-    if(mode!=="vocab"){
+    if(mode!=="vocab"&&!(isSpeakingProgram&&mode==="patterns")){
     const moveTo=(delta)=>{
       const next=Math.max(0,Math.min(story.lines.length-1,p.index+delta));
       // When listening, switch immediately and restart the new sentence without overlap.
