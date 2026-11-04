@@ -398,3 +398,73 @@
 /* v76 — all vocabulary study screens exclude the lesson audio player. */
 .reading-detail:has(.reading-reference-panel) > .reading-player{display:none!important}
 .reading-detail:has(.reading-reference-panel) .reading-detail-body{flex:1;min-height:0}
+
+
+/* v77 — sentence-first deep explanation, Day 01 pilot */
+.reading-deep-panel{max-width:960px;margin:0 auto;padding:22px 24px 30px;scrollbar-gutter:stable}
+.reading-deep-header h2{font-size:clamp(21px,2.8vw,29px);letter-spacing:-.025em;line-height:1.2;margin:7px 0}
+.reading-deep-header>p{font-size:12px;line-height:1.6;color:#796f87;max-width:660px;margin:0 0 17px}
+.reading-deep-index{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:7px;margin:0 0 15px}
+.reading-deep-index button{border:1px solid #e5ddeb;border-radius:11px;min-width:0;min-height:41px;background:#faf8fc;color:#857b98;font-size:12px;font-weight:850;padding:6px 0}
+.reading-deep-index button.selected{background:#db805b;border-color:#db805b;color:white;box-shadow:0 3px 7px #d7865d30}
+.reading-deep-card{background:#fff;border:1px solid #e7dfed;border-radius:16px;padding:19px;box-shadow:0 4px 17px #28203a08}
+.reading-deep-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:10px;font-weight:850;letter-spacing:.05em;color:#927eaa}
+.reading-deep-meta span:last-child{color:#a06a53;letter-spacing:0}
+.reading-deep-original{display:flex;align-items:center;justify-content:space-between;gap:13px;margin:16px 0;background:#faf7fd;border:1px solid #eae4f0;border-radius:14px;padding:18px}
+.reading-deep-original>div{min-width:0;flex:1}
+.reading-deep-original h3{font-size:clamp(20px,2.4vw,27px);line-height:1.32;letter-spacing:-.025em;color:#322a4a;overflow-wrap:anywhere;margin:0}
+.reading-deep-original p{font-size:13px;line-height:1.5;color:#766986;margin:8px 0 0}
+.reading-deep-original button{flex:0 0 auto;background:#fff;border:1px solid #dcd0ed;border-radius:10px;color:#5944ad;font-weight:800;min-height:39px;padding:8px 13px}
+.reading-deep-situation{border-left:3px solid #d9815f;padding:10px 15px;margin:12px 0 16px;background:#fdf9f4;border-radius:0 12px 12px 0}
+.reading-deep-section-label{font-size:10px;color:#ac6a4e;letter-spacing:.09em;font-weight:900}
+.reading-deep-situation p{font-size:13px;line-height:1.65;color:#51485c;margin:7px 0 10px}
+.reading-deep-situation p:last-child{margin-bottom:1px}
+.reading-deep-situation strong{font-size:12px;color:#493d5f}
+.reading-deep-visibility{margin-bottom:14px;max-width:320px}
+.reading-deep-disclosure{margin:9px 0;border:1px solid #e7e1ed;border-radius:12px;overflow:hidden;background:#fff}
+.reading-deep-disclosure summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;padding:14px 15px;color:#48395f;font-size:13px;font-weight:850;min-height:46px}
+.reading-deep-disclosure summary::-webkit-details-marker{display:none}
+.reading-deep-disclosure summary>span:last-child{font-size:19px;color:#8877a2;transition:transform .15s}
+.reading-deep-disclosure[open] summary{background:#f7f4fb;border-bottom:1px solid #e9e3ef}
+.reading-deep-disclosure[open] summary>span:last-child{transform:rotate(180deg)}
+.reading-deep-disclosure-body{padding:14px 16px 16px}
+.reading-deep-why,.reading-deep-intro,.reading-deep-pitfall{font-size:13px;line-height:1.72;color:#514a5d;margin:0 0 12px}
+.reading-deep-pitfall{margin-bottom:0}
+.reading-deep-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.reading-deep-part{background:#faf9fc;border:1px solid #efecf4;border-radius:10px;padding:12px}
+.reading-deep-part strong{display:block;font-size:13px;color:#4b3880;overflow-wrap:anywhere}
+.reading-deep-part p{font-size:12px;line-height:1.62;color:#6f657c;margin:6px 0 0}
+.reading-deep-example{padding:10px 12px;background:#fbfafd;border:1px solid #eeeaf3;border-radius:9px;margin-top:8px}
+.reading-deep-example strong{font-size:13px;color:#362e53;font-weight:750;overflow-wrap:anywhere}
+.reading-deep-example p{font-size:12px;line-height:1.55;color:#797186;margin:5px 0 0}
+.reading-deep-related{border-radius:11px;border:1px solid #ddd4f0;background:#f6f2ff;display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px;margin:16px 0}
+.reading-deep-related strong{font-size:12px;color:#5d4d82}
+.reading-deep-related button{border:1px solid #d8cdec;background:white;border-radius:9px;color:#5945a5;font:inherit;font-size:12px;font-weight:800;padding:9px 11px}
+.reading-deep-takeaway{display:grid;gap:7px;border-radius:12px;background:#eef7f0;border:1px solid #cbe3d0;padding:14px 16px;margin-top:17px}
+.reading-deep-takeaway span{font-size:10px;color:#497b60;letter-spacing:.08em;font-weight:900}
+.reading-deep-takeaway strong{font-size:13px;line-height:1.6;color:#315d43}
+.reading-deep-navigation{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:17px 0}
+.reading-deep-navigation button{min-height:43px;flex:0 1 160px;border:1px solid #ddd3ea;border-radius:11px;background:white;color:#6752aa;font-size:12px;font-weight:800;padding:9px}
+.reading-deep-navigation button:last-child{background:#d8805e;border-color:#d8805e;color:white}
+.reading-deep-navigation button:disabled{opacity:.4;cursor:default}
+.reading-deep-navigation span{font-size:12px;font-weight:850;color:#817294;font-variant-numeric:tabular-nums}
+.reading-deep-panel>.reading-inline-next{margin-bottom:8px}
+@media(max-width:760px){
+ .reading-deep-panel{padding:13px 11px 24px;scrollbar-gutter:auto}
+ .reading-deep-header>p{margin-bottom:12px}
+ .reading-deep-index{gap:4px;margin-bottom:11px}
+ .reading-deep-index button{font-size:11px;min-height:36px;border-radius:8px}
+ .reading-deep-card{padding:11px 10px;border-radius:13px}
+ .reading-deep-original{padding:13px 11px;gap:7px;margin:11px 0}
+ .reading-deep-original h3{font-size:clamp(19px,5.4vw,24px)}
+ .reading-deep-original p{font-size:12px}
+ .reading-deep-original button{padding:8px 9px;font-size:11px}
+ .reading-deep-situation{padding:10px 11px;margin:9px 0}
+ .reading-deep-visibility{width:100%;max-width:none}
+ .reading-deep-visibility button{flex:1;min-width:0}
+ .reading-deep-disclosure summary{padding:11px 12px;font-size:12px}
+ .reading-deep-disclosure-body{padding:12px}
+ .reading-deep-breakdown{grid-template-columns:1fr;gap:7px}
+ .reading-deep-part{padding:10px 11px}
+ .reading-deep-navigation{margin:13px 0}
+}
