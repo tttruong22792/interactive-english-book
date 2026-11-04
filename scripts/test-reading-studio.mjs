@@ -71,7 +71,7 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261104-vocab-writing-v73.js");
+assert.equal(asset,"runtime-20261104-vocab-writing-v73b.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
@@ -138,5 +138,6 @@ const otherDay=stories[1];
 assert.equal(writingUI.recallData(otherDay,writingState).done.length,0,"Each lesson keeps independent writing progress");
 assert.ok(!writingUI.vocabulary(lesson,{vocabKind:"phrases",vocabView:"list"}).includes('id="readingRecallForm"'),"Phrase list is not incorrectly graded against whole-sentence translations");
 assert.ok(refUI.includes("bindWritingPractice")&&refUI.includes('form.onsubmit=event=>')&&refUI.includes('if(answerMatches(typed,item.term))'),"Input submission checks the actual English answer");
+assert.ok(refUI.includes('if(!revealed){')&&refUI.includes('if(!accepted||revealed)'),"Looking at the answer does not count as mastered, even if copied correctly");
 assert.ok(refUI.includes('env.saveState();rerender(story)')&&read("../reading-studio.js").includes('state.readingStudio.vocabRecall={}'),"Recall attempts and per-day progress are saved");
 console.log("PASS Speaking Program: 70 bilingual lessons, "+uniqueWordForms.size+" words kept in dictionary, "+studyWords.size+" study terms, "+expandedPhrases+" phrases; VN-to-EN writing practice.");

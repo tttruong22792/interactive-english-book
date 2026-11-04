@@ -132,7 +132,7 @@ function bindWritingPractice(story,st,env,rerender){
  const form=$("#readingRecallForm"),input=$("#readingRecallInput"),feedback=$("#readingRecallFeedback"),
   check=$("#readingRecallCheck"),next=$("#readingRecallNext");
  if(!form||!input||!feedback||!check||!next)return;
- let accepted=false;
+ let accepted=false, revealed=false;
  const response=(message,kind)=>{
   feedback.className="reading-write-feedback "+kind;
   feedback.innerHTML=message;
@@ -143,9 +143,9 @@ function bindWritingPractice(story,st,env,rerender){
   env.saveState();
  };
  const advance=()=>{
-  if(!accepted){
-   markMissed();
-   // Wrong/skipped words stay in the queue; advance over the remaining items.
+  if(!accepted)markMissed();
+  if(!accepted||revealed){
+   // Skipped words and answers viewed before writing remain in the recall queue.
    data.cursor+=1;
   }
   env.saveState();rerender(story);
@@ -157,15 +157,22 @@ function bindWritingPractice(story,st,env,rerender){
   if(!typed){response("Bạn cần viết tiếng Anh trước khi kiểm tra.","error");return;}
   if(answerMatches(typed,item.term)){
    accepted=true;
-   if(!data.done.includes(item.term))data.done.push(item.term);
-   data.missed=data.missed.filter(word=>word!==item.term);
+   if(!revealed){
+    if(!data.done.includes(item.term))data.done.push(item.term);
+    data.missed=data.missed.filter(word=>word!==item.term);
+   }else if(!data.missed.includes(item.term))data.missed.push(item.term);
    data.attempts++;
    env.saveState();
    input.readOnly=true;
    check.disabled=true;
-   check.textContent="✓ Chính xác";
+   check.textContent=revealed?"✓ Đã viết lại":"✓ Chính xác";
+   const revealButton=$("#readingRecallReveal"),hintButton=$("#readingRecallHint");
+   if(revealButton)revealButton.disabled=true;
+   if(hintButton)hintButton.disabled=true;
    next.hidden=false;
-   response("✓ Viết đúng! Bạn đã nhớ từ này.","success");
+   response(revealed?
+    "✓ Đã viết lại theo đáp án. Từ này sẽ xuất hiện lại để kiểm tra trí nhớ.":
+    "✓ Viết đúng! Bạn đã nhớ từ này.",revealed?"hint":"success");
   }else{
    markMissed();
    response("Chưa đúng. Hãy thử lại, dùng gợi ý hoặc xem đáp án.","error");
@@ -181,7 +188,9 @@ function bindWritingPractice(story,st,env,rerender){
   input.focus();
  };
  $("#readingRecallReveal").onclick=()=>{
-  response('Đáp án của bài: <strong lang="en">'+esc(item.term)+'</strong> · Hãy viết lại trước khi bấm kiểm tra.',"hint");
+  if(accepted)return;
+  revealed=true;
+  response('Đáp án của bài: <strong lang="en">'+esc(item.term)+'</strong> · Hãy thử viết lại. Mục này sẽ được kiểm tra thêm lần nữa.',"hint");
   input.focus();
  };
 }
