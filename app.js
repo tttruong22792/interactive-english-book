@@ -526,6 +526,12 @@
     };
     window.ReadingStudio.render({
       main:$('#mainView'),state,saveState,setHeader,hydrateReadingWords,saveReadingPhrase,
+      lookupReadingWord:async term=>{
+        try{
+          if(!L||L.language!=='en')await ensureCoreEnglish();
+          openLookup(term,'word');
+        }catch(error){toast(error?.message||'Chưa tra được từ.');}
+      },
       beginAudioSequence,audioSequenceActive,speak,stopSpeech,toast
     },id);
   }
@@ -3360,6 +3366,14 @@
       return {key:'p:'+normalized,term,ipa:'',meaning:'Cụm này chưa có nghĩa cố định trong từ điển, nhưng bạn có thể xem nghĩa từng từ bên dưới.',example:'',type:'phrase',breakdown:words};
     }
     const w=(L.dictionary&&L.dictionary[normalized]) || (window.CORE_DICTIONARY&&window.CORE_DICTIONARY[normalized]);
+    // All 1,170 distinct word forms in the 70 mini-speeches are indexed,
+    // including inflections, technical terms and contractions.
+    const supplement=window.SPEAKING_VOCAB_EXTRA?.[normalized];
+    if(!w&&typeof supplement==='string'&&supplement.trim()){
+      const example=window.SPEAKING_PROGRAM?.flatMap(story=>story.lines||[]).find(([en])=>
+        (en.toLowerCase().replace(/[’]/g,"'").match(/[a-z]+(?:'[a-z]+)?/g)||[]).includes(normalized))?.[0]||'';
+      return {key:'w:'+normalized,term,speechText:normalized,ipa:'',meaning:supplement,example,type:'word'};
+    }
     if(!w) return {key:'w:'+normalized,term,speechText:normalized,ipa:'',meaning:'Từ này chưa có trong từ điển chung.',example:'',type:'word'};
     return {key:'w:'+normalized,term,speechText:normalized,ipa:w[0],meaning:w[1],example:w[2],type:'word'};
   }
