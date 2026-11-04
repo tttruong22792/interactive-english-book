@@ -13,7 +13,7 @@ for(let first=1;first<=70;first+=10){
  runInNewContext(read(file),ctx,{filename:file});
 }
 runInNewContext(read("../data/english/speaking-program.js"),ctx,{filename:"speaking-program.js"});
-for(const filename of ["core-dictionary.js","reading-phrase-meanings.js","speaking-vocab-01.js","speaking-vocab-02.js","speaking-vocab-03.js","speaking-reference.js","reading-reference-ui.js"]){
+for(const filename of ["core-dictionary.js","reading-phrase-meanings.js","speaking-vocab-01.js","speaking-vocab-02.js","speaking-vocab-03.js","speaking-reference.js","speaking-day01-deep-dive.js","speaking-deep-ui.js","reading-reference-ui.js"]){
  runInNewContext(read("../data/english/"+filename),ctx,{filename});
 }
 runInNewContext(read("../data/content-index.js"),ctx,{filename:"content-index.js"});
@@ -62,7 +62,7 @@ assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio
 assert.ok(ui.includes("readingWeekSelect")&&ui.includes("WEEK ")&&ui.includes("reading-week-heading"),"Fourteen-week browsing");
 assert.ok(ui.includes('id="readingToggleVi"')&&ui.includes('st.showVi=!st.showVi;env.saveState();renderReader(story)'),'Restore native visible/hidden Vietnamese meaning control');
 assert.ok(ui.includes('st.showVi&&vi?')&&ui.includes('class="reading-vi"'),'Translations displayed under respective English line only when enabled');
-assert.ok(ui.includes('["vocab","Từ vựng & cụm từ"]')&&ui.includes('["patterns","Mẫu câu"]'),"Vocabulary and grammar tabs replace speaking practice");
+assert.ok(ui.includes('["vocab","Từ vựng & cụm từ"]')&&ui.includes('deepReady?"Hiểu sâu từng câu":"Mẫu câu"'),"Vocabulary and grammar tabs replace speaking practice");
 assert.ok(!ui.includes('["practice","Luyện nói"]')&&!ui.includes("readingPracticeDone"),"Speaking tab removed without deleting user progress");
 assert.ok(ui.includes("beginAudioSequence")&&ui.includes("audioSequenceActive"),"Audio playback remains interruptible");
 assert.ok(ui.includes('$$("[data-reading-speak]")')&&ui.includes('$$("[data-reading-save]")')&&ui.includes('$$("[data-reading-answer]")'),"All buttons and answers bind to collections");
@@ -119,6 +119,30 @@ assert.ok(refUI.includes("data-reading-ref-toggle")&&refUI.includes("data-readin
 assert.ok(refUI.includes("data-reading-word-lookup")&&app.includes("lookupReadingWord:async term")&&app.includes("SPEAKING_VOCAB_EXTRA"),"Single-word dictionary popup wired");
 assert.ok(refUI.includes("data-reading-pattern")&&refUI.includes("Mở bài mẫu"),"Pattern cross-reference deep links");
 assert.ok(build.includes('"data/english/speaking-reference.js"')&&build.includes('"data/english/reading-reference-ui.js"'),"All reference scripts included in runtime");
+
+const deepContent=ctx.window.SPEAKING_DAY01_DEEP_DIVE,deepUI=ctx.window.SPEAKING_DEEP_UI;
+assert.equal(deepContent.entries.length,9,"Day 01 has nine individually authored explanations");
+for(let i=0;i<9;i++){
+ const detail=deepContent.entries[i],line=stories[0].lines[i];
+ assert.equal(detail.en,line[0],"Deep-dive matches English original at line "+(i+1));
+ assert.equal(detail.vi,line[1],"Deep-dive matches Vietnamese original at line "+(i+1));
+ assert.ok(detail.situation&&detail.purpose&&detail.why&&detail.mistake&&detail.takeaway,
+   "Each line has meaningful situation, explanation, common error and takeaway");
+ assert.ok(detail.parts.length>=2&&detail.compare.length>=2&&detail.apply.length===3,
+   "Each sentence provides breakdown, contrasting expressions and three use cases");
+}
+assert.equal(deepUI.entriesFor(stories[0]).length,9,"Only the full matching Day 01 set is enabled");
+assert.equal(deepUI.entriesFor(stories[1]),null,"Other lessons keep existing grammar references");
+const deepInitial=ctx.window.ReadingReferenceUI.grammar(stories[0],{refShowEn:true,refShowVi:true,deepSentenceIndex:0});
+assert.ok(deepInitial.includes("reading-deep-panel")&&deepInitial.includes("TÌNH HUỐNG SỬ DỤNG")&&deepInitial.includes("Hi everyone."),
+  "Deep tab shows an original sentence, situation and explanations");
+assert.ok(deepInitial.includes("data-reading-deep-index")&&deepInitial.includes("reading-deep-disclosure"),
+  "Learner can choose a sentence and expand the explanation");
+assert.ok(ctx.window.ReadingReferenceUI.grammar(stories[1],{refShowEn:true,refShowVi:true}).includes("reading-grammar-panel"),
+  "Legacy grammar display remains available for unmodified lessons");
+assert.ok(build.includes('"data/english/speaking-day01-deep-dive.js"')&&build.includes('"data/english/speaking-deep-ui.js"'),
+  "Day 01 explanation assets are bundled with the static site");
+
 const writingUI=ctx.window.ReadingReferenceUI;
 assert.ok(writingUI.answerMatches("Configuration ","configuration"),"Written answer comparison ignores case and surrounding spaces");
 assert.ok(writingUI.answerMatches("  I've. ","i’ve"),"Written answer accepts straight/curly apostrophes and final punctuation");
@@ -152,6 +176,9 @@ const makeNode=()=>({
  querySelector(){return null;}
 });
 const wordTab=makeNode(),phraseTab=makeNode(),vocabTab=makeNode(),readTab=makeNode(),patternsTab=makeNode();
+const deepSentenceButtons=Array.from({length:9},(_,i)=>{const n=makeNode();n.dataset.readingDeepIndex=String(i);return n;});
+const deepPrev=makeNode(),deepNext=makeNode();
+deepPrev.dataset.readingDeepStep="-1";deepNext.dataset.readingDeepStep="1";
 wordTab.dataset.readingKind="words";phraseTab.dataset.readingKind="phrases";
 vocabTab.dataset.readingTab="vocab";readTab.dataset.readingTab="read";patternsTab.dataset.readingTab="patterns";
 ctx.document={
@@ -163,6 +190,8 @@ ctx.document={
  querySelectorAll(selector){
   if(selector==="[data-reading-kind]")return [wordTab,phraseTab];
   if(selector==="[data-reading-tab]")return [vocabTab,readTab,patternsTab];
+  if(selector==="[data-reading-deep-index]")return deepSentenceButtons;
+  if(selector==="[data-reading-deep-step]")return [deepPrev,deepNext];
   return [];
  }
 };
@@ -196,7 +225,15 @@ assert.ok(readingCss.includes("--reading-recall-height")&&readingCss.includes("p
 
 assert.ok(savedUpdates>=3,"Mode changes are persisted");
 patternsTab.onclick();
-assert.ok(lessonEnv.main.innerHTML.includes("reading-grammar-panel"),"Grammar tab still works");
+assert.ok(lessonEnv.main.innerHTML.includes("reading-deep-panel"),"Day 01 patterns tab becomes deep explanation");
+assert.ok(lessonEnv.main.innerHTML.includes("Hiểu sâu từng câu"),"Updated tab label is visible");
+assert.ok(!lessonEnv.main.innerHTML.includes('class="reading-player"'),"Sentence explanation has no full reader transport");
+assert.equal(typeof deepSentenceButtons[7].onclick,"function","All nine deep-dive steps are interactive");
+deepSentenceButtons[7].onclick();
+assert.equal(lessonEnv.state.readingStudio.deepSentenceIndex,7,"Navigating to sentence eight persists its position");
+assert.ok(lessonEnv.main.innerHTML.includes("I’d like to communicate more confidently"),"Sentence navigation updates the displayed analysis");
+deepPrev.onclick();
+assert.equal(lessonEnv.state.readingStudio.deepSentenceIndex,6,"Previous button goes to preceding sentence");
 readTab.onclick();
 assert.ok(lessonEnv.main.innerHTML.includes("reading-text-panel"),"Read & Listen tab still works");
 assert.ok(lessonEnv.main.innerHTML.includes('class="reading-player"'),"Read & Listen retains playback transport");
