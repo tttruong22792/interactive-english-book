@@ -6,6 +6,55 @@ const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
 const ref=()=>window.SPEAKING_REFERENCE;
 const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+
+/* iOS: keep the input inside the visual viewport above the soft keyboard. */
+let recallInput=null,recallBound=false;
+function syncRecallViewport(){
+ const input=recallInput,html=document.documentElement;
+ if(!input||!input.isConnected||document.activeElement!==input){
+  html.classList.remove("reading-recall-typing");return;
+ }
+ const vv=window.visualViewport;
+ html.style.setProperty("--reading-recall-top",Math.max(0,vv?.offsetTop||0)+"px");
+ html.style.setProperty("--reading-recall-left",Math.max(0,vv?.offsetLeft||0)+"px");
+ html.style.setProperty("--reading-recall-height",Math.max(1,vv?.height||window.innerHeight)+"px");
+ html.style.setProperty("--reading-recall-width",Math.max(1,vv?.width||window.innerWidth)+"px");
+ html.classList.add("reading-recall-typing");
+ requestAnimationFrame(()=>{
+  if(document.activeElement!==input)return;
+  const panel=input.closest(".reading-write-panel");
+  if(!panel)return;
+  const field=input.getBoundingClientRect(),box=panel.getBoundingClientRect();
+  if(field.bottom>box.bottom-12)panel.scrollTop+=field.bottom-box.bottom+12;
+  else if(field.top<box.top+12)panel.scrollTop-=box.top+12-field.top;
+ });
+}
+function clearRecallViewport(){
+ recallInput=null;
+ document.documentElement.classList.remove("reading-recall-typing");
+}
+function bindRecallViewport(input){
+ recallInput=input;
+ if(!recallBound){
+  recallBound=true;
+  window.visualViewport?.addEventListener("resize",syncRecallViewport);
+  window.visualViewport?.addEventListener("scroll",syncRecallViewport);
+  window.addEventListener("resize",syncRecallViewport);
+  window.addEventListener("pagehide",clearRecallViewport);
+ }
+ input.addEventListener("focus",()=>{
+  recallInput=input;
+  syncRecallViewport();
+  requestAnimationFrame(syncRecallViewport);
+  setTimeout(syncRecallViewport,130);
+  setTimeout(syncRecallViewport,360);
+ });
+ input.addEventListener("blur",()=>setTimeout(syncRecallViewport,90));
+}
+function focusRecallInput(input){
+ try{input.focus({preventScroll:true});}catch(e){input.focus();}
+ syncRecallViewport();
+}
 function reveal(value,visible,attr,label){
  return '<button type="button" class="reading-recall-reveal '+(visible?'visible':'masked')+'" '+attr+
    ' data-answer="'+esc(value)+'" data-masked="'+String(!visible)+'">'+
@@ -132,6 +181,7 @@ function bindWritingPractice(story,st,env,rerender){
  const form=$("#readingRecallForm"),input=$("#readingRecallInput"),feedback=$("#readingRecallFeedback"),
   check=$("#readingRecallCheck"),next=$("#readingRecallNext");
  if(!form||!input||!feedback||!check||!next)return;
+ bindRecallViewport(input);
  let accepted=false, revealed=false;
  const response=(message,kind)=>{
   feedback.className="reading-write-feedback "+kind;
@@ -176,7 +226,7 @@ function bindWritingPractice(story,st,env,rerender){
   }else{
    markMissed();
    response("Chưa đúng. Hãy thử lại, dùng gợi ý hoặc xem đáp án.","error");
-   input.focus();
+   focusRecallInput(input);
    input.select?.();
   }
  };
@@ -185,13 +235,13 @@ function bindWritingPractice(story,st,env,rerender){
  $("#readingRecallHint").onclick=()=>{
   const first=item.term.slice(0,Math.min(2,item.term.length));
   response('Gợi ý: bắt đầu bằng <strong>'+esc(first)+'…</strong> ('+item.term.length+' ký tự).',"hint");
-  input.focus();
+  focusRecallInput(input);
  };
  $("#readingRecallReveal").onclick=()=>{
   if(accepted)return;
   revealed=true;
   response('Đáp án của bài: <strong lang="en">'+esc(item.term)+'</strong> · Hãy thử viết lại. Mục này sẽ được kiểm tra thêm lần nữa.',"hint");
-  input.focus();
+  focusRecallInput(input);
  };
 }
 
@@ -268,5 +318,5 @@ function bindGrammar(story,st,env,rerender,stop){
  $("#readingGrammarToText")?.addEventListener("click",()=>{st.tab="read";env.saveState();rerender(story);});
  bindSpeak(env,stop);
 }
-window.ReadingReferenceUI={vocabulary,grammar,bindVisibility,bindVocabulary,bindGrammar,answerMatches,recallData,recallCurrent};
+window.ReadingReferenceUI={vocabulary,grammar,bindVisibility,bindVocabulary,bindGrammar,answerMatches,recallData,recallCurrent,clearRecallViewport};
 })();
