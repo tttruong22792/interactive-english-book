@@ -71,7 +71,7 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261104-reading-reference-v71.js");
+assert.equal(asset,"runtime-20261104-reading-reference-v72.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
@@ -83,14 +83,19 @@ assert.ok(ui.includes('config.playMode==="sentence"')&&ui.includes('if(!config.l
 assert.ok(ui.includes('st.playMode=selected')&&ui.includes('if(wasPlaying)void playFrom(at)'),"Changing modes persists and restarts without overlapping playback");
 const ref=ctx.window.SPEAKING_REFERENCE;
 assert.ok(ref?.wordsFor&&ref?.phrasesFor&&ref?.patternsFor,"Per-lesson vocabulary and grammar reference loads");
-const uniqueWordForms=new Set();let expandedPhrases=0,grammarReferences=0;
+const uniqueWordForms=new Set(),studyWords=new Set();let expandedPhrases=0,grammarReferences=0;
 for(const story of stories){
- const words=ref.wordsFor(story),phrases=ref.phrasesFor(story),patterns=ref.patternsFor(story);
- assert.ok(words.length>20,"Day "+story.day+" needs a full list of vocabulary");
- for(const word of words){
+ const words=ref.wordsFor(story),full=ref.allWordsFor(story),phrases=ref.phrasesFor(story),patterns=ref.patternsFor(story);
+ assert.ok(words.length>=10,"Day "+story.day+" needs a useful study list");
+ for(const word of full){
   uniqueWordForms.add(word.term);
-  assert.ok(word.meaning?.length>1,"Missing word definition in Day "+story.day+": "+word.term);
+  assert.ok(word.meaning?.length>1,"Missing dictionary definition in Day "+story.day+": "+word.term);
  }
+ for(const word of words){
+  studyWords.add(word.term);
+  assert.ok(word.meaning?.length>1,"Missing curated definition Day "+story.day+": "+word.term);
+ }
+ assert.ok(!words.some(word=>["hi","i'm","an","a","the","i","my"].includes(word.term)),"Do not show trivial isolated words in Day "+story.day);
  assert.ok(phrases.length>story.targetChunks.length,"Contextual chunks included beyond 3 curated phrases, Day "+story.day);
  for(const chunk of phrases){
   assert.ok(story.lines.some(([en])=>en.toLowerCase().replace(/[’‘]/g,"'").includes(chunk.name.toLowerCase().replace(/[’‘]/g,"'"))),"Chunk not found in reading Day "+story.day+": "+chunk.name);
@@ -103,11 +108,14 @@ for(const story of stories){
  }
  expandedPhrases+=phrases.length;grammarReferences+=patterns.length;
 }
-assert.equal(uniqueWordForms.size,1170,"All 1,170 original word forms covered");
+assert.equal(uniqueWordForms.size,1170,"All 1,170 original word forms stay in tap-to-define dictionary");
+assert.ok(studyWords.size<uniqueWordForms.size,"Curated learning list removes low-value function words");
+assert.ok(ref.wordsFor(stories[0]).some(x=>x.term==="responsibilities"),"Day 01 retains useful workplace vocabulary");
+assert.ok(ref.wordsFor(stories[0]).some(x=>x.term==="configuration"),"Day 01 retains technical vocabulary");
 assert.ok(Object.keys(ctx.window.SPEAKING_VOCAB_EXTRA).length>=780,"Supplemental dictionary imported");
 const refUI=read("../data/english/reading-reference-ui.js");
 assert.ok(refUI.includes("data-reading-ref-toggle")&&refUI.includes("data-reading-reveal-en")&&refUI.includes("data-reading-reveal-vi"),"Bilingual English/Vietnamese hidden-reveal buttons exist");
 assert.ok(refUI.includes("data-reading-word-lookup")&&app.includes("lookupReadingWord:async term")&&app.includes("SPEAKING_VOCAB_EXTRA"),"Single-word dictionary popup wired");
 assert.ok(refUI.includes("data-reading-pattern")&&refUI.includes("Mở bài mẫu"),"Pattern cross-reference deep links");
 assert.ok(build.includes('"data/english/speaking-reference.js"')&&build.includes('"data/english/reading-reference-ui.js"'),"All reference scripts included in runtime");
-console.log("PASS Speaking Program: 70 bilingual lessons, "+uniqueWordForms.size+" defined words, "+expandedPhrases+" contextual phrases, "+grammarReferences+" grammar references; no speaking tab.");
+console.log("PASS Speaking Program: 70 bilingual lessons, "+uniqueWordForms.size+" words kept in dictionary, "+studyWords.size+" useful study terms, "+expandedPhrases+" contextual phrases; no speaking tab.");

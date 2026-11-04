@@ -6,13 +6,38 @@ const wordsOf=text=>String(text||"").match(/[A-Za-z]+(?:['’][A-Za-z]+)?/g)||[]
 const core=window.CORE_DICTIONARY||{};
 const extra=window.SPEAKING_VOCAB_EXTRA||{};
 const countWords=items=>items.reduce((sum,item)=>sum+wordsOf(item).length,0);
+// Do not turn a reading lesson into 60+ flashcards of articles, pronouns,
+// greetings and elementary grammar words. These entries remain in the
+// dictionary and in the original text; only the PRE-STUDY list is curated.
+// Keep content words, technical vocabulary, and useful linking words.
+const BASIC_REFERENCE_SKIP=new Set((
+  "a an the i i'm i've i'll i'd me my mine we we're we've we'll we'd us our ours "+
+  "you you're you've you'll you'd your yours he he's him his she she's her hers "+
+  "it it's its they they're they've they'll them their theirs "+
+  "this that these those there here what which who whom whose where when why how "+
+  "am is are was were be been being do does did done have has had "+
+  "not no yes don't doesn't didn't isn't aren't wasn't weren't "+
+  "haven't hasn't hadn't can't cannot couldn't won't wouldn't shouldn't "+
+  "will would shall should can could may might must "+
+  "to of at in on by for from with as into onto about between among "+
+  "a lot an all any some each every both either neither other another "+
+  "and or nor so then but "+
+  "hi hello hey thanks thank okay ok "+
+  "one two first second "+
+  "very really quite just also too already "+
+  "i'm it's that's there's here's let's "+
+  "everyone everybody someone somebody anyone anybody nobody "+
+  "today tomorrow yesterday now "+
+  "day days thing things good bad nice "+
+  "pcvue japan friday"
+).split(/\s+/));
 function lookupWord(term){
  const word=normalize(term),known=core[word],fallback=extra[word];
  if(Array.isArray(known)&&known[1])return {term:word,ipa:known[0]||"",meaning:known[1],example:known[2]||""};
  if(typeof fallback==="string"&&fallback.trim())return {term:word,ipa:"",meaning:fallback,example:""};
  return null;
 }
-function wordsFor(story){
+function allWordsFor(story){
  const found=new Map();
  (story?.lines||[]).forEach(([en,vi],sentenceIndex)=>{
   for(const raw of wordsOf(en)){
@@ -28,6 +53,9 @@ function wordsFor(story){
   }
  });
  return [...found.values()].sort((a,b)=>a.sentenceIndex-b.sentenceIndex || b.frequency-a.frequency);
+}
+function wordsFor(story){
+ return allWordsFor(story).filter(item=>!BASIC_REFERENCE_SKIP.has(item.term));
 }
 function chunkSegments(text){
  // Keep useful clauses together where possible. For long clauses, cut at
@@ -170,5 +198,5 @@ function patternsFor(story){
  return found.sort((a,b)=>a.sentenceIndex-b.sentenceIndex ||
    (a.linkedId? -1:1));
 }
-window.SPEAKING_REFERENCE={wordsFor,phrasesFor,patternsFor,lookupWord,countWords};
+window.SPEAKING_REFERENCE={wordsFor,allWordsFor,phrasesFor,patternsFor,lookupWord,countWords};
 })();

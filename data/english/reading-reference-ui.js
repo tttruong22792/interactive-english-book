@@ -24,8 +24,9 @@ function vocabulary(story,st){
  return '<section class="reading-reference-panel reading-vocab-panel"><header>'+
  '<span class="reading-eyebrow">HỌC TRƯỚC KHI NGHE</span>'+
  '<h2>Từ vựng & cụm từ · Day '+String(story.day).padStart(2,"0")+'</h2>'+
- '<p>Đầy đủ '+words.length+' từ khác nhau của bài và '+phrases.length+
- ' cụm lấy từ câu gốc. Ẩn tiếng Anh hoặc nghĩa Việt để tự nhớ.</p></header>'+
+ '<p>'+words.length+' từ đáng học và '+phrases.length+
+ ' cụm lấy từ câu gốc. Đã bỏ khỏi danh sách các từ quá cơ bản như hi, I’m, an; '+
+ 'bạn vẫn có thể chạm vào mọi từ trong bài đọc để tra nghĩa.</p></header>'+
  '<div class="reading-reference-controls"><div class="reading-vocab-kind" role="group" aria-label="Từ vựng hay cụm từ">'+
  '<button type="button" data-reading-kind="words" class="'+(isWords?'selected':'')+'">Từ vựng ('+words.length+')</button>'+
  '<button type="button" data-reading-kind="phrases" class="'+(!isWords?'selected':'')+'">Cụm từ ('+phrases.length+')</button></div>'+controls(st)+'</div>'+
