@@ -124,10 +124,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261104-vocab-writing-v73b.js'
+        ? 'runtime-20261104-vocab-writing-v73c.js'
         : 'runtime.js?v=20261020-patterns-80-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261104-vocab-writing-v73b';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261104-vocab-writing-v73c';
       script.async = false;
       script.onerror = function () {
         // A stale iOS PWA cache may miss this versioned filename.
@@ -136,7 +136,7 @@
         if (window.__LS_FALLBACK_ATTEMPTED) return;
         window.__LS_FALLBACK_ATTEMPTED = true;
         var backup = document.createElement('script');
-        backup.src = 'runtime.js?fallback=20261104-vocab-writing-v73b';
+        backup.src = 'runtime.js?fallback=20261104-vocab-writing-v73c';
         backup.async = false;
         backup.onerror = function () {
           window.__LS_BOOT_ERRORS.push('Tệp dự phòng cũng không tải được. Kiểm tra kết nối Internet.');

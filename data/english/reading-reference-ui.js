@@ -236,7 +236,7 @@ function bindVocabulary(story,st,env,rerender,stop){
  }
  const start=$("#readingStartRecall");
  if(start)start.onclick=()=>{st.vocabKind="words";st.vocabView="write";env.saveState();rerender(story);};
- $("[data-reading-kind]").forEach(button=>button.onclick=()=>{
+ $$("[data-reading-kind]").forEach(button=>button.onclick=()=>{
   st.vocabKind=button.dataset.readingKind;st.vocabView="list";env.saveState();rerender(story);
  });
  const search=$("#readingReferenceSearch"),counter=$("#readingReferenceCount");

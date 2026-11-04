@@ -71,7 +71,7 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261104-vocab-writing-v73b.js");
+assert.equal(asset,"runtime-20261104-vocab-writing-v73c.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
@@ -140,4 +140,55 @@ assert.ok(!writingUI.vocabulary(lesson,{vocabKind:"phrases",vocabView:"list"}).i
 assert.ok(refUI.includes("bindWritingPractice")&&refUI.includes('form.onsubmit=event=>')&&refUI.includes('if(answerMatches(typed,item.term))'),"Input submission checks the actual English answer");
 assert.ok(refUI.includes('if(!revealed){')&&refUI.includes('if(!accepted||revealed)'),"Looking at the answer does not count as mastered, even if copied correctly");
 assert.ok(refUI.includes('env.saveState();rerender(story)')&&read("../reading-studio.js").includes('state.readingStudio.vocabRecall={}'),"Recall attempts and per-day progress are saved");
+
+// Regression: opening Day 01 on mobile must bind a MULTI-element selector.
+// querySelector() returns a single element and has no .forEach() method.
+const domNodes=new Map();
+const makeNode=()=>({
+ dataset:{},style:{},classList:{toggle(){},add(){},remove(){}},
+ value:"",innerHTML:"",textContent:"",hidden:false,
+ setAttribute(){},addEventListener(){},focus(){},select(){},
+ querySelector(){return null;}
+});
+const wordTab=makeNode(),phraseTab=makeNode(),vocabTab=makeNode(),readTab=makeNode(),patternsTab=makeNode();
+wordTab.dataset.readingKind="words";phraseTab.dataset.readingKind="phrases";
+vocabTab.dataset.readingTab="vocab";readTab.dataset.readingTab="read";patternsTab.dataset.readingTab="patterns";
+ctx.document={
+ querySelector(selector){
+  if(!selector.startsWith("#"))return null;
+  if(!domNodes.has(selector))domNodes.set(selector,makeNode());
+  return domNodes.get(selector);
+ },
+ querySelectorAll(selector){
+  if(selector==="[data-reading-kind]")return [wordTab,phraseTab];
+  if(selector==="[data-reading-tab]")return [vocabTab,readTab,patternsTab];
+  return [];
+ }
+};
+let savedUpdates=0;
+const lessonEnv={
+ main:{innerHTML:""},state:{},
+ setHeader(){},hydrateReadingWords(){},saveState(){savedUpdates++},
+ stopSpeech(){},toast(){}
+};
+assert.doesNotThrow(()=>reader.render(lessonEnv,lesson.id),"Opening Day 01 should never show CONTENT ERROR");
+assert.ok(lessonEnv.main.innerHTML.includes("Từ vựng & cụm từ"),"Vocabulary screen initially visible");
+assert.equal(typeof phraseTab.onclick,"function","Phrase selector is bound with querySelectorAll");
+phraseTab.onclick();
+assert.equal(lessonEnv.state.readingStudio.vocabKind,"phrases","Phrase tab can be selected");
+assert.ok(lessonEnv.main.innerHTML.includes("Cụm từ ("),"Phrase list renders after switching");
+wordTab.onclick();
+assert.equal(lessonEnv.state.readingStudio.vocabKind,"words","Word tab can be selected again");
+const startRecall=domNodes.get("#readingStartRecall");
+assert.equal(typeof startRecall?.onclick,"function","Active VN→EN write action wired");
+startRecall.onclick();
+assert.equal(lessonEnv.state.readingStudio.vocabView,"write");
+assert.ok(lessonEnv.main.innerHTML.includes('id="readingRecallInput"'),"Writing exercise loads without a crash");
+assert.ok(savedUpdates>=3,"Mode changes are persisted");
+patternsTab.onclick();
+assert.ok(lessonEnv.main.innerHTML.includes("reading-grammar-panel"),"Grammar tab still works");
+readTab.onclick();
+assert.ok(lessonEnv.main.innerHTML.includes("reading-text-panel"),"Read & Listen tab still works");
+assert.ok(!/(?<!\$)\$\([^\n;]*?\)\.forEach\(/.test(refUI),"No single DOM query is treated as an array");
+
 console.log("PASS Speaking Program: 70 bilingual lessons, "+uniqueWordForms.size+" words kept in dictionary, "+studyWords.size+" study terms, "+expandedPhrases+" phrases; VN-to-EN writing practice.");
