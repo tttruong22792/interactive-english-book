@@ -191,6 +191,7 @@ assert.ok(lessonEnv.main.innerHTML.includes("reading-writing-mode"),"Writing exe
 assert.ok(refUI.includes("syncRecallViewport")&&refUI.includes("clearRecallViewport"),"Keyboard focus and cleanup are wired");
 const readingCss=read("../reading-studio.css");
 assert.ok(readingCss.includes(".reading-detail.reading-writing-mode .reading-player{display:none}"),"Audio panel is hidden during written recall");
+assert.ok(readingCss.includes(".reading-detail:has(.reading-reference-panel) > .reading-player{display:none!important}"),"Old cached reader layouts also hide the vocabulary player");
 assert.ok(readingCss.includes("--reading-recall-height")&&readingCss.includes("position:fixed!important"),"iPhone typing view stays inside the visual viewport");
 
 assert.ok(savedUpdates>=3,"Mode changes are persisted");
