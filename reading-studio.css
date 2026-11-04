@@ -340,7 +340,7 @@
   width:var(--reading-recall-width,100vw)!important;
   height:var(--reading-recall-height,100dvh)!important;
   z-index:110;box-sizing:border-box;overflow:hidden;
-  padding:8px 12px 6px;margin:0;max-width:none;
+  padding:max(54px, env(safe-area-inset-top, 0px)) 12px 6px;margin:0;max-width:none;
   background:#fffaf4;gap:0
  }
  html.reading-recall-typing .reading-writing-mode .reading-detail-head,
