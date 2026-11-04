@@ -13,6 +13,10 @@ for(let first=1;first<=70;first+=10){
  runInNewContext(read(file),ctx,{filename:file});
 }
 runInNewContext(read("../data/english/speaking-program.js"),ctx,{filename:"speaking-program.js"});
+for(const filename of ["core-dictionary.js","reading-phrase-meanings.js","speaking-vocab-01.js","speaking-vocab-02.js","speaking-vocab-03.js","speaking-reference.js","reading-reference-ui.js"]){
+ runInNewContext(read("../data/english/"+filename),ctx,{filename});
+}
+runInNewContext(read("../data/content-index.js"),ctx,{filename:"content-index.js"});
 runInNewContext(read("../reading-studio.js"),ctx,{filename:"reading-studio.js"});
 
 const stories=ctx.window.SPEAKING_PROGRAM||[],reader=ctx.window.ReadingStudio;
@@ -58,7 +62,8 @@ assert.ok(index.includes('data-route="reading"')&&index.includes("reading-studio
 assert.ok(ui.includes("readingWeekSelect")&&ui.includes("WEEK ")&&ui.includes("reading-week-heading"),"Fourteen-week browsing");
 assert.ok(ui.includes('id="readingToggleVi"')&&ui.includes('st.showVi=!st.showVi;env.saveState();renderReader(story)'),'Restore native visible/hidden Vietnamese meaning control');
 assert.ok(ui.includes('st.showVi&&vi?')&&ui.includes('class="reading-vi"'),'Translations displayed under respective English line only when enabled');
-assert.ok(ui.includes("readingPracticeListen")&&ui.includes("readingPracticeDone"),"Read, listen, shadow and retell");
+assert.ok(ui.includes('["vocab","Từ vựng & cụm từ"]')&&ui.includes('["patterns","Mẫu câu"]'),"Vocabulary and grammar tabs replace speaking practice");
+assert.ok(!ui.includes('["practice","Luyện nói"]')&&!ui.includes("readingPracticeDone"),"Speaking tab removed without deleting user progress");
 assert.ok(ui.includes("beginAudioSequence")&&ui.includes("audioSequenceActive"),"Audio playback remains interruptible");
 assert.ok(ui.includes('$$("[data-reading-speak]")')&&ui.includes('$$("[data-reading-save]")')&&ui.includes('$$("[data-reading-answer]")'),"All buttons and answers bind to collections");
 assert.ok(ui.includes("story.lines.map(([en,vi],i)")&&ui.includes("hydrateReadingWords"),"Individual line playback and dictionary retained");
@@ -66,7 +71,7 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261104-audio-stop-fix.js");
+assert.equal(asset,"runtime-20261104-reading-reference-v71.js");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
@@ -76,4 +81,33 @@ assert.ok(ui.includes('playFrom(0)')&&ui.includes('env.audioSequenceActive(playT
 assert.ok(ui.includes('data-reading-play-mode="whole"')&&ui.includes('data-reading-play-mode="sentence"'),"Switch between full passage and single sentence playback");
 assert.ok(ui.includes('config.playMode==="sentence"')&&ui.includes('if(!config.loop)break;'),"Individual sentences repeat until switched or stopped");
 assert.ok(ui.includes('st.playMode=selected')&&ui.includes('if(wasPlaying)void playFrom(at)'),"Changing modes persists and restarts without overlapping playback");
-console.log("PASS Speaking Program: "+stories.length+" lessons, 14 weeks, "+lines+" bilingual sentences; two listening modes.");
+const ref=ctx.window.SPEAKING_REFERENCE;
+assert.ok(ref?.wordsFor&&ref?.phrasesFor&&ref?.patternsFor,"Per-lesson vocabulary and grammar reference loads");
+const uniqueWordForms=new Set();let expandedPhrases=0,grammarReferences=0;
+for(const story of stories){
+ const words=ref.wordsFor(story),phrases=ref.phrasesFor(story),patterns=ref.patternsFor(story);
+ assert.ok(words.length>20,"Day "+story.day+" needs a full list of vocabulary");
+ for(const word of words){
+  uniqueWordForms.add(word.term);
+  assert.ok(word.meaning?.length>1,"Missing word definition in Day "+story.day+": "+word.term);
+ }
+ assert.ok(phrases.length>story.targetChunks.length,"Contextual chunks included beyond 3 curated phrases, Day "+story.day);
+ for(const chunk of phrases){
+  assert.ok(story.lines.some(([en])=>en.toLowerCase().replace(/[’‘]/g,"'").includes(chunk.name.toLowerCase().replace(/[’‘]/g,"'"))),"Chunk not found in reading Day "+story.day+": "+chunk.name);
+  assert.ok(chunk.meaning||chunk.contextVi,"Chunk must have meaning or Vietnamese sentence context");
+ }
+ assert.ok(patterns.length>0,"Day "+story.day+" must provide actual grammar matches");
+ for(const pattern of patterns){
+  assert.ok(story.lines.some(([en])=>en===pattern.sentence),"Grammar example must originate from same reading");
+  assert.ok(pattern.usage||pattern.description,"Grammar guide must explain usage");
+ }
+ expandedPhrases+=phrases.length;grammarReferences+=patterns.length;
+}
+assert.equal(uniqueWordForms.size,1170,"All 1,170 original word forms covered");
+assert.ok(Object.keys(ctx.window.SPEAKING_VOCAB_EXTRA).length>=780,"Supplemental dictionary imported");
+const refUI=read("../data/english/reading-reference-ui.js");
+assert.ok(refUI.includes("data-reading-ref-toggle")&&refUI.includes("data-reading-reveal-en")&&refUI.includes("data-reading-reveal-vi"),"Bilingual English/Vietnamese hidden-reveal buttons exist");
+assert.ok(refUI.includes("data-reading-word-lookup")&&app.includes("lookupReadingWord:async term")&&app.includes("SPEAKING_VOCAB_EXTRA"),"Single-word dictionary popup wired");
+assert.ok(refUI.includes("data-reading-pattern")&&refUI.includes("Mở bài mẫu"),"Pattern cross-reference deep links");
+assert.ok(build.includes('"data/english/speaking-reference.js"')&&build.includes('"data/english/reading-reference-ui.js"'),"All reference scripts included in runtime");
+console.log("PASS Speaking Program: 70 bilingual lessons, "+uniqueWordForms.size+" defined words, "+expandedPhrases+" contextual phrases, "+grammarReferences+" grammar references; no speaking tab.");

@@ -208,7 +208,7 @@
        '<button class="reading-back" type="button" id="readingBack">← Thư viện</button>'+
        '<div class="reading-detail-title"><span class="reading-eyebrow">'+(isSpeakingProgram?'DAY '+String(story.day).padStart(2,"0")+' · WEEK '+String(story.week).padStart(2,"0"):'BÀI '+String(stories.indexOf(story)+1).padStart(2,"0")+' · '+esc(story.level))+' · '+totalWords+' TỪ</span>'+
        '<h1>'+esc(story.title)+'</h1><p>'+esc(story.viTitle)+'</p></div>'+
-       '<button id="readingToggleVi" type="button" class="reading-vi-toggle" aria-pressed="'+st.showVi+'">'+(st.showVi?'Ẩn nghĩa Việt':'Hiện nghĩa Việt')+'</button>'+
+       (mode==="read"?'<button id="readingToggleVi" type="button" class="reading-vi-toggle" aria-pressed="'+st.showVi+'">'+(st.showVi?'Ẩn nghĩa Việt':'Hiện nghĩa Việt')+'</button>':'')+
       '</header>'+
       '<nav class="reading-subtabs" aria-label="Các bước đọc bài">'+tabRows.map(([id,label])=>
        '<button type="button" data-reading-tab="'+id+'" class="'+(mode===id?'active':'')+'" aria-current="'+(mode===id?'page':'false')+'">'+label+'</button>').join('')+'</nav>'+
@@ -269,7 +269,7 @@
       '</div></section>';
     env.hydrateReadingWords?.(root);
     $("#readingBack").onclick=()=>{stop();location.hash="#reading";};
-    $("#readingToggleVi").onclick=()=>{st.showVi=!st.showVi;env.saveState();renderReader(story);};
+    if($("#readingToggleVi"))$("#readingToggleVi").onclick=()=>{st.showVi=!st.showVi;env.saveState();renderReader(story);};
     window.ReadingReferenceUI?.bindVisibility(story,st,env,renderReader);
     $$("[data-reading-tab]").forEach(btn=>btn.onclick=()=>{
       st.tab=btn.dataset.readingTab;env.saveState();renderReader(story);
