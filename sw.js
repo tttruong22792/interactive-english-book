@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v119-vocab-only-v76';
+const APP_CACHE='language-studio-v120-day01-deep-v77';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './styles.css',
   './runtime.js',
-  './runtime-20261104-vocab-only-v76.js',
+  './runtime-20261105-day01-deep-v77.js',
   './app-shell-v53.css',
   './reading-studio.css',
   './easy-play-theme-v58.css',
