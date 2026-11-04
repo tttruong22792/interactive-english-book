@@ -246,6 +246,7 @@ function bindWritingPractice(story,st,env,rerender){
 }
 
 function grammar(story,st){
+ if(window.SPEAKING_DEEP_UI?.entriesFor(story))return window.SPEAKING_DEEP_UI.render(story,st);
  const patterns=ref()?.patternsFor(story)||[];
  return '<section class="reading-reference-panel reading-grammar-panel"><header>'+
  '<span class="reading-eyebrow">TRA CỨU CẤU TRÚC</span>'+
@@ -314,7 +315,8 @@ function bindVocabulary(story,st,env,rerender,stop){
  bindSpeak(env,stop);
 }
 function bindGrammar(story,st,env,rerender,stop){
- $$("[data-reading-pattern]").forEach(button=>button.onclick=()=>{stop();location.hash="#lesson/"+button.dataset.readingPattern;});
+ if(window.SPEAKING_DEEP_UI?.bind(story,st,env,rerender,stop))return;
+ $("[data-reading-pattern]").forEach(button=>button.onclick=()=>{stop();location.hash="#lesson/"+button.dataset.readingPattern;});
  $("#readingGrammarToText")?.addEventListener("click",()=>{st.tab="read";env.saveState();rerender(story);});
  bindSpeak(env,stop);
 }
