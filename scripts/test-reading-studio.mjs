@@ -71,7 +71,8 @@ assert.ok(ui.includes("window.READING_STORIES"),"Older reader remains available 
 assert.ok(build.includes('readerWindow.SPEAKING_PROGRAM?.length!==70')&&build.includes('addManifestAudio(row[0],"reading-sentence",story.id)'),"Cloud TTS manifest includes 70 speeches");
 assert.ok(!build.includes('"data/english/reading-stories-a1.js",'),"Old story bundle is no longer active");
 const asset=index.match(/runtime-[0-9]{8}-[a-z0-9-]+\.js/)?.[0];
-assert.equal(asset,"runtime-20261104-vocab-writing-v73c.js");
+assert.ok(asset&&/^runtime-\d{8}-[a-z0-9-]+\.js$/.test(asset),"Versioned runtime asset exists");
+assert.ok(build.includes('"' + asset + '"'),"Build publishes the same versioned runtime linked from HTML");
 assert.ok(sw.includes(asset)&&sw.includes("reading-studio.css"),"PWA cache follows new release");
 assert.ok(read("../data/english/reading-stories-a1.js").includes("A Busy Monday Morning"),"Legacy material preserved for rollback");
 assert.ok(ui.includes('id="readingLoop"')&&ui.includes('id="readingReplay"'),"Player has continuous repeat switch and replay-from-start action");
