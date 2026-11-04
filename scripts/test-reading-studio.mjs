@@ -177,6 +177,7 @@ assert.equal(typeof phraseTab.onclick,"function","Phrase selector is bound with 
 phraseTab.onclick();
 assert.equal(lessonEnv.state.readingStudio.vocabKind,"phrases","Phrase tab can be selected");
 assert.ok(lessonEnv.main.innerHTML.includes("Cụm từ ("),"Phrase list renders after switching");
+assert.ok(!lessonEnv.main.innerHTML.includes('class="reading-player"'),"Vocabulary phrase list does not render listening transport");
 wordTab.onclick();
 assert.equal(lessonEnv.state.readingStudio.vocabKind,"words","Word tab can be selected again");
 const startRecall=domNodes.get("#readingStartRecall");
@@ -184,6 +185,7 @@ assert.equal(typeof startRecall?.onclick,"function","Active VN→EN write action
 startRecall.onclick();
 assert.equal(lessonEnv.state.readingStudio.vocabView,"write");
 assert.ok(lessonEnv.main.innerHTML.includes('id="readingRecallInput"'),"Writing exercise loads without a crash");
+assert.ok(!lessonEnv.main.innerHTML.includes('class="reading-player"'),"Vocabulary writing does not render listening transport");
 assert.ok(lessonEnv.main.innerHTML.includes("reading-writing-mode"),"Writing exercise has a focused layout instead of showing the audio player");
 assert.ok(refUI.includes("syncRecallViewport")&&refUI.includes("clearRecallViewport"),"Keyboard focus and cleanup are wired");
 const readingCss=read("../reading-studio.css");
@@ -195,6 +197,7 @@ patternsTab.onclick();
 assert.ok(lessonEnv.main.innerHTML.includes("reading-grammar-panel"),"Grammar tab still works");
 readTab.onclick();
 assert.ok(lessonEnv.main.innerHTML.includes("reading-text-panel"),"Read & Listen tab still works");
+assert.ok(lessonEnv.main.innerHTML.includes('class="reading-player"'),"Read & Listen retains playback transport");
 assert.ok(!/(?<!\$)\$\([^\n;]*?\)\.forEach\(/.test(refUI),"No single DOM query is treated as an array");
 
 console.log("PASS Speaking Program: 70 bilingual lessons, "+uniqueWordForms.size+" words kept in dictionary, "+studyWords.size+" study terms, "+expandedPhrases+" phrases; VN-to-EN writing practice.");
