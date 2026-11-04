@@ -394,3 +394,7 @@
   flex:1 1 auto;min-height:36px;padding:6px 7px;font-size:11px
  }
 }
+
+/* v76 — all vocabulary study screens exclude the lesson audio player. */
+.reading-detail:has(.reading-reference-panel) > .reading-player{display:none!important}
+.reading-detail:has(.reading-reference-panel) .reading-detail-body{flex:1;min-height:0}
