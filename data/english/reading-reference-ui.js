@@ -31,7 +31,7 @@ function syncRecallViewport(){
 }
 function clearRecallViewport(){
  recallInput=null;
- document.documentElement.classList.remove("reading-recall-typing");
+ document.documentElement?.classList?.remove("reading-recall-typing");
 }
 function bindRecallViewport(input){
  recallInput=input;
@@ -39,8 +39,8 @@ function bindRecallViewport(input){
   recallBound=true;
   window.visualViewport?.addEventListener("resize",syncRecallViewport);
   window.visualViewport?.addEventListener("scroll",syncRecallViewport);
-  window.addEventListener("resize",syncRecallViewport);
-  window.addEventListener("pagehide",clearRecallViewport);
+  window.addEventListener?.("resize",syncRecallViewport);
+  window.addEventListener?.("pagehide",clearRecallViewport);
  }
  input.addEventListener("focus",()=>{
   recallInput=input;
