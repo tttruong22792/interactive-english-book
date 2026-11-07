@@ -9,7 +9,7 @@ const html=fromDist("index.html");
 const assets=[...html.matchAll(/runtime-\d{8}-[a-z0-9-]+\.js/g)].map(x=>x[0]);
 assert.ok(assets.length>0,"No versioned runtime referenced in index.html");
 const runtimeName=assets[0];
-assert.ok(runtimeName.includes("day01-deep-v78"),"Old runtime linked in index.html: "+runtimeName);
+assert.ok(runtimeName.includes("recall-dock-v79"),"Old runtime linked in index.html: "+runtimeName);
 assert.ok(existsSync(new URL(runtimeName,root)),"Missing runtime in Pages artifact: "+runtimeName);
 const runtime=fromDist(runtimeName);
 const css=fromDist("reading-studio.css");
@@ -19,6 +19,13 @@ assert.ok(runtime.includes("window.SPEAKING_DEEP_UI="),"Day 01 interactive UI mi
 assert.ok(runtime.includes('deepReady?"Hiểu sâu từng câu":"Mẫu câu"'),"Deep tab label missing from bundled reading screen");
 assert.ok(runtime.includes("reading-deep-panel")&&runtime.includes("data-reading-deep-index"),"Interactive nine-sentence screen missing");
 assert.ok(css.includes(".reading-deep-panel"),"Day 01 styles missing from Pages artifact");
+assert.ok(runtime.includes('id="readingRecallListen"')&&runtime.includes("input.blur?.();"),
+  "Always-available pronunciation or completion keyboard cleanup missing from runtime");
+assert.ok(runtime.includes('class="reading-write-dock"')&&runtime.includes('form="readingRecallForm"'),
+  "The scroll-independent recall action dock is missing from runtime");
+assert.ok(css.includes(".reading-write-dock{flex:0 0 auto;")&&css.includes(".reading-write-scroll{flex:1 1 auto;"),
+  "Writing controls must remain visible while the question can scroll");
+assert.ok(html.includes("recall-dock-v79"),"Old version referenced in release index");
 assert.ok(serviceWorker.includes(runtimeName),"PWA cache still references a different runtime");
 const source=readFileSync(new URL("../data/english/speaking-week-01.js",import.meta.url),"utf8");
 const explanations=readFileSync(new URL("../data/english/speaking-day01-deep-dive.js",import.meta.url),"utf8");
