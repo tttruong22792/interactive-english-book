@@ -32,6 +32,7 @@ function element(){
 const ids=["readingRecallForm","readingRecallInput","readingRecallFeedback","readingRecallCheck","readingRecallNext",
  "readingRecallListen","readingRecallHint","readingRecallReveal","readingRecallSkip","readingRecallDock"];
 const elements=Object.fromEntries(ids.map(id=>["#"+id,element()]));
+elements["#readingRecallNext"].hidden=true;
 const context={
  window:{SPEAKING_REFERENCE:{wordsFor:()=>[word]},addEventListener(){},innerHeight:730,innerWidth:390},
  document:doc,requestAnimationFrame:fn=>fn(),setTimeout:()=>0
@@ -57,7 +58,7 @@ assert.deepEqual(spoken,["unexpected"],"Listen plays the English word before che
 const form=elements["#readingRecallForm"],input=elements["#readingRecallInput"],next=elements["#readingRecallNext"],check=elements["#readingRecallCheck"];
 input.value="unexpexted";
 form.onsubmit({preventDefault(){}});
-assert.equal(next.hidden,false,"No JS toggle should occur before correct submission in this mock");
+assert.equal(next.hidden,true,"Next must remain hidden after a wrong answer");
 assert.ok(elements["#readingRecallFeedback"].innerHTML.includes("Chưa đúng"),"Wrong answer has feedback");
 elements["#readingRecallListen"].onclick();
 assert.equal(spoken.length,2,"Listen remains functional after a wrong answer");
@@ -70,6 +71,8 @@ assert.equal(blurred,1,"Keyboard closes after a correct answer");
 assert.ok(ui.recallData(story,state).done.includes("unexpected"),"Correct typed word counts as remembered");
 elements["#readingRecallListen"].onclick();
 assert.equal(spoken.length,3,"Pronunciation remains accessible after success");
+next.onclick();
+assert.ok(saved>=3,"Continuing preserves the result");
 let advanced=0;
 ui.bindVocabulary(story,{...state,vocabRecall:{[story.id]:{done:[],missed:[],cursor:0,attempts:0}}},env,()=>{advanced++;},stop);
 const visibleListen=elements["#readingRecallListen"];
