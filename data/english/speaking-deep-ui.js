@@ -44,7 +44,7 @@ function render(story,state){
   '<div class="reading-deep-meta"><span>CÂU '+String(index+1).padStart(2,"0")+' / '+String(entries.length).padStart(2,"0")+
   '</span><span>'+esc(item.label)+'</span></div>'+
   '<div class="reading-deep-original"><div><h3 lang="en">'+en(item.en)+'</h3>'+vi(item.vi)+'</div>'+
-  '<button type="button" id="readingDeepSpeak" aria-label="Nghe câu gốc">♫ Nghe</button></div>'+
+  '<button type="button" id="readingDeepSpeak" class="reading-audio-button" aria-pressed="false" aria-label="Nghe câu gốc">🔊 Nghe</button></div>'+
   '<section class="reading-deep-situation"><span class="reading-deep-section-label">TÌNH HUỐNG SỬ DỤNG</span>'+
   '<p>'+esc(item.situation)+'</p><strong>Người nói muốn truyền đạt gì?</strong>'+
   '<p>'+esc(item.purpose)+'</p></section>'+
@@ -80,7 +80,8 @@ function bind(story,st,env,rerender,stop){
  $$("[data-reading-deep-index]").forEach(btn=>btn.onclick=()=>change(btn.dataset.readingDeepIndex));
  $$("[data-reading-deep-step]").forEach(btn=>btn.onclick=()=>change(clamp(st.deepSentenceIndex,entries.length)+Number(btn.dataset.readingDeepStep)));
  $("#readingDeepSpeak")?.addEventListener("click",()=>{
-  stop();void env.speak(entries[clamp(st.deepSentenceIndex,entries.length)].en);
+  const button=$("#readingDeepSpeak");
+  window.ReadingReferenceUI?.playPronunciation?.(button,entries[clamp(st.deepSentenceIndex,entries.length)].en,env,stop);
  });
  $$("[data-reading-pattern]").forEach(btn=>btn.onclick=()=>{
   stop();location.hash="#lesson/"+btn.dataset.readingPattern;
