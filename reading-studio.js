@@ -236,7 +236,7 @@
         '<p>Các cụm này giúp bạn nối kiến thức đã học với tình huống thực tế. Nếu đã có trong Cụm chủ động, chúng sẽ liên kết đúng bài học gốc.</p>'+
         '<div class="reading-chunk-list">'+chunks.map(ch=>'<article class="reading-chunk-card"><div><strong>'+esc(ch.name)+'</strong>'+
            (ch.meaning?'<p>'+esc(ch.meaning)+'</p>':'<p>Cụm dùng trong câu chuyện</p>')+
-           '</div><div class="reading-chunk-actions"><button type="button" data-reading-speak="'+esc(ch.name)+'">♫ Nghe</button>'+
+           '</div><div class="reading-chunk-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-speak="'+esc(ch.name)+'">♫ Nghe</button>'+
            (ch.owned?'<button type="button" data-reading-vocab="'+esc(ch.owned.pack.lessonId)+'">Học trong kho →</button>':
            '<button type="button" data-reading-save="'+esc(ch.name)+'">'+(env.state.saved?.[ch.savedKey]?'★ Đã lưu':'☆ Lưu cụm')+'</button>')+
            '</div></article>').join('')+'</div>'+
@@ -286,7 +286,8 @@
       // Tap a sentence's text (except word tokens) to play it from that point.
       $$(".reader-line-copy").forEach(node=>node.onclick=e=>{if(e.target.closest(".word-token"))return;void playFrom(+node.closest(".reader-line").dataset.index);});
     } else if(mode==="chunks"){
-      $$("[data-reading-speak]").forEach(btn=>btn.onclick=()=>env.speak(btn.dataset.readingSpeak));
+      $$("[data-reading-speak]").forEach(btn=>btn.onclick=()=>
+        window.ReadingReferenceUI?.playPronunciation?.(btn,btn.dataset.readingSpeak,env,stop));
       $$("[data-reading-save]").forEach(btn=>btn.onclick=()=>{
         const ch=chunks.find(item=>item.name===btn.dataset.readingSave);
         if(!ch)return;
