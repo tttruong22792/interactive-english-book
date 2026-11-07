@@ -516,3 +516,26 @@
  html.reading-recall-typing .reading-writing-mode .reading-write-primary{margin-top:6px}
  html.reading-recall-typing .reading-writing-mode .reading-write-primary button{min-height:41px}
 }
+
+/* v80 — shared pronunciation button for list, typed recall and deep explanations */
+.reading-reference-panel .reading-audio-button{
+ display:inline-flex;align-items:center;justify-content:center;gap:5px;
+ appearance:none;box-sizing:border-box;min-height:41px;
+ border:1px solid #dcd2f0;border-radius:10px;
+ padding:9px 12px;background:#f2eefb;color:#5b4bae;
+ font-family:inherit;font-size:12px;font-weight:850;line-height:1.25;
+ white-space:nowrap;text-align:center;cursor:pointer;
+ -webkit-tap-highlight-color:transparent
+}
+.reading-reference-panel .reading-audio-button.is-playing{
+ background:#ebe5fb;border-color:#a995dc;color:#493897
+}
+.reading-reference-panel .reading-audio-button:focus-visible{
+ outline:3px solid #9c8ad8;outline-offset:2px
+}
+.reading-write-dock .reading-audio-button,
+.reading-deep-original .reading-audio-button{flex:0 0 auto}
+@media(max-width:760px){
+ .reading-reference-panel .reading-audio-button{min-height:42px;font-size:12px;padding:8px 10px}
+ .reading-write-dock .reading-audio-button{min-width:0}
+}
