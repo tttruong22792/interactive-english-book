@@ -61,6 +61,7 @@ jobs:
           node --check data/english/reading-stories-a2.js
           node --check data/english/reading-stories-b1-b2.js
           node --check scripts/test-reading-studio.mjs
+          node --check scripts/test-reading-recall-dock.mjs
           node --check vocabulary-trainer.js
           node --check chunk-listener.js
           node --check scripts/test-chunk-listener.mjs
@@ -167,6 +168,10 @@ jobs:
       # Existing full-suite tests still run and report failures but cannot leave
       # the public lesson site stuck on a previous version. Syntax, build,
       # and the deployed-asset smoke check below remain release-blocking.
+      - name: Test recall dock visibility, Next action and audio in all answer states
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-reading-recall-dock.mjs
+
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
         run: npm run build
