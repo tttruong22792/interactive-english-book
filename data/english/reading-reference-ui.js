@@ -327,12 +327,16 @@ function playPronunciation(button,text,env,stop){
  });
 }
 function bindSpeak(env,stop){
- // Always bind the full collection. A single querySelector() result must
- // never receive .forEach() and break the entire reading lesson.
- const buttons=Array.from(document.querySelectorAll("[data-reading-pronounce]"));
- for(const button of buttons){
-  if(!button)continue;
-  button.onclick=()=>playPronunciation(button,button.dataset.readingPronounce,env,stop);
+ // Playback is optional: an audio-binding problem must never replace the
+ // lesson with CONTENT ERROR or hide its vocabulary and writing controls.
+ try{
+  const buttons=Array.from(document.querySelectorAll("[data-reading-pronounce]"));
+  for(const button of buttons){
+   if(!button)continue;
+   button.onclick=()=>playPronunciation(button,button.dataset.readingPronounce,env,stop);
+  }
+ }catch(error){
+  console.warn("Vocabulary audio controls unavailable; lesson remains accessible.",error);
  }
 }
 function bindVocabulary(story,st,env,rerender,stop){
