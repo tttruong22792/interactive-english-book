@@ -529,6 +529,13 @@
 }
 .reading-reference-actions button{min-height:35px;border-radius:10px}
 .reading-reference-actions .reading-audio-button{width:100%;background:#fff;color:#6553b8;border-color:#e5def6}
+.reading-chunk-actions .reading-audio-button{
+ display:inline-flex;align-items:center;justify-content:center;min-height:35px;
+ border:1px solid #e5def6;border-radius:10px;
+ background:#fff;color:#6553b8;font-family:inherit;font-size:11px;font-weight:800;
+ white-space:nowrap;padding:8px 9px
+}
+.reading-chunk-actions .reading-audio-button.is-playing{background:#faf8ff;border-color:#bcaee3;color:#5b4aa5}
 .reading-reference-panel .reading-audio-button.is-playing{
  background:#faf8ff;border-color:#bcaee3;color:#5b4aa5
 }
