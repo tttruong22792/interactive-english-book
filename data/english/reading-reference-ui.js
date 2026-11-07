@@ -329,7 +329,7 @@ function playPronunciation(button,text,env,stop){
 function bindSpeak(env,stop){
  // Always bind the full collection. A single querySelector() result must
  // never receive .forEach() and break the entire reading lesson.
- const buttons=$("[data-reading-pronounce]");
+ const buttons=Array.from(document.querySelectorAll("[data-reading-pronounce]"));
  for(const button of buttons){
   if(!button)continue;
   button.onclick=()=>playPronunciation(button,button.dataset.readingPronounce,env,stop);
