@@ -11,7 +11,7 @@ const story={id:"speaking-01",day:1};
 const state={vocabKind:"words",vocabView:"list",refShowEn:true,refShowVi:true};
 function button(text){
  const attributes={},classes=new Set();
- return {dataset:{readingPronounce:text},textContent:"🔊 Nghe",
+ return {dataset:{readingPronounce:text},textContent:"♫ Nghe",
   classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x)},
   setAttribute:(key,value)=>attributes[key]=value,
   getAttribute:key=>attributes[key]
@@ -30,7 +30,10 @@ runInNewContext(source,context,{filename:"reading-reference-ui.js"});
 const ui=win.ReadingReferenceUI;
 const wordsHtml=ui.vocabulary(story,state);
 assert.ok(wordsHtml.includes('class="reading-audio-button"'),"Word list uses shared audio button");
-assert.ok(wordsHtml.includes("🔊 Nghe"),"Word list displays standard label");
+assert.ok(!source.includes('$("[data-reading-pronounce]").forEach'),"No forEach on querySelector single element");
+assert.ok(source.includes('Array.from(document.querySelectorAll("[data-reading-pronounce]"))'),"Bind every speaker via querySelectorAll");
+assert.ok(css.includes("background:#fff;color:#6553b8"),"Speaker matches approved white purple-outline buttons");
+assert.ok(wordsHtml.includes("♫ Nghe"),"Word list displays standard label");
 const phrasesHtml=ui.vocabulary(story,{...state,vocabKind:"phrases"});
 assert.ok(phrasesHtml.includes('class="reading-audio-button"'),"Phrase list uses shared button");
 assert.ok(ui.vocabulary(story,{...state,vocabView:"write"}).includes('class="reading-audio-button"'),"Writing uses the same shared control");
@@ -50,24 +53,24 @@ assert.equal(typeof listWord.onclick,"function","Word button is bound");
 listWord.onclick();
 assert.equal(spoken.at(-1),word.term,"Word audio begins synchronously on tap");
 assert.equal(listWord.getAttribute("aria-pressed"),"true","Playing state is visible");
-assert.equal(listWord.textContent,"🔊 Đang nghe…","Playing label is shared");
+assert.equal(listWord.textContent,"♫ Đang nghe","Playing label is shared");
 buttons=[listPhrase];
 ui.bindVocabulary(story,{...state,vocabKind:"phrases"},env,()=>{},stop);
 listPhrase.onclick();
 assert.equal(spoken.at(-1),phrase.name,"Phrase uses exact listed audio text");
-assert.equal(listWord.textContent,"🔊 Nghe","Previous speaker button is reset");
+assert.equal(listWord.textContent,"♫ Nghe","Previous speaker button is reset");
 assert.equal(listPhrase.getAttribute("aria-pressed"),"true","Phrase has active state");
 const writing=button(word.term);
 ui.playPronunciation(writing,word.term,env,stop);
 assert.equal(spoken.at(-1),word.term,"Written recall uses the same audio engine");
-assert.equal(listPhrase.textContent,"🔊 Nghe","Switching audio resets the previous button");
+assert.equal(listPhrase.textContent,"♫ Nghe","Switching audio resets the previous button");
 const deep=button("Hi everyone.");
 ui.playPronunciation(deep,"Hi everyone.",env,stop);
 assert.equal(spoken.at(-1),"Hi everyone.","Deep explanation uses shared engine");
-assert.equal(writing.textContent,"🔊 Nghe","Previous view's button resets");
+assert.equal(writing.textContent,"♫ Nghe","Previous view's button resets");
 pending.at(-1)();
 await Promise.resolve();
 await Promise.resolve();
-assert.equal(deep.textContent,"🔊 Nghe","Button resets after playback completion");
+assert.equal(deep.textContent,"♫ Nghe","Button resets after playback completion");
 assert.ok(stops>=4,"All playback cancels any active reading loop before starting");
 console.log("PASS vocabulary/phrase/writing/deep Listen buttons, playback and styling are unified.");
