@@ -62,6 +62,7 @@ jobs:
           node --check data/english/reading-stories-b1-b2.js
           node --check scripts/test-reading-studio.mjs
           node --check scripts/test-reading-recall-dock.mjs
+          node --check scripts/test-reading-audio-buttons.mjs
           node --check vocabulary-trainer.js
           node --check chunk-listener.js
           node --check scripts/test-chunk-listener.mjs
@@ -171,6 +172,10 @@ jobs:
       - name: Test recall dock visibility, Next action and audio in all answer states
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-reading-recall-dock.mjs
+
+      - name: Test shared Listen buttons on words, phrases, writing and explanations
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-reading-audio-buttons.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
