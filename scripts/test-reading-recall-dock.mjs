@@ -34,7 +34,7 @@ const ids=["readingRecallForm","readingRecallInput","readingRecallFeedback","rea
 const elements=Object.fromEntries(ids.map(id=>["#"+id,element()]));
 elements["#readingRecallNext"].hidden=true;
 const context={
- window:{SPEAKING_REFERENCE:{wordsFor:()=>[word]},addEventListener(){},innerHeight:730,innerWidth:390},
+ window:{SPEAKING_REFERENCE:{wordsFor:()=>[word],phrasesFor:()=>[]},addEventListener(){},innerHeight:730,innerWidth:390},
  document:doc,requestAnimationFrame:fn=>fn(),setTimeout:()=>0
 };
 runInNewContext(refUI,context,{filename:"reading-reference-ui.js"});
