@@ -73,4 +73,13 @@ await Promise.resolve();
 await Promise.resolve();
 assert.equal(deep.textContent,"♫ Nghe","Button resets after playback completion");
 assert.ok(stops>=4,"All playback cancels any active reading loop before starting");
+// A broken audio selector should never make the vocabulary lesson inaccessible.
+const originalSelector=dom.querySelectorAll;
+dom.querySelectorAll=selector=>{
+ if(selector==="[data-reading-pronounce]")throw new TypeError("Simulated audio DOM issue");
+ return [];
+};
+assert.doesNotThrow(()=>ui.bindVocabulary(story,state,env,()=>{},stop),
+ "Audio hookup failures must not trigger the full-screen CONTENT ERROR");
+dom.querySelectorAll=originalSelector;
 console.log("PASS vocabulary/phrase/writing/deep Listen buttons, playback and styling are unified.");
