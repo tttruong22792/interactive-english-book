@@ -95,7 +95,7 @@ function vocabulary(story,st){
    '<div class="reading-reference-meaning"><span>'+(meaning?'Nghĩa cụm':'Nghĩa câu gốc (ngữ cảnh)')+'</span>'+
    reveal(meaning||context,st.refShowVi,'data-reading-reveal-vi','Chạm để xem nghĩa Việt')+'</div>')+
   (!isWords&&st.refShowEn?'<p class="reading-reference-example">Trong câu: '+esc(item.sentence)+'</p>':'')+
-  '</div><div class="reading-reference-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-pronounce="'+esc(term)+'">🔊 Nghe</button>'+
+  '</div><div class="reading-reference-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-pronounce="'+esc(term)+'">♫ Nghe</button>'+
   (isWords?'<button type="button" data-reading-word-lookup="'+esc(term)+'">Tra từ</button>':
    meaning?'<button type="button" data-reading-save-phrase="'+esc(term)+'">☆ Lưu</button>':'')+
   '</div></article>';
@@ -159,7 +159,7 @@ function writingPractice(story,st,words){
    '<p class="reading-write-note">Ghi nhớ cách viết đúng. Xem đáp án hoặc bỏ qua không được tính là thuộc.</p></div>'+
    '<div class="reading-write-dock" id="readingRecallDock">'+
    '<div id="readingRecallFeedback" class="reading-write-feedback" role="status" aria-live="polite"></div>'+
-   '<div class="reading-write-actions"><button id="readingRecallListen" class="reading-audio-button" type="button" aria-pressed="false" aria-label="Nghe phát âm từ tiếng Anh">🔊 Nghe</button>'+
+   '<div class="reading-write-actions"><button id="readingRecallListen" class="reading-audio-button" type="button" aria-pressed="false" aria-label="Nghe phát âm từ tiếng Anh">♫ Nghe</button>'+
    '<button id="readingRecallHint" type="button">Gợi ý</button>'+
    '<button id="readingRecallReveal" type="button">Xem đáp án</button>'+
    '<button id="readingRecallSkip" type="button">Bỏ qua →</button></div>'+
@@ -278,7 +278,7 @@ function grammar(story,st){
    '<div class="reading-grammar-example"><span>Ví dụ ngay trong bài đọc</span>'+
    (st.refShowEn?'<p lang="en">'+esc(pat.sentence)+'</p>':'<p>Tiếng Anh đang ẩn để tự nhớ.</p>')+
    (st.refShowVi?'<small lang="vi">'+esc(pat.contextVi)+'</small>':'')+'</div>'+
-   '<div class="reading-reference-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-pronounce="'+esc(pat.sentence)+'">🔊 Nghe</button>'+
+   '<div class="reading-reference-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-pronounce="'+esc(pat.sentence)+'">♫ Nghe</button>'+
    (pat.linkedId?'<button type="button" data-reading-pattern="'+pat.linkedId+'">Mở bài mẫu '+String(pat.linkedId).padStart(2,"0")+' →</button>':'')+
    '</div></div></details>').join('')+'</div>'+
  '<button type="button" class="reading-inline-next" id="readingGrammarToText">Quay về Đọc & Nghe →</button></section>';
@@ -297,7 +297,7 @@ function resetPronunciationButton(button){
  if(!button)return;
  button.classList?.remove("is-playing");
  button.setAttribute?.("aria-pressed","false");
- button.textContent="🔊 Nghe";
+ button.textContent="♫ Nghe";
 }
 function playPronunciation(button,text,env,stop){
  if(!button||!String(text||"").trim())return;
@@ -307,7 +307,7 @@ function playPronunciation(button,text,env,stop){
  activePronunciationButton=button;
  button.classList?.add("is-playing");
  button.setAttribute?.("aria-pressed","true");
- button.textContent="🔊 Đang nghe…";
+ button.textContent="♫ Đang nghe";
  let playback;
  try{
   playback=env.speak(text);
@@ -327,8 +327,13 @@ function playPronunciation(button,text,env,stop){
  });
 }
 function bindSpeak(env,stop){
- Array.from(document.querySelectorAll("[data-reading-pronounce]")).forEach(button=>button.onclick=()=>
-  playPronunciation(button,button.dataset.readingPronounce,env,stop));
+ // Always bind the full collection. A single querySelector() result must
+ // never receive .forEach() and break the entire reading lesson.
+ const buttons=$("[data-reading-pronounce]");
+ for(const button of buttons){
+  if(!button)continue;
+  button.onclick=()=>playPronunciation(button,button.dataset.readingPronounce,env,stop);
+ }
 }
 function bindVocabulary(story,st,env,rerender,stop){
  if(st.vocabKind!=="phrases"&&st.vocabView==="write"){
