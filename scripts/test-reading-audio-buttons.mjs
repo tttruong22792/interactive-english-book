@@ -69,8 +69,9 @@ ui.playPronunciation(deep,"Hi everyone.",env,stop);
 assert.equal(spoken.at(-1),"Hi everyone.","Deep explanation uses shared engine");
 assert.equal(writing.textContent,"♫ Nghe","Previous view's button resets");
 pending.at(-1)();
-await Promise.resolve();
-await Promise.resolve();
+// Wait for the entire .catch(...).finally(...) microtask chain to settle.
+// Two await Promise.resolve() calls are not sufficient across Node versions.
+await new Promise(resolve=>setImmediate(resolve));
 assert.equal(deep.textContent,"♫ Nghe","Button resets after playback completion");
 assert.ok(stops>=4,"All playback cancels any active reading loop before starting");
 // A broken audio selector should never make the vocabulary lesson inaccessible.
