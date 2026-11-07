@@ -468,3 +468,51 @@
  .reading-deep-part{padding:10px 11px}
  .reading-deep-navigation{margin:13px 0}
 }
+
+
+/* v79 — stable writing dock: controls never scroll behind the iPhone bottom bar or keyboard */
+.reading-write-panel{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.reading-write-panel>.reading-write-top,.reading-write-panel>.reading-write-progress{flex:0 0 auto}
+.reading-write-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:2px 3px 8px 1px}
+.reading-write-dock{flex:0 0 auto;position:relative;z-index:2;background:#fff;border-top:1px solid #ebe5f2;padding:10px 1px 2px;box-shadow:0 -8px 18px #30244509}
+.reading-write-dock .reading-write-feedback{min-height:0;margin:0 0 8px;font-size:12px;line-height:1.38}
+.reading-write-dock .reading-write-feedback:empty{display:none}
+.reading-write-dock .reading-write-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:0}
+.reading-write-dock .reading-write-actions button{box-sizing:border-box;min-width:0;min-height:40px;width:100%;padding:8px 3px;font-size:12px;white-space:nowrap}
+.reading-write-dock .reading-write-actions #readingRecallListen{background:#f0edf9;color:#51449c;border-color:#d8d0eb}
+.reading-write-dock .reading-write-actions button[hidden]{display:none!important}
+.reading-write-dock.completed .reading-write-actions{display:flex;justify-content:flex-start}
+.reading-write-dock.completed #readingRecallListen{width:auto;min-width:124px}
+.reading-write-primary{margin-top:8px}
+.reading-write-primary button{display:block;width:100%;min-height:47px;border:0;border-radius:11px;background:#e47754;color:#fff;font:inherit;font-size:14px;font-weight:850;padding:11px 14px}
+.reading-write-primary #readingRecallNext{background:#6753b8}
+.reading-write-primary button[hidden]{display:none!important}
+.reading-write-primary button:disabled:not([hidden]){opacity:.7}
+@media(max-width:760px){
+ .reading-writing-mode .reading-write-panel{height:100%;padding:9px 10px 5px;display:flex;flex-direction:column;overflow:hidden}
+ .reading-writing-mode .reading-write-top button{min-height:34px;padding:6px 10px}
+ .reading-writing-mode .reading-write-top span{font-size:9px}
+ .reading-writing-mode .reading-write-panel>h2,.reading-writing-mode .reading-write-intro,.reading-writing-mode .reading-write-note{display:none}
+ .reading-writing-mode .reading-write-progress{padding:10px 11px;margin:9px 0}
+ .reading-writing-mode .reading-write-progress>div:first-child{margin-bottom:7px;gap:5px}
+ .reading-writing-mode .reading-write-progress strong{font-size:12px}
+ .reading-writing-mode .reading-write-progress>div:first-child span{font-size:10px}
+ .reading-writing-mode .reading-write-track{height:5px}
+ .reading-writing-mode .reading-write-scroll{padding:2px 0 5px}
+ .reading-writing-mode .reading-write-card{padding:12px;border-radius:13px;box-shadow:none}
+ .reading-writing-mode .reading-write-vi{font-size:clamp(22px,6vw,27px);line-height:1.28;margin:12px 0}
+ .reading-writing-mode .reading-write-context{margin:0 0 11px;padding:8px 10px;font-size:11px}
+ .reading-writing-mode .reading-write-card form{display:block}
+ .reading-writing-mode .reading-write-card form label{display:block;width:100%;margin-bottom:7px;font-size:11px}
+ .reading-writing-mode .reading-write-card form input{width:100%;min-height:44px;padding:8px 11px;font-size:16px}
+ .reading-writing-mode .reading-write-dock{padding:8px 0 3px}
+ .reading-writing-mode .reading-write-dock .reading-write-actions button{min-height:40px;font-size:11px;padding:8px 2px}
+ .reading-writing-mode .reading-write-primary button{min-height:45px;font-size:13px}
+ html.reading-recall-typing .reading-writing-mode .reading-write-panel{display:flex;flex-direction:column;height:100%;overflow:hidden;padding:6px 9px 3px}
+ html.reading-recall-typing .reading-writing-mode .reading-write-scroll{flex:1 1 auto;min-height:0;overflow:auto;padding:2px 0 4px}
+ html.reading-recall-typing .reading-writing-mode .reading-write-card form{display:block}
+ html.reading-recall-typing .reading-writing-mode .reading-write-dock{flex:0 0 auto;padding:6px 0 1px}
+ html.reading-recall-typing .reading-writing-mode .reading-write-dock .reading-write-feedback{font-size:11px;line-height:1.3;margin-bottom:5px}
+ html.reading-recall-typing .reading-writing-mode .reading-write-primary{margin-top:6px}
+ html.reading-recall-typing .reading-writing-mode .reading-write-primary button{min-height:41px}
+}
