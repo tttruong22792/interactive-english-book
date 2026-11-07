@@ -22,7 +22,7 @@ function syncRecallViewport(){
  html.classList.add("reading-recall-typing");
  requestAnimationFrame(()=>{
   if(document.activeElement!==input)return;
-  const panel=input.closest(".reading-write-panel");
+  const panel=input.closest(".reading-write-scroll")||input.closest(".reading-write-panel");
   if(!panel)return;
   const field=input.getBoundingClientRect(),box=panel.getBoundingClientRect();
   if(field.bottom>box.bottom-12)panel.scrollTop+=field.bottom-box.bottom+12;
@@ -148,24 +148,26 @@ function writingPractice(story,st,words){
    '<p>Hãy chuyển sang phần Đọc & Nghe để thử nhận ra và sử dụng chúng trong ngữ cảnh.</p>'+
    '<button type="button" id="readingRecallRead">Sang Đọc & Nghe →</button>'+
    '<button type="button" id="readingRecallReset">↻ Luyện lại từ đầu</button></div>':
-   '<div class="reading-write-card"><div class="reading-write-card-top"><span>TỪ CẦN NHỚ</span>'+
+   '<div class="reading-write-scroll"><div class="reading-write-card"><div class="reading-write-card-top"><span>TỪ CẦN NHỚ</span>'+
    '<span>'+String(index+1)+' / '+remaining.length+' chưa thuộc</span></div>'+
    '<div class="reading-write-vi" lang="vi">'+esc(item.meaning)+'</div>'+
    (item.contextVi?'<details class="reading-write-context"><summary>Xem câu tiếng Việt có chứa từ này</summary>'+
     '<p lang="vi">'+esc(item.contextVi)+'</p></details>':'')+
    '<form id="readingRecallForm" autocomplete="off"><label for="readingRecallInput">Viết từ tiếng Anh tương ứng</label>'+
    '<input id="readingRecallInput" type="text" placeholder="Nhập tiếng Anh..." autocapitalize="off" '+
-   'autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" required />'+
-   '<button id="readingRecallCheck" type="submit">Kiểm tra</button></form>'+
+   'autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" required /></form></div>'+
+   '<p class="reading-write-note">Ghi nhớ cách viết đúng. Xem đáp án hoặc bỏ qua không được tính là thuộc.</p></div>'+
+   '<div class="reading-write-dock" id="readingRecallDock">'+
    '<div id="readingRecallFeedback" class="reading-write-feedback" role="status" aria-live="polite"></div>'+
-   '<div class="reading-write-actions"><button id="readingRecallHint" type="button">Gợi ý</button>'+
+   '<div class="reading-write-actions"><button id="readingRecallListen" type="button" aria-label="Nghe phát âm từ tiếng Anh">🔊 Nghe</button>'+
+   '<button id="readingRecallHint" type="button">Gợi ý</button>'+
    '<button id="readingRecallReveal" type="button">Xem đáp án</button>'+
-   '<button id="readingRecallSkip" type="button">Bỏ qua →</button>'+
-   '<button id="readingRecallNext" type="button" hidden>Tiếp tục →</button></div></div>'+
-   '<p class="reading-write-note">Ghi nhớ cách viết đúng. Xem đáp án hoặc bỏ qua không được tính là thuộc.</p>')+
+   '<button id="readingRecallSkip" type="button">Bỏ qua →</button></div>'+
+   '<div class="reading-write-primary"><button id="readingRecallCheck" form="readingRecallForm" type="submit">Kiểm tra</button>'+
+   '<button id="readingRecallNext" type="button" hidden>Tiếp tục →</button></div></div>')+
   '</section>';
 }
-function bindWritingPractice(story,st,env,rerender){
+function bindWritingPractice(story,st,env,rerender,stop){
  const words=ref()?.wordsFor(story)||[];
  const back=$("#readingRecallBack");
  if(back)back.onclick=()=>{st.vocabView="list";env.saveState();rerender(story);};
@@ -182,6 +184,8 @@ function bindWritingPractice(story,st,env,rerender){
   check=$("#readingRecallCheck"),next=$("#readingRecallNext");
  if(!form||!input||!feedback||!check||!next)return;
  bindRecallViewport(input);
+ const listen=$("#readingRecallListen");
+ if(listen)listen.onclick=()=>{stop?.();void env.speak(item.term);};
  let accepted=false, revealed=false;
  const response=(message,kind)=>{
   feedback.className="reading-write-feedback "+kind;
@@ -220,6 +224,14 @@ function bindWritingPractice(story,st,env,rerender){
    if(revealButton)revealButton.disabled=true;
    if(hintButton)hintButton.disabled=true;
    next.hidden=false;
+    check.hidden=true;
+    if(revealButton)revealButton.hidden=true;
+    if(hintButton)hintButton.hidden=true;
+    const skipButton=$("#readingRecallSkip");
+    if(skipButton)skipButton.hidden=true;
+    $("#readingRecallDock")?.classList.add("completed");
+    input.blur?.();
+    syncRecallViewport();
    response(revealed?
     "✓ Đã viết lại theo đáp án. Từ này sẽ xuất hiện lại để kiểm tra trí nhớ.":
     "✓ Viết đúng! Bạn đã nhớ từ này.",revealed?"hint":"success");
@@ -282,7 +294,7 @@ function bindSpeak(env,stop){
 }
 function bindVocabulary(story,st,env,rerender,stop){
  if(st.vocabKind!=="phrases"&&st.vocabView==="write"){
-  bindWritingPractice(story,st,env,rerender);
+  bindWritingPractice(story,st,env,rerender,stop);
   return;
  }
  const start=$("#readingStartRecall");
