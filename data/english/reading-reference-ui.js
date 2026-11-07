@@ -327,7 +327,7 @@ function playPronunciation(button,text,env,stop){
  });
 }
 function bindSpeak(env,stop){
- $("[data-reading-pronounce]").forEach(button=>button.onclick=()=>
+ Array.from(document.querySelectorAll("[data-reading-pronounce]")).forEach(button=>button.onclick=()=>
   playPronunciation(button,button.dataset.readingPronounce,env,stop));
 }
 function bindVocabulary(story,st,env,rerender,stop){
@@ -366,7 +366,7 @@ function bindVocabulary(story,st,env,rerender,stop){
 }
 function bindGrammar(story,st,env,rerender,stop){
  if(window.SPEAKING_DEEP_UI?.bind(story,st,env,rerender,stop))return;
- $("[data-reading-pattern]").forEach(button=>button.onclick=()=>{stop();location.hash="#lesson/"+button.dataset.readingPattern;});
+ Array.from(document.querySelectorAll("[data-reading-pattern]")).forEach(button=>button.onclick=()=>{stop();location.hash="#lesson/"+button.dataset.readingPattern;});
  $("#readingGrammarToText")?.addEventListener("click",()=>{st.tab="read";env.saveState();rerender(story);});
  bindSpeak(env,stop);
 }
