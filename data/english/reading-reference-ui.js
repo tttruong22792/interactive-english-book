@@ -95,7 +95,7 @@ function vocabulary(story,st){
    '<div class="reading-reference-meaning"><span>'+(meaning?'Nghĩa cụm':'Nghĩa câu gốc (ngữ cảnh)')+'</span>'+
    reveal(meaning||context,st.refShowVi,'data-reading-reveal-vi','Chạm để xem nghĩa Việt')+'</div>')+
   (!isWords&&st.refShowEn?'<p class="reading-reference-example">Trong câu: '+esc(item.sentence)+'</p>':'')+
-  '</div><div class="reading-reference-actions"><button type="button" data-reading-pronounce="'+esc(term)+'">♫ Nghe</button>'+
+  '</div><div class="reading-reference-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-pronounce="'+esc(term)+'">🔊 Nghe</button>'+
   (isWords?'<button type="button" data-reading-word-lookup="'+esc(term)+'">Tra từ</button>':
    meaning?'<button type="button" data-reading-save-phrase="'+esc(term)+'">☆ Lưu</button>':'')+
   '</div></article>';
@@ -159,7 +159,7 @@ function writingPractice(story,st,words){
    '<p class="reading-write-note">Ghi nhớ cách viết đúng. Xem đáp án hoặc bỏ qua không được tính là thuộc.</p></div>'+
    '<div class="reading-write-dock" id="readingRecallDock">'+
    '<div id="readingRecallFeedback" class="reading-write-feedback" role="status" aria-live="polite"></div>'+
-   '<div class="reading-write-actions"><button id="readingRecallListen" type="button" aria-label="Nghe phát âm từ tiếng Anh">🔊 Nghe</button>'+
+   '<div class="reading-write-actions"><button id="readingRecallListen" class="reading-audio-button" type="button" aria-pressed="false" aria-label="Nghe phát âm từ tiếng Anh">🔊 Nghe</button>'+
    '<button id="readingRecallHint" type="button">Gợi ý</button>'+
    '<button id="readingRecallReveal" type="button">Xem đáp án</button>'+
    '<button id="readingRecallSkip" type="button">Bỏ qua →</button></div>'+
@@ -185,7 +185,7 @@ function bindWritingPractice(story,st,env,rerender,stop){
  if(!form||!input||!feedback||!check||!next)return;
  bindRecallViewport(input);
  const listen=$("#readingRecallListen");
- if(listen)listen.onclick=()=>{stop?.();void env.speak(item.term);};
+ if(listen)listen.onclick=()=>playPronunciation(listen,item.term,env,stop);
  let accepted=false, revealed=false;
  const response=(message,kind)=>{
   feedback.className="reading-write-feedback "+kind;
@@ -278,7 +278,7 @@ function grammar(story,st){
    '<div class="reading-grammar-example"><span>Ví dụ ngay trong bài đọc</span>'+
    (st.refShowEn?'<p lang="en">'+esc(pat.sentence)+'</p>':'<p>Tiếng Anh đang ẩn để tự nhớ.</p>')+
    (st.refShowVi?'<small lang="vi">'+esc(pat.contextVi)+'</small>':'')+'</div>'+
-   '<div class="reading-reference-actions"><button type="button" data-reading-pronounce="'+esc(pat.sentence)+'">♫ Nghe ví dụ</button>'+
+   '<div class="reading-reference-actions"><button type="button" class="reading-audio-button" aria-pressed="false" data-reading-pronounce="'+esc(pat.sentence)+'">🔊 Nghe</button>'+
    (pat.linkedId?'<button type="button" data-reading-pattern="'+pat.linkedId+'">Mở bài mẫu '+String(pat.linkedId).padStart(2,"0")+' →</button>':'')+
    '</div></div></details>').join('')+'</div>'+
  '<button type="button" class="reading-inline-next" id="readingGrammarToText">Quay về Đọc & Nghe →</button></section>';
@@ -289,8 +289,46 @@ function bindVisibility(story,st,env,rerender){
   st[key]=!st[key];env.saveState();rerender(story);
  });
 }
+// Use the same button state and playback pipeline in vocabulary,
+ // written recall and grammar explanations. Call env.speak synchronously
+ // within the tap handler, which matters for audio activation on iOS.
+let activePronunciationButton=null,pronunciationEpoch=0;
+function resetPronunciationButton(button){
+ if(!button)return;
+ button.classList?.remove("is-playing");
+ button.setAttribute?.("aria-pressed","false");
+ button.textContent="🔊 Nghe";
+}
+function playPronunciation(button,text,env,stop){
+ if(!button||!String(text||"").trim())return;
+ const epoch=++pronunciationEpoch;
+ resetPronunciationButton(activePronunciationButton);
+ stop?.();
+ activePronunciationButton=button;
+ button.classList?.add("is-playing");
+ button.setAttribute?.("aria-pressed","true");
+ button.textContent="🔊 Đang nghe…";
+ let playback;
+ try{
+  playback=env.speak(text);
+ }catch(error){
+  resetPronunciationButton(button);
+  activePronunciationButton=null;
+  env.toast?.("Không thể phát âm thanh. Hãy thử lại.");
+  return;
+ }
+ Promise.resolve(playback).catch(error=>{
+  if(epoch===pronunciationEpoch&&error?.name!=="AbortError")
+   env.toast?.("Không thể phát âm thanh. Hãy thử lại.");
+ }).finally(()=>{
+  if(epoch!==pronunciationEpoch)return;
+  resetPronunciationButton(button);
+  activePronunciationButton=null;
+ });
+}
 function bindSpeak(env,stop){
- $$("[data-reading-pronounce]").forEach(button=>button.onclick=()=>{stop();void env.speak(button.dataset.readingPronounce);});
+ $("[data-reading-pronounce]").forEach(button=>button.onclick=()=>
+  playPronunciation(button,button.dataset.readingPronounce,env,stop));
 }
 function bindVocabulary(story,st,env,rerender,stop){
  if(st.vocabKind!=="phrases"&&st.vocabView==="write"){
@@ -332,5 +370,5 @@ function bindGrammar(story,st,env,rerender,stop){
  $("#readingGrammarToText")?.addEventListener("click",()=>{st.tab="read";env.saveState();rerender(story);});
  bindSpeak(env,stop);
 }
-window.ReadingReferenceUI={vocabulary,grammar,bindVisibility,bindVocabulary,bindGrammar,answerMatches,recallData,recallCurrent,clearRecallViewport};
+window.ReadingReferenceUI={vocabulary,grammar,bindVisibility,bindVocabulary,bindGrammar,playPronunciation,answerMatches,recallData,recallCurrent,clearRecallViewport};
 })();
