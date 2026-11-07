@@ -9,7 +9,7 @@ const html=fromDist("index.html");
 const assets=[...html.matchAll(/runtime-\d{8}-[a-z0-9-]+\.js/g)].map(x=>x[0]);
 assert.ok(assets.length>0,"No versioned runtime referenced in index.html");
 const runtimeName=assets[0];
-assert.ok(runtimeName.includes("recall-dock-v79"),"Old runtime linked in index.html: "+runtimeName);
+assert.ok(runtimeName.includes("reading-audio-v80"),"Old runtime linked in index.html: "+runtimeName);
 assert.ok(existsSync(new URL(runtimeName,root)),"Missing runtime in Pages artifact: "+runtimeName);
 const runtime=fromDist(runtimeName);
 const css=fromDist("reading-studio.css");
@@ -25,7 +25,21 @@ assert.ok(runtime.includes('class="reading-write-dock"')&&runtime.includes('form
   "The scroll-independent recall action dock is missing from runtime");
 assert.ok(css.includes(".reading-write-dock{flex:0 0 auto;")&&css.includes(".reading-write-scroll{flex:1 1 auto;"),
   "Writing controls must remain visible while the question can scroll");
-assert.ok(html.includes("recall-dock-v79"),"Old version referenced in release index");
+assert.ok(html.includes("reading-audio-v80"),"Old version referenced in release index");
+assert.ok(runtime.includes('Array.from(document.querySelectorAll("[data-reading-pronounce]"))'),
+ "Word-list pronunciation buttons are not bound as a collection");
+assert.ok(runtime.includes('window.ReadingReferenceUI={')&&runtime.includes('playPronunciation,answerMatches'),
+ "Unified pronunciation handler is missing");
+assert.ok(css.includes(".reading-reference-panel .reading-audio-button"),"Shared Listen button styles missing");
+const manifest=JSON.parse(fromDist("tts-manifest.json"));
+const allowed=Object.values(manifest.entries||{});
+const day01Words=["scada","projects","responsibilities","vary","includes","unexpected"];
+for(const word of day01Words){
+ assert.ok(allowed.some(item=>item.text===word&&(item.kinds||[]).includes("reading-word")),
+  "Cloud TTS allow-list missing Day 01 vocabulary word: "+word);
+}
+assert.ok(allowed.some(item=>(item.kinds||[]).includes("reading-vocab-phrase")),
+ "Cloud TTS allow-list missing study phrases from reading lessons");
 assert.ok(serviceWorker.includes(runtimeName),"PWA cache still references a different runtime");
 const source=readFileSync(new URL("../data/english/speaking-week-01.js",import.meta.url),"utf8");
 const explanations=readFileSync(new URL("../data/english/speaking-day01-deep-dive.js",import.meta.url),"utf8");
