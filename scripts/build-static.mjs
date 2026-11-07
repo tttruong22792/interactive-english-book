@@ -358,9 +358,35 @@ function addManifestAudio(text, kind, lessonId) {
     vm.runInContext(source,readerContext,{filename:relative});
   }
   if(readerWindow.SPEAKING_PROGRAM?.length!==70)throw Error("Expected 70 complete speaking lessons in TTS manifest");
+
+  // The reading tab plays full sentences, but the Vocabulary tab plays
+  // standalone lower-case words and contextual chunks. Those exact button
+  // payloads must be in the cloud allow-list too; otherwise a 403/404
+  // response forces an unreliable deferred browser-voice fallback on iOS.
+  readerWindow.CORE_DICTIONARY=context.window.CORE_DICTIONARY||{};
+  for(const relative of [
+    "data/english/reading-phrase-meanings.js",
+    "data/english/speaking-vocab-01.js",
+    "data/english/speaking-vocab-02.js",
+    "data/english/speaking-vocab-03.js",
+    "data/english/speaking-reference.js"
+  ]){
+    const source=await readFile(join(root,relative),"utf8");
+    vm.runInContext(source,readerContext,{filename:relative});
+  }
+  if(typeof readerWindow.SPEAKING_REFERENCE?.wordsFor!=="function"||
+     typeof readerWindow.SPEAKING_REFERENCE?.phrasesFor!=="function"){
+    throw Error("Reading pronunciation reference failed to initialize");
+  }
   for(const story of readerWindow.SPEAKING_PROGRAM){
     for(const row of story.lines||[])addManifestAudio(row[0],"reading-sentence",story.id);
     for(const phrase of story.targetChunks||[])addManifestAudio(phrase,"reading-phrase",story.id);
+    for(const word of readerWindow.SPEAKING_REFERENCE.wordsFor(story)){
+      addManifestAudio(word.term,"reading-word",story.id);
+    }
+    for(const phrase of readerWindow.SPEAKING_REFERENCE.phrasesFor(story)){
+      addManifestAudio(phrase.name,"reading-vocab-phrase",story.id);
+    }
   }
 }
 
