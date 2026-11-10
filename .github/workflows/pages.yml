@@ -51,6 +51,8 @@ jobs:
         run: |
           node --check app.js
           node --check ai-tts.js
+          node --check reading-background-audio.js
+          node --check scripts/test-reading-background-audio.mjs
           node --check reading-studio.js
           node --check data/english/speaking-reference.js
           node --check data/english/reading-reference-ui.js
@@ -176,6 +178,10 @@ jobs:
       - name: Test shared Listen buttons on words, phrases, writing and explanations
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-reading-audio-buttons.mjs
+
+      - name: Verify continuous iPhone background audio and lock-screen media controls
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-reading-background-audio.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
