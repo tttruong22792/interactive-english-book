@@ -63,12 +63,41 @@ async function requestCloudAudioGeneration(hash){
   }
 }
 
+// iOS media playback frequently requests byte ranges even for a small MP3.
+// Cache the full response but satisfy Range requests with 206 Partial Content.
+async function mediaRange(request,response){
+ const wanted=request.headers.get("range");
+ if(!wanted||response.status!==200)return response;
+ const match=/^bytes=(\\d*)-(\\d*)$/.exec(wanted.trim());
+ if(!match)return response;
+ const bytes=await response.arrayBuffer(),size=bytes.byteLength;
+ let start=match[1]?Number(match[1]):null;
+ let end=match[2]?Number(match[2]):null;
+ if(start===null){
+  const suffix=end;
+  if(!Number.isSafeInteger(suffix)||suffix<=0)return response;
+  start=Math.max(0,size-suffix);end=size-1;
+ }else{
+  if(!Number.isSafeInteger(start)||start<0)return response;
+  if(end===null)end=size-1;
+  if(!Number.isSafeInteger(end)||end<start)return response;
+  end=Math.min(size-1,end);
+ }
+ if(start>=size)return new Response(null,{status:416,headers:{"Content-Range":"bytes */"+size}});
+ const headers=new Headers(response.headers);
+ headers.set("Content-Type","audio/mpeg");
+ headers.set("Accept-Ranges","bytes");
+ headers.set("Content-Range","bytes "+start+"-"+end+"/"+size);
+ headers.set("Content-Length",String(end-start+1));
+ return new Response(bytes.slice(start,end+1),{status:206,headers});
+}
+
 async function serveAudio(request,file){
   const cache=await caches.open(AUDIO_CACHE);
   const scopeUrl=new URL('./audio-cloud/'+file,self.registration.scope).toString();
   const key=new Request(scopeUrl);
   const cached=await cache.match(key);
-  if(cached) return cached;
+  if(cached) return mediaRange(request,cached);
 
   try{
     // Keep the original media play request alive on mobile. If the MP3 does not
@@ -98,10 +127,10 @@ async function serveAudio(request,file){
     if(!response.ok) return response;
 
     await cache.put(key,response.clone());
-    return response;
+    return mediaRange(request,response);
   }catch(error){
     const retry=await cache.match(key);
-    return retry || Response.error();
+    return retry ? mediaRange(request,retry) : Response.error();
   }
 }
 
