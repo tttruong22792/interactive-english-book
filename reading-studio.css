@@ -549,3 +549,28 @@
  .reading-reference-actions button{min-height:38px}
  .reading-write-dock .reading-audio-button{min-width:0;font-size:10px}
 }
+
+
+/* Background listening v82: whole passage is one continuous HTMLAudio track. */
+.reading-repeat-actions .reading-background-actions{
+ display:flex;flex:1 1 100%;gap:10px;align-items:center;justify-content:center;
+ padding:10px 12px;background:#faf8ff;border:1px solid #e7e0f4;border-radius:12px
+}
+.reading-repeat-actions #readingBackground{
+ flex:0 0 auto;min-height:42px;border:1px solid #bfb2df;border-radius:10px;
+ background:#fff;color:#59469b;padding:10px 15px;
+ font-size:12px;font-weight:850;white-space:nowrap
+}
+.reading-repeat-actions #readingBackground[aria-pressed="true"]{
+ background:#eae4fa;border-color:#9380c9;color:#45327c
+}
+.reading-background-actions span{
+ font-size:11px;line-height:1.5;color:#817792;max-width:360px
+}
+@media(max-width:760px){
+ .reading-repeat-actions .reading-background-actions{
+  padding:8px 10px;flex-wrap:wrap;justify-content:stretch;gap:6px
+ }
+ .reading-repeat-actions #readingBackground{width:100%;min-height:42px}
+ .reading-background-actions span{max-width:none;width:100%;text-align:center;font-size:10px}
+}
