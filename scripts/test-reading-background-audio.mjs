@@ -90,7 +90,7 @@ assert.ok(readerSource.includes('id="readingBackground"'),"Read tab shows a back
 assert.ok(readerSource.includes("function startBackground()"),"Background media transport integrated");
 assert.ok(readerSource.includes("backgroundSession.setLoop(st.loop)"),"Reading loop controls the media element");
 assert.ok(readerSource.includes("backgroundSession.setRate(st.rate)"),"Reading rate controls the media element");
-assert.ok(readerSource.includes("if(backgroundSession)backgroundSession.pause();else backgroundSession.resume();"),
+assert.ok(readerSource.includes("if(backgroundSession){if(playing)backgroundSession.pause();else backgroundSession.resume();}"),
  "Normal Read & Listen play button can pause/resume background playback");
 assert.ok(buildSource.includes('"reading-background-audio.js"'),"Player is bundled in versioned runtime");
 assert.ok(buildSource.includes('addManifestAudio(passage,"reading-full-passage",story.id)'),
