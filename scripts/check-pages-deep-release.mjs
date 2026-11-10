@@ -9,7 +9,7 @@ const html=fromDist("index.html");
 const assets=[...html.matchAll(/runtime-\d{8}-[a-z0-9-]+\.js/g)].map(x=>x[0]);
 assert.ok(assets.length>0,"No versioned runtime referenced in index.html");
 const runtimeName=assets[0];
-assert.ok(runtimeName.includes("background-audio-v82"),"Old runtime linked in index.html: "+runtimeName);
+assert.ok(runtimeName.includes("background-rate-v83"),"Old runtime linked in index.html: "+runtimeName);
 assert.ok(existsSync(new URL(runtimeName,root)),"Missing runtime in Pages artifact: "+runtimeName);
 const runtime=fromDist(runtimeName);
 const css=fromDist("reading-studio.css");
@@ -25,7 +25,7 @@ assert.ok(runtime.includes('class="reading-write-dock"')&&runtime.includes('form
   "The scroll-independent recall action dock is missing from runtime");
 assert.ok(css.includes(".reading-write-dock{flex:0 0 auto;")&&css.includes(".reading-write-scroll{flex:1 1 auto;"),
   "Writing controls must remain visible while the question can scroll");
-assert.ok(html.includes("background-audio-v82"),"Old version referenced in release index");
+assert.ok(html.includes("background-rate-v83"),"Old version referenced in release index");
 assert.ok(runtime.includes('Array.from(document.querySelectorAll("[data-reading-pronounce]"))'),
  "Word-list pronunciation buttons are not bound as a collection");
 assert.ok(!runtime.includes('$("[data-reading-pronounce]").forEach'),
@@ -53,6 +53,15 @@ assert.ok(runtime.includes("session.setPositionState")&&runtime.includes("setAct
  "iPhone lock screen media controls are not configured");
 assert.ok(css.includes(".reading-repeat-actions .reading-background-actions"),
  "Background audio player styling missing");
+assert.ok(runtime.includes('st.backgroundRate=[.6,.7,.8,.9,1].includes(value)?value:.7;'),
+ "Background speed must persist separately from normal reading speed");
+assert.ok(runtime.includes('rate:st.backgroundRate,loop:st.loop')&&runtime.includes('id="readingBackgroundRate"'),
+ "Default slower 0.70x background audio UI is missing");
+assert.ok(runtime.includes('audio.playbackRate=selectedRate')&&
+ runtime.includes('audio.addEventListener("loadedmetadata",()=>'),
+ "Background playback speed must survive iPhone audio metadata loading");
+assert.ok(css.includes(".reading-background-rate select"),
+ "Slow background playback selector styling is missing");
 assert.ok(serviceWorker.includes("async function mediaRange(request,response)")&&serviceWorker.includes("status:206"),
  "iPhone media byte-range support missing in service worker");
 const day01Words=["scada","projects","responsibilities","vary","includes","unexpected"];
