@@ -68,11 +68,15 @@ async function requestCloudAudioGeneration(hash){
 async function mediaRange(request,response){
  const wanted=request.headers.get("range");
  if(!wanted||response.status!==200)return response;
- const match=/^bytes=(\\d*)-(\\d*)$/.exec(wanted.trim());
+ const match=/^bytes=(\d*)-(\d*)$/.exec(wanted.trim());
  if(!match)return response;
- const bytes=await response.arrayBuffer(),size=bytes.byteLength;
  let start=match[1]?Number(match[1]):null;
  let end=match[2]?Number(match[2]):null;
+ if((start!==null&&(!Number.isSafeInteger(start)||start<0))||
+    (end!==null&&(!Number.isSafeInteger(end)||end<0))||
+    (start===null&&(!end))||
+    (start!==null&&end!==null&&end<start))return response;
+ const bytes=await response.arrayBuffer(),size=bytes.byteLength;
  if(start===null){
   const suffix=end;
   if(!Number.isSafeInteger(suffix)||suffix<=0)return response;
