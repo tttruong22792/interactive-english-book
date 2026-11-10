@@ -6,7 +6,7 @@
   const stories=isSpeakingProgram?speakingProgram:(window.READING_STORIES||[]).slice();
   const storyById=new Map(stories.map(s=>[s.id,s]));
   const LEVELS=isSpeakingProgram?["all",...Array.from({length:14},(_,i)=>"W"+String(i+1).padStart(2,"0"))]:["all","A1","A2","B1","B2"];
-  let env=null,activeStory=null,playing=false,playRun=0,playToken=0;
+  let env=null,activeStory=null,playing=false,playRun=0,playToken=0,backgroundSession=null;
   let levelFilter="all",searchQuery="";
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -49,6 +49,11 @@
   function stop(){
     playRun++;
     playing=false;
+    if(backgroundSession){
+      const previous=backgroundSession;
+      backgroundSession=null;
+      previous.stop();
+    }
     if(env&&playToken)env.stopSpeech();
     playToken=0;
     updatePlayer();
@@ -58,8 +63,13 @@
     const p=progress(activeStory);
     const start=$("#readingPlay");
     if(start){
-      start.textContent=playing?"⏸ Tạm dừng":settings().playMode==="sentence"?"▶ Nghe câu":"▶ Nghe tiếp";
+      start.textContent=playing?"⏸ Tạm dừng":backgroundSession?"▶ Tiếp tục nền":settings().playMode==="sentence"?"▶ Nghe câu":"▶ Nghe tiếp";
       start.setAttribute("aria-pressed",String(playing));
+    }
+    const backgroundButton=$("#readingBackground");
+    if(backgroundButton){
+      backgroundButton.textContent=backgroundSession?(playing?"🎧 Nghe nền · Đang phát":"🎧 Tiếp tục nghe nền"):"🎧 Nghe nền";
+      backgroundButton.setAttribute("aria-pressed",String(!!backgroundSession));
     }
     const repeat=$("#readingLoop");
     if(repeat){
@@ -124,6 +134,70 @@
       playing=false;playToken=0;updatePlayer();
       if(!failed&&settings().playMode==="whole"&&!settings().loop&&position.completed)env.toast("Đã nghe hết bài. Bấm Nghe lại từ đầu nếu muốn ôn thêm.");
     }
+  }
+  function startBackground(){
+    if(!activeStory||!env)return;
+    if(backgroundSession){
+      if(playing)backgroundSession.pause();
+      else backgroundSession.resume();
+      return;
+    }
+    const api=window.ReadingBackgroundAudio;
+    if(!api?.create){
+      env.toast("Trình duyệt chưa tải được chế độ nghe nền. Hãy tải lại ứng dụng.");
+      return;
+    }
+    const story=activeStory,st=settings();
+    const text=api.wholeText(story);
+    if(!text)return;
+    stop();
+    // Background listening uses one continuous recording. The original
+    // per-sentence mode remains available for pronunciation practice.
+    if(st.playMode!=="whole"){
+      st.playMode="whole";
+      env.saveState();
+    }
+    const onState=value=>{
+      if(!backgroundSession)return;
+      playing=value==="playing";
+      updatePlayer();
+    };
+    const onEnded=()=>{
+      if(!backgroundSession)return;
+      const previous=backgroundSession;
+      backgroundSession=null;
+      previous.stop();
+      playing=false;
+      const p=progress(story);
+      p.completed=true;
+      remember(story);
+      updatePlayer();
+    };
+    const onError=error=>{
+      console.warn("Continuous reading audio unavailable",error);
+      if(!backgroundSession)return;
+      const previous=backgroundSession;
+      backgroundSession=null;
+      previous.stop();
+      playing=false;
+      updatePlayer();
+      // If first generation is still in flight, prepare the file for
+      // the next explicit tap; never silently autoplay after async work.
+      void api.prepare(text);
+      env.toast("Chưa phát được bản nghe nền. Hãy bấm Nghe nền lần nữa.");
+    };
+    backgroundSession=api.create({
+      text,title:story.title,artist:"Day "+String(story.day||"")+" · Language Studio",
+      rate:st.rate,loop:st.loop,onState,onEnded,onError
+    });
+    if(!backgroundSession){
+      env.toast("Thiết bị không hỗ trợ trình phát nghe nền.");
+      return;
+    }
+    playing=true;
+    updatePlayer();
+    // This must run directly in the user's click handler on iOS.
+    backgroundSession.play();
   }
   function buildCorpus(){
     const t=window.VocabularyTrainer;if(!t?.packs)return new Map();
@@ -204,6 +278,9 @@
     const st=settings(),p=progress(story),root=env.main;
     const chunks=findChunks(story);
     const mode=st.tab||"read";
+    if(mode==="read"&&isSpeakingProgram&&window.ReadingBackgroundAudio){
+      void window.ReadingBackgroundAudio.prepare(window.ReadingBackgroundAudio.wholeText(story));
+    }
     const isWritingRecall=mode==="vocab"&&st.vocabKind!=="phrases"&&st.vocabView==="write";
     const totalWords=story.lines.map(row=>row[0].split(/\s+/).length).reduce((a,b)=>a+b,0);
     const deepReady=isSpeakingProgram&&!!window.SPEAKING_DEEP_UI?.entriesFor(story);
@@ -270,6 +347,7 @@
          '<button type="button" data-reading-play-mode="whole" aria-pressed="'+String(st.playMode==="whole")+'" class="'+(st.playMode==="whole"?'selected':'')+'">Cả bài</button>'+
          '<button type="button" data-reading-play-mode="sentence" aria-pressed="'+String(st.playMode==="sentence")+'" class="'+(st.playMode==="sentence"?'selected':'')+'">Từng câu</button></div>'+
          '<button id="readingReplay" type="button">'+(st.playMode==="sentence"?'↺ Nghe lại câu đầu':'↺ Nghe lại từ đầu')+'</button>'+
+         (isSpeakingProgram?'<div class="reading-background-actions"><button id="readingBackground" type="button" aria-pressed="false">🎧 Nghe nền</button><span>Nghe cả bài khi khóa màn hình hoặc mở ứng dụng khác · có thể lặp bài</span></div>':'')+
          '<button id="readingLoop" type="button" aria-pressed="'+String(st.loop)+'">'+
          (st.playMode==="sentence"?(st.loop?'↻ Lặp câu: Bật':'↻ Lặp câu: Tắt'):(st.loop?'↻ Lặp bài: Bật':'↻ Lặp bài: Tắt'))+'</button></div>'+
       '</div>')+'</section>';
@@ -320,8 +398,15 @@
     };
     $("#readingPrev").onclick=()=>moveTo(-1);
     $("#readingNext").onclick=()=>moveTo(1);
-    $("#readingPlay").onclick=()=>{if(playing)stop();else void playFrom(p.index);};
-    $("#readingReplay").onclick=()=>void playFrom(0);
+    $("#readingPlay").onclick=()=>{
+      if(backgroundSession){if(playing)backgroundSession.pause();else backgroundSession.resume();}
+      else if(playing)stop();else void playFrom(p.index);
+    };
+    if($("#readingBackground"))$("#readingBackground").onclick=startBackground;
+    $("#readingReplay").onclick=()=>{
+      if(backgroundSession)backgroundSession.restart();
+      else void playFrom(0);
+    };
     $$("[data-reading-play-mode]").forEach(button=>button.onclick=()=>{
       const selected=button.dataset.readingPlayMode;
       if(!["whole","sentence"].includes(selected)||selected===st.playMode)return;
@@ -332,8 +417,17 @@
       env.saveState();updatePlayer();
       if(wasPlaying)void playFrom(at);
     });
-    $("#readingLoop").onclick=()=>{st.loop=!st.loop;env.saveState();updatePlayer();};
-    $("#readingRate").onchange=e=>{st.rate=Number(e.target.value)||.88;env.saveState();if(playing)stop();};
+    $("#readingLoop").onclick=()=>{
+      st.loop=!st.loop;
+      if(backgroundSession)backgroundSession.setLoop(st.loop);
+      env.saveState();updatePlayer();
+    };
+    $("#readingRate").onchange=e=>{
+      st.rate=Number(e.target.value)||.88;
+      env.saveState();
+      if(backgroundSession)backgroundSession.setRate(st.rate);
+      else if(playing)stop();
+    };
     $("#readingComplete").onclick=()=>{p.completed=!p.completed;remember(story);renderReader(story);};
     }
     updatePlayer();
