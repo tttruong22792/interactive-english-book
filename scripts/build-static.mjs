@@ -163,6 +163,7 @@ const runtimeFiles = [
   "platform-data.js",
   "catalog.js",
   "ai-tts.js",
+  "reading-background-audio.js",
   ...Array.from({length:14},(_,i)=>"data/english/speaking-week-"+String(i+1).padStart(2,"0")+".js"),
   ...Array.from({length:7},(_,i)=>"data/english/speaking-vi-"+String(i*10+1).padStart(2,"0")+"-"+String(i*10+10).padStart(2,"0")+".js"),
   "data/english/speaking-program.js",
@@ -278,6 +279,7 @@ await writeFile(join(dist, "runtime-20261105-day01-deep-v78.js"), runtimeSource,
 await writeFile(join(dist, "runtime-20261107-recall-dock-v79.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261107-reading-audio-v80.js"), runtimeSource, "utf8");
 await writeFile(join(dist, "runtime-20261107-content-error-fix-v81.js"), runtimeSource, "utf8");
+await writeFile(join(dist, "runtime-20261110-background-audio-v82.js"), runtimeSource, "utf8");
 
 // Build an allow-list for cloud TTS. The Edge Function accepts only hashes
 // present in this manifest, so arbitrary public text cannot trigger OpenAI.
