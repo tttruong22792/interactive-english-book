@@ -381,6 +381,10 @@ function addManifestAudio(text, kind, lessonId) {
     throw Error("Reading pronunciation reference failed to initialize");
   }
   for(const story of readerWindow.SPEAKING_PROGRAM){
+    // Each complete passage is one MP3. Never concatenate short tracks at
+    // playback time: iOS may suspend JS between files when the phone locks.
+    const passage=(story.lines||[]).map(row=>row[0]).join(" ").trim();
+    if(passage)addManifestAudio(passage,"reading-full-passage",story.id);
     for(const row of story.lines||[])addManifestAudio(row[0],"reading-sentence",story.id);
     for(const phrase of story.targetChunks||[])addManifestAudio(phrase,"reading-phrase",story.id);
     for(const word of readerWindow.SPEAKING_REFERENCE.wordsFor(story)){
