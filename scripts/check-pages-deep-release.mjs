@@ -9,7 +9,7 @@ const html=fromDist("index.html");
 const assets=[...html.matchAll(/runtime-\d{8}-[a-z0-9-]+\.js/g)].map(x=>x[0]);
 assert.ok(assets.length>0,"No versioned runtime referenced in index.html");
 const runtimeName=assets[0];
-assert.ok(runtimeName.includes("content-error-fix-v81"),"Old runtime linked in index.html: "+runtimeName);
+assert.ok(runtimeName.includes("background-audio-v82"),"Old runtime linked in index.html: "+runtimeName);
 assert.ok(existsSync(new URL(runtimeName,root)),"Missing runtime in Pages artifact: "+runtimeName);
 const runtime=fromDist(runtimeName);
 const css=fromDist("reading-studio.css");
@@ -25,7 +25,7 @@ assert.ok(runtime.includes('class="reading-write-dock"')&&runtime.includes('form
   "The scroll-independent recall action dock is missing from runtime");
 assert.ok(css.includes(".reading-write-dock{flex:0 0 auto;")&&css.includes(".reading-write-scroll{flex:1 1 auto;"),
   "Writing controls must remain visible while the question can scroll");
-assert.ok(html.includes("content-error-fix-v81"),"Old version referenced in release index");
+assert.ok(html.includes("background-audio-v82"),"Old version referenced in release index");
 assert.ok(runtime.includes('Array.from(document.querySelectorAll("[data-reading-pronounce]"))'),
  "Word-list pronunciation buttons are not bound as a collection");
 assert.ok(!runtime.includes('$("[data-reading-pronounce]").forEach'),
@@ -41,6 +41,20 @@ assert.ok(runtime.includes('window.ReadingReferenceUI={')&&runtime.includes('pla
 assert.ok(css.includes(".reading-reference-panel .reading-audio-button"),"Shared Listen button styles missing");
 const manifest=JSON.parse(fromDist("tts-manifest.json"));
 const allowed=Object.values(manifest.entries||{});
+const fullTracks=allowed.filter(item=>(item.kinds||[]).includes("reading-full-passage"));
+assert.equal(fullTracks.length,70,"Background audio manifest must include all 70 whole-passage tracks");
+assert.ok(runtime.includes("window.ReadingBackgroundAudio={create,prepare,wholeText}"),
+ "Continuous HTMLAudio playback module missing from runtime");
+assert.ok(runtime.includes('id="readingBackground"')&&runtime.includes("function startBackground()"),
+ "Read & Listen background playback control missing from runtime");
+assert.ok(runtime.includes('navigator.audioSession.type="playback"'),
+ "iOS background playback audio session is not configured");
+assert.ok(runtime.includes("session.setPositionState")&&runtime.includes("setActionHandler"),
+ "iPhone lock screen media controls are not configured");
+assert.ok(css.includes(".reading-repeat-actions .reading-background-actions"),
+ "Background audio player styling missing");
+assert.ok(serviceWorker.includes("async function mediaRange(request,response)")&&serviceWorker.includes("status:206"),
+ "iPhone media byte-range support missing in service worker");
 const day01Words=["scada","projects","responsibilities","vary","includes","unexpected"];
 for(const word of day01Words){
  assert.ok(allowed.some(item=>item.text===word&&(item.kinds||[]).includes("reading-word")),
