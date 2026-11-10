@@ -15,15 +15,20 @@ function prepare(text){
  prepared.set(text,job);
  return job;
 }
+function normalizeRate(value){
+ const n=Number(value);
+ return Number.isFinite(n)&&n>0?Math.min(1,Math.max(.6,n)):.7;
+}
 function create(config){
  const text=String(config?.text||"").trim();
  if(!text||!window.AITTS?.staticAudioUrl||typeof Audio!=="function")return null;
  const audio=new Audio();
  audio.preload="auto";
  audio.loop=!!config.loop;
- audio.playbackRate=Math.max(.65,Math.min(1.05,Number(config.rate)||.88));
+ let selectedRate=normalizeRate(config.rate);
+ audio.playbackRate=selectedRate;
+ try{audio.defaultPlaybackRate=selectedRate;}catch(_){}
  try{audio.preservesPitch=true;audio.webkitPreservesPitch=true;}catch(_){}
- const rate=()=>Math.max(.65,Math.min(1.05,Number(config.rate)||.88));
  let active=true;
  const tell=(kind,payload)=>{
   if(!active)return;
@@ -74,7 +79,12 @@ function create(config){
   const cause=new Error("Không tải được bản ghi âm của bài.");
   tell("error",cause);
  });
- audio.addEventListener("loadedmetadata",position);
+ audio.addEventListener("loadedmetadata",()=>{
+  // Preserve a deliberately slow listening rate even when iOS completes
+  // a new media source load while the screen is locking.
+  audio.playbackRate=selectedRate;
+  position();
+ });
  audio.addEventListener("timeupdate",position);
  try{
   if(navigator?.audioSession)navigator.audioSession.type="playback";
@@ -103,7 +113,12 @@ function create(config){
   play:resume,pause,resume,restart,stop:cleanup,
   isActive:()=>active,isPlaying:()=>active&&!audio.paused,
   setLoop(value){audio.loop=!!value;},
-  setRate(value){audio.playbackRate=Math.max(.65,Math.min(1.05,Number(value)||.88));position();},
+  setRate(value){
+   selectedRate=normalizeRate(value);
+   audio.playbackRate=selectedRate;
+   try{audio.defaultPlaybackRate=selectedRate;}catch(_){}
+   position();
+  },
   get currentTime(){return audio.currentTime;},
   get duration(){return audio.duration;}
  };
