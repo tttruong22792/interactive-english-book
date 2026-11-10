@@ -70,8 +70,15 @@ actions.play();
 assert.equal(session.isPlaying(),true,"Lock-screen resume works");
 session.setLoop(false);
 assert.equal(currentAudio.loop,false,"Loop switch updates native HTMLMediaElement");
+session.setRate(.6);
+assert.equal(currentAudio.playbackRate,.6,"Very slow 0.60x works without restarting");
+assert.equal(currentAudio.defaultPlaybackRate,.6,"Slow rate persists as media default");
+currentAudio.emit("loadedmetadata");
+assert.equal(currentAudio.playbackRate,.6,"iOS metadata reload must not reset slow playback");
+session.setRate(.7);
+assert.equal(currentAudio.playbackRate,.7,"Recommended 0.70x speed works live");
 session.setRate(.88);
-assert.equal(currentAudio.playbackRate,.88,"Playback speed can change without restart");
+assert.equal(currentAudio.playbackRate,.88,"Older playback values stay supported");
 currentAudio.currentTime=20;
 actions.seekbackward({seekOffset:5});
 assert.equal(currentAudio.currentTime,15,"Lock-screen back seek works");
@@ -89,13 +96,21 @@ assert.equal(mediaSession.playbackState,"none","Lock screen status is released")
 assert.ok(readerSource.includes('id="readingBackground"'),"Read tab shows a background audio control");
 assert.ok(readerSource.includes("function startBackground()"),"Background media transport integrated");
 assert.ok(readerSource.includes("backgroundSession.setLoop(st.loop)"),"Reading loop controls the media element");
-assert.ok(readerSource.includes("backgroundSession.setRate(st.rate)"),"Reading rate controls the media element");
+assert.ok(readerSource.includes("rate:st.backgroundRate,loop:st.loop"),
+ "Background playback must use its own saved speed rather than sentence rate");
+assert.ok(readerSource.includes("backgroundSession.setRate(st.backgroundRate)"),
+ "Background speed changes must update the current track immediately");
+assert.ok(readerSource.includes('st.backgroundRate=[.6,.7,.8,.9,1].includes(value)?value:.7;'),
+ "Background speed choices should persist, defaulting to 0.70x");
+assert.ok(readerSource.includes('id="readingBackgroundRate"'),
+ "A visible background-only speed selector is required");
 assert.ok(readerSource.includes("if(backgroundSession){if(playing)backgroundSession.pause();else backgroundSession.resume();}"),
  "Normal Read & Listen play button can pause/resume background playback");
 assert.ok(buildSource.includes('"reading-background-audio.js"'),"Player is bundled in versioned runtime");
 assert.ok(buildSource.includes('addManifestAudio(passage,"reading-full-passage",story.id)'),
  "All 70 stories use one allowlisted full audio track");
 assert.ok(css.includes(".reading-background-actions"),"Background controls have mobile styling");
+assert.ok(css.includes(".reading-background-rate select"),"Background rate selector has responsive styling");
 
 // iOS Safari commonly sends byte-range GETs for MP3 metadata and seeking.
 const worker={registration:{scope:"https://example.org/app/"},addEventListener(){},__range:null};
