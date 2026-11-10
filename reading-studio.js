@@ -18,6 +18,10 @@
     if(!state.readingStudio||typeof state.readingStudio!=="object")state.readingStudio={};
     if(!state.readingStudio.items||typeof state.readingStudio.items!=="object")state.readingStudio.items={};
     state.readingStudio.rate=Number(state.readingStudio.rate)||.88;
+    // Background audio has its own slower speed; do not inherit an old
+    // 0.88x/1x value from the sentence-by-sentence reading player.
+    const backgroundRate=Number(state.readingStudio.backgroundRate);
+    state.readingStudio.backgroundRate=[.6,.7,.8,.9,1].includes(backgroundRate)?backgroundRate:.7;
     if(typeof state.readingStudio.showVi!=="boolean")state.readingStudio.showVi=false;
     // Speaking passages replay automatically, but the user can turn this off.
     if(typeof state.readingStudio.loop!=="boolean")state.readingStudio.loop=isSpeakingProgram;
@@ -188,7 +192,7 @@
     };
     backgroundSession=api.create({
       text,title:story.title,artist:"Day "+String(story.day||"")+" · Language Studio",
-      rate:st.rate,loop:st.loop,onState,onEnded,onError
+      rate:st.backgroundRate,loop:st.loop,onState,onEnded,onError
     });
     if(!backgroundSession){
       env.toast("Thiết bị không hỗ trợ trình phát nghe nền.");
@@ -347,7 +351,11 @@
          '<button type="button" data-reading-play-mode="whole" aria-pressed="'+String(st.playMode==="whole")+'" class="'+(st.playMode==="whole"?'selected':'')+'">Cả bài</button>'+
          '<button type="button" data-reading-play-mode="sentence" aria-pressed="'+String(st.playMode==="sentence")+'" class="'+(st.playMode==="sentence"?'selected':'')+'">Từng câu</button></div>'+
          '<button id="readingReplay" type="button">'+(st.playMode==="sentence"?'↺ Nghe lại câu đầu':'↺ Nghe lại từ đầu')+'</button>'+
-         (isSpeakingProgram?'<div class="reading-background-actions"><button id="readingBackground" type="button" aria-pressed="false">🎧 Nghe nền</button><span>Nghe cả bài khi khóa màn hình hoặc mở ứng dụng khác · có thể lặp bài</span></div>':'')+
+         (isSpeakingProgram?'<div class="reading-background-actions"><button id="readingBackground" type="button" aria-pressed="false">🎧 Nghe nền</button>'+
+         '<label class="reading-background-rate" for="readingBackgroundRate"><span>Tốc độ nghe nền</span><select id="readingBackgroundRate" aria-label="Tốc độ nghe nền">'+
+         [[.6,"0.60× · Rất chậm"],[.7,"0.70× · Chậm"],[.8,"0.80× · Vừa"],[.9,"0.90×"],[1,"1.00×"]].map(([value,label])=>
+          '<option value="'+value+'" '+(st.backgroundRate===value?'selected':'')+'>'+label+'</option>').join('')+
+         '</select></label><span class="reading-background-tip">Mặc định 0.70× · Nghe khi khóa màn hình · Lặp bài</span></div>':'')+
          '<button id="readingLoop" type="button" aria-pressed="'+String(st.loop)+'">'+
          (st.playMode==="sentence"?(st.loop?'↻ Lặp câu: Bật':'↻ Lặp câu: Tắt'):(st.loop?'↻ Lặp bài: Bật':'↻ Lặp bài: Tắt'))+'</button></div>'+
       '</div>')+'</section>';
@@ -403,6 +411,12 @@
       else if(playing)stop();else void playFrom(p.index);
     };
     if($("#readingBackground"))$("#readingBackground").onclick=startBackground;
+    if($("#readingBackgroundRate"))$("#readingBackgroundRate").onchange=event=>{
+      const value=Number(event.target.value);
+      st.backgroundRate=[.6,.7,.8,.9,1].includes(value)?value:.7;
+      if(backgroundSession)backgroundSession.setRate(st.backgroundRate);
+      env.saveState();
+    };
     $("#readingReplay").onclick=()=>{
       if(backgroundSession)backgroundSession.restart();
       else void playFrom(0);
@@ -425,8 +439,9 @@
     $("#readingRate").onchange=e=>{
       st.rate=Number(e.target.value)||.88;
       env.saveState();
-      if(backgroundSession)backgroundSession.setRate(st.rate);
-      else if(playing)stop();
+      // Background speed is independent of the regular sentence speed.
+      // Changing the ordinary reading setting must not speed up a background lesson.
+      if(!backgroundSession&&playing)stop();
     };
     $("#readingComplete").onclick=()=>{p.completed=!p.completed;remember(story);renderReader(story);};
     }
