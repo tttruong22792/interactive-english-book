@@ -574,3 +574,35 @@
  .reading-repeat-actions #readingBackground{width:100%;min-height:42px}
  .reading-background-actions span{max-width:none;width:100%;text-align:center;font-size:10px}
 }
+
+/* Background playback speed v83 — compact independent speed control. */
+.reading-repeat-actions .reading-background-rate{
+ display:flex;align-items:center;gap:7px;flex:0 0 auto;
+ color:#655b7c;font-size:11px;font-weight:750
+}
+.reading-background-rate select{
+ appearance:auto;min-height:41px;max-width:175px;min-width:142px;
+ border:1px solid #dcd2ee;border-radius:10px;background:#fff;
+ color:#4f4186;font-family:inherit;font-size:12px;font-weight:800;
+ padding:8px 7px
+}
+.reading-background-actions .reading-background-tip{
+ flex:1 1 180px;font-size:11px;max-width:none
+}
+@media(max-width:760px){
+ .reading-repeat-actions .reading-background-actions{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(115px,.8fr);
+  gap:8px;align-items:end
+ }
+ .reading-repeat-actions #readingBackground{
+  grid-column:1;width:100%;min-width:0;height:43px
+ }
+ .reading-repeat-actions .reading-background-rate{
+  grid-column:2;display:flex;flex-direction:column;align-items:stretch;gap:3px;
+  min-width:0;font-size:10px
+ }
+ .reading-background-rate select{width:100%;min-width:0;max-width:none;height:43px;font-size:11px}
+ .reading-background-actions .reading-background-tip{
+  grid-column:1/-1;width:100%;text-align:center;font-size:10px
+ }
+}
