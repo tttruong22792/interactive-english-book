@@ -52,7 +52,7 @@
       if(seen.has(word)||NOISE_WORDS.has(word)||word.length<3||word.length>18||!/^[a-z]+$/.test(word)) continue;
       const row=d[word]; if(!Array.isArray(row)||!row[1]) continue;
       const vi=String(row[1]).split(/[;；]/)[0].replace(/\([^)]*\)/g,'').trim();
-      if(vi.length<2||vi.length>54||/I would|I am|/i.test('')||/^[a-z0-9 /]+$/i.test(vi)) continue;
+      if(vi.length<2||vi.length>54||/^[a-z0-9 /]+$/i.test(vi)) continue;
       seen.add(word);
       out.push({id:'word:'+word,en:word,vi,kind:'word',lessonId:lesson});
     }
