@@ -453,13 +453,14 @@
     if(!window.VocabularyTrainer?.isOpen?.()){
       document.documentElement.classList.remove('vocab-trainer-open');
     }
+    window.VocabArcade?.destroy?.();
     window.ReadingStudio?.stop?.();
     stopSpeech();
     window.ChunkListener?.stop?.(true);
     closePopover();
     hideSelectionBar();
     const r = parseRoute();
-    setNavActive(r.name==='vocab'?'vocab':['lesson','tenses','shadowing','practice','challenge'].includes(r.name)?'patterns':r.name);
+    setNavActive(['vocab','arcade'].includes(r.name)?'vocab':['lesson','tenses','shadowing','practice','challenge'].includes(r.name)?'patterns':r.name);
     try {
       if (r.name === 'home') renderHome();
       else if (r.name === 'daily') renderDailyV52();
@@ -471,6 +472,7 @@
       else if (r.name === 'japanese') await renderJapanese(r.view||'home',r.id||1);
       else if (r.name === 'lesson') await renderLesson(r.id,r.view);
       else if (r.name === 'vocab') renderVocab();
+      else if (r.name === 'arcade') window.VocabArcade.mount({root:$('#mainView'),setHeader,state,saveState,speak,stopSpeech});
       else if (r.name === 'practice') await renderPracticeHub();
       else if (r.name === 'challenge') await renderChallenge();
       else if (r.name === 'shadowing') await renderShadowing();
@@ -610,6 +612,7 @@
         </div>
         <button class="primary-button english-active-start" data-go="vocab">Bắt đầu Active Path →</button>
       </section>
+      <section class="english-grammar-entry va-discover-entry"><div><span class="eyebrow">NEW · VOCABULARY ARCADE</span><h2>Word Blaster · Game từ vựng</h2><p>Gõ từ/cụm tiếng Anh để bắn mục tiêu, luyện phản xạ theo Day 01–80 và ôn những từ còn yếu.</p></div><button class="primary-button" data-go="arcade">Chơi game →</button></section>
       <section class="english-grammar-entry english-vocab-entry">
         <div><span class="eyebrow">LEARN + AUTOMATE</span><h2>Cụm chủ động</h2><p>Học các cụm dùng thật theo từng mẫu câu: nhận ra → gọi ra → dùng trong câu, kèm Flashcard, nghe lặp và luyện viết.</p></div>
         <button class="primary-button" data-go="vocab">Mở Cụm chủ động →</button>
@@ -2063,6 +2066,7 @@
           ${syncChip()}
         </header>
         ${hubNav()}
+        <button class="va-launch" type="button" data-go="arcade"><span class="va-launch-icon">✦</span><span><strong>Word Blaster</strong><small>Game phản xạ từ & cụm từ theo bài học</small></span><span class="va-launch-arrow">Chơi ngay →</span></button>
         <div class="vocab-hub-screen">${content}</div>
       </section>`;
     }
