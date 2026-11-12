@@ -9,7 +9,7 @@ const html=fromDist("index.html");
 const assets=[...html.matchAll(/runtime-\d{8}-[a-z0-9-]+\.js/g)].map(x=>x[0]);
 assert.ok(assets.length>0,"No versioned runtime referenced in index.html");
 const runtimeName=assets[0];
-assert.ok(runtimeName.includes("background-rate-v83"),"Old runtime linked in index.html: "+runtimeName);
+assert.ok(/^runtime-\d{8}-[a-z0-9-]+\.js$/.test(runtimeName),"Invalid versioned runtime linked in index.html: "+runtimeName);
 assert.ok(existsSync(new URL(runtimeName,root)),"Missing runtime in Pages artifact: "+runtimeName);
 const runtime=fromDist(runtimeName);
 const css=fromDist("reading-studio.css");
@@ -25,7 +25,7 @@ assert.ok(runtime.includes('class="reading-write-dock"')&&runtime.includes('form
   "The scroll-independent recall action dock is missing from runtime");
 assert.ok(css.includes(".reading-write-dock{flex:0 0 auto;")&&css.includes(".reading-write-scroll{flex:1 1 auto;"),
   "Writing controls must remain visible while the question can scroll");
-assert.ok(html.includes("background-rate-v83"),"Old version referenced in release index");
+assert.ok(html.includes(runtimeName),"Current runtime is not linked in release index");
 assert.ok(runtime.includes('Array.from(document.querySelectorAll("[data-reading-pronounce]"))'),
  "Word-list pronunciation buttons are not bound as a collection");
 assert.ok(!runtime.includes('$("[data-reading-pronounce]").forEach'),
@@ -72,6 +72,9 @@ for(const word of day01Words){
 assert.ok(allowed.some(item=>(item.kinds||[]).includes("reading-vocab-phrase")),
  "Cloud TTS allow-list missing study phrases from reading lessons");
 assert.ok(serviceWorker.includes(runtimeName),"PWA cache still references a different runtime");
+assert.ok(runtime.includes("window.VocabArcade={mount,destroy,available}"),"Vocabulary Arcade missing from bundled runtime");
+assert.ok(html.includes("vocab-arcade.css"),"Arcade stylesheet missing from release HTML");
+assert.ok(existsSync(new URL("vocab-arcade.css",root)),"Arcade stylesheet missing from Pages artifact");
 const source=readFileSync(new URL("../data/english/speaking-week-01.js",import.meta.url),"utf8");
 const explanations=readFileSync(new URL("../data/english/speaking-day01-deep-dive.js",import.meta.url),"utf8");
 const sourceTexts=[...source.matchAll(/"lines":\s*\[([\s\S]*?)\]\s*\}/g)][0]?.[1];
