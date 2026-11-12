@@ -2822,6 +2822,7 @@
       saveState();
       renderFlashcards([], {lessonId,mode:'write',size:'5',priority:'all'});
     });
+    bindGenericRoutes();
   }
 
   function renderFlashcards(items,overrides={}){
