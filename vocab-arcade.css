@@ -156,3 +156,13 @@
   .va-secondary{min-height:48px}
 }
 @media(prefers-reduced-motion:reduce){.va-app *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Entry point inside the existing Chunk Hub */
+.vocab-hub .va-launch{width:100%;display:flex;align-items:center;text-align:left;gap:13px;margin:12px 0 18px;padding:13px 17px;border:1px solid rgba(105,86,227,.16);border-radius:15px;background:linear-gradient(105deg,#f2efff,#eafaff);color:#2b3363;transition:transform .16s,box-shadow .16s}
+.vocab-hub .va-launch:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(65,74,154,.1)}
+.vocab-hub .va-launch-icon{width:37px;height:37px;display:grid;place-items:center;border-radius:12px;background:#6d57e9;color:white;font-size:23px;flex-shrink:0}
+.vocab-hub .va-launch>span:nth-child(2){display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.vocab-hub .va-launch strong{font-size:14px;font-weight:850}
+.vocab-hub .va-launch small{font-size:11px;color:#7885a0}
+.vocab-hub .va-launch-arrow{font-size:12px;font-weight:850;color:#6454d4;white-space:nowrap}
+@media(max-width:480px){.vocab-hub .va-launch{padding:10px 11px;gap:9px}.vocab-hub .va-launch-arrow{font-size:10px}.vocab-hub .va-launch small{font-size:10px}}
