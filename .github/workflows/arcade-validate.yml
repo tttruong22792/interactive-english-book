@@ -1,0 +1,35 @@
+name: Validate Vocabulary Arcade feature
+
+on:
+  push:
+    branches:
+      - feature/vocabulary-arcade-20261112
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check syntax
+        run: |
+          node --check vocab-arcade.js
+          node --check app.js
+          node --check scripts/build-static.mjs
+          node --check scripts/test-vocab-arcade.mjs
+      - name: Test game integration
+        run: node scripts/test-vocab-arcade.mjs
+      - name: Build website
+        run: npm run build
+      - name: Verify generated assets
+        run: |
+          test -s dist/vocab-arcade.css
+          test -s dist/runtime-20261112-word-blaster-v1.js
+          grep -q "VocabArcade" dist/runtime-20261112-word-blaster-v1.js
+          grep -q "vocab-arcade.css" dist/index.html
