@@ -50,6 +50,8 @@ jobs:
         if: steps.head_guard.outputs.deploy == 'true'
         run: |
           node --check app.js
+          node --check vocab-arcade.js
+          node --check scripts/test-vocab-arcade.mjs
           node --check ai-tts.js
           node --check reading-background-audio.js
           node --check scripts/test-reading-background-audio.mjs
@@ -182,6 +184,10 @@ jobs:
       - name: Verify continuous iPhone background audio and lock-screen media controls
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-reading-background-audio.mjs
+
+      - name: Test Vocabulary Arcade integration
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-vocab-arcade.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
