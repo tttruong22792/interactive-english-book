@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="easy-play-theme-v58.css?v=20261022-v58" />
   <link rel="stylesheet" href="study-plan-60.css?v=20261022-v59" />
   <link rel="stylesheet" href="daily-80-v60.css?v=20261028-v62b" />
+  <link rel="stylesheet" href="vocab-arcade.css?v=20261112-v1" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -124,10 +125,10 @@
   <script>
     (function () {
       var src = location.protocol === 'https:'
-        ? 'runtime-20261110-background-rate-v83.js'
-        : 'runtime.js?v=20261020-patterns-80-local';
+        ? 'runtime-20261112-word-blaster-v1.js'
+        : 'runtime.js?v=20261112-word-blaster-v1-local';
       var script = document.createElement('script');
-      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261110-background-rate-v83';
+      script.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'build=20261112-word-blaster-v1';
       script.async = false;
       script.onerror = function () {
         // A stale iOS PWA cache may miss this versioned filename.
@@ -136,7 +137,7 @@
         if (window.__LS_FALLBACK_ATTEMPTED) return;
         window.__LS_FALLBACK_ATTEMPTED = true;
         var backup = document.createElement('script');
-        backup.src = 'runtime.js?fallback=20261110-background-rate-v83';
+        backup.src = 'runtime.js?fallback=20261112-word-blaster-v1';
         backup.async = false;
         backup.onerror = function () {
           window.__LS_BOOT_ERRORS.push('Tệp dự phòng cũng không tải được. Kiểm tra kết nối Internet.');
