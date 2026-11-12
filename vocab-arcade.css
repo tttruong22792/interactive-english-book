@@ -1,0 +1,158 @@
+/* Vocabulary Arcade — isolated visual system */
+.va-app{--va-navy:#101841;--va-ink:#16213b;--va-accent:#6e54ed;--va-mint:#5ff1d2;--va-text:#f7fbff;--va-border:rgba(116,133,188,.17);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;max-width:1150px;margin:0 auto;padding:20px clamp(12px,2.4vw,32px) 55px;color:var(--va-ink);line-height:1.45}
+.va-app *{box-sizing:border-box}
+.va-app button,.va-app select,.va-app input{font:inherit}
+.va-app button{cursor:pointer}
+.va-app button:disabled{opacity:.45;cursor:not-allowed}
+.va-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+.va-chip{font-size:10px;letter-spacing:.16em;font-weight:850;color:#6557ce;background:#eeeaff;border-radius:999px;padding:9px 13px;white-space:nowrap}
+.va-back{border:0;background:transparent;color:#565b78;font-weight:750;font-size:13px;text-decoration:none;white-space:nowrap}
+.va-back:hover{color:#4b37da}
+.va-intro{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:stretch;margin-bottom:22px}
+.va-intro>div:first-child{padding:28px 8px 24px 0}
+.va-overline{color:#786cd3;font-size:11px;font-weight:850;letter-spacing:.18em}
+.va-intro h1{font-size:clamp(43px,6.5vw,88px);line-height:1.03;letter-spacing:-.075em;margin:14px 0 22px;color:#1a1e3e;font-weight:900}
+.va-intro h1 em{font-style:normal;color:#6a58e9}
+.va-intro p{font-size:clamp(14px,1.5vw,17px);color:#667087;max-width:500px;line-height:1.8;margin:0}
+.va-preview{position:relative;min-height:278px;border-radius:30px;overflow:hidden;background:radial-gradient(ellipse at 45% 40%,#4358c7 0,#232a7d 42%,#0c1647 100%);border:1px solid #323e9a;box-shadow:0 22px 55px rgba(31,45,104,.18)}
+.va-preview:before,.va-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,#dbe6ff 1px,transparent 1.5px),radial-gradient(circle,#90c4ff .8px,transparent 1.1px);background-size:54px 56px,87px 83px;background-position:12px 8px,55px 37px;opacity:.45}
+.va-planet{position:absolute;right:-20px;top:24px;width:115px;height:115px;border-radius:50%;background:radial-gradient(circle at 25% 25%,#ffd9a0 0,#f89b63 33%,#c84c64 72%,#7c3f9a 100%);box-shadow:0 0 35px rgba(236,151,107,.25)}
+.va-planet:after{content:"";position:absolute;top:44px;left:-35px;width:173px;height:29px;border:5px solid #f5bdba;border-radius:50%;transform:rotate(-28deg)}
+.va-preview-target{position:absolute;top:36%;left:15%;border:1px solid #7daaff;background:#233f8b;color:white;padding:12px 16px;border-radius:15px;font-size:15px;font-weight:800;box-shadow:0 0 26px rgba(70,143,255,.4)}
+.va-preview-ship{position:absolute;bottom:17px;left:45%;font-size:36px;color:#72eeff;text-shadow:0 0 22px #87fbff;transform:scaleX(.8)}
+.va-preview i{position:absolute;left:47%;top:58%;height:66px;border:2px dashed #76e4ff;transform:rotate(16deg);filter:drop-shadow(0 0 4px #b4f9ff)}
+.va-stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#e7e7f0;border:1px solid #e7e7f0;border-radius:19px;overflow:hidden;margin-bottom:25px}
+.va-stats-strip>div{background:#fff;display:flex;flex-direction:column;gap:3px;padding:18px 24px}
+.va-stats-strip strong{font-size:27px;font-weight:850;letter-spacing:-.04em}
+.va-stats-strip span{font-size:12px;color:#7b8395}
+.va-panel{background:#fff;border:1px solid #e9e9f3;border-radius:25px;box-shadow:0 14px 44px rgba(29,40,75,.055);padding:clamp(18px,3.2vw,32px)}
+.va-section-head{margin-bottom:22px}
+.va-section-head>span{font-size:10px;font-weight:850;color:#7363d9;letter-spacing:.14em}
+.va-section-head h2{margin:7px 0 0;font-size:clamp(21px,2.5vw,29px);letter-spacing:-.04em}
+.va-fieldgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.va-field{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:750;color:#3b4261;min-width:0}
+.va-field select{width:100%;height:50px;background:#fbfbff;border:1px solid #e1e4ed;border-radius:13px;color:#1d2851;padding:0 14px;outline:0;font-size:14px;font-weight:650}
+.va-field select:focus{border-color:#897cf7;box-shadow:0 0 0 3px rgba(112,89,240,.12)}
+.va-check{align-self:end;display:flex;align-items:center;gap:10px;min-height:50px;font-size:13px;font-weight:750;color:#46516a}
+.va-check input{width:19px;height:19px;accent-color:#6e54ed}
+.va-availability{font-size:13px;color:#596784;margin:20px 0 12px}
+.va-start{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;border:0;border-radius:15px;background:linear-gradient(115deg,#6e54ed,#5147d8);color:#fff;min-height:56px;padding:14px 20px;font-size:15px;font-weight:850;box-shadow:0 14px 22px rgba(86,72,220,.2);transition:transform .16s,box-shadow .16s}
+.va-start:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 18px 25px rgba(86,72,220,.26)}
+.va-start span{font-size:22px}
+.va-note{font-size:12px;line-height:1.7;color:#858da0;margin:14px 0 0}
+.va-in-game{padding-bottom:30px}
+.va-in-game .va-topline{margin-bottom:16px}
+.va-hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.va-hud>div{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-radius:13px;background:#171d50;color:#e2e8ff;border:1px solid #303f85}
+.va-hud span{font-size:10px;font-weight:800;letter-spacing:.13em;color:#a6b4ee}
+.va-hud strong{font-size:clamp(17px,2vw,26px);letter-spacing:-.03em;font-variant-numeric:tabular-nums;font-weight:850}
+.va-hud>div:last-child strong{color:#ff8eb1;white-space:nowrap;font-size:clamp(13px,2vw,23px)}
+.va-stage{height:clamp(315px,46vh,510px);position:relative;overflow:hidden;isolation:isolate;border-radius:23px;background:radial-gradient(ellipse at 50% 24%,#3a51b7 0%,#262a87 32%,#101846 83%,#111d4b 100%);border:2px solid #3d4da1;box-shadow:0 18px 44px rgba(13,22,80,.25),inset 0 0 40px rgba(13,20,75,.3);contain:layout paint}
+.va-stage:after{content:"";pointer-events:none;position:absolute;bottom:0;left:0;right:0;height:6px;background:linear-gradient(90deg,transparent,#73ceff,#b468fd,#73ceff,transparent);box-shadow:0 0 20px #8eb6ff;z-index:2}
+.va-stars{position:absolute;inset:-80px;background-image:radial-gradient(#e6ffff 1px,transparent 1.6px);background-size:75px 66px;opacity:.32;pointer-events:none}
+.va-stars-b{background-size:115px 99px;background-position:30px 40px;opacity:.18;animation:va-drift 24s linear infinite}
+@keyframes va-drift{to{transform:translateY(140px)}}
+.va-stage-planet{position:absolute;right:-65px;top:-47px;width:168px;height:168px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffe8ac,#f4a366 33%,#c44b84 70%,#643791 100%);box-shadow:0 0 35px rgba(253,151,96,.25)}
+.va-stage-planet:after{content:"";position:absolute;inset:55px -33px;border:5px solid rgba(246,207,184,.9);border-radius:50%;transform:rotate(-22deg)}
+#va-targets{position:absolute;inset:0;z-index:3}
+.va-target{position:absolute;min-width:135px;max-width:29%;display:flex;flex-direction:column;gap:4px;align-items:flex-start;padding:10px 15px;border:1.5px solid #92abff;border-radius:14px;background:linear-gradient(130deg,rgba(47,62,147,.95),rgba(32,38,109,.96));box-shadow:0 0 16px rgba(107,145,255,.32),0 8px 15px rgba(0,0,0,.15);color:#fff;text-align:left;transform:translate(-50%,-50%);will-change:top,left;transition:border-color .12s,box-shadow .12s,background .12s}
+.va-target:nth-child(3n+1){border-color:#b487f9;background:linear-gradient(130deg,#603f9f,#42318d)}
+.va-target:nth-child(3n+2){border-color:#7bdacb;background:linear-gradient(130deg,#176a89,#194b7a)}
+.va-target small{font-size:9px;font-weight:850;letter-spacing:.13em;opacity:.7}
+.va-target small span{color:#72f4ff;font-size:7px}
+.va-target strong{font-size:clamp(12px,1.2vw,16px);font-weight:800;line-height:1.32;overflow-wrap:anywhere}
+.va-target-sound{position:absolute;right:7px;top:6px;font-size:11px;opacity:.72}
+.va-target.va-glow{border-color:#fff;box-shadow:0 0 0 2px #90ffff,0 0 31px #81d8ff;transform:translate(-50%,-50%) scale(1.06)}
+.va-target.va-hit{pointer-events:none;animation:va-burst .29s ease-out forwards;background:#2da5aa}
+.va-target.va-lost{pointer-events:none;animation:va-fade .3s ease-out forwards}
+@keyframes va-burst{to{transform:translate(-50%,-50%) scale(1.4);opacity:0;filter:brightness(2.5)}}
+@keyframes va-fade{to{opacity:0;filter:blur(10px)}}
+.va-ship{position:absolute;z-index:4;width:57px;height:70px;left:50%;bottom:9px;transform:translateX(-50%);filter:drop-shadow(0 0 15px rgba(99,232,255,.62));pointer-events:none}
+.va-ship svg{width:100%;height:100%}
+#va-fx{position:absolute;inset:0;z-index:5;pointer-events:none}
+.va-beam{position:absolute;height:4px;border-radius:5px;transform-origin:left center;background:linear-gradient(90deg,#eaffff,#63f7ff,#75baff);box-shadow:0 0 11px #6efbff,0 0 4px #fff;animation:va-beam .23s ease-out both}
+@keyframes va-beam{0%{opacity:1;filter:brightness(2)}100%{opacity:0;filter:brightness(.6)}}
+.va-transport{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 2px;min-height:51px;font-size:13px;color:#5d6681}
+.va-transport #va-feedback{flex:1;min-width:0}
+.va-transport button{border:1px solid #daddef;border-radius:10px;background:white;flex-shrink:0;padding:9px 12px;font-size:12px;font-weight:750;color:#575d7e}
+.va-console{display:flex;align-items:stretch;gap:10px;padding:10px;border:1px solid #dedff3;border-radius:17px;background:#fff;box-shadow:0 13px 38px rgba(19,34,80,.08);position:relative;z-index:7}
+.va-console-input{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.va-console-input>span{color:#8b92b6;font-size:21px;padding-left:7px}
+.va-console input{flex:1;width:100%;border:0;outline:0;background:transparent;font-size:16px;color:#273258;font-weight:720;min-width:0}
+.va-console input::placeholder{color:#a1a8b8;font-weight:500}
+.va-console input.va-wrong{color:#c63b60}
+.va-console button{min-width:115px;border:0;background:#6756e4;color:white;border-radius:11px;font-size:13px;font-weight:850;letter-spacing:.1em}
+.va-game-help{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 3px;font-size:11px;color:#8c93a7}
+.va-game-help button{padding:7px 12px;border:1px solid #e0dcf7;border-radius:10px;background:#f4f1ff;color:#6f5acb;font-weight:800}
+.va-overlay{position:absolute;inset:0;z-index:11;display:grid;place-items:center;background:rgba(12,20,61,.8);backdrop-filter:blur(8px);padding:20px}
+.va-overlay[hidden]{display:none}
+.va-pause-card{text-align:center;color:#fff;max-width:330px}
+.va-pause-card>span{font-size:11px;font-weight:850;letter-spacing:.17em;color:#85eeea}
+.va-pause-card h2{font-size:29px;margin:12px 0 5px}
+.va-pause-card p{color:#c9d3f1;font-size:13px}
+.va-pause-card button{background:#66eddf;border:0;border-radius:12px;color:#132b56;font-weight:850;padding:13px 24px;margin-top:14px}
+.va-results .va-result-head{text-align:center;padding:32px 12px 24px}
+.va-result-head>span{font-size:11px;letter-spacing:.18em;font-weight:850;color:#6b55df}
+.va-result-head h1{font-size:clamp(29px,4vw,50px);letter-spacing:-.05em;margin:12px 0}
+.va-result-head p{color:#80899b;font-size:14px;max-width:540px;margin:0 auto;line-height:1.8}
+.va-result-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0 24px}
+.va-result-metrics>div{background:#192354;color:#fff;padding:23px 16px;border-radius:16px;display:flex;flex-direction:column;gap:5px}
+.va-result-metrics span{font-size:10px;letter-spacing:.09em;font-weight:800;color:#aebcf1}
+.va-result-metrics strong{font-size:clamp(23px,3vw,35px);font-weight:850}
+.va-review-list{display:flex;flex-direction:column;gap:8px}
+.va-review-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7f8ff;border:1px solid #e8ebf5;padding:13px 16px;border-radius:12px}
+.va-review-row>div{display:flex;flex-direction:column;gap:4px}
+.va-review-row strong{font-size:15px;color:#262d52}
+.va-review-row span{font-size:13px;color:#717a94}
+.va-review-row button{background:white;color:#6154d1;padding:9px 13px;border-radius:9px;border:1px solid #e1ddfa;white-space:nowrap;font-weight:750;font-size:12px}
+.va-result-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:22px}
+.va-secondary{border-radius:13px;border:1px solid #dfe1ee;background:#fff;color:#48516e;padding:0 23px;font-size:14px;font-weight:800}
+@media(max-width:700px){
+  .va-app{padding:12px 9px 24px}
+  .va-topline{margin-bottom:16px}
+  .va-chip{font-size:9px;padding:8px 10px}
+  .va-back{font-size:11px}
+  .va-intro{grid-template-columns:1fr;gap:8px;margin-bottom:14px}
+  .va-intro>div:first-child{padding:10px 4px 6px}
+  .va-intro h1{font-size:clamp(42px,11vw,64px);margin:9px 0 12px}
+  .va-intro p{font-size:14px;line-height:1.65}
+  .va-preview{min-height:155px;border-radius:18px}
+  .va-planet{transform:scale(.7);transform-origin:top right}
+  .va-preview-target{top:28%;font-size:12px}
+  .va-preview-ship{font-size:27px;bottom:8px}
+  .va-stats-strip>div{padding:12px 8px}
+  .va-stats-strip strong{font-size:23px}
+  .va-stats-strip span{font-size:10px}
+  .va-panel{border-radius:17px;padding:18px 14px}
+  .va-fieldgrid{grid-template-columns:1fr;gap:12px}
+  .va-field select{height:44px}
+  .va-check{min-height:37px}
+  .va-in-game .va-topline{margin-bottom:9px}
+  .va-hud{gap:5px;margin-bottom:8px}
+  .va-hud>div{padding:8px 5px;border-radius:10px}
+  .va-hud span{font-size:8px;letter-spacing:.06em}
+  .va-hud strong{font-size:16px}
+  .va-hud>div:last-child strong{font-size:12px}
+  .va-stage{height:clamp(220px,38dvh,350px);border-radius:16px}
+  .va-target{min-width:80px;max-width:31%;padding:7px 9px;border-radius:10px}
+  .va-target strong{font-size:11px;line-height:1.26}
+  .va-target small{font-size:7px;letter-spacing:.06em}
+  .va-target-sound{font-size:9px;top:2px;right:4px}
+  .va-stage-planet{transform:scale(.7);transform-origin:top right}
+  .va-ship{width:39px;height:49px;bottom:5px}
+  .va-transport{font-size:11px;padding:8px 2px;min-height:43px}
+  .va-transport button{font-size:10px;padding:7px 8px}
+  .va-console{gap:6px;padding:7px;position:sticky;bottom:calc(5px + env(safe-area-inset-bottom,0px))}
+  .va-console input{font-size:16px}
+  .va-console-input>span{padding-left:3px;font-size:16px}
+  .va-console button{min-width:74px;font-size:11px;letter-spacing:.04em}
+  .va-game-help{font-size:10px;align-items:flex-start}
+  .va-keyboard .va-stage{height:clamp(130px,24dvh,190px)}
+  .va-keyboard .va-game-help{display:none}
+  .va-keyboard .va-transport{min-height:33px}
+  .va-result-metrics{grid-template-columns:repeat(2,1fr)}
+  .va-result-metrics>div{padding:15px 13px}
+  .va-result-actions{grid-template-columns:1fr}
+  .va-secondary{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){.va-app *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
