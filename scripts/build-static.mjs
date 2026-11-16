@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-data.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -586,14 +586,17 @@ if (await exists(vietnameseDir)) {
   }
 }
 
-// 24 source-authentic words and sentences from LEVEL 1 STEP 1-2 book pages.
+// Register English pronunciation for every one of the 400 Level 1 textbook entries.
 {
   const bookWindow={};
-  const bookSource=await readFile(join(root,"book-2100-data.js"),"utf8");
-  vm.runInNewContext(bookSource,{window:bookWindow},{filename:"book-2100-data.js"});
+  const bookContext=vm.createContext({window:bookWindow});
+  for(const file of ["book-2100-data.js","book-2100-steps-03-06.js","book-2100-steps-07-12.js","book-2100-steps-13-18.js","book-2100-steps-19-23.js","book-2100-steps-24-29.js","book-2100-steps-30-33.js"]){
+    vm.runInContext(await readFile(join(root,file),"utf8"),bookContext,{filename:file});
+  }
   const steps=bookWindow.BOOK_2100_DATA?.steps||[];
-  if(steps.length!==2 || steps.reduce((n,step)=>n+step.entries.length,0)!==24){
-    throw new Error("2100 book content must contain 24 transcribed entries in Steps 1–2.");
+  const flat=steps.flatMap(step=>step.entries);
+  if(steps.length!==33 || flat.length!==400 || flat.some((item,i)=>item.n!==i+1)){
+    throw new Error("2100 book requires 33 consecutive STEPs with exactly 400 numbered entries.");
   }
   for(const step of steps){
     for(const item of step.entries){
