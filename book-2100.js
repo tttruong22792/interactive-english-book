@@ -4,7 +4,7 @@
   var BOOK=window.BOOK_2100_DATA;
   if(!BOOK || !Array.isArray(BOOK.steps)) return;
   var KEY="language-studio-book-2100-v1", root=null, trigger=null, observer=null, activeAudio=false;
-  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,doneWords:[],doneSentences:[]};
+  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,fitPage:true,doneWords:[],doneSentences:[]};
   try{
     var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
     for(var key of Object.keys(state)) if(Object.prototype.hasOwnProperty.call(saved,key)) state[key]=saved[key];
@@ -72,11 +72,13 @@
       '<button class="bk-mode '+(state.mode==="read"?"is-active":"")+'" data-mode="read" type="button">Đọc sách</button>'+
       '<button class="bk-mode '+(state.mode==="word"?"is-active":"")+'" data-mode="word" type="button">Học từ</button>'+
       '<button class="bk-mode '+(state.mode==="sentence"?"is-active":"")+'" data-mode="sentence" type="button">Học câu</button>'+
-      '<button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
+      '<button class="bk-fit-toggle" data-fit type="button">'+(state.fitPage?"⛶ Toàn trang":"🔍 Thu vừa trang")+'</button><button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
   }
   function render(){
     if(!root)return;
     var step=currentStep();
+    root.classList.toggle("bk-fit",!!state.fitPage);
+    root.style.setProperty("--bk-row-count",String(step.entries.length));
     root.innerHTML=toolbar()+
       '<div class="bk-page-switch" role="group" aria-label="Chọn trang sách"><button data-page="words" class="'+(state.page==="words"?"is-active":"")+'">Trang từ vựng</button><button data-page="sentences" class="'+(state.page==="sentences"?"is-active":"")+'">Trang câu ví dụ</button></div>'+
       '<div class="bk-scroll"><div class="bk-book '+(state.page==="sentences"?"bk-show-sentences":"bk-show-words")+'">'+
@@ -92,7 +94,7 @@
       '<div class="bk-rows">'+step.entries.map(renderRow).join('')+'</div>'+
       '<div class="bk-book-end">Nguồn: STEP '+step.id+' · trang '+esc(step.pages)+' của ảnh sách đã cung cấp · '+step.entries.length+' từ / '+step.entries.length+' câu</div></div></div>'+
       '<div class="bk-bottom"><div><b>Enter</b> kiểm tra · <b>Enter khi trống</b> sang dòng kế · <b>Esc</b> thoát <span id="bkGlobalMessage" aria-live="polite"></span></div>'+
-      '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / 2 STEP đã nhập</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
+      '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / '+BOOK.steps.length+' STEP</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
   }
   function updateCounter(){
     var step=currentStep();
@@ -208,6 +210,7 @@
   function onClick(evt){
     var button=evt.target.closest("button");if(!button)return;
     if(button.hasAttribute("data-exit")){close();return;}
+    if(button.hasAttribute("data-fit")){state.fitPage=!state.fitPage;persist();render();return;}
     if(button.dataset.listen){speak(Number(button.dataset.n),button.dataset.listen);return;}
     if(button.dataset.mode){
       state.mode=button.dataset.mode;
@@ -236,7 +239,7 @@
     if(cards&&(location.hash==="#home"||!location.hash)&&!cards.querySelector("#bkLibraryLaunch")){
       var card=document.createElement("button");
       card.id="bkLibraryLaunch";card.type="button";card.className="easy-play-activity bk-library-entry";
-      card.innerHTML='<span class="easy-play-activity-icon" aria-hidden="true">📖</span><span class="easy-play-arrow" aria-hidden="true">↗</span><strong>Sách 2100 từ Anh–Nhật</strong><small>LEVEL 1 · STEP 1–2 · 24 từ, 24 câu · học như trang sách</small>';
+      card.innerHTML='<span class="easy-play-activity-icon" aria-hidden="true">📖</span><span class="easy-play-arrow" aria-hidden="true">↗</span><strong>Sách 2100 từ Anh–Nhật</strong><small>LEVEL 1 · học theo sách gốc · nghe và luyện viết</small>';
       card.addEventListener("click",function(){open(card);});
       cards.appendChild(card);
     }
