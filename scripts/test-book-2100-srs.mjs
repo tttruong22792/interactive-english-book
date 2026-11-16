@@ -145,9 +145,8 @@ for(const token of ["masteryButton(n)","data-mastery","data-review-launch",
   if(token==="data-srs-practice"||token==="data-srs-weak")continue;
   assert.ok(js.includes(token),"Missing SRS UI integration: "+token);
 }
-assert.ok(js.includes("data-srs-practice")===false || js.includes("data-srs-practice"));
-assert.ok(js.includes("data-master-practice"),"Mastery details should provide a review action");
-assert.ok(js.includes("data-master-weak"),"Manual weak marking should be present");
+assert.ok(js.includes("data-srs-practice"),"Mastery details should provide a review action");
+assert.ok(js.includes("data-srs-weak"),"Manual weak marking should be present");
 assert.match(js,/bk-cell bk-number/,"Original number column preserved");
 assert.ok(js.includes("line(n,\"doneWords\")"),"Original correct check remains");
 assert.ok(js.includes("line(n,\"doneSentences\")"),"Original sentence check remains");
