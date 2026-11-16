@@ -371,3 +371,91 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
   }
   .book2100.bk-keyboard-open .bk-toolbar-controls>*{flex:0 0 auto}
 }
+
+/* Practical chunk enrichment. Desktop shows a compact preview; full EN/VI
+   content and word-level English audio are accessible without scrolling the book. */
+.book2100 .bk-chunks-more{
+  display:block;width:fit-content;max-width:100%;
+  margin:2px 0 0;padding:2px 4px;
+  background:transparent;border:0;border-radius:4px;
+  color:#aa4736;font-size:11px;line-height:1.25;font-weight:850;text-align:left;
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+}
+.book2100 .bk-chunks-more:hover{text-decoration:underline;background:#f8e7ce}
+.book2100 .bk-chunks-more:focus-visible{outline:2px solid #3378c0;outline-offset:1px}
+@media (min-width:1100px) and (min-height:560px){
+  .book2100.bk-fit .bk-extra-line:nth-child(n+2){display:none}
+  .book2100.bk-fit .bk-extra-line:first-child{
+    display:flex;min-width:0;margin:0;gap:0;line-height:1.08;
+  }
+  .book2100.bk-fit .bk-extra-line:first-child b,
+  .book2100.bk-fit .bk-extra-line:first-child span{
+    display:block;max-width:100%;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .book2100.bk-fit .bk-extra-line:first-child span{padding-left:5px}
+  .book2100.bk-fit .bk-chunks-more{
+    font-size:9px;line-height:1.12;
+    padding:1px 2px;margin:0;
+  }
+}
+.book2100 .bk-chunk-layer{
+  position:fixed;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right))
+    max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+  background:rgba(30,21,19,.60);
+  backdrop-filter:blur(3px);
+}
+.book2100 .bk-chunk-dialog{
+  width:min(650px,100%);max-height:min(82vh,760px);
+  display:flex;flex-direction:column;
+  border:1px solid #d9bbae;border-radius:18px;
+  box-shadow:0 24px 66px rgba(37,24,20,.3);
+  background:#fffdf9;color:#392b26;
+  overflow:hidden;
+}
+.book2100 .bk-chunk-header{
+  flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  padding:18px 20px 14px;
+  border-bottom:1px solid #e9dcd3;background:#fcf1eb;
+}
+.book2100 .bk-chunk-header small{font-size:10px;font-weight:800;letter-spacing:.05em;color:#b65f4b}
+.book2100 .bk-chunk-header h2{font-size:clamp(17px,2.3vw,24px);line-height:1.2;margin:5px 0 8px;color:#422720;font-weight:900}
+.book2100 .bk-chunk-header p{font-size:13px;color:#7b5c53;margin:0}
+.book2100 .bk-chunk-close{
+  border:1px solid #e1b8a9;background:#fff;border-radius:10px;color:#9d493b;
+  width:38px;height:38px;display:grid;place-items:center;font-size:18px;flex:0 0 38px;
+}
+.book2100 .bk-chunk-close:hover{background:#fce8e1}
+.book2100 .bk-chunk-list{
+  overflow:auto;overscroll-behavior:contain;min-height:0;padding:10px 20px;
+}
+.book2100 .bk-chunk-item{
+  display:flex;align-items:center;gap:12px;padding:12px 5px;
+  border-bottom:1px solid #f0e5dc;
+}
+.book2100 .bk-chunk-item:last-child{border-bottom:0}
+.book2100 .bk-chunk-num{
+  flex:0 0 27px;width:27px;height:27px;
+  display:grid;place-items:center;background:#f5e8dd;
+  color:#9c4d3b;border-radius:7px;font-size:12px;font-weight:850;
+}
+.book2100 .bk-chunk-copy{min-width:0;display:flex;flex-direction:column;gap:4px;flex:1}
+.book2100 .bk-chunk-copy strong{font-size:clamp(14px,1.6vw,17px);font-weight:800;color:#392622;overflow-wrap:anywhere}
+.book2100 .bk-chunk-copy>span{font-size:13px;color:#756057;overflow-wrap:anywhere}
+.book2100 .bk-chunk-item .bk-listen{
+  width:36px;height:36px;min-height:36px;min-width:36px;flex:0 0 36px;
+}
+.book2100 .bk-chunk-item .bk-listen svg{width:19px;height:19px}
+.book2100 .bk-chunk-foot{
+  border-top:1px solid #e9dcd3;padding:10px 20px;
+  font-size:11px;color:#846a5d;line-height:1.5;background:#fffaf5;
+}
+@media(max-width:760px){
+  .book2100 .bk-chunk-dialog{max-height:84dvh;border-radius:14px}
+  .book2100 .bk-chunk-header{padding:14px}
+  .book2100 .bk-chunk-list{padding:8px 14px}
+  .book2100 .bk-chunk-foot{padding:10px 14px}
+  .book2100 .bk-chunk-item{padding:11px 3px}
+}
