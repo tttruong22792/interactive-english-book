@@ -284,7 +284,7 @@
   function mobileCardKey(n){return state.step+":"+state.page+":"+n;}
   function mobileCardAction(n){
     var expanded=expandedMobileCards.has(mobileCardKey(n));
-    return '<div class="bk-mobile-card-actions"><button type="button" class="bk-mobile-expand" data-mobile-expand="'+n+'" aria-expanded="'+expanded+'" aria-controls="bk-card-extra-'+n+'"><span>'+(expanded?"Thu gọn":"Xem thêm")+'</span><span class="bk-mobile-expand-chevron" aria-hidden="true">⌄</span></button></div>';
+    return '<div class="bk-mobile-card-actions"><button type="button" class="bk-mobile-expand" data-mobile-expand="'+n+'" aria-expanded="'+expanded+'" aria-controls="bk-card-'+state.page+'-details-'+n+'"><span>'+(expanded?"Thu gọn":"Xem thêm")+'</span><span class="bk-mobile-expand-chevron" aria-hidden="true">⌄</span></button></div>';
   }
   function renderRow(item){
     var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
@@ -295,11 +295,11 @@
       line(n,"doneWords")+'</div><div class="bk-word-sub">'+(state.mode==="read"?'<small>'+esc(item.ipa)+'</small>':"")+listenButton(n,"word")+'</div></div>'+
       '<div class="bk-cell bk-word-vi">'+(state.showWordVi?esc(item.vi):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-jword">'+(state.showJa?ruby(item.ja):'<span class="bk-masked">••••</span>')+'</div>'+
-      '<div class="bk-cell bk-extra" id="bk-card-extra-'+n+'">'+renderExtra(item)+'</div>'+
+      '<div class="bk-cell bk-extra" id="bk-card-words-details-'+n+'">'+renderExtra(item)+'</div>'+
       '<div class="bk-cell bk-sentence">'+(sentence?practiceMeaning("sentence",item.sentenceVi):"")+'<div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
       '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+'</div></div>'+
       '<div class="bk-cell bk-svi">'+(state.showSentenceVi?esc(item.sentenceVi):'<span class="bk-masked">••••••</span>')+'</div>'+
-      '<div class="bk-cell bk-sja">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
+      '<div class="bk-cell bk-sja" id="bk-card-sentences-details-'+n+'">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
       mobileCardAction(n)+'</div>';
   }
   function toolbar(){
