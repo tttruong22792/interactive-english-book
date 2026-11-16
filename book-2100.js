@@ -1,0 +1,259 @@
+/* Isolated book reader: does not mutate Language Studio routes, lessons or saved progress. */
+(function(){
+  "use strict";
+  var BOOK=window.BOOK_2100_DATA;
+  if(!BOOK || !Array.isArray(BOOK.steps)) return;
+  var KEY="language-studio-book-2100-v1", root=null, trigger=null, observer=null, activeAudio=false;
+  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,doneWords:[],doneSentences:[]};
+  try{
+    var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
+    for(var key of Object.keys(state)) if(Object.prototype.hasOwnProperty.call(saved,key)) state[key]=saved[key];
+  }catch(error){}
+  if(!Array.isArray(state.doneWords)) state.doneWords=[];
+  if(!Array.isArray(state.doneSentences)) state.doneSentences=[];
+  if(!BOOK.steps.some(function(s){return s.id===Number(state.step);}))state.step=1;
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(error){}}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function ruby(text){
+    var src=String(text||""), re=/([々〆一-龯]+)\{([^{}]+)\}/gu, result="",cursor=0,match;
+    while((match=re.exec(src))){
+      result+=esc(src.slice(cursor,match.index));
+      result+="<ruby><rb>"+esc(match[1])+"</rb><rt>"+esc(match[2])+"</rt></ruby>";
+      cursor=match.index+match[0].length;
+    }
+    return result+esc(src.slice(cursor));
+  }
+  function currentStep(){return BOOK.steps.find(function(s){return s.id===Number(state.step);})||BOOK.steps[0];}
+  function clean(s){
+    return String(s||"").normalize("NFKC").toLowerCase().replace(/[‘’]/g,"'")
+      .replace(/[.,!?;:。！？]+$/g,"").replace(/\s+/g," ").trim();
+  }
+  function highlight(sentence,word){
+    var index=sentence.toLowerCase().indexOf(word.toLowerCase());
+    if(index<0)return esc(sentence);
+    return esc(sentence.slice(0,index))+"<em>"+esc(sentence.slice(index,index+word.length))+"</em>"+esc(sentence.slice(index+word.length));
+  }
+  function listenButton(n,type){
+    return '<button type="button" class="bk-listen" data-listen="'+type+'" data-n="'+n+'" aria-label="Nghe '+(type==="word"?"từ":"câu")+' tiếng Anh" title="Nghe tiếng Anh"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6"/><path d="M18 6a9 9 0 0 1 0 12"/></svg></button>';
+  }
+  function line(n,field){
+    return '<span class="bk-done '+(state[field].includes(n)?"is-done":"")+'" data-done="'+field+'-'+n+'" title="Đã trả lời đúng" aria-label="Đã trả lời đúng">✓</span>';
+  }
+  function input(n,type){
+    return '<input type="text" class="bk-entry-input" data-entry="'+type+'" data-n="'+n+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Nhập '+(type==="word"?"từ":"câu")+' tiếng Anh số '+n+'" placeholder="'+(type==="word"?"Nhập từ…":"Nhập câu tiếng Anh…")+'"/><small class="bk-input-note" id="bk-note-'+type+'-'+n+'" aria-live="polite"></small>';
+  }
+  function renderRow(item){
+    var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
+    return '<div class="bk-row" data-row="'+n+'">'+
+      '<div class="bk-cell bk-number"><span>'+n+'</span><span class="bk-book-checkbox">□</span></div>'+
+      '<div class="bk-cell bk-word"><div class="bk-word-line">'+
+      (word?input(n,"word"):state.showEn?'<strong>'+esc(item.en)+'</strong>':'<span class="bk-masked">••••••</span>')+
+      line(n,"doneWords")+'</div><div class="bk-word-sub"><small>'+esc(item.ipa)+'</small>'+listenButton(n,"word")+'</div></div>'+
+      '<div class="bk-cell bk-word-vi">'+(state.showWordVi?esc(item.vi):'<span class="bk-masked">••••</span>')+'</div>'+
+      '<div class="bk-cell bk-jword">'+(state.showJa?ruby(item.ja):'<span class="bk-masked">••••</span>')+'</div>'+
+      '<div class="bk-cell bk-extra">'+(item.extra.length?item.extra.map(function(ex){return '<div class="bk-extra-line"><b>• '+esc(ex[0])+'</b><span>'+esc(ex[1])+'</span></div>';}).join(''):'<span class="bk-subtle">—</span>')+'</div>'+
+      '<div class="bk-cell bk-sentence"><div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
+      '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+'</div></div>'+
+      '<div class="bk-cell bk-svi">'+(state.showSentenceVi?esc(item.sentenceVi):'<span class="bk-masked">••••••</span>')+'</div>'+
+      '<div class="bk-cell bk-sja">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
+      '</div>';
+  }
+  function toolbar(){
+    var step=currentStep();
+    var countWords=step.entries.filter(function(x){return state.doneWords.includes(x.n);}).length;
+    var countSent=step.entries.filter(function(x){return state.doneSentences.includes(x.n);}).length;
+    return '<div class="bk-toolbar"><div class="bk-brand"><span class="bk-brand-icon">▣</span><div><strong>2100 TỪ VỰNG ANH–NHẬT</strong><small>LEVEL 1 · sách tương tác</small></div></div>'+
+      '<div class="bk-toolbar-controls"><label class="bk-step-label">STEP <select id="bkStepSelect" aria-label="Chọn STEP">'+BOOK.steps.map(function(s){return '<option value="'+s.id+'" '+(s.id===step.id?"selected":"")+'>STEP '+s.id+' · '+s.start+'–'+s.end+'</option>';}).join('')+'</select></label>'+
+      '<div class="bk-progress" id="bkProgress" aria-live="polite"><b>'+countWords+'/'+step.entries.length+'</b> từ · <b>'+countSent+'/'+step.entries.length+'</b> câu</div>'+
+      '<button class="bk-toggle '+(!state.showEn?"is-off":"")+'" data-toggle="showEn" type="button">'+(state.showEn?"Ẩn":"Hiện")+' Anh</button>'+
+      '<button class="bk-toggle '+(!state.showJa?"is-off":"")+'" data-toggle="showJa" type="button">'+(state.showJa?"Ẩn":"Hiện")+' Nhật</button>'+
+      '<button class="bk-toggle bk-toggle-vi '+(!state.showWordVi?"is-off":"")+'" data-toggle="showWordVi" type="button">'+(state.showWordVi?"Ẩn":"Hiện")+' nghĩa từ</button>'+
+      '<button class="bk-toggle bk-toggle-vi '+(!state.showSentenceVi?"is-off":"")+'" data-toggle="showSentenceVi" type="button">'+(state.showSentenceVi?"Ẩn":"Hiện")+' nghĩa câu</button>'+
+      '<button class="bk-mode '+(state.mode==="read"?"is-active":"")+'" data-mode="read" type="button">Đọc sách</button>'+
+      '<button class="bk-mode '+(state.mode==="word"?"is-active":"")+'" data-mode="word" type="button">Học từ</button>'+
+      '<button class="bk-mode '+(state.mode==="sentence"?"is-active":"")+'" data-mode="sentence" type="button">Học câu</button>'+
+      '<button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
+  }
+  function render(){
+    if(!root)return;
+    var step=currentStep();
+    root.innerHTML=toolbar()+
+      '<div class="bk-page-switch" role="group" aria-label="Chọn trang sách"><button data-page="words" class="'+(state.page==="words"?"is-active":"")+'">Trang từ vựng</button><button data-page="sentences" class="'+(state.page==="sentences"?"is-active":"")+'">Trang câu ví dụ</button></div>'+
+      '<div class="bk-scroll"><div class="bk-book '+(state.page==="sentences"?"bk-show-sentences":"bk-show-words")+'">'+
+      '<div class="bk-book-title"><div><span class="bk-level">LEVEL<br><b>1</b></span><span class="bk-stepflag">STEP '+step.id+'</span><strong>'+step.start+'–'+step.end+'</strong><small>中学1・2年生レベル</small></div><div class="bk-book-title-right"><strong>LEVEL 1</strong>　● ━━━━○ ━━━━　<span>GOAL 400</span></div></div>'+
+      '<div class="bk-head bk-row">'+
+      '<div class="bk-cell bk-number">No.</div><div class="bk-cell bk-word">TỪ TIẾNG ANH <small>(IPA · âm thanh)</small></div>'+
+      '<div class="bk-cell bk-word-vi">NGHĨA TỪ <small>(VI)</small></div>'+
+      '<div class="bk-cell bk-jword">TIẾNG NHẬT <small>(ふりがな)</small></div>'+
+      '<div class="bk-cell bk-extra">MỞ RỘNG <small>(EN + VI)</small></div>'+
+      '<div class="bk-cell bk-sentence">CÂU TIẾNG ANH <small>(nghe + nhập)</small></div>'+
+      '<div class="bk-cell bk-svi">NGHĨA CÂU <small>(VI)</small></div>'+
+      '<div class="bk-cell bk-sja">CÂU TIẾNG NHẬT <small>(ふりがな)</small></div></div>'+
+      '<div class="bk-rows">'+step.entries.map(renderRow).join('')+'</div>'+
+      '<div class="bk-book-end">Nguồn: STEP '+step.id+' · trang '+esc(step.pages)+' của ảnh sách đã cung cấp · '+step.entries.length+' từ / '+step.entries.length+' câu</div></div></div>'+
+      '<div class="bk-bottom"><div><b>Enter</b> kiểm tra · <b>Enter khi trống</b> sang dòng kế · <b>Esc</b> thoát <span id="bkGlobalMessage" aria-live="polite"></span></div>'+
+      '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / 2 STEP đã nhập</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
+  }
+  function updateCounter(){
+    var step=currentStep();
+    var w=step.entries.filter(function(x){return state.doneWords.includes(x.n);}).length;
+    var s=step.entries.filter(function(x){return state.doneSentences.includes(x.n);}).length;
+    var output=root.querySelector("#bkProgress");
+    if(output)output.innerHTML="<b>"+w+"/"+step.entries.length+"</b> từ · <b>"+s+"/"+step.entries.length+"</b> câu";
+  }
+  function message(s){var node=root.querySelector("#bkGlobalMessage");if(node)node.textContent=s||"";}
+  function switchStep(delta){
+    var idx=BOOK.steps.findIndex(function(x){return x.id===Number(state.step);});
+    if(idx+delta<0||idx+delta>=BOOK.steps.length){message("Chưa có ảnh của STEP tiếp theo.");return false;}
+    state.step=BOOK.steps[idx+delta].id;persist();render();return true;
+  }
+  function focusNext(n,type){
+    var next=currentStep().entries.find(function(x){return x.n>n;});
+    if(!next){
+      if(!switchStep(1))return;
+      next=currentStep().entries[0];
+    }
+    if(type==="sentence")state.page="sentences";
+    else state.page="words";
+    var inputNode=root.querySelector('[data-entry="'+type+'"][data-n="'+next.n+'"]');
+    if(inputNode){inputNode.focus({preventScroll:true});inputNode.scrollIntoView({block:"nearest",behavior:"smooth"});}
+  }
+  function submitInput(inputNode){
+    var type=inputNode.dataset.entry, n=Number(inputNode.dataset.n);
+    var entry=currentStep().entries.find(function(x){return x.n===n;});
+    if(!entry)return;
+    var typed=inputNode.value.trim(), note=root.querySelector("#bk-note-"+type+"-"+n);
+    if(!typed){focusNext(n,type);return;}
+    var answer=type==="word"?entry.en:entry.sentence;
+    if(clean(typed)!==clean(answer)){
+      inputNode.classList.add("is-wrong");inputNode.classList.remove("is-correct");
+      if(note)note.textContent="Chưa đúng, hãy thử lại.";
+      inputNode.setAttribute("aria-invalid","true");return;
+    }
+    var field=type==="word"?"doneWords":"doneSentences";
+    if(!state[field].includes(n))state[field].push(n);
+    persist();
+    inputNode.value="";
+    inputNode.classList.remove("is-wrong");inputNode.classList.add("is-correct");
+    inputNode.removeAttribute("aria-invalid");
+    var tick=root.querySelector('[data-done="'+field+'-'+n+'"]');
+    if(tick)tick.classList.add("is-done");
+    if(note)note.textContent="✓ Chính xác! Có thể nhập lại.";
+    updateCounter();
+    inputNode.focus({preventScroll:true});
+  }
+  function browserSpeak(s){
+    if(!("speechSynthesis" in window)){message("Thiết bị không hỗ trợ đọc tiếng Anh.");return;}
+    try{
+      window.speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(s);
+      u.lang="en-US";u.rate=0.88;u.pitch=1;
+      var voices=window.speechSynthesis.getVoices();
+      var voice=voices.find(function(v){return /^en[-_]US/i.test(v.lang);})||voices.find(function(v){return /^en/i.test(v.lang);});
+      if(voice)u.voice=voice;
+      window.speechSynthesis.speak(u);
+    }catch(error){message("Không thể phát âm thanh.");}
+  }
+  async function speak(n,type){
+    var e=currentStep().entries.find(function(x){return x.n===n;});if(!e)return;
+    var value=type==="word"?e.en:e.sentence;
+    if(activeAudio&&window.AITTS?.stop)window.AITTS.stop();
+    if("speechSynthesis" in window)window.speechSynthesis.cancel();
+    activeAudio=true;
+    if(window.AITTS&&typeof window.AITTS.speak==="function"){
+      try{await window.AITTS.speak(value,{language:"en-US",rate:0.88});return;}
+      catch(error){if(error&&error.name==="AbortError")return;}
+    }
+    if(!root.hidden)browserSpeak(value);
+  }
+  function stopAudio(){
+    activeAudio=false;
+    try{window.AITTS?.stop?.();}catch(error){}
+    try{window.speechSynthesis?.cancel?.();}catch(error){}
+  }
+  function close(){
+    if(!root||root.hidden)return;
+    stopAudio();root.hidden=true;document.body.classList.remove("book2100-open");
+    document.documentElement.classList.remove("book2100-open");
+    if(trigger&&trigger.isConnected)trigger.focus({preventScroll:true});
+  }
+  function open(launch){
+    trigger=launch||document.activeElement;
+    if(!root){
+      root=document.createElement("section");
+      root.id="book2100Root";root.className="book2100";root.setAttribute("aria-label","Sách học 2100 từ vựng Anh Nhật");
+      root.hidden=true;document.body.appendChild(root);
+      root.addEventListener("click",onClick);
+      root.addEventListener("change",function(evt){
+        if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);persist();render();}
+      });
+      root.addEventListener("keydown",function(evt){
+        if(evt.isComposing||evt.keyCode===229)return;
+        if(evt.key==="Enter"&&evt.target.matches(".bk-entry-input")){evt.preventDefault();submitInput(evt.target);}
+      });
+      root.addEventListener("input",function(evt){
+        if(evt.target.matches(".bk-entry-input")){
+          evt.target.classList.remove("is-wrong");
+          var note=root.querySelector("#bk-note-"+evt.target.dataset.entry+"-"+evt.target.dataset.n);
+          if(note)note.textContent="";
+        }
+      });
+    }
+    if(state.mode==="sentence")state.page="sentences";
+    if(state.mode==="word")state.page="words";
+    render();root.hidden=false;document.body.classList.add("book2100-open");
+    document.documentElement.classList.add("book2100-open");
+    var exit=root.querySelector("[data-exit]");if(exit)exit.focus({preventScroll:true});
+  }
+  function onClick(evt){
+    var button=evt.target.closest("button");if(!button)return;
+    if(button.hasAttribute("data-exit")){close();return;}
+    if(button.dataset.listen){speak(Number(button.dataset.n),button.dataset.listen);return;}
+    if(button.dataset.mode){
+      state.mode=button.dataset.mode;
+      if(state.mode==="word")state.page="words";
+      if(state.mode==="sentence")state.page="sentences";
+      persist();render();return;
+    }
+    if(button.dataset.toggle){
+      var key=button.dataset.toggle;if(typeof state[key]!=="boolean")return;
+      state[key]=!state[key];persist();render();return;
+    }
+    if(button.dataset.page){state.page=button.dataset.page;persist();render();return;}
+    if(button.dataset.step){switchStep(Number(button.dataset.step));}
+  }
+  function injectEntries(){
+    var nav=document.querySelector(".nav-list");
+    if(nav&&!nav.querySelector("#bkSidebarLaunch")){
+      var button=document.createElement("button");
+      button.id="bkSidebarLaunch";button.type="button";button.className="nav-item bk-sidebar-entry";
+      button.innerHTML='<span aria-hidden="true">📖</span><b>Sách 2100 từ Anh–Nhật</b>';
+      button.addEventListener("click",function(){open(button);});
+      nav.appendChild(button);
+    }
+    var main=document.getElementById("mainView");
+    var cards=main&&main.querySelector(".easy-play-activities");
+    if(cards&&(location.hash==="#home"||!location.hash)&&!cards.querySelector("#bkLibraryLaunch")){
+      var card=document.createElement("button");
+      card.id="bkLibraryLaunch";card.type="button";card.className="easy-play-activity bk-library-entry";
+      card.innerHTML='<span class="easy-play-activity-icon" aria-hidden="true">📖</span><span class="easy-play-arrow" aria-hidden="true">↗</span><strong>Sách 2100 từ Anh–Nhật</strong><small>LEVEL 1 · STEP 1–2 · 24 từ, 24 câu · học như trang sách</small>';
+      card.addEventListener("click",function(){open(card);});
+      cards.appendChild(card);
+    }
+  }
+  function init(){
+    injectEntries();
+    var main=document.getElementById("mainView");
+    if(main&&"MutationObserver" in window){
+      observer=new MutationObserver(injectEntries);
+      observer.observe(main,{childList:true,subtree:false});
+    }
+  }
+  document.addEventListener("keydown",function(evt){
+    if(evt.key==="Escape"&&root&&!root.hidden){evt.preventDefault();close();}
+  });
+  window.addEventListener("hashchange",function(){if(root&&!root.hidden)close();});
+  window.Book2100={open:open,close:close,getData:function(){return BOOK;},getState:function(){return JSON.parse(JSON.stringify(state));}};
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
+})();

@@ -1,0 +1,37 @@
+name: Validate book reader PR
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'book-2100*'
+      - 'index.html'
+      - 'sw.js'
+      - 'scripts/build-static.mjs'
+      - 'scripts/test-book-2100.mjs'
+      - '.github/workflows/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source and Enter behavior
+        run: |
+          node --check book-2100-data.js
+          node --check book-2100.js
+          node --check scripts/test-book-2100.mjs
+          node scripts/test-book-2100.mjs
+      - name: Build production artifact
+        run: npm run build
+      - name: Check shipped assets
+        run: |
+          test -s dist/book-2100-data.js
+          test -s dist/book-2100.js
+          test -s dist/book-2100.css
+          grep -q 'book-2100.js' dist/index.html
+          grep -q 'book-2100-step-' dist/tts-manifest.json

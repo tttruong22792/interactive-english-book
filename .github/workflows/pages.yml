@@ -51,6 +51,9 @@ jobs:
         run: |
           node --check app.js
           node --check vocab-arcade.js
+          node --check book-2100-data.js
+          node --check book-2100.js
+          node --check scripts/test-book-2100.mjs
           node --check scripts/test-vocab-arcade.mjs
           node --check ai-tts.js
           node --check reading-background-audio.js
@@ -188,6 +191,10 @@ jobs:
       - name: Test Vocabulary Arcade integration
         if: steps.head_guard.outputs.deploy == 'true'
         run: node scripts/test-vocab-arcade.mjs
+
+      - name: Verify 2100 book entry and source data
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-book-2100.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
