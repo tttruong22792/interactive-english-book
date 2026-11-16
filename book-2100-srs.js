@@ -85,10 +85,10 @@
         rec.history=rec.history.slice(-12);
       }
     }
-    function record(id,skill,correct){
+    function record(id,skill,correct,options){
       if(!validId(id))return null;
       skillName(skill);
-      var now=clock(),day=todayKey(now);
+      var now=clock(),day=todayKey(now),assisted=!!options?.assisted;
       var rec=getRaw(id,skill)||normalized({stage:null,source:"practice",firstAt:now});
       rec.source=rec.source==="legacy"?"legacy":"practice";
       if(!rec.firstAt)rec.firstAt=now;
@@ -106,6 +106,16 @@
         }
       }else{
         rec.successes+=1;
+        // Listening to the answer before typing is assisted practice, not
+        // evidence of independent recall. Keep the original due date.
+        if(assisted){
+          if(rec.stage===null){
+            rec.stage=0;
+            rec.dueAt=now+DAY;
+            rec.lastGradeDay=day;
+          }
+          return save(id,skill,rec);
+        }
         // Fixing today's error is good practice, but never counts as a new
         // spaced review. Repeated successes before a due date do not level up.
         if(rec.lastMissDay!==day && rec.lastGradeDay!==day &&
@@ -143,7 +153,7 @@
           // Old green checks mean "answered correctly once", NOT long-term
           // mastery. Keep them and ask for a fresh spaced review today.
           current[skill][String(value)]=normalized({
-            stage:1,dueAt:now,firstAt:now,lastAt:0,
+            stage:0,dueAt:now,firstAt:now,lastAt:0,
             attempts:1,successes:1,source:"legacy",history:[]
           });
           changed=true;
