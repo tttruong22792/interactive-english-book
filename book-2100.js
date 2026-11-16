@@ -106,6 +106,177 @@
     root.__chunkReturnFocus=null;
   }
 
+
+  function reviewDueText(rec){
+    if(!rec || !rec.dueAt)return "Chưa có lịch";
+    if(rec.dueAt<=Date.now())return "Đến hạn ôn";
+    var d=new Date(rec.dueAt);
+    return d.toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric"});
+  }
+  function srsCountsHtml(stats){
+    var labels=[["new","Mới"],["weak","Chưa vững"],["learning","Đang nhớ"],["mastered","Vững"]];
+    return labels.map(function(p){
+      return '<span class="bk-srs-count is-'+p[0]+'"><i aria-hidden="true"></i>'+
+        p[1]+' <b>'+stats[p[0]]+'</b></span>';
+    }).join("");
+  }
+  function closeSrsLayer(){
+    var overlay=root?.querySelector(".bk-srs-layer");
+    if(overlay)overlay.remove();
+    reviewSession=null;
+    if(overlayReturnFocus?.isConnected)overlayReturnFocus.focus({preventScroll:true});
+    overlayReturnFocus=null;
+    updateDueBadge();
+  }
+  function rememberSrsFocus(){
+    if(!overlayReturnFocus)overlayReturnFocus=document.activeElement;
+  }
+  function showMasteryDetail(n){
+    if(!srs||!root)return;
+    var found=entryByNumber(n);if(!found)return;
+    closeChunks();
+    var active=root.querySelector(".bk-srs-layer");
+    if(active){active.remove();reviewSession=null;}
+    rememberSrsFocus();
+    var item=found.item,word=srs.get(n,"word"),sentence=srs.get(n,"sentence");
+    var counts=srs.summary(currentStep().entries,"word");
+    var visible=state.showEn&&state.mode!=="word";
+    var recent=word.history.slice(-5).reverse();
+    var html='<div class="bk-srs-layer" data-srs-backdrop="true">'+
+      '<section class="bk-srs-dialog" role="dialog" aria-modal="true" aria-labelledby="bk-srs-title">'+
+      '<div class="bk-srs-header"><div><small>LEVEL 1 · STEP '+found.step+' · TỪ '+n+'</small>'+
+      '<h2 id="bk-srs-title">'+(visible?esc(item.en):'Từ số '+n)+'</h2>'+
+      '<p>'+esc(item.vi)+'</p></div>'+
+      '<button type="button" class="bk-srs-close" data-srs-close aria-label="Đóng chi tiết">✕</button></div>'+
+      '<div class="bk-srs-body">'+
+      '<div class="bk-srs-key"><div><small>ĐỘ THÀNH THẠO TỪ</small>'+
+      '<strong class="bk-srs-status is-'+word.status+'">'+masteryLabel(word.status)+'</strong></div>'+
+      '<div><small>ÔN TỪ LẦN TỚI</small><strong>'+reviewDueText(word)+'</strong></div></div>'+
+      '<div class="bk-srs-sentence-status">Viết câu: <b>'+masteryLabel(sentence.status)+'</b>'+
+      (sentence.due?' · Đến hạn':'')+'</div>'+
+      '<div class="bk-srs-history"><small>LỊCH SỬ GHI NHỚ · tối đa 5 ngày gần nhất</small>'+
+      (recent.length?'<div class="bk-srs-history-events">'+recent.map(function(x){
+        return '<span class="bk-srs-history-icon '+(x.result==="good"?'is-good':'is-again')+
+          '" aria-label="'+(x.result==="good"?'Nhớ đúng':'Cần ôn')+' ngày '+esc(x.day)+'" title="'+esc(x.day)+'">'+
+          (x.result==="good"?'✓':'✕')+'</span>';
+      }).join('')+'</div>':'<p>Chưa có lần ôn cách ngày được ghi nhận.</p>')+
+      '</div>'+
+      '<div class="bk-srs-history-total">Đã luyện <b>'+word.attempts+'</b> lần · Đúng <b>'+word.successes+
+      '</b> · Sai <b>'+word.mistakes+'</b></div>'+
+      (word.source==="legacy"?'<p class="bk-srs-legacy">Dấu đúng cũ được giữ lại; cần ôn để xác nhận ghi nhớ lâu dài.</p>':'')+
+      '<div class="bk-srs-step-counters"><small>TRẠNG THÁI STEP '+currentStep().id+'</small>'+
+      '<div>'+srsCountsHtml(counts)+'</div></div>'+
+      '</div><div class="bk-srs-actions">'+
+      '<button type="button" data-srs-weak="'+n+'" class="bk-srs-secondary">Đánh dấu chưa vững</button>'+
+      '<button type="button" data-srs-practice="'+n+'" class="bk-srs-primary">Ôn từ này</button></div>'+
+      '<div class="bk-srs-footer">Độ vững tăng khi nhớ đúng qua nhiều ngày, không tính nhiều lần nhập lại trong một buổi.</div>'+
+      '</section></div>';
+    root.insertAdjacentHTML("beforeend",html);
+    root.querySelector("[data-srs-close]")?.focus({preventScroll:true});
+  }
+  function reviewOverlay(body){
+    var overlay=root.querySelector(".bk-srs-layer");
+    if(overlay)overlay.remove();
+    root.insertAdjacentHTML("beforeend",'<div class="bk-srs-layer" data-srs-backdrop="true">'+body+'</div>');
+  }
+  function renderReviewCard(){
+    if(!reviewSession)return;
+    var session=reviewSession;
+    if(session.index>=session.ids.length){renderReviewDone();return;}
+    var n=session.ids[session.index];
+    var found=entryByNumber(n);
+    if(!found){session.index++;renderReviewCard();return;}
+    var item=found.item,position=session.index+1;
+    var html='<section class="bk-review-dialog" role="dialog" aria-modal="true" aria-labelledby="bk-review-title">'+
+      '<div class="bk-review-head"><div><small>ÔN NGẮT QUÃNG · LEVEL 1</small>'+
+      '<h2 id="bk-review-title">Nhớ lại từ tiếng Anh</h2></div>'+
+      '<button type="button" class="bk-srs-close" data-srs-close aria-label="Đóng ôn tập">✕</button></div>'+
+      '<div class="bk-review-progress">Từ <b>'+position+'/'+session.ids.length+'</b>'+
+      '<span>STEP '+found.step+' · Số '+n+'</span></div>'+
+      '<div class="bk-review-progress-bar"><span style="width:'+(100*(position-1)/session.ids.length)+'%"></span></div>'+
+      '<div class="bk-review-content"><small>NHÌN NGHĨA TIẾNG VIỆT, NHỚ LẠI TIẾNG ANH</small>'+
+      '<strong class="bk-review-vi">'+esc(item.vi)+'</strong>'+
+      '<div class="bk-review-input-line"><input type="text" class="bk-review-input" data-review-input="'+n+
+      '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next"'+
+      ' placeholder="Nhập từ tiếng Anh..." aria-label="Nhập từ tiếng Anh của '+esc(item.vi)+'"/>'+
+      '<span class="bk-review-mark" aria-live="polite" aria-label="Chưa kiểm tra"></span></div>'+
+      '<div class="bk-review-help">Enter: kiểm tra · Enter khi trống: sang từ tiếp theo</div>'+
+      '<button type="button" class="bk-review-audio" data-review-audio="'+n+'">◖)) Nghe phát âm</button></div>'+
+      '<div class="bk-review-actions"><button type="button" data-review-skip>Bỏ qua</button>'+
+      '<button type="button" data-review-next class="bk-srs-primary">Tiếp theo →</button></div>'+
+      '</section>';
+    reviewOverlay(html);
+    root.querySelector(".bk-review-input")?.focus({preventScroll:true});
+  }
+  function renderReviewDone(){
+    if(!reviewSession)return;
+    var session=reviewSession;
+    var html='<section class="bk-review-dialog bk-review-finished" role="dialog" aria-modal="true" aria-labelledby="bk-review-title">'+
+      '<div class="bk-review-head"><div><small>ÔN NGẮT QUÃNG · LEVEL 1</small>'+
+      '<h2 id="bk-review-title">Hoàn thành phiên ôn</h2></div>'+
+      '<button type="button" class="bk-srs-close" data-srs-close aria-label="Đóng">✕</button></div>'+
+      '<div class="bk-review-finished-body"><span class="bk-review-finished-icon" aria-hidden="true">✓</span>'+
+      '<strong>'+session.ids.length+' từ đã đi qua</strong>'+
+      '<p>Nhớ đúng: '+session.passed+' · Cần củng cố: '+session.missed+
+      ' · Bỏ qua: '+session.skipped+'</p>'+
+      '<small>Các từ chưa vững sẽ được xếp lịch ôn riêng. Nhập nhiều lần trong một ngày không làm tăng cấp độ nhớ.</small></div>'+
+      '<div class="bk-review-actions"><button class="bk-srs-primary" type="button" data-srs-close>Trở lại sách</button></div></section>';
+    reviewOverlay(html);
+    root.querySelector("[data-srs-close]")?.focus({preventScroll:true});
+    updateDueBadge();
+  }
+  function startReview(ids){
+    if(!srs||!root)return;
+    var candidates=(ids||srs.dueEntries(BOOK.steps,"word").map(function(x){return x.id;}));
+    var unique=Array.from(new Set(candidates.filter(function(n){return !!entryByNumber(n);}))).slice(0,20);
+    closeChunks();
+    var existing=root.querySelector(".bk-srs-layer");
+    if(existing)existing.remove();
+    rememberSrsFocus();
+    reviewSession={ids:unique,index:0,passed:0,missed:0,skipped:0,hadError:false,answered:false,counted:false};
+    if(!unique.length){renderReviewDone();return;}
+    renderReviewCard();
+  }
+  function nextReview(skipped){
+    if(!reviewSession)return;
+    if(skipped && !reviewSession.answered && !reviewSession.hadError)reviewSession.skipped++;
+    else if(reviewSession.answered && !reviewSession.counted){
+      if(reviewSession.hadError)reviewSession.missed++;else reviewSession.passed++;
+    }else if(reviewSession.hadError && !reviewSession.counted)reviewSession.missed++;
+    reviewSession.counted=true;
+    reviewSession.index++;
+    reviewSession.answered=false;
+    reviewSession.hadError=false;
+    reviewSession.counted=false;
+    renderReviewCard();
+  }
+  function submitReview(input){
+    if(!reviewSession)return;
+    var n=Number(input.dataset.reviewInput),found=entryByNumber(n);
+    if(!found)return;
+    if(!input.value.trim()){nextReview(!reviewSession.answered);return;}
+    var correct=clean(input.value)===clean(found.item.en);
+    var mark=root.querySelector(".bk-review-mark");
+    if(!correct)reviewSession.hadError=true;
+    srs?.record(n,"word",correct);
+    refreshMastery(n);
+    if(correct){
+      reviewSession.answered=true;
+      input.value="";
+      input.classList.remove("is-wrong");input.classList.add("is-correct");
+      input.removeAttribute("aria-invalid");
+    }else{
+      input.classList.remove("is-correct");input.classList.add("is-wrong");
+      input.setAttribute("aria-invalid","true");
+    }
+    if(mark){
+      mark.textContent=correct?"✓":"✕";
+      mark.className="bk-review-mark "+(correct?"is-correct":"is-wrong");
+      mark.setAttribute("aria-label",correct?"Đã nhập đúng":"Chưa đúng");
+    }
+    input.focus({preventScroll:true});
+  }
+
   function renderRow(item){
     var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
     return '<div class="bk-row" data-row="'+n+'">'+
