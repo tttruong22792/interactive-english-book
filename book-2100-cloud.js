@@ -183,7 +183,12 @@ function switchOwner(id){
     var target=load(newOwner);
     target.events=mergeEvents(target.events,ledger.events);
     activeOwner=newOwner;ledger=target;save();
-    try{localStorage.setItem(CLAIMED_KEY,newOwner);}catch(e){}
+    try{
+      localStorage.setItem(CLAIMED_KEY,newOwner);
+      // Guest progress has now been claimed by this account. Prevent the
+      // previous user's data from being visible in signed-out guest mode.
+      localStorage.removeItem(PREFIX+"guest");
+    }catch(e){}
   }else{
     // Never send account A's learning to account B.
     activeOwner=newOwner;ledger=load(newOwner);
@@ -200,8 +205,9 @@ function handleAuth(statusInfo){
     signedIn=true;switchOwner(nextId);queueSync();
   }else if(!nextId && userId){
     userId="";email="";signedIn=false;
-    // Keep the former signed-in learning in a local account-specific cache.
-    // It will be retrieved again when that same account signs in.
+    // Keep the previous owner's data in that account's isolated local cache,
+    // while signed-out mode displays only anonymous learning.
+    switchOwner("guest");
     notify();
   }else{
     signedIn=!!nextId;
@@ -237,7 +243,7 @@ function connect(srs,onUpdate){
   activeOwner=claimed||"guest";
   ledger=load(activeOwner);
   if(!claimed)snapshotLegacy();
-  else if(ledger.events.length){store.rebuild(ledger.events);revision++;}
+  if(ledger.events.length && claimed){store.rebuild(ledger.events);revision++;}
   if(unlisten)unlisten();
   unlisten=store.onChange(onStudyEvent);
   if(!bootTimer)boot();
