@@ -37,10 +37,11 @@
     return '<button type="button" class="bk-listen" data-listen="'+type+'" data-n="'+n+'" '+(type==="chunk"?'data-phrase-index="'+index+'" ':'')+'aria-label="Nghe '+(type==="word"?"từ":type==="chunk"?"cụm từ":"câu")+' tiếng Anh" title="Nghe tiếng Anh"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6"/><path d="M18 6a9 9 0 0 1 0 12"/></svg></button>';
   }
   function line(n,field){
-    return '<span class="bk-done '+(state[field].includes(n)?"is-done":"")+'" data-done="'+field+'-'+n+'" title="Đã trả lời đúng" aria-label="Đã trả lời đúng">✓</span>';
+    var passed=state[field].includes(n);
+    return '<span class="bk-done '+(passed?"is-done":"")+'" data-done="'+field+'-'+n+'" title="'+(passed?"Đã trả lời đúng":"Chưa kiểm tra")+'" aria-label="'+(passed?"Đã trả lời đúng":"Chưa kiểm tra")+'">✓</span>';
   }
   function input(n,type){
-    return '<input type="text" class="bk-entry-input" data-entry="'+type+'" data-n="'+n+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Nhập '+(type==="word"?"từ":"câu")+' tiếng Anh số '+n+'" placeholder="'+(type==="word"?"Nhập từ…":"Nhập câu tiếng Anh…")+'"/><small class="bk-input-note" id="bk-note-'+type+'-'+n+'" aria-live="polite"></small>';
+    return '<input type="text" class="bk-entry-input" data-entry="'+type+'" data-n="'+n+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Nhập '+(type==="word"?"từ":"câu")+' tiếng Anh số '+n+'" placeholder="'+(type==="word"?"Nhập từ…":"Nhập câu tiếng Anh…")+'"/>';
   }
   function practiceMeaning(type,meaning){
     return '<div class="bk-practice-meaning" data-practice-meaning="'+type+'">'+
@@ -188,27 +189,42 @@
     var inputNode=root.querySelector('[data-entry="'+type+'"][data-n="'+next.n+'"]');
     if(inputNode){inputNode.focus({preventScroll:true});inputNode.scrollIntoView({block:"center",behavior:"smooth"});}
   }
+  function showAnswerMark(inputNode,result){
+    var type=inputNode.dataset.entry,n=Number(inputNode.dataset.n);
+    var field=type==="word"?"doneWords":"doneSentences";
+    var mark=root.querySelector('[data-done="'+field+'-'+n+'"]');
+    if(!mark)return;
+    var correct=result==="correct",wrong=result==="wrong";
+    var passed=state[field].includes(n);
+    mark.classList.toggle("is-done",correct||(!wrong&&passed));
+    mark.classList.toggle("is-wrong",wrong);
+    mark.textContent=wrong?"✕":"✓";
+    var label=wrong?"Chưa đúng":(correct||passed?"Đã trả lời đúng":"Chưa kiểm tra");
+    mark.setAttribute("aria-label",label);
+    mark.title=label;
+  }
   function submitInput(inputNode){
-    var type=inputNode.dataset.entry, n=Number(inputNode.dataset.n);
+    var type=inputNode.dataset.entry,n=Number(inputNode.dataset.n);
     var entry=currentStep().entries.find(function(x){return x.n===n;});
     if(!entry)return;
-    var typed=inputNode.value.trim(), note=root.querySelector("#bk-note-"+type+"-"+n);
+    var typed=inputNode.value.trim();
     if(!typed){focusNext(n,type);return;}
     var answer=type==="word"?entry.en:entry.sentence;
     if(clean(typed)!==clean(answer)){
-      inputNode.classList.add("is-wrong");inputNode.classList.remove("is-correct");
-      if(note)note.textContent="Chưa đúng, hãy thử lại.";
-      inputNode.setAttribute("aria-invalid","true");return;
+      inputNode.classList.add("is-wrong");
+      inputNode.classList.remove("is-correct");
+      showAnswerMark(inputNode,"wrong");
+      inputNode.setAttribute("aria-invalid","true");
+      return;
     }
     var field=type==="word"?"doneWords":"doneSentences";
     if(!state[field].includes(n))state[field].push(n);
     persist();
     inputNode.value="";
-    inputNode.classList.remove("is-wrong");inputNode.classList.add("is-correct");
+    inputNode.classList.remove("is-wrong");
+    inputNode.classList.add("is-correct");
     inputNode.removeAttribute("aria-invalid");
-    var tick=root.querySelector('[data-done="'+field+'-'+n+'"]');
-    if(tick)tick.classList.add("is-done");
-    if(note)note.textContent="✓ Chính xác! Có thể nhập lại.";
+    showAnswerMark(inputNode,"correct");
     updateCounter();
     inputNode.focus({preventScroll:true});
   }
@@ -226,13 +242,13 @@
   }
   async function speak(n,type,index){
     var e=currentStep().entries.find(function(x){return x.n===n;});if(!e)return;
-    var value=type==="word"?e.en:type==="chunk"?e.extra?.[index]?.[0]:e.sentence;
+    var value=type==="word"?(e.wordAudio||e.en):type==="chunk"?e.extra?.[index]?.[0]:e.sentence;
     if(!value)return;
     if(activeAudio&&window.AITTS?.stop)window.AITTS.stop();
     if("speechSynthesis" in window)window.speechSynthesis.cancel();
     activeAudio=true;
     if(window.AITTS&&typeof window.AITTS.speak==="function"){
-      try{await window.AITTS.speak(value,{language:"en-US",rate:0.88});return;}
+      try{await window.AITTS.speak(value,{language:"en-US",rate:0.88,minDuration:type==="word"?Number(e.wordAudioMinSeconds||0):0});return;}
       catch(error){if(error&&error.name==="AbortError")return;}
     }
     if(!root.hidden)browserSpeak(value);
@@ -271,8 +287,9 @@
       root.addEventListener("input",function(evt){
         if(evt.target.matches(".bk-entry-input")){
           evt.target.classList.remove("is-wrong");
-          var note=root.querySelector("#bk-note-"+evt.target.dataset.entry+"-"+evt.target.dataset.n);
-          if(note)note.textContent="";
+          evt.target.classList.remove("is-correct");
+          evt.target.removeAttribute("aria-invalid");
+          showAnswerMark(evt.target,"reset");
         }
       });
     }

@@ -72,6 +72,7 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
 .book2100 .bk-sentence-value em{font-style:normal;color:#bc4734;font-weight:900;border-bottom:1px solid #cb7260}
 .book2100 .bk-done{flex:0 0 19px;width:19px;height:19px;border-radius:50%;border:1px solid #d6c5b9;color:transparent;display:inline-grid;place-items:center;font-size:12px;font-weight:900}
 .book2100 .bk-done.is-done{background:#2c9b4a;border-color:#2c9b4a;color:#fff}
+.book2100 .bk-done.is-wrong{background:#df4940;border-color:#df4940;color:#fff}
 .book2100 .bk-listen{flex:0 0 25px;min-width:25px;min-height:25px;width:25px;height:25px;border:1px solid #85bbe9;border-radius:50%;padding:0;color:#2176c1;background:#f1f8ff;font-size:12px;font-weight:900;line-height:1}
 .book2100 .bk-listen:hover{background:#e2f1ff}
 .book2100 .bk-entry-input{display:block;width:100%;height:38px;padding:6px 8px;border:1.7px solid #579ee8;border-radius:7px;background:#fff;min-width:0;color:#25262c;font-weight:700;outline:none}
