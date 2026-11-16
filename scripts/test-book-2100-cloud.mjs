@@ -116,6 +116,10 @@ await wait();await c.cloud.syncNow();await a.cloud.syncNow();
 assert.equal(a.srs.get(30,"word").successes,1,"Pre-existing local word must migrate");
 assert.equal(a.srs.get(31,"sentence").successes,1,"Pre-existing local sentence must migrate");
 
+// Signing out does not leave another user's study record visible.
+b.auth.emit("");
+await wait();
+assert.equal(b.srs.get(5,"word").status,"new","Signed-out guest mode must not expose A's progress");
 // An account change must not upload account A events as account B.
 b.auth.emit(userB);
 await wait();await b.cloud.syncNow();
