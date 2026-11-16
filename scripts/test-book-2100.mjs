@@ -8,7 +8,7 @@ vm.runInNewContext(await read("book-2100-data.js"),ctx,{filename:"book-2100-data
 const book=ctx.window.BOOK_2100_DATA;
 assert.equal(book?.steps?.length,2,"Only the photographed STEPs 1–2 may be released");
 assert.deepEqual(Array.from(book.steps,step=>step.entries.length),[12,12],"Each page has 12 words");
-let rows=book.steps.flatMap(step=>Array.from(step.entries));
+let rows=Array.from(book.steps).flatMap(step=>Array.from(step.entries));
 assert.deepEqual(rows.map(x=>x.n),Array.from({length:24},(_,i)=>i+1));
 const expected1=["people","family","friend","school","student","teacher","homework","day","morning","afternoon","night","time"];
 const expected2=["week","month","year","May","October","summer","winter","animal","dog","rabbit","book","movie"];
