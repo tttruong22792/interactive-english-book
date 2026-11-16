@@ -550,8 +550,12 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
 .book2100 .bk-srs-history p{font-size:12px;margin:7px 0;color:#8f817a}
 .book2100 .bk-srs-history-events{display:flex;gap:8px;margin:10px 0 5px}
 .book2100 .bk-srs-history-icon{
-  width:29px;height:29px;display:grid;place-items:center;
-  border-radius:8px;font-size:16px;font-weight:900;
+  min-width:40px;height:41px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;
+  border-radius:8px;font-size:15px;font-weight:900;
+}
+.book2100 .bk-srs-history-icon small{
+  font-size:9px;font-weight:700;line-height:1;
 }
 .book2100 .bk-srs-history-icon.is-good{background:#e6f5e9;color:#2c984c}
 .book2100 .bk-srs-history-icon.is-again{background:#fff0e9;color:#c04a3b}
