@@ -196,14 +196,23 @@
       function cancel(){if(settled)return;settled=true;cleanup();reject(cancelled());}
       activeCancel=cancel;
 
+      // Optional safety check for unusually short, effectively silent recordings.
+      // Only enabled by clients that provide a minimum duration (e.g. tourist).
+      function tooShort(){
+        var min=Number(options.minDuration)||0;
+        return min>0 && isFinite(audio.duration) && audio.duration>0 && audio.duration<min;
+      }
       audio.addEventListener("loadedmetadata",function(){
+        if(tooShort()){try{audio.pause();}catch(e){}fail();return;}
         if(highlightEl && isFinite(audio.duration) && audio.duration>0){
           activeTimer=setInterval(function(){
             if(activeAudio===audio) updateHighlight(highlightEl,text,audio.currentTime,audio.duration);
           },70);
         }
       },{once:true});
-      audio.addEventListener("ended",finish,{once:true});
+      audio.addEventListener("ended",function(){
+        if(tooShort())fail();else finish();
+      },{once:true});
       audio.addEventListener("error",fail,{once:true});
       var p=audio.play();
       if(p && typeof p.catch==="function") p.catch(fail);
