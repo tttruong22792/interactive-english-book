@@ -23,14 +23,18 @@ jobs:
       - name: Validate source and Enter behavior
         run: |
           node --check book-2100-data.js
+          node --check book-2100-srs.js
           node --check book-2100.js
+          node --check scripts/test-book-2100-srs.mjs
           node --check scripts/test-book-2100.mjs
           node scripts/test-book-2100.mjs
+          node scripts/test-book-2100-srs.mjs
       - name: Build production artifact
         run: npm run build
       - name: Check shipped assets
         run: |
           test -s dist/book-2100-data.js
+          test -s dist/book-2100-srs.js
           test -s dist/book-2100.js
           test -s dist/book-2100.css
           grep -q 'book-2100.js' dist/index.html
