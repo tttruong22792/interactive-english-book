@@ -226,3 +226,148 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
   .book2100.bk-fit .bk-extra-line span{font-size:8px}
   .book2100.bk-fit .bk-rows .bk-cell{padding:0 3px}
 }
+
+
+/* iPhone/compact-screen recall: the Vietnamese cue and its answer field stay
+   together; reading mode still uses the original textbook columns. */
+.book2100 .bk-practice-meaning,
+.book2100 .bk-focus-banner{display:none}
+.book2100 .bk-study-word .bk-word-sub>small,
+.book2100 .bk-study-sentence .bk-word-sub>small{display:none}
+
+@media(max-width:1000px){
+  .book2100.bk-study-word .bk-page-switch,
+  .book2100.bk-study-sentence .bk-page-switch{display:none}
+
+  .book2100.bk-study-word .bk-scroll,
+  .book2100.bk-study-sentence .bk-scroll{
+    overflow-x:hidden;
+    padding:7px max(7px,env(safe-area-inset-left)) 10px max(7px,env(safe-area-inset-right));
+  }
+
+  .book2100.bk-study-word .bk-book,
+  .book2100.bk-study-sentence .bk-book{
+    width:100%; min-width:0; max-width:100%;
+    margin:0 auto; padding:0 6px 10px;
+    border-width:3px; border-radius:15px;
+  }
+
+  .book2100.bk-study-word .bk-book-title,
+  .book2100.bk-study-sentence .bk-book-title{
+    min-width:0;min-height:51px;padding:5px 3px;
+    gap:5px;
+  }
+  .book2100.bk-study-word .bk-book-title>div:first-child,
+  .book2100.bk-study-sentence .bk-book-title>div:first-child{
+    display:flex;flex-wrap:nowrap;align-items:center;gap:7px;min-width:0;
+  }
+  .book2100.bk-study-word .bk-book-title small,
+  .book2100.bk-study-sentence .bk-book-title small,
+  .book2100.bk-study-word .bk-book-title-right,
+  .book2100.bk-study-sentence .bk-book-title-right{display:none}
+  .book2100.bk-study-word .bk-book-title strong,
+  .book2100.bk-study-sentence .bk-book-title strong{font-size:16px;white-space:nowrap}
+
+  .book2100.bk-study-word .bk-show-words .bk-row,
+  .book2100.bk-study-sentence .bk-show-sentences .bk-row{
+    min-width:0;width:100%;
+    grid-template-columns:36px minmax(0,1fr);
+  }
+  .book2100.bk-study-word .bk-row .bk-word-vi,
+  .book2100.bk-study-word .bk-row .bk-jword,
+  .book2100.bk-study-word .bk-row .bk-extra,
+  .book2100.bk-study-word .bk-row .bk-sentence,
+  .book2100.bk-study-word .bk-row .bk-svi,
+  .book2100.bk-study-word .bk-row .bk-sja,
+  .book2100.bk-study-sentence .bk-row .bk-word,
+  .book2100.bk-study-sentence .bk-row .bk-word-vi,
+  .book2100.bk-study-sentence .bk-row .bk-jword,
+  .book2100.bk-study-sentence .bk-row .bk-extra,
+  .book2100.bk-study-sentence .bk-row .bk-svi,
+  .book2100.bk-study-sentence .bk-row .bk-sja{display:none}
+
+  .book2100.bk-study-word .bk-head .bk-word,
+  .book2100.bk-study-sentence .bk-head .bk-sentence{
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    font-size:12px;min-width:0;
+  }
+  .book2100.bk-study-word .bk-head .bk-word small{display:none}
+  .book2100.bk-study-word .bk-row .bk-word,
+  .book2100.bk-study-sentence .bk-row .bk-sentence{
+    min-width:0;width:100%;display:flex;flex-direction:column;
+    justify-content:center;align-items:stretch;
+    border-right:0;padding:12px clamp(10px,3vw,18px);
+    background:#fff9f4;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-sentence{background:#fff9f4}
+  .book2100.bk-study-word .bk-rows>.bk-row,
+  .book2100.bk-study-sentence .bk-rows>.bk-row{min-height:131px}
+  .book2100.bk-study-word .bk-rows>.bk-row.bk-row-focused .bk-word,
+  .book2100.bk-study-sentence .bk-rows>.bk-row.bk-row-focused .bk-sentence{
+    background:#fff2d6;
+  }
+  .book2100.bk-study-word .bk-practice-meaning,
+  .book2100.bk-study-sentence .bk-practice-meaning{
+    display:flex;flex-direction:column;gap:3px;margin-bottom:11px;min-width:0;
+  }
+  .book2100 .bk-practice-meaning small{
+    font-size:10px;font-weight:800;letter-spacing:.075em;color:#a07155;
+  }
+  .book2100 .bk-practice-meaning strong{
+    color:#412b26;font-size:clamp(16px,4.1vw,19px);font-weight:800;
+    line-height:1.5;overflow-wrap:anywhere;
+  }
+  .book2100.bk-study-word .bk-word-line,
+  .book2100.bk-study-sentence .bk-sentence-wrap{
+    width:100%;display:flex;align-items:center;gap:8px;
+  }
+  .book2100.bk-study-word .bk-word .bk-entry-input,
+  .book2100.bk-study-sentence .bk-sentence .bk-entry-input{
+    width:100%;min-width:0;flex:1;
+    height:46px;min-height:46px;border-width:2px;
+    font-size:16px;font-weight:650;
+  }
+  .book2100.bk-study-word .bk-sentence-value,
+  .book2100.bk-study-sentence .bk-sentence-value{flex:1;min-width:0}
+  .book2100.bk-study-word .bk-word-sub{margin-top:8px}
+  .book2100.bk-study-word .bk-word .bk-input-note,
+  .book2100.bk-study-sentence .bk-sentence .bk-input-note{
+    font-size:11px;line-height:1.4;margin-top:2px;
+  }
+  .book2100.bk-study-word .bk-done,
+  .book2100.bk-study-sentence .bk-done{
+    flex:0 0 22px;width:22px;height:22px;
+  }
+
+  /* The active Vietnamese cue remains above the iOS keyboard even if the
+     focused exercise gets scrolled during keyboard animation. */
+  .book2100.bk-study-word.bk-focused .bk-focus-banner,
+  .book2100.bk-study-sentence.bk-focused .bk-focus-banner{
+    display:flex;align-items:flex-start;flex-direction:column;
+    flex:0 0 auto;gap:3px;padding:9px 13px;
+    background:#fff1d7;border-bottom:1px solid #eac69e;
+    box-shadow:0 2px 6px #7c4b2722;
+  }
+  .book2100 .bk-focus-banner span{
+    font-weight:900;color:#a3693f;font-size:10px;letter-spacing:.075em;
+  }
+  .book2100 .bk-focus-banner strong{
+    font-size:15px;font-weight:850;color:#4a2920;
+    line-height:1.45;max-height:4.35em;overflow:auto;
+  }
+
+  /* With a mobile keyboard in use, preserve vertical room for both cue and field. */
+  .book2100.bk-keyboard-open .bk-book-title,
+  .book2100.bk-keyboard-open .bk-head,
+  .book2100.bk-keyboard-open .bk-bottom{display:none}
+  .book2100.bk-keyboard-open .bk-toolbar{
+    min-height:0;padding:5px 9px;gap:3px;
+  }
+  .book2100.bk-keyboard-open .bk-brand,
+  .book2100.bk-keyboard-open .bk-toolbar .bk-fit-toggle,
+  .book2100.bk-keyboard-open .bk-toolbar .bk-toggle{display:none}
+  .book2100.bk-keyboard-open .bk-toolbar-controls{
+    flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;
+  }
+  .book2100.bk-keyboard-open .bk-toolbar-controls>*{flex:0 0 auto}
+}
