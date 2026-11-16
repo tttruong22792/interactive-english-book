@@ -240,10 +240,12 @@ function connect(srs,onUpdate){
   listener=onUpdate;
   var claimed="";
   try{claimed=localStorage.getItem(CLAIMED_KEY)||"";}catch(e){}
-  activeOwner=claimed||"guest";
-  ledger=load(activeOwner);
+  // Stay in guest mode until Supabase confirms the signed-in identity.
+  // A cached owner's records must not flash on screen while signed out.
+  activeOwner="guest";
+  ledger=load("guest");
   if(!claimed)snapshotLegacy();
-  if(ledger.events.length && claimed){store.rebuild(ledger.events);revision++;}
+  else{store.rebuild(ledger.events);revision++;}
   if(unlisten)unlisten();
   unlisten=store.onChange(onStudyEvent);
   if(!bootTimer)boot();
