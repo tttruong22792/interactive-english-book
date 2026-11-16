@@ -677,3 +677,39 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
   .book2100 .bk-review-progress-bar{margin:0 15px}
   .book2100 .bk-review-input{font-size:16px}
 }
+
+
+/* 2100 Audio + Account Sync: controls are compact and do not create table columns. */
+.book2100 .bk-toolbar .bk-sequence{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  background:#f4e8dc;border-color:#d6a58a;color:#814332;
+  font-size:12px;font-weight:850;white-space:nowrap;
+}
+.book2100 .bk-toolbar .bk-sequence.is-playing{
+  background:#aa4033;color:#fff;border-color:#aa4033;
+}
+.book2100 .bk-toolbar .bk-cloud-status{
+  display:inline-flex;align-items:center;justify-content:center;
+  border-color:#dbd4ca;background:#fffdf9;color:#79635b;
+  white-space:nowrap;font-size:11px;
+}
+.book2100 .bk-toolbar .bk-cloud-status.is-linked{
+  color:#286b55;background:#edf8f1;border-color:#a8d4bd;
+}
+.book2100 .bk-toolbar .bk-cloud-status.has-error{
+  color:#a43527;background:#fff0eb;border-color:#e5b9ab;
+}
+.book2100 .bk-toolbar .bk-audio-repeat{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;color:#85614f;
+}
+.book2100 .bk-toolbar .bk-audio-repeat.is-active{
+  background:#f7e4d1;border-color:#d39b78;color:#9d422f;
+}
+.book2100 .bk-rows>.bk-row.bk-row-audio-playing{
+  outline:2px solid #ce915b;outline-offset:-2px;
+  box-shadow:inset 0 0 0 1px #e1a779;
+}
+.book2100 .bk-rows>.bk-row.bk-row-audio-playing .bk-cell.bk-number{
+  color:#b15e26;font-weight:900;
+}

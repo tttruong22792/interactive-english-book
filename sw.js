@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v135-book2100-iphone-keyboard';
+const APP_CACHE='language-studio-v136-book2100-continuous-cloud';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -29,6 +29,7 @@ const ASSETS=[
   './book-2100-collocations-317-376.js',
   './book-2100-collocations-377-400.js',
   './book-2100-srs.js',
+  './book-2100-cloud.js',
   './book-2100.js',
   './app-shell-v53.css',
   './reading-studio.css',

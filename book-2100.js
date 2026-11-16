@@ -4,7 +4,7 @@
   var BOOK=window.BOOK_2100_DATA;
   if(!BOOK || !Array.isArray(BOOK.steps)) return;
   var KEY="language-studio-book-2100-v1", root=null, trigger=null, observer=null, activeAudio=false;
-  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,fitPage:true,doneWords:[],doneSentences:[]};
+  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,fitPage:true,repeatAudio:false,doneWords:[],doneSentences:[]};
   try{
     var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
     for(var key of Object.keys(state)) if(Object.prototype.hasOwnProperty.call(saved,key)) state[key]=saved[key];
@@ -15,6 +15,8 @@
   var srs=window.Book2100SRS?.createStore?.({storage:window.localStorage})||null;
   if(srs)srs.seedLegacy(state.doneWords,state.doneSentences);
   var reviewSession=null,overlayReturnFocus=null,assistedInputs=new Set();
+  var sequenceEpoch=0,sequenceActive=false,sequenceKind="",sequenceStep=0,sequencePauseTimer=0,sequencePauseResolve=null;
+  var browserSpeechResolve=null,cloudRevision=-1;
   // Card state is presentation-only; the source book and SRS history are unchanged.
   var expandedMobileCards=new Set(),mobileOptionsOpen=false;
   var byNumber=new Map();
@@ -265,6 +267,7 @@
     srs?.record(n,"word",correct,{assisted:!!reviewSession.hintUsed});
     refreshMastery(n);
     if(correct){
+      void speak(n,"word");
       reviewSession.answered=true;
       input.value="";
       input.classList.remove("is-wrong");input.classList.add("is-correct");
@@ -302,6 +305,63 @@
       '<div class="bk-cell bk-sja" id="bk-card-sentences-details-'+n+'">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
       mobileCardAction(n)+'</div>';
   }
+
+  function audioMode(){return state.mode==="word"?"word":state.mode==="sentence"?"sentence":
+    state.page==="sentences"?"sentence":"word";}
+  function updateSequenceControl(){
+    if(!root)return;
+    var button=root.querySelector("[data-sequence]");
+    if(!button)return;
+    var kind=audioMode(),count=currentStep().entries.length;
+    var playing=sequenceActive&&sequenceStep===Number(state.step)&&sequenceKind===kind;
+    button.classList.toggle("is-playing",playing);
+    button.setAttribute("aria-pressed",playing?"true":"false");
+    button.textContent=playing?"■ Dừng nghe":"▶ Nghe "+count+(kind==="word"?" từ":" câu");
+  }
+  function cloudBadge(info){
+    if(!info?.signedIn)return "☁ Máy này";
+    if(info.syncing)return "☁ Đang lưu";
+    if(info.lastError)return "☁ Lỗi đồng bộ";
+    if(info.lastSyncAt)return "☁ Đã đồng bộ";
+    return "☁ Chờ đồng bộ";
+  }
+  function updateCloudControl(info){
+    if(!root)return;
+    var button=root.querySelector("[data-cloud-status]");
+    if(!button)return;
+    info=info||window.Book2100CloudSync?.status?.()||{};
+    button.textContent=cloudBadge(info);
+    button.classList.toggle("is-linked",!!info.signedIn);
+    button.classList.toggle("has-error",!!info.lastError);
+    button.title=info.signedIn
+      ?(info.lastError?"Lỗi: "+info.lastError:
+        "Tài khoản "+(info.email||"")+" · "+
+        (info.lastSyncAt?"Đồng bộ lúc "+new Date(info.lastSyncAt).toLocaleString("vi-VN"):"Đang kết nối"))
+      :"Đăng nhập tại Cài đặt để đồng bộ tiến độ trên các máy";
+  }
+  function onCloudStatus(info){
+    if(!srs || !root || root.hidden)return;
+    updateCloudControl(info);
+    if(info.revision===cloudRevision)return;
+    cloudRevision=info.revision;
+    var all=BOOK.steps.flatMap(function(step){return step.entries;});
+    state.doneWords=all.filter(function(x){return srs.get(x.n,"word").successes>0;}).map(function(x){return x.n;});
+    state.doneSentences=all.filter(function(x){return srs.get(x.n,"sentence").successes>0;}).map(function(x){return x.n;});
+    persist();
+    currentStep().entries.forEach(function(item){
+      refreshMastery(item.n);
+      [["doneWords","word"],["doneSentences","sentence"]].forEach(function(pair){
+        var field=pair[0],mark=root.querySelector('[data-done="'+field+'-'+item.n+'"]');
+        if(!mark)return;
+        var good=state[field].includes(item.n);
+        mark.classList.toggle("is-done",good);
+        mark.setAttribute("aria-label",good?"Đã trả lời đúng":"Chưa kiểm tra");
+        mark.title=good?"Đã trả lời đúng":"Chưa kiểm tra";
+      });
+    });
+    updateCounter();
+  }
+
   function toolbar(){
     var step=currentStep();
     var countWords=step.entries.filter(function(x){return state.doneWords.includes(x.n);}).length;
@@ -311,6 +371,8 @@
       '<div class="bk-progress" id="bkProgress" aria-live="polite"><b>'+countWords+'/'+step.entries.length+'</b> từ · <b>'+countSent+'/'+step.entries.length+'</b> câu</div>'+
       '<button type="button" class="bk-review-launch" data-review-launch title="Ôn các từ đến hạn từ mọi STEP" aria-label="Ôn từ đến hạn">'+
       '<span aria-hidden="true">◷</span> <span id="bkReviewCount">Ôn '+dueCount()+' từ</span></button>'+
+      '<button class="bk-sequence" data-sequence type="button" aria-pressed="false">▶ Nghe '+step.entries.length+(audioMode()==="word"?" từ":" câu")+'</button>'+
+      '<button class="bk-cloud-status" data-cloud-status type="button" aria-label="Đồng bộ Sách 2100">☁ Máy này</button>'+
       '<button class="bk-toggle '+(!state.showEn?"is-off":"")+'" data-toggle="showEn" type="button">'+(state.showEn?"Ẩn":"Hiện")+' Anh</button>'+
       '<button class="bk-toggle '+(!state.showJa?"is-off":"")+'" data-toggle="showJa" type="button">'+(state.showJa?"Ẩn":"Hiện")+' Nhật</button>'+
       '<button class="bk-toggle bk-toggle-vi '+(!state.showWordVi?"is-off":"")+'" data-toggle="showWordVi" type="button">'+(state.showWordVi?"Ẩn":"Hiện")+' nghĩa từ</button>'+
@@ -318,6 +380,7 @@
       '<button class="bk-mode '+(state.mode==="read"?"is-active":"")+'" data-mode="read" type="button">Đọc sách</button>'+
       '<button class="bk-mode '+(state.mode==="word"?"is-active":"")+'" data-mode="word" type="button">Học từ</button>'+
       '<button class="bk-mode '+(state.mode==="sentence"?"is-active":"")+'" data-mode="sentence" type="button">Học câu</button>'+
+      '<button type="button" class="bk-audio-repeat '+(state.repeatAudio?"is-active":"")+'" data-repeat-audio aria-pressed="'+(state.repeatAudio?"true":"false")+'">↻ Lặp toàn STEP</button>'+
       '<button class="bk-mobile-options-trigger" type="button" data-mobile-options aria-expanded="'+(mobileOptionsOpen?"true":"false")+'" aria-label="Tùy chọn hiển thị" title="Tùy chọn hiển thị">⚙ Tùy chọn</button>'+
       '<button class="bk-fit-toggle" data-fit type="button">'+(state.fitPage?"⛶ Toàn trang":"🔍 Thu vừa trang")+'</button><button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
   }
@@ -348,6 +411,8 @@
       '<div class="bk-book-end">Nguồn: STEP '+step.id+' · trang '+esc(step.pages)+' của ảnh sách đã cung cấp · '+step.entries.length+' từ / '+step.entries.length+' câu</div></div></div>'+
       '<div class="bk-bottom"><div><b>Enter</b> kiểm tra · <b>Enter khi trống</b> sang dòng kế · <b>Esc</b> thoát <span id="bkGlobalMessage" aria-live="polite"></span></div>'+
       '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / '+BOOK.steps.length+' STEP</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
+    updateCloudControl();
+    updateSequenceControl();
   }
   function updateDueBadge(){
     if(!root||!srs)return;
@@ -483,9 +548,10 @@
   function switchStep(delta){
     var idx=BOOK.steps.findIndex(function(x){return x.id===Number(state.step);});
     if(idx+delta<0||idx+delta>=BOOK.steps.length){message("Chưa có ảnh của STEP tiếp theo.");return false;}
-    state.step=BOOK.steps[idx+delta].id;assistedInputs.clear();persist();render();return true;
+    stopAudio();state.step=BOOK.steps[idx+delta].id;assistedInputs.clear();persist();render();return true;
   }
   function focusNext(n,type){
+    stopAudio();
     var next=currentStep().entries.find(function(x){return x.n>n;});
     if(!next){
       if(!switchStep(1))return;
@@ -542,37 +608,123 @@
     showAnswerMark(inputNode,"correct");
     updateCounter();
     inputNode.focus({preventScroll:true});
+    // Correct Enter: pronounce exactly the word or full sentence just recalled.
+    void speak(n,type);
   }
+
   function browserSpeak(s){
-    if(!("speechSynthesis" in window)){message("Thiết bị không hỗ trợ đọc tiếng Anh.");return;}
-    try{
-      window.speechSynthesis.cancel();
-      var u=new SpeechSynthesisUtterance(s);
-      u.lang="en-US";u.rate=0.88;u.pitch=1;
-      var voices=window.speechSynthesis.getVoices();
-      var voice=voices.find(function(v){return /^en[-_]US/i.test(v.lang);})||voices.find(function(v){return /^en/i.test(v.lang);});
-      if(voice)u.voice=voice;
-      window.speechSynthesis.speak(u);
-    }catch(error){message("Không thể phát âm thanh.");}
+    return new Promise(function(resolve){
+      if(!("speechSynthesis" in window)){message("Thiết bị không hỗ trợ đọc tiếng Anh.");resolve();return;}
+      if(browserSpeechResolve){var old=browserSpeechResolve;browserSpeechResolve=null;old();}
+      var settled=false;
+      function done(){
+        if(settled)return;settled=true;
+        if(browserSpeechResolve===done)browserSpeechResolve=null;
+        resolve();
+      }
+      try{
+        window.speechSynthesis.cancel();
+        var u=new SpeechSynthesisUtterance(s);
+        u.lang="en-US";u.rate=0.88;u.pitch=1;
+        var voices=window.speechSynthesis.getVoices();
+        var voice=voices.find(function(v){return /^en[-_]US/i.test(v.lang);})||
+          voices.find(function(v){return /^en/i.test(v.lang);});
+        if(voice)u.voice=voice;
+        u.onend=done;u.onerror=done;
+        browserSpeechResolve=done;
+        window.speechSynthesis.speak(u);
+      }catch(error){message("Không thể phát âm thanh.");done();}
+    });
   }
-  async function speak(n,type,index){
+  async function playItem(n,type,index){
     var found=entryByNumber(n);
     var e=found?.item;if(!e)return;
     var value=type==="word"?(e.wordAudio||e.en):type==="chunk"?e.extra?.[index]?.[0]:e.sentence;
     if(!value)return;
-    if(activeAudio&&window.AITTS?.stop)window.AITTS.stop();
-    if("speechSynthesis" in window)window.speechSynthesis.cancel();
     activeAudio=true;
     if(window.AITTS&&typeof window.AITTS.speak==="function"){
-      try{await window.AITTS.speak(value,{language:"en-US",rate:0.88,minDuration:type==="word"?Number(e.wordAudioMinSeconds||0):0});return;}
-      catch(error){if(error&&error.name==="AbortError")return;}
+      try{
+        await window.AITTS.speak(value,{language:"en-US",rate:0.88,
+          minDuration:type==="word"?Number(e.wordAudioMinSeconds||0):0});
+        return;
+      }catch(error){
+        if(error&&error.name==="AbortError")return;
+      }
     }
-    if(!root.hidden)browserSpeak(value);
+    if(!root?.hidden)await browserSpeak(value);
+  }
+  function cancelSequencePause(){
+    if(sequencePauseTimer){clearTimeout(sequencePauseTimer);sequencePauseTimer=0;}
+    if(sequencePauseResolve){var done=sequencePauseResolve;sequencePauseResolve=null;done();}
+  }
+  function clearPlayingRow(){
+    root?.querySelectorAll(".bk-row-audio-playing").forEach(function(row){
+      row.classList.remove("bk-row-audio-playing");
+    });
   }
   function stopAudio(){
+    ++sequenceEpoch;
+    sequenceActive=false;
     activeAudio=false;
+    cancelSequencePause();
+    clearPlayingRow();
     try{window.AITTS?.stop?.();}catch(error){}
     try{window.speechSynthesis?.cancel?.();}catch(error){}
+    if(browserSpeechResolve){var done=browserSpeechResolve;browserSpeechResolve=null;done();}
+    updateSequenceControl();
+  }
+  async function speak(n,type,index){
+    stopAudio(); // Manual playback and auto-play after Enter preempt a STEP loop.
+    return playItem(n,type,index);
+  }
+  function sequencePause(milliseconds,epoch){
+    return new Promise(function(resolve){
+      if(epoch!==sequenceEpoch){resolve();return;}
+      sequencePauseResolve=resolve;
+      sequencePauseTimer=setTimeout(function(){
+        sequencePauseTimer=0;sequencePauseResolve=null;resolve();
+      },milliseconds);
+    });
+  }
+  async function playStep(){
+    if(!root||root.hidden)return;
+    if(sequenceActive){stopAudio();return;}
+    stopAudio();
+    if(focusedPracticeInput())document.activeElement.blur();
+    var step=currentStep(),kind=audioMode(),epoch=sequenceEpoch;
+    var entries=step.entries.slice();
+    sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
+    updateSequenceControl();
+    try{
+      do{
+        for(var i=0;i<entries.length;i++){
+          if(epoch!==sequenceEpoch || root.hidden ||
+             state.step!==step.id || audioMode()!==kind)return;
+          var item=entries[i];
+          clearPlayingRow();
+          var row=root.querySelector('[data-row="'+item.n+'"]');
+          if(row){
+            row.classList.add("bk-row-audio-playing");
+            if(compactBook()&&!focusedPracticeInput())
+              row.scrollIntoView({block:"nearest",behavior:"smooth"});
+          }
+          // Hearing a word before a later recall makes that recall assisted;
+          // never inflate long-term mastery from a prompted answer.
+          if((state.mode==="word"&&kind==="word")||
+             (state.mode==="sentence"&&kind==="sentence")){
+            assistedInputs.add(kind+":"+item.n);
+          }
+          await playItem(item.n,kind);
+          if(epoch!==sequenceEpoch)return;
+          await sequencePause(280,epoch);
+        }
+      }while(epoch===sequenceEpoch && state.repeatAudio && !root.hidden);
+    }finally{
+      if(epoch===sequenceEpoch){
+        sequenceActive=false;activeAudio=false;
+        clearPlayingRow();updateSequenceControl();
+      }
+    }
   }
   function close(){
     if(!root||root.hidden)return;
@@ -598,7 +750,7 @@
            !evt.relatedTarget?.matches?.(".bk-entry-input"))clearFocusedMeaning(evt.target);
       });
       root.addEventListener("change",function(evt){
-        if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);assistedInputs.clear();persist();render();}
+        if(evt.target.id==="bkStepSelect"){stopAudio();state.step=Number(evt.target.value);assistedInputs.clear();persist();render();}
       });
       root.addEventListener("keydown",function(evt){
         if(evt.isComposing||evt.keyCode===229)return;
@@ -638,6 +790,9 @@
     if(state.mode==="word")state.page="words";
     render();root.hidden=false;document.body.classList.add("book2100-open");
     document.documentElement.classList.add("book2100-open");
+    onCloudStatus(window.Book2100CloudSync?.status?.()||{revision:0});
+    if(window.Book2100CloudSync?.status?.()?.signedIn)
+      window.Book2100CloudSync.syncNow().catch(function(){});
     var exit=root.querySelector("[data-exit]");if(exit)exit.focus({preventScroll:true});
   }
   function onClick(evt){
@@ -683,8 +838,21 @@
       if(label)label.textContent=opening?"Thu gọn":"Xem thêm";
       return;
     }
+    if(button.hasAttribute("data-sequence")){void playStep();return;}
+    if(button.hasAttribute("data-repeat-audio")){
+      state.repeatAudio=!state.repeatAudio;persist();
+      button.classList.toggle("is-active",state.repeatAudio);
+      button.setAttribute("aria-pressed",state.repeatAudio?"true":"false");
+      return;
+    }
+    if(button.hasAttribute("data-cloud-status")){
+      var status=window.Book2100CloudSync?.status?.();
+      if(!status?.signedIn){close();location.hash="#settings";}
+      else window.Book2100CloudSync.syncNow().catch(function(){});
+      return;
+    }
     if(button.hasAttribute("data-exit")){close();return;}
-    if(button.hasAttribute("data-fit")){state.fitPage=!state.fitPage;persist();render();return;}
+    if(button.hasAttribute("data-fit")){stopAudio();state.fitPage=!state.fitPage;persist();render();return;}
     if(button.dataset.listen){
       var kind=button.dataset.listen,n=Number(button.dataset.n);
       if((state.mode==="word"&&kind==="word")||(state.mode==="sentence"&&kind==="sentence")){
@@ -693,7 +861,7 @@
       speak(n,kind,Number(button.dataset.phraseIndex));return;
     }
     if(button.dataset.mode){
-      state.mode=button.dataset.mode;
+      stopAudio();state.mode=button.dataset.mode;
       mobileOptionsOpen=false;
       assistedInputs.clear();
       if(state.mode==="word")state.showWordVi=true;
@@ -704,9 +872,9 @@
     }
     if(button.dataset.toggle){
       var key=button.dataset.toggle;if(typeof state[key]!=="boolean")return;
-      state[key]=!state[key];persist();render();return;
+      stopAudio();state[key]=!state[key];persist();render();return;
     }
-    if(button.dataset.page){state.page=button.dataset.page;persist();render();return;}
+    if(button.dataset.page){stopAudio();state.page=button.dataset.page;persist();render();return;}
     if(button.dataset.step){switchStep(Number(button.dataset.step));}
   }
   function injectEntries(){
@@ -755,7 +923,11 @@
     if(!document.hidden)updateVisibleMastery();
   });
   window.addEventListener("hashchange",function(){if(root&&!root.hidden)close();});
-  window.Book2100={open:open,close:close,getData:function(){return BOOK;},getState:function(){return JSON.parse(JSON.stringify(state));}};
+  if(srs && window.Book2100CloudSync)window.Book2100CloudSync.connect(srs,onCloudStatus);
+  window.Book2100={open:open,close:close,
+    getData:function(){return BOOK;},
+    getState:function(){return JSON.parse(JSON.stringify(state));},
+    getSyncStatus:function(){return window.Book2100CloudSync?.status?.()||null;}};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();
 })();
