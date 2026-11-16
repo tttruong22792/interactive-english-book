@@ -4,7 +4,7 @@
   var BOOK=window.BOOK_2100_DATA;
   if(!BOOK || !Array.isArray(BOOK.steps)) return;
   var KEY="language-studio-book-2100-v1", root=null, trigger=null, observer=null, activeAudio=false;
-  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,fitPage:true,doneWords:[],doneSentences:[]};
+  var state={step:1,mode:"read",page:"words",showEn:true,showJa:true,showWordVi:true,showSentenceVi:true,fitPage:true,repeatAudio:false,doneWords:[],doneSentences:[]};
   try{
     var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
     for(var key of Object.keys(state)) if(Object.prototype.hasOwnProperty.call(saved,key)) state[key]=saved[key];
@@ -15,6 +15,8 @@
   var srs=window.Book2100SRS?.createStore?.({storage:window.localStorage})||null;
   if(srs)srs.seedLegacy(state.doneWords,state.doneSentences);
   var reviewSession=null,overlayReturnFocus=null,assistedInputs=new Set();
+  var sequenceEpoch=0,sequenceActive=false,sequenceKind="",sequenceStep=0,sequencePauseTimer=0,sequencePauseResolve=null;
+  var browserSpeechResolve=null,cloudRevision=-1;
   // Card state is presentation-only; the source book and SRS history are unchanged.
   var expandedMobileCards=new Set(),mobileOptionsOpen=false;
   var byNumber=new Map();
@@ -302,6 +304,63 @@
       '<div class="bk-cell bk-sja" id="bk-card-sentences-details-'+n+'">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
       mobileCardAction(n)+'</div>';
   }
+
+  function audioMode(){return state.mode==="word"?"word":state.mode==="sentence"?"sentence":
+    state.page==="sentences"?"sentence":"word";}
+  function updateSequenceControl(){
+    if(!root)return;
+    var button=root.querySelector("[data-sequence]");
+    if(!button)return;
+    var kind=audioMode(),count=currentStep().entries.length;
+    var playing=sequenceActive&&sequenceStep===Number(state.step)&&sequenceKind===kind;
+    button.classList.toggle("is-playing",playing);
+    button.setAttribute("aria-pressed",playing?"true":"false");
+    button.textContent=playing?"■ Dừng nghe":"▶ Nghe "+count+(kind==="word"?" từ":" câu");
+  }
+  function cloudBadge(info){
+    if(!info?.signedIn)return "☁ Máy này";
+    if(info.syncing)return "☁ Đang lưu";
+    if(info.lastError)return "☁ Lỗi đồng bộ";
+    if(info.lastSyncAt)return "☁ Đã đồng bộ";
+    return "☁ Chờ đồng bộ";
+  }
+  function updateCloudControl(info){
+    if(!root)return;
+    var button=root.querySelector("[data-cloud-status]");
+    if(!button)return;
+    info=info||window.Book2100CloudSync?.status?.()||{};
+    button.textContent=cloudBadge(info);
+    button.classList.toggle("is-linked",!!info.signedIn);
+    button.classList.toggle("has-error",!!info.lastError);
+    button.title=info.signedIn
+      ?(info.lastError?"Lỗi: "+info.lastError:
+        "Tài khoản "+(info.email||"")+" · "+
+        (info.lastSyncAt?"Đồng bộ lúc "+new Date(info.lastSyncAt).toLocaleString("vi-VN"):"Đang kết nối"))
+      :"Đăng nhập tại Cài đặt để đồng bộ tiến độ trên các máy";
+  }
+  function onCloudStatus(info){
+    if(!srs || !root || root.hidden)return;
+    updateCloudControl(info);
+    if(info.revision===cloudRevision)return;
+    cloudRevision=info.revision;
+    var all=BOOK.steps.flatMap(function(step){return step.entries;});
+    state.doneWords=all.filter(function(x){return srs.get(x.n,"word").successes>0;}).map(function(x){return x.n;});
+    state.doneSentences=all.filter(function(x){return srs.get(x.n,"sentence").successes>0;}).map(function(x){return x.n;});
+    persist();
+    currentStep().entries.forEach(function(item){
+      refreshMastery(item.n);
+      [["doneWords","word"],["doneSentences","sentence"]].forEach(function(pair){
+        var field=pair[0],mark=root.querySelector('[data-done="'+field+'-'+item.n+'"]');
+        if(!mark)return;
+        var good=state[field].includes(item.n);
+        mark.classList.toggle("is-done",good);
+        mark.setAttribute("aria-label",good?"Đã trả lời đúng":"Chưa kiểm tra");
+        mark.title=good?"Đã trả lời đúng":"Chưa kiểm tra";
+      });
+    });
+    updateCounter();
+  }
+
   function toolbar(){
     var step=currentStep();
     var countWords=step.entries.filter(function(x){return state.doneWords.includes(x.n);}).length;
@@ -311,6 +370,8 @@
       '<div class="bk-progress" id="bkProgress" aria-live="polite"><b>'+countWords+'/'+step.entries.length+'</b> từ · <b>'+countSent+'/'+step.entries.length+'</b> câu</div>'+
       '<button type="button" class="bk-review-launch" data-review-launch title="Ôn các từ đến hạn từ mọi STEP" aria-label="Ôn từ đến hạn">'+
       '<span aria-hidden="true">◷</span> <span id="bkReviewCount">Ôn '+dueCount()+' từ</span></button>'+
+      '<button class="bk-sequence" data-sequence type="button" aria-pressed="false">▶ Nghe '+step.entries.length+(audioMode()==="word"?" từ":" câu")+'</button>'+
+      '<button class="bk-cloud-status" data-cloud-status type="button" aria-label="Đồng bộ Sách 2100">☁ Máy này</button>'+
       '<button class="bk-toggle '+(!state.showEn?"is-off":"")+'" data-toggle="showEn" type="button">'+(state.showEn?"Ẩn":"Hiện")+' Anh</button>'+
       '<button class="bk-toggle '+(!state.showJa?"is-off":"")+'" data-toggle="showJa" type="button">'+(state.showJa?"Ẩn":"Hiện")+' Nhật</button>'+
       '<button class="bk-toggle bk-toggle-vi '+(!state.showWordVi?"is-off":"")+'" data-toggle="showWordVi" type="button">'+(state.showWordVi?"Ẩn":"Hiện")+' nghĩa từ</button>'+
@@ -318,6 +379,7 @@
       '<button class="bk-mode '+(state.mode==="read"?"is-active":"")+'" data-mode="read" type="button">Đọc sách</button>'+
       '<button class="bk-mode '+(state.mode==="word"?"is-active":"")+'" data-mode="word" type="button">Học từ</button>'+
       '<button class="bk-mode '+(state.mode==="sentence"?"is-active":"")+'" data-mode="sentence" type="button">Học câu</button>'+
+      '<button type="button" class="bk-audio-repeat '+(state.repeatAudio?"is-active":"")+'" data-repeat-audio aria-pressed="'+(state.repeatAudio?"true":"false")+'">↻ Lặp toàn STEP</button>'+
       '<button class="bk-mobile-options-trigger" type="button" data-mobile-options aria-expanded="'+(mobileOptionsOpen?"true":"false")+'" aria-label="Tùy chọn hiển thị" title="Tùy chọn hiển thị">⚙ Tùy chọn</button>'+
       '<button class="bk-fit-toggle" data-fit type="button">'+(state.fitPage?"⛶ Toàn trang":"🔍 Thu vừa trang")+'</button><button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
   }
@@ -348,6 +410,8 @@
       '<div class="bk-book-end">Nguồn: STEP '+step.id+' · trang '+esc(step.pages)+' của ảnh sách đã cung cấp · '+step.entries.length+' từ / '+step.entries.length+' câu</div></div></div>'+
       '<div class="bk-bottom"><div><b>Enter</b> kiểm tra · <b>Enter khi trống</b> sang dòng kế · <b>Esc</b> thoát <span id="bkGlobalMessage" aria-live="polite"></span></div>'+
       '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / '+BOOK.steps.length+' STEP</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
+    updateCloudControl();
+    updateSequenceControl();
   }
   function updateDueBadge(){
     if(!root||!srs)return;
