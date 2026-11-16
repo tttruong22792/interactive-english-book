@@ -12,6 +12,25 @@
   if(!Array.isArray(state.doneWords)) state.doneWords=[];
   if(!Array.isArray(state.doneSentences)) state.doneSentences=[];
   if(!BOOK.steps.some(function(s){return s.id===Number(state.step);}))state.step=1;
+  var srs=window.Book2100SRS?.createStore?.({storage:window.localStorage})||null;
+  if(srs)srs.seedLegacy(state.doneWords,state.doneSentences);
+  var reviewSession=null,overlayReturnFocus=null;
+  var byNumber=new Map();
+  BOOK.steps.forEach(function(step){step.entries.forEach(function(item){
+    byNumber.set(item.n,{item:item,step:step.id});
+  });});
+  function entryByNumber(n){return byNumber.get(Number(n))||null;}
+  function dueCount(){return srs?srs.dueEntries(BOOK.steps,"word").length:0;}
+  function masteryLabel(status){return srs?.levels?.[status]||"Mới";}
+  function masteryButton(n){
+    var rec=srs?.get(n,"word")||{status:"new",due:false};
+    var label=masteryLabel(rec.status)+(rec.due?" · Đến hạn ôn":"");
+    var glyph=rec.status==="mastered"?"✓":rec.status==="new"?"○":"◉";
+    return '<button type="button" class="bk-mastery is-'+rec.status+(rec.due?' is-due':'')+
+      '" data-mastery="'+n+'" title="'+esc(label)+'" aria-label="Từ '+n+': '+esc(label)+'">'+
+      '<span class="bk-mastery-symbol" aria-hidden="true">'+glyph+'</span>'+
+      (rec.due?'<span class="bk-due-dot" aria-hidden="true"></span>':'')+'</button>';
+  }
   function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(error){}}
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
   function ruby(text){
@@ -90,7 +109,7 @@
   function renderRow(item){
     var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
     return '<div class="bk-row" data-row="'+n+'">'+
-      '<div class="bk-cell bk-number"><span>'+n+'</span><span class="bk-book-checkbox">□</span></div>'+
+      '<div class="bk-cell bk-number"><span>'+n+'</span>'+masteryButton(n)+'</div>'+
       '<div class="bk-cell bk-word">'+(word?practiceMeaning("word",item.vi):"")+'<div class="bk-word-line">'+
       (word?input(n,"word"):state.showEn?'<strong>'+esc(item.en)+'</strong>':'<span class="bk-masked">••••••</span>')+
       line(n,"doneWords")+'</div><div class="bk-word-sub">'+(state.mode==="read"?'<small>'+esc(item.ipa)+'</small>':"")+listenButton(n,"word")+'</div></div>'+
@@ -110,6 +129,8 @@
     return '<div class="bk-toolbar"><div class="bk-brand"><span class="bk-brand-icon">▣</span><div><strong>2100 TỪ VỰNG ANH–NHẬT</strong><small>LEVEL 1 · sách tương tác</small></div></div>'+
       '<div class="bk-toolbar-controls"><label class="bk-step-label">STEP <select id="bkStepSelect" aria-label="Chọn STEP">'+BOOK.steps.map(function(s){return '<option value="'+s.id+'" '+(s.id===step.id?"selected":"")+'>STEP '+s.id+' · '+s.start+'–'+s.end+'</option>';}).join('')+'</select></label>'+
       '<div class="bk-progress" id="bkProgress" aria-live="polite"><b>'+countWords+'/'+step.entries.length+'</b> từ · <b>'+countSent+'/'+step.entries.length+'</b> câu</div>'+
+      '<button type="button" class="bk-review-launch" data-review-launch title="Ôn các từ đến hạn từ mọi STEP" aria-label="Ôn từ đến hạn">'+
+      '<span aria-hidden="true">◷</span> <span id="bkReviewCount">Ôn '+dueCount()+' từ</span></button>'+
       '<button class="bk-toggle '+(!state.showEn?"is-off":"")+'" data-toggle="showEn" type="button">'+(state.showEn?"Ẩn":"Hiện")+' Anh</button>'+
       '<button class="bk-toggle '+(!state.showJa?"is-off":"")+'" data-toggle="showJa" type="button">'+(state.showJa?"Ẩn":"Hiện")+' Nhật</button>'+
       '<button class="bk-toggle bk-toggle-vi '+(!state.showWordVi?"is-off":"")+'" data-toggle="showWordVi" type="button">'+(state.showWordVi?"Ẩn":"Hiện")+' nghĩa từ</button>'+
@@ -144,6 +165,19 @@
       '<div class="bk-book-end">Nguồn: STEP '+step.id+' · trang '+esc(step.pages)+' của ảnh sách đã cung cấp · '+step.entries.length+' từ / '+step.entries.length+' câu</div></div></div>'+
       '<div class="bk-bottom"><div><b>Enter</b> kiểm tra · <b>Enter khi trống</b> sang dòng kế · <b>Esc</b> thoát <span id="bkGlobalMessage" aria-live="polite"></span></div>'+
       '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / '+BOOK.steps.length+' STEP</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
+  }
+  function updateDueBadge(){
+    if(!root||!srs)return;
+    var badge=root.querySelector("#bkReviewCount");
+    if(badge)badge.textContent=dueCount()?"Ôn "+dueCount()+" từ":"Đã ôn xong";
+    var parent=root.querySelector("[data-review-launch]");
+    if(parent){parent.classList.toggle("is-clear",dueCount()===0);parent.title=dueCount()?"Có "+dueCount()+" từ đến hạn trên toàn LEVEL 1":"Chưa có từ đến hạn ôn";}
+  }
+  function refreshMastery(n){
+    if(!root)return;
+    var current=root.querySelector('[data-mastery="'+n+'"]');
+    if(current)current.outerHTML=masteryButton(n);
+    updateDueBadge();
   }
   function updateCounter(){
     var step=currentStep();
@@ -211,6 +245,8 @@
     if(!typed){focusNext(n,type);return;}
     var answer=type==="word"?entry.en:entry.sentence;
     if(clean(typed)!==clean(answer)){
+      if(srs)srs.record(n,type,false);
+      refreshMastery(n);
       inputNode.classList.add("is-wrong");
       inputNode.classList.remove("is-correct");
       showAnswerMark(inputNode,"wrong");
@@ -218,6 +254,8 @@
       return;
     }
     var field=type==="word"?"doneWords":"doneSentences";
+    if(srs)srs.record(n,type,true);
+    refreshMastery(n);
     if(!state[field].includes(n))state[field].push(n);
     persist();
     inputNode.value="";
@@ -241,7 +279,8 @@
     }catch(error){message("Không thể phát âm thanh.");}
   }
   async function speak(n,type,index){
-    var e=currentStep().entries.find(function(x){return x.n===n;});if(!e)return;
+    var found=entryByNumber(n);
+    var e=found?.item;if(!e)return;
     var value=type==="word"?(e.wordAudio||e.en):type==="chunk"?e.extra?.[index]?.[0]:e.sentence;
     if(!value)return;
     if(activeAudio&&window.AITTS?.stop)window.AITTS.stop();
