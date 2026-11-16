@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v128-book-2100';
+const APP_CACHE='language-studio-v129-book-2100-full-level1';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -13,6 +13,12 @@ const ASSETS=[
   './vocab-arcade.css',
   './book-2100.css',
   './book-2100-data.js',
+  './book-2100-steps-03-06.js',
+  './book-2100-steps-07-12.js',
+  './book-2100-steps-13-18.js',
+  './book-2100-steps-19-23.js',
+  './book-2100-steps-24-29.js',
+  './book-2100-steps-30-33.js',
   './book-2100.js',
   './app-shell-v53.css',
   './reading-studio.css',
