@@ -155,9 +155,9 @@ assert.ok(js.includes("inputNode.value=\"\""),"Correct answer still clears input
 const css=await read("book-2100.css");
 assert.match(css,/\.book2100\.bk-fit \.bk-scroll\{[\s\S]*?overflow:hidden/,"Desktop no-scroll fit preserved");
 assert.match(css,/grid-template-rows:repeat\(var\(--bk-row-count,12\),minmax\(0,1fr\)\)/,"All 12/13 rows still fit");
-assert.match(css,/\.book2100\.bk-mastery/,"Mastery indicators styled");
-assert.match(css,/\.book2100\.bk-srs-layer/,"Details and review overlays are separate from grid");
-assert.match(css,/\.book2100\.bk-review-dialog/);
+assert.match(css,/\.book2100\s+\.bk-mastery/,"Mastery indicators styled");
+assert.match(css,/\.book2100\s+\.bk-srs-layer/,"Details and review overlays are separate from grid");
+assert.match(css,/\.book2100\s+\.bk-review-dialog/);
 assert.match(css,/\.book2100\.bk-study-word \.bk-show-words/,"iPhone recall layout retained");
 const index=await read("index.html");
 assert.ok(index.indexOf('src="book-2100-srs.js')>=0);
