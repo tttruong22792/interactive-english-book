@@ -201,7 +201,7 @@
       ' placeholder="Nhập từ tiếng Anh..." aria-label="Nhập từ tiếng Anh của '+esc(item.vi)+'"/>'+
       '<span class="bk-review-mark" aria-live="polite" aria-label="Chưa kiểm tra"></span></div>'+
       '<div class="bk-review-help">Enter: kiểm tra · Enter khi trống: sang từ tiếp theo</div>'+
-      '<button type="button" class="bk-review-audio" data-review-audio="'+n+'">◖)) Nghe phát âm</button></div>'+
+      '<button type="button" class="bk-review-audio" data-review-audio="'+n+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6"/><path d="M18 6a9 9 0 0 1 0 12"/></svg> Nghe phát âm</button></div>'+
       '<div class="bk-review-actions"><button type="button" data-review-skip>Bỏ qua</button>'+
       '<button type="button" data-review-next class="bk-srs-primary">Tiếp theo →</button></div>'+
       '</section>';
@@ -211,14 +211,15 @@
   function renderReviewDone(){
     if(!reviewSession)return;
     var session=reviewSession;
+    var empty=session.ids.length===0;
     var html='<section class="bk-review-dialog bk-review-finished" role="dialog" aria-modal="true" aria-labelledby="bk-review-title">'+
       '<div class="bk-review-head"><div><small>ÔN NGẮT QUÃNG · LEVEL 1</small>'+
-      '<h2 id="bk-review-title">Hoàn thành phiên ôn</h2></div>'+
+      '<h2 id="bk-review-title">'+(empty?"Không có từ đến hạn":"Hoàn thành phiên ôn")+'</h2></div>'+
       '<button type="button" class="bk-srs-close" data-srs-close aria-label="Đóng">✕</button></div>'+
       '<div class="bk-review-finished-body"><span class="bk-review-finished-icon" aria-hidden="true">✓</span>'+
-      '<strong>'+session.ids.length+' từ đã đi qua</strong>'+
-      '<p>Nhớ đúng: '+session.passed+' · Cần củng cố: '+session.missed+
-      ' · Bỏ qua: '+session.skipped+'</p>'+
+      '<strong>'+(empty?"Đã ôn xong hôm nay":session.ids.length+" từ đã đi qua")+'</strong>'+
+      (empty?"":'<p>Nhớ đúng: '+session.passed+' · Cần củng cố: '+session.missed+
+      ' · Bỏ qua: '+session.skipped+'</p>')+
       '<small>Các từ chưa vững sẽ được xếp lịch ôn riêng. Nhập nhiều lần trong một ngày không làm tăng cấp độ nhớ.</small></div>'+
       '<div class="bk-review-actions"><button class="bk-srs-primary" type="button" data-srs-close>Trở lại sách</button></div></section>';
     reviewOverlay(html);
@@ -348,7 +349,18 @@
   function refreshMastery(n){
     if(!root)return;
     var current=root.querySelector('[data-mastery="'+n+'"]');
-    if(current)current.outerHTML=masteryButton(n);
+    if(current){
+      var rec=srs?.get(n,"word")||{status:"new",due:false};
+      var label=masteryLabel(rec.status)+(rec.due?" · Đến hạn ôn":"");
+      current.className="bk-mastery is-"+rec.status+(rec.due?" is-due":"");
+      current.title=label;
+      current.setAttribute("aria-label","Từ "+n+": "+label);
+      var symbol=current.querySelector(".bk-mastery-symbol");
+      if(symbol)symbol.textContent=rec.status==="mastered"?"✓":rec.status==="new"?"○":"◉";
+      var dot=current.querySelector(".bk-due-dot");
+      if(rec.due&&!dot){current.insertAdjacentHTML("beforeend",'<span class="bk-due-dot" aria-hidden="true"></span>');}
+      else if(!rec.due&&dot)dot.remove();
+    }
     updateDueBadge();
   }
   function updateCounter(){
@@ -382,7 +394,7 @@
   function switchStep(delta){
     var idx=BOOK.steps.findIndex(function(x){return x.id===Number(state.step);});
     if(idx+delta<0||idx+delta>=BOOK.steps.length){message("Chưa có ảnh của STEP tiếp theo.");return false;}
-    state.step=BOOK.steps[idx+delta].id;persist();render();return true;
+    state.step=BOOK.steps[idx+delta].id;assistedInputs.clear();persist();render();return true;
   }
   function focusNext(n,type){
     var next=currentStep().entries.find(function(x){return x.n>n;});
@@ -489,7 +501,7 @@
         if(evt.target.matches(".bk-entry-input"))clearFocusedMeaning(evt.target);
       });
       root.addEventListener("change",function(evt){
-        if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);persist();render();}
+        if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);assistedInputs.clear();persist();render();}
       });
       root.addEventListener("keydown",function(evt){
         if(evt.isComposing||evt.keyCode===229)return;
@@ -567,6 +579,7 @@
     }
     if(button.dataset.mode){
       state.mode=button.dataset.mode;
+      assistedInputs.clear();
       if(state.mode==="word")state.showWordVi=true;
       if(state.mode==="sentence")state.showSentenceVi=true;
       if(state.mode==="word")state.page="words";
