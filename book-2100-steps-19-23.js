@@ -30,6 +30,14 @@ add(20,231,[
 ["evening","buổi tối; chiều tối","夕方{ゆうがた}、晩{ばん}","I have tennis practice on Friday evening every week.","Tối thứ Sáu hằng tuần tôi luyện tập tennis.","私{わたし}は毎週{まいしゅう}金曜日{きんようび}の夕方{ゆうがた}にテニスの練習{れんしゅう}があります。"],
 ["weather","thời tiết","天気{てんき}","The weather was bad during the trip.","Thời tiết trong chuyến đi rất xấu.","旅行中{りょこうちゅう}は天気{てんき}が悪{わる}かったです。"]
 ]);
+// The original tourist.mp3 recording is an abnormally short 5.6 KB clip.
+// Keep the printed vocabulary unchanged; route WORD audio to a new TTS key.
+const touristEntry=window.BOOK_2100_DATA.steps.find(step=>step.id===20)
+  ?.entries.find(entry=>entry.en==="tourist");
+if(touristEntry){
+  touristEntry.wordAudio="Tourist.";
+  touristEntry.wordAudioMinSeconds=0.55;
+}
 add(21,243,[
 ["green","màu xanh lá","緑{みどり}の、緑{みどり}","The boy with the green cap is my brother.","Cậu bé đội mũ xanh lá là em trai tôi.","緑色{みどりいろ}の帽子{ぼうし}をかぶった少年{しょうねん}は私{わたし}の弟{おとうと}です。"],
 ["white","màu trắng","白{しろ}い、白{しろ}","I bought a white T-shirt yesterday.","Hôm qua tôi đã mua áo thun trắng.","昨日{きのう}、白{しろ}いTシャツを買{か}いました。"],
