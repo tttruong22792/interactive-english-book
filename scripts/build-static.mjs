@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
