@@ -15,6 +15,8 @@
   var srs=window.Book2100SRS?.createStore?.({storage:window.localStorage})||null;
   if(srs)srs.seedLegacy(state.doneWords,state.doneSentences);
   var reviewSession=null,overlayReturnFocus=null,assistedInputs=new Set();
+  // Card state is presentation-only; the source book and SRS history are unchanged.
+  var expandedMobileCards=new Set(),mobileOptionsOpen=false;
   var byNumber=new Map();
   BOOK.steps.forEach(function(step){step.entries.forEach(function(item){
     byNumber.set(item.n,{item:item,step:step.id});
@@ -279,27 +281,32 @@
     input.focus({preventScroll:true});
   }
 
+  function mobileCardKey(n){return state.step+":"+state.page+":"+n;}
+  function mobileCardAction(n){
+    var expanded=expandedMobileCards.has(mobileCardKey(n));
+    return '<div class="bk-mobile-card-actions"><button type="button" class="bk-mobile-expand" data-mobile-expand="'+n+'" aria-expanded="'+expanded+'" aria-controls="bk-card-'+state.page+'-details-'+n+'"><span>'+(expanded?"Thu gọn":"Xem thêm")+'</span><span class="bk-mobile-expand-chevron" aria-hidden="true">⌄</span></button></div>';
+  }
   function renderRow(item){
     var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
-    return '<div class="bk-row" data-row="'+n+'">'+
+    return '<div class="bk-row'+(expandedMobileCards.has(mobileCardKey(n))?" bk-expanded":"")+'" data-row="'+n+'">'+
       '<div class="bk-cell bk-number"><span>'+n+'</span>'+masteryButton(n)+'</div>'+
       '<div class="bk-cell bk-word">'+(word?practiceMeaning("word",item.vi):"")+'<div class="bk-word-line">'+
       (word?input(n,"word"):state.showEn?'<strong>'+esc(item.en)+'</strong>':'<span class="bk-masked">••••••</span>')+
       line(n,"doneWords")+'</div><div class="bk-word-sub">'+(state.mode==="read"?'<small>'+esc(item.ipa)+'</small>':"")+listenButton(n,"word")+'</div></div>'+
       '<div class="bk-cell bk-word-vi">'+(state.showWordVi?esc(item.vi):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-jword">'+(state.showJa?ruby(item.ja):'<span class="bk-masked">••••</span>')+'</div>'+
-      '<div class="bk-cell bk-extra">'+renderExtra(item)+'</div>'+
+      '<div class="bk-cell bk-extra" id="bk-card-words-details-'+n+'">'+renderExtra(item)+'</div>'+
       '<div class="bk-cell bk-sentence">'+(sentence?practiceMeaning("sentence",item.sentenceVi):"")+'<div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
       '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+'</div></div>'+
       '<div class="bk-cell bk-svi">'+(state.showSentenceVi?esc(item.sentenceVi):'<span class="bk-masked">••••••</span>')+'</div>'+
-      '<div class="bk-cell bk-sja">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
-      '</div>';
+      '<div class="bk-cell bk-sja" id="bk-card-sentences-details-'+n+'">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
+      mobileCardAction(n)+'</div>';
   }
   function toolbar(){
     var step=currentStep();
     var countWords=step.entries.filter(function(x){return state.doneWords.includes(x.n);}).length;
     var countSent=step.entries.filter(function(x){return state.doneSentences.includes(x.n);}).length;
-    return '<div class="bk-toolbar"><div class="bk-brand"><span class="bk-brand-icon">▣</span><div><strong>2100 TỪ VỰNG ANH–NHẬT</strong><small>LEVEL 1 · sách tương tác</small></div></div>'+
+    return '<div class="bk-toolbar"><div class="bk-brand"><span class="bk-brand-icon">▣</span><div><strong>2100 TỪ VỰNG ANH–NHẬT</strong><span class="bk-brand-mobile">SÁCH 2100</span><small>LEVEL 1 · sách tương tác</small></div></div>'+
       '<div class="bk-toolbar-controls"><label class="bk-step-label">STEP <select id="bkStepSelect" aria-label="Chọn STEP">'+BOOK.steps.map(function(s){return '<option value="'+s.id+'" '+(s.id===step.id?"selected":"")+'>STEP '+s.id+' · '+s.start+'–'+s.end+'</option>';}).join('')+'</select></label>'+
       '<div class="bk-progress" id="bkProgress" aria-live="polite"><b>'+countWords+'/'+step.entries.length+'</b> từ · <b>'+countSent+'/'+step.entries.length+'</b> câu</div>'+
       '<button type="button" class="bk-review-launch" data-review-launch title="Ôn các từ đến hạn từ mọi STEP" aria-label="Ôn từ đến hạn">'+
@@ -311,6 +318,7 @@
       '<button class="bk-mode '+(state.mode==="read"?"is-active":"")+'" data-mode="read" type="button">Đọc sách</button>'+
       '<button class="bk-mode '+(state.mode==="word"?"is-active":"")+'" data-mode="word" type="button">Học từ</button>'+
       '<button class="bk-mode '+(state.mode==="sentence"?"is-active":"")+'" data-mode="sentence" type="button">Học câu</button>'+
+      '<button class="bk-mobile-options-trigger" type="button" data-mobile-options aria-expanded="'+(mobileOptionsOpen?"true":"false")+'" aria-label="Tùy chọn hiển thị" title="Tùy chọn hiển thị">⚙ Tùy chọn</button>'+
       '<button class="bk-fit-toggle" data-fit type="button">'+(state.fitPage?"⛶ Toàn trang":"🔍 Thu vừa trang")+'</button><button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
   }
   function render(){
@@ -319,6 +327,7 @@
     root.classList.toggle("bk-fit",!!state.fitPage);
     root.classList.toggle("bk-study-word",state.mode==="word");
     root.classList.toggle("bk-study-sentence",state.mode==="sentence");
+    root.classList.toggle("bk-mobile-options-open",mobileOptionsOpen);
     root.classList.remove("bk-focused","bk-keyboard-open");
     root.style.setProperty("--bk-row-count",String(step.entries.length));
     root.innerHTML=toolbar()+
@@ -568,6 +577,24 @@
     if(button.hasAttribute("data-review-launch")){startReview();return;}
     if(button.hasAttribute("data-close-chunks")){closeChunks();return;}
     if(button.dataset.chunks){showChunks(Number(button.dataset.chunks));return;}
+    if(button.hasAttribute("data-mobile-options")){
+      mobileOptionsOpen=!mobileOptionsOpen;
+      root.classList.toggle("bk-mobile-options-open",mobileOptionsOpen);
+      button.setAttribute("aria-expanded",mobileOptionsOpen?"true":"false");
+      return;
+    }
+    if(button.dataset.mobileExpand){
+      var n=Number(button.dataset.mobileExpand);
+      var row=button.closest("[data-row]");
+      if(!row)return;
+      var key=mobileCardKey(n),opening=!expandedMobileCards.has(key);
+      if(opening)expandedMobileCards.add(key);else expandedMobileCards.delete(key);
+      row.classList.toggle("bk-expanded",opening);
+      button.setAttribute("aria-expanded",opening?"true":"false");
+      var label=button.querySelector("span");
+      if(label)label.textContent=opening?"Thu gọn":"Xem thêm";
+      return;
+    }
     if(button.hasAttribute("data-exit")){close();return;}
     if(button.hasAttribute("data-fit")){state.fitPage=!state.fitPage;persist();render();return;}
     if(button.dataset.listen){
@@ -579,6 +606,7 @@
     }
     if(button.dataset.mode){
       state.mode=button.dataset.mode;
+      mobileOptionsOpen=false;
       assistedInputs.clear();
       if(state.mode==="word")state.showWordVi=true;
       if(state.mode==="sentence")state.showSentenceVi=true;

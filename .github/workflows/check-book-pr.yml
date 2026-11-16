@@ -29,6 +29,7 @@ jobs:
           node --check scripts/test-book-2100.mjs
           node scripts/test-book-2100.mjs
           node scripts/test-book-2100-srs.mjs
+          node scripts/test-book-2100-mobile.mjs
       - name: Build production artifact
         run: npm run build
       - name: Check shipped assets
@@ -37,5 +38,6 @@ jobs:
           test -s dist/book-2100-srs.js
           test -s dist/book-2100.js
           test -s dist/book-2100.css
+          test -s dist/book-2100-mobile.css
           grep -q 'book-2100.js' dist/index.html
           grep -q 'book-2100-step-' dist/tts-manifest.json

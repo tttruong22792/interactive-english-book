@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v133-book2100-srs-review';
+const APP_CACHE='language-studio-v134-book2100-mobile-cards';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -12,6 +12,7 @@ const ASSETS=[
   './runtime-20261112-word-blaster-v1.js',
   './vocab-arcade.css',
   './book-2100.css',
+  './book-2100-mobile.css',
   './book-2100-data.js',
   './book-2100-steps-03-06.js',
   './book-2100-steps-07-12.js',
