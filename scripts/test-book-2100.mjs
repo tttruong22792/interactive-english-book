@@ -40,7 +40,7 @@ assert.match(js,/state\.showJa/,"Japanese show/hide");
 assert.match(js,/root\.hidden=true/,"Book exits cleanly");
 assert.match(js,/window\.AITTS\.speak/,"English TTS integrated");
 assert.match(js,/root\.classList\.toggle\("bk-fit"/,"Desktop fit selectable");
-assert.match(js,/BOOK\\.steps\\.length/,"STEP count dynamic");
+assert.ok(js.includes("BOOK.steps.length"),"STEP count dynamic");
 assert.ok(js.includes('practiceMeaning("word",item.vi)'),"Word recall shows Vietnamese meaning in the entry cell");
 assert.ok(js.includes('practiceMeaning("sentence",item.sentenceVi)'),"Sentence recall shows Vietnamese meaning in the entry cell");
 assert.ok(js.includes('state.mode==="read"?\'<small>\'+esc(item.ipa)'),"IPA must render only in reading mode");
