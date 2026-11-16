@@ -323,6 +323,7 @@
   }
   function render(){
     if(!root)return;
+    cancelKeyboardAlignment();restoreKeyboardViewport();
     var step=currentStep();
     root.classList.toggle("bk-fit",!!state.fitPage);
     root.classList.toggle("bk-study-word",state.mode==="word");
@@ -380,6 +381,82 @@
     if(output)output.innerHTML="<b>"+w+"/"+step.entries.length+"</b> từ · <b>"+s+"/"+step.entries.length+"</b> câu";
   }
   function message(s){var node=root.querySelector("#bkGlobalMessage");if(node)node.textContent=s||"";}
+
+  // iOS Safari keeps the layout viewport taller than the area above the
+  // software keyboard. Size the standalone reader to the *visual* viewport,
+  // then scroll its own content rather than the document (which is locked).
+  var keyboardScrollFrame=0,keyboardScrollTimers=[];
+  function compactBook(){return !!window.matchMedia?.("(max-width:1279px)")?.matches;}
+  function focusedPracticeInput(){
+    var active=document.activeElement;
+    return root && !root.hidden && active && root.contains(active) &&
+      active.matches(".bk-entry-input")?active:null;
+  }
+  function cancelKeyboardAlignment(){
+    if(keyboardScrollFrame){cancelAnimationFrame(keyboardScrollFrame);keyboardScrollFrame=0;}
+    keyboardScrollTimers.forEach(function(id){clearTimeout(id);});
+    keyboardScrollTimers=[];
+  }
+  function restoreKeyboardViewport(){
+    if(!root)return;
+    root.style.removeProperty("top");
+    root.style.removeProperty("bottom");
+    root.style.removeProperty("height");
+    var scroller=root.querySelector(".bk-scroll");
+    if(scroller)scroller.style.removeProperty("padding-bottom");
+  }
+  function sizeToVisibleKeyboard(){
+    if(!compactBook()||!focusedPracticeInput())return false;
+    var viewport=window.visualViewport;
+    if(viewport){
+      // offsetTop accounts for iOS Safari shifting the visual viewport when
+      // the user focuses a field toward the end of a long STEP.
+      root.style.top=Math.max(0,Math.round(viewport.offsetTop||0))+"px";
+      root.style.bottom="auto";
+      root.style.height=Math.max(200,Math.round(Math.min(window.innerHeight||viewport.height,viewport.height)))+"px";
+    }
+    var scroller=root.querySelector(".bk-scroll");
+    if(scroller){
+      // The final row needs *extra scroll range*: otherwise there is nowhere
+      // to move the last input even when a scrollIntoView call is made.
+      scroller.style.paddingBottom=Math.max(110,Math.round(scroller.clientHeight*.54))+"px";
+    }
+    return true;
+  }
+  function keyboardScrollDelta(inputRect,scrollerRect,scrollTop,scrollHeight,clientHeight){
+    var safeTop=scrollerRect.top+Math.min(72,scrollerRect.height*.19);
+    var safeBottom=scrollerRect.bottom-Math.max(55,scrollerRect.height*.24);
+    if(inputRect.top>=safeTop && inputRect.bottom<=safeBottom)return 0;
+    var desiredTop=scrollerRect.top+Math.max(48,Math.min(scrollerRect.height*.32,scrollerRect.height-inputRect.height-16));
+    var delta=inputRect.top-desiredTop;
+    var target=Math.max(0,Math.min(Math.max(0,scrollHeight-clientHeight),scrollTop+delta));
+    return target-scrollTop;
+  }
+  function alignPracticeAboveKeyboard(){
+    var input=focusedPracticeInput();
+    if(!input||!sizeToVisibleKeyboard())return;
+    var scroller=root.querySelector(".bk-scroll");
+    if(!scroller)return;
+    var delta=keyboardScrollDelta(input.getBoundingClientRect(),scroller.getBoundingClientRect(),
+      scroller.scrollTop,scroller.scrollHeight,scroller.clientHeight);
+    if(Math.abs(delta)>2)scroller.scrollTop+=delta;
+  }
+  function queueKeyboardAlignment(){
+    cancelKeyboardAlignment();
+    if(!sizeToVisibleKeyboard())return;
+    keyboardScrollFrame=requestAnimationFrame(function(){
+      keyboardScrollFrame=0;alignPracticeAboveKeyboard();
+    });
+    // iOS resizes its visual viewport during the keyboard animation, often
+    // *after* focusin. Re-align once the keyboard has settled as well.
+    [110,320].forEach(function(ms){
+      keyboardScrollTimers.push(setTimeout(alignPracticeAboveKeyboard,ms));
+    });
+  }
+  function onKeyboardViewportResize(){
+    if(focusedPracticeInput())queueKeyboardAlignment();
+  }
+
   function focusedMeaning(inputNode){
     if(!inputNode||!inputNode.matches(".bk-entry-input"))return;
     var n=Number(inputNode.dataset.n),type=inputNode.dataset.entry;
@@ -391,6 +468,7 @@
     root.classList.add("bk-focused","bk-keyboard-open");
     var cell=inputNode.closest(".bk-row");
     if(cell)cell.classList.add("bk-row-focused");
+    queueKeyboardAlignment();
   }
   function clearFocusedMeaning(inputNode){
     if(!root)return;
@@ -399,6 +477,8 @@
       if(cell)cell.classList.remove("bk-row-focused");
     }
     root.classList.remove("bk-focused","bk-keyboard-open");
+    cancelKeyboardAlignment();
+    restoreKeyboardViewport();
   }
   function switchStep(delta){
     var idx=BOOK.steps.findIndex(function(x){return x.id===Number(state.step);});
@@ -414,7 +494,11 @@
     if(type==="sentence")state.page="sentences";
     else state.page="words";
     var inputNode=root.querySelector('[data-entry="'+type+'"][data-n="'+next.n+'"]');
-    if(inputNode){inputNode.focus({preventScroll:true});inputNode.scrollIntoView({block:"center",behavior:"smooth"});}
+    if(inputNode){
+      inputNode.focus({preventScroll:true});
+      if(compactBook())queueKeyboardAlignment();
+      else inputNode.scrollIntoView({block:"center",behavior:"smooth"});
+    }
   }
   function showAnswerMark(inputNode,result){
     var type=inputNode.dataset.entry,n=Number(inputNode.dataset.n);
@@ -492,6 +576,7 @@
   }
   function close(){
     if(!root||root.hidden)return;
+    cancelKeyboardAlignment();restoreKeyboardViewport();
     closeSrsLayer();closeChunks();stopAudio();root.hidden=true;document.body.classList.remove("book2100-open");
     document.documentElement.classList.remove("book2100-open");
     if(trigger&&trigger.isConnected)trigger.focus({preventScroll:true});
@@ -503,11 +588,14 @@
       root.id="book2100Root";root.className="book2100";root.setAttribute("aria-label","Sách học 2100 từ vựng Anh Nhật");
       root.hidden=true;document.body.appendChild(root);
       root.addEventListener("click",onClick);
+      window.visualViewport?.addEventListener("resize",onKeyboardViewportResize);
+      window.addEventListener("resize",onKeyboardViewportResize);
       root.addEventListener("focusin",function(evt){
         if(evt.target.matches(".bk-entry-input"))focusedMeaning(evt.target);
       });
       root.addEventListener("focusout",function(evt){
-        if(evt.target.matches(".bk-entry-input"))clearFocusedMeaning(evt.target);
+        if(evt.target.matches(".bk-entry-input") &&
+           !evt.relatedTarget?.matches?.(".bk-entry-input"))clearFocusedMeaning(evt.target);
       });
       root.addEventListener("change",function(evt){
         if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);assistedInputs.clear();persist();render();}
