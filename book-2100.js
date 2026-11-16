@@ -267,6 +267,7 @@
     srs?.record(n,"word",correct,{assisted:!!reviewSession.hintUsed});
     refreshMastery(n);
     if(correct){
+      void speak(n,"word");
       reviewSession.answered=true;
       input.value="";
       input.classList.remove("is-wrong");input.classList.add("is-correct");
@@ -547,9 +548,10 @@
   function switchStep(delta){
     var idx=BOOK.steps.findIndex(function(x){return x.id===Number(state.step);});
     if(idx+delta<0||idx+delta>=BOOK.steps.length){message("Chưa có ảnh của STEP tiếp theo.");return false;}
-    state.step=BOOK.steps[idx+delta].id;assistedInputs.clear();persist();render();return true;
+    stopAudio();state.step=BOOK.steps[idx+delta].id;assistedInputs.clear();persist();render();return true;
   }
   function focusNext(n,type){
+    stopAudio();
     var next=currentStep().entries.find(function(x){return x.n>n;});
     if(!next){
       if(!switchStep(1))return;
@@ -606,37 +608,123 @@
     showAnswerMark(inputNode,"correct");
     updateCounter();
     inputNode.focus({preventScroll:true});
+    // Correct Enter: pronounce exactly the word or full sentence just recalled.
+    void speak(n,type);
   }
+
   function browserSpeak(s){
-    if(!("speechSynthesis" in window)){message("Thiết bị không hỗ trợ đọc tiếng Anh.");return;}
-    try{
-      window.speechSynthesis.cancel();
-      var u=new SpeechSynthesisUtterance(s);
-      u.lang="en-US";u.rate=0.88;u.pitch=1;
-      var voices=window.speechSynthesis.getVoices();
-      var voice=voices.find(function(v){return /^en[-_]US/i.test(v.lang);})||voices.find(function(v){return /^en/i.test(v.lang);});
-      if(voice)u.voice=voice;
-      window.speechSynthesis.speak(u);
-    }catch(error){message("Không thể phát âm thanh.");}
+    return new Promise(function(resolve){
+      if(!("speechSynthesis" in window)){message("Thiết bị không hỗ trợ đọc tiếng Anh.");resolve();return;}
+      if(browserSpeechResolve){var old=browserSpeechResolve;browserSpeechResolve=null;old();}
+      var settled=false;
+      function done(){
+        if(settled)return;settled=true;
+        if(browserSpeechResolve===done)browserSpeechResolve=null;
+        resolve();
+      }
+      try{
+        window.speechSynthesis.cancel();
+        var u=new SpeechSynthesisUtterance(s);
+        u.lang="en-US";u.rate=0.88;u.pitch=1;
+        var voices=window.speechSynthesis.getVoices();
+        var voice=voices.find(function(v){return /^en[-_]US/i.test(v.lang);})||
+          voices.find(function(v){return /^en/i.test(v.lang);});
+        if(voice)u.voice=voice;
+        u.onend=done;u.onerror=done;
+        browserSpeechResolve=done;
+        window.speechSynthesis.speak(u);
+      }catch(error){message("Không thể phát âm thanh.");done();}
+    });
   }
-  async function speak(n,type,index){
+  async function playItem(n,type,index){
     var found=entryByNumber(n);
     var e=found?.item;if(!e)return;
     var value=type==="word"?(e.wordAudio||e.en):type==="chunk"?e.extra?.[index]?.[0]:e.sentence;
     if(!value)return;
-    if(activeAudio&&window.AITTS?.stop)window.AITTS.stop();
-    if("speechSynthesis" in window)window.speechSynthesis.cancel();
     activeAudio=true;
     if(window.AITTS&&typeof window.AITTS.speak==="function"){
-      try{await window.AITTS.speak(value,{language:"en-US",rate:0.88,minDuration:type==="word"?Number(e.wordAudioMinSeconds||0):0});return;}
-      catch(error){if(error&&error.name==="AbortError")return;}
+      try{
+        await window.AITTS.speak(value,{language:"en-US",rate:0.88,
+          minDuration:type==="word"?Number(e.wordAudioMinSeconds||0):0});
+        return;
+      }catch(error){
+        if(error&&error.name==="AbortError")return;
+      }
     }
-    if(!root.hidden)browserSpeak(value);
+    if(!root?.hidden)await browserSpeak(value);
+  }
+  function cancelSequencePause(){
+    if(sequencePauseTimer){clearTimeout(sequencePauseTimer);sequencePauseTimer=0;}
+    if(sequencePauseResolve){var done=sequencePauseResolve;sequencePauseResolve=null;done();}
+  }
+  function clearPlayingRow(){
+    root?.querySelectorAll(".bk-row-audio-playing").forEach(function(row){
+      row.classList.remove("bk-row-audio-playing");
+    });
   }
   function stopAudio(){
+    ++sequenceEpoch;
+    sequenceActive=false;
     activeAudio=false;
+    cancelSequencePause();
+    clearPlayingRow();
     try{window.AITTS?.stop?.();}catch(error){}
     try{window.speechSynthesis?.cancel?.();}catch(error){}
+    if(browserSpeechResolve){var done=browserSpeechResolve;browserSpeechResolve=null;done();}
+    updateSequenceControl();
+  }
+  async function speak(n,type,index){
+    stopAudio(); // Manual playback and auto-play after Enter preempt a STEP loop.
+    return playItem(n,type,index);
+  }
+  function sequencePause(milliseconds,epoch){
+    return new Promise(function(resolve){
+      if(epoch!==sequenceEpoch){resolve();return;}
+      sequencePauseResolve=resolve;
+      sequencePauseTimer=setTimeout(function(){
+        sequencePauseTimer=0;sequencePauseResolve=null;resolve();
+      },milliseconds);
+    });
+  }
+  async function playStep(){
+    if(!root||root.hidden)return;
+    if(sequenceActive){stopAudio();return;}
+    stopAudio();
+    if(focusedPracticeInput())document.activeElement.blur();
+    var step=currentStep(),kind=audioMode(),epoch=sequenceEpoch;
+    var entries=step.entries.slice();
+    sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
+    updateSequenceControl();
+    try{
+      do{
+        for(var i=0;i<entries.length;i++){
+          if(epoch!==sequenceEpoch || root.hidden ||
+             state.step!==step.id || audioMode()!==kind)return;
+          var item=entries[i];
+          clearPlayingRow();
+          var row=root.querySelector('[data-row="'+item.n+'"]');
+          if(row){
+            row.classList.add("bk-row-audio-playing");
+            if(compactBook()&&!focusedPracticeInput())
+              row.scrollIntoView({block:"nearest",behavior:"smooth"});
+          }
+          // Hearing a word before a later recall makes that recall assisted;
+          // never inflate long-term mastery from a prompted answer.
+          if((state.mode==="word"&&kind==="word")||
+             (state.mode==="sentence"&&kind==="sentence")){
+            assistedInputs.add(kind+":"+item.n);
+          }
+          await playItem(item.n,kind);
+          if(epoch!==sequenceEpoch)return;
+          await sequencePause(280,epoch);
+        }
+      }while(epoch===sequenceEpoch && state.repeatAudio && !root.hidden);
+    }finally{
+      if(epoch===sequenceEpoch){
+        sequenceActive=false;activeAudio=false;
+        clearPlayingRow();updateSequenceControl();
+      }
+    }
   }
   function close(){
     if(!root||root.hidden)return;
@@ -662,7 +750,7 @@
            !evt.relatedTarget?.matches?.(".bk-entry-input"))clearFocusedMeaning(evt.target);
       });
       root.addEventListener("change",function(evt){
-        if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);assistedInputs.clear();persist();render();}
+        if(evt.target.id==="bkStepSelect"){stopAudio();state.step=Number(evt.target.value);assistedInputs.clear();persist();render();}
       });
       root.addEventListener("keydown",function(evt){
         if(evt.isComposing||evt.keyCode===229)return;
@@ -747,8 +835,21 @@
       if(label)label.textContent=opening?"Thu gọn":"Xem thêm";
       return;
     }
+    if(button.hasAttribute("data-sequence")){void playStep();return;}
+    if(button.hasAttribute("data-repeat-audio")){
+      state.repeatAudio=!state.repeatAudio;persist();
+      button.classList.toggle("is-active",state.repeatAudio);
+      button.setAttribute("aria-pressed",state.repeatAudio?"true":"false");
+      return;
+    }
+    if(button.hasAttribute("data-cloud-status")){
+      var status=window.Book2100CloudSync?.status?.();
+      if(!status?.signedIn){close();location.hash="#settings";}
+      else window.Book2100CloudSync.syncNow().catch(function(){});
+      return;
+    }
     if(button.hasAttribute("data-exit")){close();return;}
-    if(button.hasAttribute("data-fit")){state.fitPage=!state.fitPage;persist();render();return;}
+    if(button.hasAttribute("data-fit")){stopAudio();state.fitPage=!state.fitPage;persist();render();return;}
     if(button.dataset.listen){
       var kind=button.dataset.listen,n=Number(button.dataset.n);
       if((state.mode==="word"&&kind==="word")||(state.mode==="sentence"&&kind==="sentence")){
@@ -757,7 +858,7 @@
       speak(n,kind,Number(button.dataset.phraseIndex));return;
     }
     if(button.dataset.mode){
-      state.mode=button.dataset.mode;
+      stopAudio();state.mode=button.dataset.mode;
       mobileOptionsOpen=false;
       assistedInputs.clear();
       if(state.mode==="word")state.showWordVi=true;
@@ -768,9 +869,9 @@
     }
     if(button.dataset.toggle){
       var key=button.dataset.toggle;if(typeof state[key]!=="boolean")return;
-      state[key]=!state[key];persist();render();return;
+      stopAudio();state[key]=!state[key];persist();render();return;
     }
-    if(button.dataset.page){state.page=button.dataset.page;persist();render();return;}
+    if(button.dataset.page){stopAudio();state.page=button.dataset.page;persist();render();return;}
     if(button.dataset.step){switchStep(Number(button.dataset.step));}
   }
   function injectEntries(){
