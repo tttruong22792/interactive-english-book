@@ -785,6 +785,7 @@
     resendSignupConfirmation,
     updateRecoveredPassword,
     getAccessToken,
+    getClient, // Authenticated Supabase client; Book 2100 reuses this session/RLS.
     syncAccount,
     pull:pullRaw,
     saveWord:directUpsert,
