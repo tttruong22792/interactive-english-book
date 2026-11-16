@@ -33,8 +33,8 @@
     if(index<0)return esc(sentence);
     return esc(sentence.slice(0,index))+"<em>"+esc(sentence.slice(index,index+word.length))+"</em>"+esc(sentence.slice(index+word.length));
   }
-  function listenButton(n,type){
-    return '<button type="button" class="bk-listen" data-listen="'+type+'" data-n="'+n+'" aria-label="Nghe '+(type==="word"?"từ":"câu")+' tiếng Anh" title="Nghe tiếng Anh"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6"/><path d="M18 6a9 9 0 0 1 0 12"/></svg></button>';
+  function listenButton(n,type,index){
+    return '<button type="button" class="bk-listen" data-listen="'+type+'" data-n="'+n+'" '+(type==="chunk"?'data-phrase-index="'+index+'" ':'')+'aria-label="Nghe '+(type==="word"?"từ":type==="chunk"?"cụm từ":"câu")+' tiếng Anh" title="Nghe tiếng Anh"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6"/><path d="M18 6a9 9 0 0 1 0 12"/></svg></button>';
   }
   function line(n,field){
     return '<span class="bk-done '+(state[field].includes(n)?"is-done":"")+'" data-done="'+field+'-'+n+'" title="Đã trả lời đúng" aria-label="Đã trả lời đúng">✓</span>';
@@ -42,6 +42,47 @@
   function input(n,type){
     return '<input type="text" class="bk-entry-input" data-entry="'+type+'" data-n="'+n+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Nhập '+(type==="word"?"từ":"câu")+' tiếng Anh số '+n+'" placeholder="'+(type==="word"?"Nhập từ…":"Nhập câu tiếng Anh…")+'"/><small class="bk-input-note" id="bk-note-'+type+'-'+n+'" aria-live="polite"></small>';
   }
+
+  function renderExtra(item){
+    var entries=item.extra||[],visible=state.showEn&&state.mode!=="word";
+    if(!entries.length)return '<span class="bk-subtle">—</span>';
+    return entries.map(function(ex){
+      return '<div class="bk-extra-line"><b>'+(visible?'• '+esc(ex[0]):'<span class="bk-masked">••••••</span>')+
+        '</b><span>'+esc(ex[1])+'</span></div>';
+    }).join('')+
+    '<button class="bk-chunks-more" type="button" data-chunks="'+item.n+'" aria-label="Mở tất cả '+entries.length+' cụm từ cho '+esc(item.en)+'">↗ Xem '+entries.length+' cụm · nghe</button>';
+  }
+  function showChunks(n){
+    var item=currentStep().entries.find(function(x){return x.n===n;});
+    if(!item||!item.extra?.length)return;
+    closeChunks();
+    var showEnglish=state.showEn&&state.mode!=="word";
+    var html='<div class="bk-chunk-layer" data-chunk-backdrop="true">'+
+      '<section class="bk-chunk-dialog" role="dialog" aria-modal="true" aria-labelledby="bk-chunk-heading">'+
+      '<div class="bk-chunk-header"><div><small>LEVEL 1 · STEP '+state.step+' · TỪ '+n+'</small>'+
+      '<h2 id="bk-chunk-heading">'+(showEnglish?esc(item.en):'Từ số '+n)+' · Cụm từ thường dùng</h2>'+
+      '<p>'+esc(item.vi)+'</p></div>'+
+      '<button type="button" class="bk-chunk-close" data-close-chunks aria-label="Đóng danh sách cụm từ">✕</button></div>'+
+      '<div class="bk-chunk-list">'+item.extra.map(function(ex,i){
+        return '<div class="bk-chunk-item"><span class="bk-chunk-num">'+(i+1)+'</span>'+
+          '<div class="bk-chunk-copy"><strong>'+(showEnglish?esc(ex[0]):'<span class="bk-masked">Ẩn tiếng Anh</span>')+
+          '</strong><span>'+esc(ex[1])+'</span></div>'+listenButton(n,"chunk",i)+'</div>';
+      }).join('')+'</div>'+
+      '<div class="bk-chunk-foot">Cụm bổ sung cho giao tiếp thực tế; không phải nguyên văn sách. '+
+        (showEnglish?'':'Bật “Hiện Anh” hoặc chuyển sang “Đọc sách” để xem chữ tiếng Anh.')+'</div>'+
+      '</section></div>';
+    root.insertAdjacentHTML("beforeend",html);
+    root.__chunkReturnFocus=document.activeElement;
+    root.querySelector("[data-close-chunks]")?.focus({preventScroll:true});
+  }
+  function closeChunks(){
+    var dialog=root?.querySelector(".bk-chunk-layer");
+    if(!dialog)return;
+    dialog.remove();
+    if(root.__chunkReturnFocus?.isConnected)root.__chunkReturnFocus.focus({preventScroll:true});
+    root.__chunkReturnFocus=null;
+  }
+
   function renderRow(item){
     var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
     return '<div class="bk-row" data-row="'+n+'">'+
@@ -51,7 +92,7 @@
       line(n,"doneWords")+'</div><div class="bk-word-sub"><small>'+esc(item.ipa)+'</small>'+listenButton(n,"word")+'</div></div>'+
       '<div class="bk-cell bk-word-vi">'+(state.showWordVi?esc(item.vi):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-jword">'+(state.showJa?ruby(item.ja):'<span class="bk-masked">••••</span>')+'</div>'+
-      '<div class="bk-cell bk-extra">'+(item.extra.length?item.extra.map(function(ex){return '<div class="bk-extra-line"><b>• '+esc(ex[0])+'</b><span>'+esc(ex[1])+'</span></div>';}).join(''):'<span class="bk-subtle">—</span>')+'</div>'+
+      '<div class="bk-cell bk-extra">'+renderExtra(item)+'</div>'+
       '<div class="bk-cell bk-sentence"><div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
       '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+'</div></div>'+
       '<div class="bk-cell bk-svi">'+(state.showSentenceVi?esc(item.sentenceVi):'<span class="bk-masked">••••••</span>')+'</div>'+
@@ -87,7 +128,7 @@
       '<div class="bk-cell bk-number">No.</div><div class="bk-cell bk-word">TỪ TIẾNG ANH <small>(IPA · âm thanh)</small></div>'+
       '<div class="bk-cell bk-word-vi">NGHĨA TỪ <small>(VI)</small></div>'+
       '<div class="bk-cell bk-jword">TIẾNG NHẬT <small>(ふりがな)</small></div>'+
-      '<div class="bk-cell bk-extra">MỞ RỘNG <small>(EN + VI)</small></div>'+
+      '<div class="bk-cell bk-extra">CỤM TỪ THỰC TẾ <small>(EN + VI · bấm xem đủ)</small></div>'+
       '<div class="bk-cell bk-sentence">CÂU TIẾNG ANH <small>(nghe + nhập)</small></div>'+
       '<div class="bk-cell bk-svi">NGHĨA CÂU <small>(VI)</small></div>'+
       '<div class="bk-cell bk-sja">CÂU TIẾNG NHẬT <small>(ふりがな)</small></div></div>'+
@@ -156,9 +197,10 @@
       window.speechSynthesis.speak(u);
     }catch(error){message("Không thể phát âm thanh.");}
   }
-  async function speak(n,type){
+  async function speak(n,type,index){
     var e=currentStep().entries.find(function(x){return x.n===n;});if(!e)return;
-    var value=type==="word"?e.en:e.sentence;
+    var value=type==="word"?e.en:type==="chunk"?e.extra?.[index]?.[0]:e.sentence;
+    if(!value)return;
     if(activeAudio&&window.AITTS?.stop)window.AITTS.stop();
     if("speechSynthesis" in window)window.speechSynthesis.cancel();
     activeAudio=true;
@@ -175,7 +217,7 @@
   }
   function close(){
     if(!root||root.hidden)return;
-    stopAudio();root.hidden=true;document.body.classList.remove("book2100-open");
+    closeChunks();stopAudio();root.hidden=true;document.body.classList.remove("book2100-open");
     document.documentElement.classList.remove("book2100-open");
     if(trigger&&trigger.isConnected)trigger.focus({preventScroll:true});
   }
@@ -208,10 +250,13 @@
     var exit=root.querySelector("[data-exit]");if(exit)exit.focus({preventScroll:true});
   }
   function onClick(evt){
+    if(evt.target.classList?.contains("bk-chunk-layer")){closeChunks();return;}
     var button=evt.target.closest("button");if(!button)return;
+    if(button.hasAttribute("data-close-chunks")){closeChunks();return;}
+    if(button.dataset.chunks){showChunks(Number(button.dataset.chunks));return;}
     if(button.hasAttribute("data-exit")){close();return;}
     if(button.hasAttribute("data-fit")){state.fitPage=!state.fitPage;persist();render();return;}
-    if(button.dataset.listen){speak(Number(button.dataset.n),button.dataset.listen);return;}
+    if(button.dataset.listen){speak(Number(button.dataset.n),button.dataset.listen,Number(button.dataset.phraseIndex));return;}
     if(button.dataset.mode){
       state.mode=button.dataset.mode;
       if(state.mode==="word")state.page="words";
@@ -253,7 +298,7 @@
     }
   }
   document.addEventListener("keydown",function(evt){
-    if(evt.key==="Escape"&&root&&!root.hidden){evt.preventDefault();close();}
+    if(evt.key==="Escape"&&root&&!root.hidden){evt.preventDefault();if(root.querySelector(".bk-chunk-layer"))closeChunks();else close();}
   });
   window.addEventListener("hashchange",function(){if(root&&!root.hidden)close();});
   window.Book2100={open:open,close:close,getData:function(){return BOOK;},getState:function(){return JSON.parse(JSON.stringify(state));}};
