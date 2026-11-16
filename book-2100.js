@@ -34,7 +34,7 @@
     return esc(sentence.slice(0,index))+"<em>"+esc(sentence.slice(index,index+word.length))+"</em>"+esc(sentence.slice(index+word.length));
   }
   function listenButton(n,type){
-    return '<button type="button" class="bk-listen" data-listen="'+type+'" data-n="'+n+'" aria-label="Nghe '+(type==="word"?"từ":"câu")+' tiếng Anh" title="Nghe tiếng Anh">◖))</button>';
+    return '<button type="button" class="bk-listen" data-listen="'+type+'" data-n="'+n+'" aria-label="Nghe '+(type==="word"?"từ":"câu")+' tiếng Anh" title="Nghe tiếng Anh"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a5 5 0 0 1 0 6"/><path d="M18 6a9 9 0 0 1 0 12"/></svg></button>';
   }
   function line(n,field){
     return '<span class="bk-done '+(state[field].includes(n)?"is-done":"")+'" data-done="'+field+'-'+n+'" title="Đã trả lời đúng" aria-label="Đã trả lời đúng">✓</span>';
