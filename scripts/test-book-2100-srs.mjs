@@ -98,7 +98,7 @@ const sum=srs.summary([{n:1},{n:2},{n:3}],"word");
 assert.equal(sum.weak,2);
 assert.equal(sum.new,1);
 assert.equal(sum.total,3);
-assert.equal(sum.due,1,"Only manually flagged item is due");
+assert.equal(sum.due,2,"Both the lapsed and manually flagged words are due");
 
 // Legacy green ticks remain saved, but are not mistaken for spaced mastery.
 const legacyData=new Map(),legacyStorage={
