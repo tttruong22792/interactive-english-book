@@ -145,3 +145,84 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
   .book2100 .bk-pager button{padding:5px 8px}
 }
 @media(prefers-reduced-motion:reduce){.book2100 *{scroll-behavior:auto!important}}
+
+/* Desktop book sizing: all lines of a STEP remain visible, no vertical page scroll. */
+@media (min-width:1100px) and (min-height:560px) {
+  .book2100.bk-fit .bk-scroll{
+    flex:1 1 auto; min-height:0; overflow:hidden; padding:5px clamp(6px,.75vw,13px);
+    display:flex; align-items:stretch; justify-content:center;
+  }
+  .book2100.bk-fit .bk-book{
+    flex:1 1 auto; align-self:stretch; min-height:0; height:100%;
+    display:flex; flex-direction:column; margin:0; padding:0 8px 4px;
+    max-width:1900px; min-width:0; border-width:4px; border-radius:14px;
+    overflow:hidden;
+  }
+  .book2100.bk-fit .bk-book-title{
+    flex:0 0 36px; min-height:0; padding:1px 6px 1px 11px;
+  }
+  .book2100.bk-fit .bk-book-title strong{font-size:17px}
+  .book2100.bk-fit .bk-book-title small{font-size:10px}
+  .book2100.bk-fit .bk-stepflag{font-size:15px;padding:4px 8px;border-radius:5px}
+  .book2100.bk-fit .bk-level{font-size:8px;min-width:37px;padding:3px}
+  .book2100.bk-fit .bk-level b{font-size:17px}
+  .book2100.bk-fit .bk-head{flex:0 0 38px;min-height:0}
+  .book2100.bk-fit .bk-head .bk-cell{min-height:0;padding:5px 3px;font-size:10px}
+  .book2100.bk-fit .bk-head small{font-size:9px;margin:1px}
+  .book2100.bk-fit .bk-row{
+    grid-template-columns:29px minmax(122px,1.10fr) minmax(82px,.82fr)
+      minmax(98px,.87fr) minmax(139px,1.23fr) minmax(185px,1.7fr)
+      minmax(122px,1.14fr) minmax(162px,1.58fr);
+  }
+  .book2100.bk-fit .bk-rows{
+    flex:1 1 auto; min-height:0;
+    display:grid; grid-template-rows:repeat(var(--bk-row-count,12),minmax(0,1fr));
+    overflow:hidden;
+  }
+  .book2100.bk-fit .bk-rows>.bk-row{min-height:0;height:100%;overflow:hidden}
+  .book2100.bk-fit .bk-cell{padding:1px 5px;overflow:hidden;font-size:clamp(10px,.82vw,12px)}
+  .book2100.bk-fit .bk-word-line strong{font-size:clamp(13px,1.12vw,17px)}
+  .book2100.bk-fit .bk-word-sub{margin-top:0}
+  .book2100.bk-fit .bk-word-sub small{font-size:9px}
+  .book2100.bk-fit .bk-jword{font-size:clamp(12px,1vw,16px);line-height:1.5}
+  .book2100.bk-fit .bk-jword rt{font-size:8px}
+  .book2100.bk-fit .bk-word-vi,.book2100.bk-fit .bk-svi{font-size:clamp(10px,.87vw,12px);line-height:1.32}
+  .book2100.bk-fit .bk-sentence{font-size:clamp(10px,.9vw,13px)}
+  .book2100.bk-fit .bk-sentence-value{line-height:1.28}
+  .book2100.bk-fit .bk-sja{font-size:clamp(10px,.91vw,13px);line-height:1.55}
+  .book2100.bk-fit .bk-sja rt{font-size:8px;line-height:1}
+  .book2100.bk-fit .bk-extra{font-size:10px;line-height:1.2}
+  .book2100.bk-fit .bk-extra-line{margin:0 0 2px;gap:0}
+  .book2100.bk-fit .bk-extra-line b{font-size:10px}
+  .book2100.bk-fit .bk-extra-line span{font-size:9px}
+  .book2100.bk-fit .bk-book-checkbox{font-size:12px}
+  .book2100.bk-fit .bk-listen{width:20px;height:20px;min-width:20px;min-height:20px;flex-basis:20px}
+  .book2100.bk-fit .bk-listen svg{width:14px;height:14px}
+  .book2100.bk-fit .bk-done{width:15px;height:15px;flex-basis:15px;font-size:9px}
+  .book2100.bk-fit .bk-entry-input{height:30px;font-size:12px;padding:2px 6px}
+  .book2100.bk-fit .bk-input-note{font-size:9px}
+  .book2100.bk-fit .bk-book-end{display:none}
+  .book2100.bk-fit .bk-bottom{padding:5px clamp(10px,1.5vw,22px);min-height:38px}
+  .book2100.bk-fit .bk-toolbar{
+    min-height:56px;padding:5px clamp(8px,1vw,17px);gap:6px;
+  }
+  .book2100.bk-fit .bk-brand{gap:6px;min-width:150px}
+  .book2100.bk-fit .bk-brand-icon{width:32px;height:32px;font-size:20px}
+  .book2100.bk-fit .bk-brand strong{font-size:12px}
+  .book2100.bk-fit .bk-brand small{font-size:9px}
+  .book2100.bk-fit .bk-toolbar-controls{max-width:none}
+  .book2100.bk-fit .bk-toolbar button,
+  .book2100.bk-fit .bk-toolbar select{
+    min-height:30px;padding:4px 6px;font-size:11px;
+  }
+  .book2100.bk-fit .bk-toolbar .bk-toggle-vi{display:inline-block}
+  .book2100.bk-fit .bk-progress{font-size:10px}
+}
+@media (min-width:1100px) and (max-height:700px){
+  .book2100.bk-fit .bk-book-title{flex-basis:27px}
+  .book2100.bk-fit .bk-head{flex-basis:31px}
+  .book2100.bk-fit .bk-toolbar{min-height:44px}
+  .book2100.bk-fit .bk-bottom{min-height:30px}
+  .book2100.bk-fit .bk-extra-line span{font-size:8px}
+  .book2100.bk-fit .bk-rows .bk-cell{padding:0 3px}
+}
