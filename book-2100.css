@@ -1,0 +1,147 @@
+/* 2100 English–Japanese book: separate from all original app-shell styles. */
+html.book2100-open,body.book2100-open{overflow:hidden!important}
+body.book2100-open #app{visibility:hidden!important;pointer-events:none!important}
+.book2100[hidden]{display:none!important}
+.book2100{position:fixed;z-index:2147483000;inset:0;display:flex;flex-direction:column;min-width:0;max-width:none;background:#f7f2ec;color:#382824;font:14px/1.42 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans JP",sans-serif;overflow:hidden;isolation:isolate}
+.book2100 *{box-sizing:border-box}
+.book2100 button,.book2100 select,.book2100 input{font:inherit}
+.book2100 button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.book2100 button:focus-visible,.book2100 select:focus-visible,.book2100 input:focus-visible{outline:3px solid #4294ef;outline-offset:2px}
+.book2100 button:disabled{opacity:.35;cursor:default}
+.book2100 .bk-toolbar{flex:0 0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;min-height:72px;padding:10px clamp(12px,2vw,30px);padding-top:max(10px,env(safe-area-inset-top));background:#fffaf4;border-bottom:1px solid #e0c9ba;box-shadow:0 2px 10px #582b2610}
+.book2100 .bk-brand{display:flex;gap:10px;align-items:center;min-width:180px}
+.book2100 .bk-brand-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:11px;background:#b94032;color:#fff;font-size:26px;box-shadow:0 2px 3px #8d2b222b}
+.book2100 .bk-brand strong{display:block;font-weight:900;white-space:nowrap;letter-spacing:-.025em;font-size:clamp(13px,1.3vw,20px)}
+.book2100 .bk-brand small{display:block;color:#9a746b;font-size:11px}
+.book2100 .bk-toolbar-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.book2100 .bk-toolbar button,.book2100 .bk-toolbar select{min-height:34px;border:1px solid #e3c9be;background:#fff;border-radius:9px;color:#462c26;padding:7px 10px;font-weight:700;white-space:nowrap;font-size:12px;box-shadow:none}
+.book2100 .bk-toolbar .bk-mode.is-active{background:#c44234;color:#fff;border-color:#c44234}
+.book2100 .bk-toolbar .bk-toggle.is-off{color:#b44635;background:#fff1ed;border-color:#df978a}
+.book2100 .bk-toolbar .bk-exit{border-color:#b83d34;color:#9b2a22;margin-left:5px}
+.book2100 .bk-toolbar .bk-exit:hover{background:#fff1ed}
+.book2100 .bk-step-label{display:flex;gap:5px;align-items:center;padding:0 7px;background:#f7ded4;border-radius:8px;color:#7f3028;font-weight:900;min-height:35px}
+.book2100 .bk-toolbar .bk-step-label select{border:0;background:transparent;padding:4px 5px}
+.book2100 .bk-progress{font-size:12px;color:#8e665e;white-space:nowrap;margin:0 5px;font-variant-numeric:tabular-nums}
+.book2100 .bk-progress b{color:#7d2922}
+.book2100 .bk-scroll{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;padding:16px clamp(8px,1.2vw,22px);scrollbar-gutter:stable;-webkit-overflow-scrolling:touch}
+.book2100 .bk-book{width:100%;min-width:1200px;max-width:1960px;margin:0 auto 10px;padding:0 14px 18px;position:relative;background:#fffdf8;border:7px solid #b44d3d;border-radius:22px 24px 28px 24px;box-shadow:0 10px 22px #69372b29,inset 0 0 40px #c79d7030}
+.book2100 .bk-book:before{content:"";position:absolute;top:0;bottom:0;left:50%;width:18px;transform:translateX(-50%);pointer-events:none;background:linear-gradient(90deg,transparent,#986b5230 45%,#f6e8dc65 65%,transparent);z-index:2}
+.book2100 .bk-book-title{display:flex;align-items:center;justify-content:space-between;min-height:72px;padding:7px 4px 7px 16px;gap:15px}
+.book2100 .bk-book-title>div:first-child{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+.book2100 .bk-book-title strong{font-size:25px;color:#4b2b25}
+.book2100 .bk-book-title small{font-size:12px;color:#8c655a;font-weight:700}
+.book2100 .bk-book-title-right{font-size:12px;color:#9a776d}
+.book2100 .bk-book-title-right strong{font-size:12px;color:#784e42}
+.book2100 .bk-book-title-right span{color:#bb4e38;font-weight:800}
+.book2100 .bk-level{background:#342927;color:#fff;min-width:54px;padding:7px 9px;text-align:center;line-height:1.1;font-size:10px;letter-spacing:.08em;font-weight:800}
+.book2100 .bk-level b{font-size:27px}
+.book2100 .bk-stepflag{background:#be4034;color:#fff;padding:10px 16px;border-radius:10px 10px 10px 3px;font-size:20px;font-weight:900}
+.book2100 .bk-row{display:grid;grid-template-columns:38px minmax(148px,1.12fr) minmax(112px,.89fr) minmax(116px,.95fr) minmax(185px,1.41fr) minmax(218px,1.65fr) minmax(160px,1.19fr) minmax(190px,1.55fr)}
+.book2100 .bk-cell{min-width:0;border-right:1px solid #cdbbb0;border-bottom:1px solid #d6c3b8;padding:9px 10px;overflow-wrap:anywhere;align-content:center}
+.book2100 .bk-row .bk-cell:last-child{border-right:0}
+.book2100 .bk-row .bk-extra{border-right:3px solid #ba7665}
+.book2100 .bk-head{border:1px solid #bc9a8d;border-bottom:none;border-radius:12px 12px 0 0;overflow:hidden;background:#f0c9be;font-weight:900;text-align:center;font-size:13px;line-height:1.2}
+.book2100 .bk-head .bk-cell{padding:13px 6px;min-height:65px}
+.book2100 .bk-head small{display:block;margin-top:4px;font-size:10px;font-weight:500;color:#76564b}
+.book2100 .bk-rows{border-left:1px solid #cbb4a6;border-right:1px solid #cbb4a6}
+.book2100 .bk-rows>.bk-row{min-height:87px}
+.book2100 .bk-rows>.bk-row:nth-child(odd) .bk-word{background:#f5d9d2}
+.book2100 .bk-rows>.bk-row:nth-child(even) .bk-word{background:#fff8f4}
+.book2100 .bk-rows>.bk-row .bk-extra{background:#fff6df}
+.book2100 .bk-rows>.bk-row:nth-child(even) .bk-extra{background:#fffaf0}
+.book2100 .bk-number{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;color:#5d312a}
+.book2100 .bk-book-checkbox{color:#b4a099;font-size:18px;font-weight:400}
+.book2100 .bk-word-line{display:flex;gap:6px;align-items:center;min-width:0}
+.book2100 .bk-word-line strong{font-size:clamp(16px,1.55vw,23px);font-weight:900;letter-spacing:-.02em;word-break:normal;overflow-wrap:normal}
+.book2100 .bk-word-sub{display:flex;gap:7px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.book2100 .bk-word-sub small{color:#765b57;font-size:11px}
+.book2100 .bk-jword{color:#c13e2c;font-weight:800;font-size:19px}
+.book2100 ruby{ruby-position:over;white-space:normal}
+.book2100 rt{font-size:9px;color:#594842;font-weight:500;text-align:center;letter-spacing:0}
+.book2100 .bk-sja{font-size:15px;line-height:2.05}
+.book2100 .bk-sja rt{font-size:9px}
+.book2100 .bk-word-vi,.book2100 .bk-svi{font-size:14px;color:#3e3330;line-height:1.52}
+.book2100 .bk-extra{font-size:12px}
+.book2100 .bk-extra-line{display:flex;flex-direction:column;margin:2px 0 7px;gap:1px}
+.book2100 .bk-extra-line:last-child{margin-bottom:0}
+.book2100 .bk-extra-line b{font-size:12px;color:#422d28}
+.book2100 .bk-extra-line span{padding-left:8px;color:#825f53}
+.book2100 .bk-sentence{font-size:15px}
+.book2100 .bk-sentence-wrap{display:flex;align-items:flex-start;gap:7px;min-width:0}
+.book2100 .bk-sentence-value{min-width:0;flex:1;line-height:1.52}
+.book2100 .bk-sentence-value em{font-style:normal;color:#bc4734;font-weight:900;border-bottom:1px solid #cb7260}
+.book2100 .bk-done{flex:0 0 19px;width:19px;height:19px;border-radius:50%;border:1px solid #d6c5b9;color:transparent;display:inline-grid;place-items:center;font-size:12px;font-weight:900}
+.book2100 .bk-done.is-done{background:#2c9b4a;border-color:#2c9b4a;color:#fff}
+.book2100 .bk-listen{flex:0 0 25px;min-width:25px;min-height:25px;width:25px;height:25px;border:1px solid #85bbe9;border-radius:50%;padding:0;color:#2176c1;background:#f1f8ff;font-size:12px;font-weight:900;line-height:1}
+.book2100 .bk-listen:hover{background:#e2f1ff}
+.book2100 .bk-entry-input{display:block;width:100%;height:38px;padding:6px 8px;border:1.7px solid #579ee8;border-radius:7px;background:#fff;min-width:0;color:#25262c;font-weight:700;outline:none}
+.book2100 .bk-entry-input.is-correct{border-color:#2b9a4c;background:#f1fff2}
+.book2100 .bk-entry-input.is-wrong{border-color:#dc413c;background:#fff3f0}
+.book2100 .bk-entry-input::placeholder{font-size:11px;color:#a29792;font-weight:400}
+.book2100 .bk-input-note{display:block;min-height:0;color:#9c3e31;font-size:10px;line-height:1.3;font-weight:700}
+.book2100 .bk-word .bk-entry-input{width:min(100%,180px)}
+.book2100 .bk-masked{font-weight:700;letter-spacing:1.5px;color:#c5b6ad;font-size:14px}
+.book2100 .bk-subtle{color:#d3c4b6}
+.book2100 .bk-book-end{text-align:center;font-size:11px;color:#9b7668;padding:15px 10px 0}
+.book2100 .bk-bottom{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:9px clamp(12px,2vw,28px);padding-bottom:max(10px,env(safe-area-inset-bottom));border-top:1px solid #e7d1c4;background:#fffaf4;color:#664b45;font-size:12px}
+.book2100 .bk-pager{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.book2100 .bk-pager button{background:#fff;border:1px solid #cbb5a8;padding:8px 11px;border-radius:9px;font-size:12px;color:#6a4037;font-weight:750}
+.book2100 .bk-pager button:last-child{background:#be4838;color:#fff;border-color:#be4838}
+.book2100 #bkGlobalMessage{font-weight:750;color:#a84135;padding-left:10px}
+.book2100 .bk-page-switch{display:none}
+#bkSidebarLaunch span{font-size:18px}
+@media(max-width:1450px){
+  .book2100 .bk-toolbar{align-items:flex-start}
+  .book2100 .bk-toolbar-controls{max-width:calc(100% - 220px)}
+  .book2100 .bk-toolbar .bk-toggle-vi{display:none}
+  .book2100 .bk-book{min-width:1140px}
+}
+@media(max-width:1000px){
+  .book2100 .bk-toolbar{padding:7px 11px;gap:6px;min-height:59px}
+  .book2100 .bk-brand{min-width:0}
+  .book2100 .bk-brand-icon{width:32px;height:32px;font-size:21px}
+  .book2100 .bk-brand strong{font-size:12px}
+  .book2100 .bk-brand small{display:none}
+  .book2100 .bk-toolbar-controls{max-width:none;flex:1;gap:4px}
+  .book2100 .bk-toolbar button,.book2100 .bk-toolbar select{min-height:32px;padding:5px 7px;font-size:11px}
+  .book2100 .bk-progress{display:none}
+  .book2100 .bk-book{min-width:1160px}
+  .book2100 .bk-scroll{padding:7px}
+}
+@media(max-width:760px) and (orientation:portrait){
+  .book2100 .bk-toolbar{align-items:center;flex-wrap:wrap}
+  .book2100 .bk-brand{width:100%;justify-content:space-between}
+  .book2100 .bk-brand strong{font-size:15px}
+  .book2100 .bk-toolbar-controls{justify-content:flex-start;width:100%}
+  .book2100 .bk-toolbar .bk-toggle-vi{display:none}
+  .book2100 .bk-page-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:0 0 auto;padding:6px 9px;background:#fff9f4}
+  .book2100 .bk-page-switch button{border:1px solid #e2b6aa;border-radius:9px;padding:9px;background:#fff;color:#783a31;font-weight:750}
+  .book2100 .bk-page-switch button.is-active{background:#bb4939;color:#fff;border-color:#bb4939}
+  .book2100 .bk-book{min-width:0;width:max-content;max-width:none;margin:0;padding:0 7px 14px}
+  .book2100 .bk-book:before{display:none}
+  .book2100 .bk-book-title{min-width:580px}
+  .book2100 .bk-row{min-width:610px}
+  .book2100 .bk-show-words .bk-row{grid-template-columns:32px minmax(135px,1.3fr) minmax(100px,.85fr) minmax(115px,1fr) minmax(150px,1.2fr)}
+  .book2100 .bk-show-words .bk-sentence,.book2100 .bk-show-words .bk-svi,.book2100 .bk-show-words .bk-sja{display:none}
+  .book2100 .bk-show-words .bk-extra{border-right:0}
+  .book2100 .bk-show-sentences .bk-row{grid-template-columns:32px minmax(205px,1.4fr) minmax(140px,1fr) minmax(190px,1.4fr)}
+  .book2100 .bk-show-sentences .bk-word,.book2100 .bk-show-sentences .bk-word-vi,.book2100 .bk-show-sentences .bk-jword,.book2100 .bk-show-sentences .bk-extra{display:none}
+  .book2100 .bk-head .bk-cell{font-size:11px}
+  .book2100 .bk-book-title-right{display:none}
+  .book2100 .bk-book-title{min-height:55px}
+  .book2100 .bk-bottom{flex-wrap:wrap;gap:4px;font-size:10px}
+  .book2100 .bk-bottom .bk-pager{width:100%;justify-content:flex-end}
+  .book2100 .bk-book-title strong{font-size:17px}
+  .book2100 .bk-stepflag{padding:6px 8px;font-size:16px}
+  .book2100 .bk-level{min-width:38px;padding:4px}
+  .book2100 .bk-level b{font-size:19px}
+}
+@media(max-height:460px) and (orientation:landscape){
+  .book2100 .bk-toolbar{min-height:44px;padding:4px max(10px,env(safe-area-inset-left))}
+  .book2100 .bk-brand-icon{width:28px;height:28px}
+  .book2100 .bk-brand strong{font-size:11px}
+  .book2100 .bk-toolbar button,.book2100 .bk-toolbar select{min-height:28px;padding:3px 6px;font-size:10px}
+  .book2100 .bk-bottom{padding:5px max(10px,env(safe-area-inset-left));font-size:10px}
+  .book2100 .bk-pager button{padding:5px 8px}
+}
+@media(prefers-reduced-motion:reduce){.book2100 *{scroll-behavior:auto!important}}
