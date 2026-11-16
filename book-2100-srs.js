@@ -90,7 +90,9 @@
       skillName(skill);
       var now=clock(),day=todayKey(now),assisted=!!options?.assisted;
       var rec=getRaw(id,skill)||normalized({stage:null,source:"practice",firstAt:now});
-      rec.source=rec.source==="legacy"?"legacy":"practice";
+      // Once the learner interacts again, the old imported check is no longer
+      // an unverified legacy-only record.
+      rec.source="practice";
       if(!rec.firstAt)rec.firstAt=now;
       rec.lastAt=now;
       rec.attempts+=1;
