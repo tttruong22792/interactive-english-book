@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-data.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -582,6 +582,23 @@ if (await exists(vietnameseDir)) {
         lessonIds: [lesson.id],
         kinds: ["vietnamese-grade1"]
       };
+    }
+  }
+}
+
+// 24 source-authentic words and sentences from LEVEL 1 STEP 1-2 book pages.
+{
+  const bookWindow={};
+  const bookSource=await readFile(join(root,"book-2100-data.js"),"utf8");
+  vm.runInNewContext(bookSource,{window:bookWindow},{filename:"book-2100-data.js"});
+  const steps=bookWindow.BOOK_2100_DATA?.steps||[];
+  if(steps.length!==2 || steps.reduce((n,step)=>n+step.entries.length,0)!==24){
+    throw new Error("2100 book content must contain 24 transcribed entries in Steps 1–2.");
+  }
+  for(const step of steps){
+    for(const item of step.entries){
+      addManifestAudio(item.en,"book-word","book-2100-step-"+step.id);
+      addManifestAudio(item.sentence,"book-sentence","book-2100-step-"+step.id);
     }
   }
 }
