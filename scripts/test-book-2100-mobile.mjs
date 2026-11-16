@@ -62,6 +62,43 @@ assert.ok(indexDesktop>=0 && indexMobile>indexDesktop,"Mobile overrides must loa
 assert.ok(indexMobile<html.indexOf("</head>"),"Cards stylesheet must load in document head");
 assert.ok(build.includes('"book-2100-mobile.css"'),"Production build must ship mobile CSS");
 assert.ok(sw.includes("'./book-2100-mobile.css'"),"PWA must cache the mobile CSS");
-assert.ok(sw.includes("language-studio-v134-book2100-mobile-cards"),"Old PWA caches must be invalidated");
+assert.ok(sw.includes("language-studio-v135-book2100-iphone-keyboard"),"Old PWA caches must be invalidated");
+
+
+// iOS keyboard regression: the *last* card must be scrollable into the
+// visual viewport, even when the main document cannot scroll.
+for(const token of [
+  "function keyboardScrollDelta(inputRect,scrollerRect,scrollTop,scrollHeight,clientHeight)",
+  "function sizeToVisibleKeyboard()",
+  "function alignPracticeAboveKeyboard()",
+  "function queueKeyboardAlignment()",
+  'window.visualViewport?.addEventListener("resize",onKeyboardViewportResize)',
+  'window.addEventListener("resize",onKeyboardViewportResize)',
+  'scroller.style.paddingBottom=Math.max(110,Math.round(scroller.clientHeight*.54))+"px"',
+  'root.style.height=Math.max(200,Math.round(Math.min(window.innerHeight||viewport.height,viewport.height)))+"px"',
+  "queueKeyboardAlignment();",
+  "cancelKeyboardAlignment();restoreKeyboardViewport();",
+  "if(compactBook())queueKeyboardAlignment()",
+  'inputNode.focus({preventScroll:true})'
+]){
+  assert.ok(js.includes(token),"iOS last-input keyboard fix is missing: "+token);
+}
+assert.ok(!js.includes('inputNode.scrollIntoView({block:"center",behavior:"smooth"});}\n  }\n  function showAnswerMark'),"Mobile Next must not rely solely on scrollIntoView");
+const deltaStart=js.indexOf("  function keyboardScrollDelta(");
+const deltaEnd=js.indexOf("\n  function alignPracticeAboveKeyboard()",deltaStart);
+assert.ok(deltaStart>=0 && deltaEnd>deltaStart,"Isolated scroll geometry helper is testable");
+const computeDelta=new Function(js.slice(deltaStart,deltaEnd)+"\nreturn keyboardScrollDelta;")();
+// The last word/cue is below the newly visible area after the iPhone
+// keyboard appears. A scroll delta must put the input safely above it.
+const scroller={top:75,bottom:410,height:335};
+const lastInput={top:475,bottom:520,height:45};
+const lastDelta=computeDelta(lastInput,scroller,1020,1860,335);
+assert.ok(lastDelta>200,"Last-card focus must scroll upward substantially");
+const movedBottom=lastInput.bottom-lastDelta;
+assert.ok(movedBottom<scroller.bottom-55,"Last-card input must end above keyboard-edge safety margin");
+// A field that is already comfortably visible must not jump.
+assert.equal(computeDelta({top:183,bottom:228,height:45},scroller,500,1860,335),0);
+// At the very start of a STEP, scrolling must clamp to zero.
+assert.equal(computeDelta({top:80,bottom:125,height:45},scroller,0,1860,335),0);
 
 console.log("PASS — Book 2100 responsive: one-column card display at phone/tablet widths; zero intentional x-scroll; desktop remains a book table; vocabulary/sentence modes, JP ruby, chunk expansions, English audio, Vietnamese recall, SRS and keyboard preserved.");
