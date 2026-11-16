@@ -124,7 +124,12 @@
       var now=clock();
       var rec=getRaw(id,skill)||normalized({stage:null,source:"practice",firstAt:now});
       if(!rec.firstAt)rec.firstAt=now;
+      // Explicit self-assessment: needs more study. Do not award a spaced
+      // success for a correction made later on this same calendar day.
+      rec.stage=0;
       rec.dueAt=now;
+      rec.lastGradeDay=todayKey(now);
+      rec.lastMissDay=todayKey(now);
       return save(id,skill,rec);
     }
     function seedLegacy(wordIds,sentenceIds){
