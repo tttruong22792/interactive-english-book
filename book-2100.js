@@ -158,7 +158,7 @@
       (recent.length?'<div class="bk-srs-history-events">'+recent.map(function(x){
         return '<span class="bk-srs-history-icon '+(x.result==="good"?'is-good':'is-again')+
           '" aria-label="'+(x.result==="good"?'Nhớ đúng':'Cần ôn')+' ngày '+esc(x.day)+'" title="'+esc(x.day)+'">'+
-          (x.result==="good"?'✓':'✕')+'</span>';
+          '<b>'+(x.result==="good"?'✓':'✕')+'</b><small>'+esc(x.day.slice(8,10)+'/'+x.day.slice(5,7))+'</small></span>';
       }).join('')+'</div>':'<p>Chưa có lần ôn cách ngày được ghi nhận.</p>')+
       '</div>'+
       '<div class="bk-srs-history-total">Đã luyện <b>'+word.attempts+'</b> lần · Đúng <b>'+word.successes+
