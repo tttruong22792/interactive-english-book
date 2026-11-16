@@ -474,3 +474,41 @@
   .book2100 .bk-rows>.bk-row{padding:10px 11px!important}
   .book2100 .bk-pager strong{font-size:10px}
 }
+
+
+/* Whole STEP audio and sync fit in one extra compact toolbar row. */
+@media(max-width:1279px){
+  .book2100 .bk-toolbar .bk-sequence{
+    grid-column:1/span 2;grid-row:4;
+    width:100%;min-width:0;min-height:36px!important;
+    padding:6px 5px!important;font-size:12px!important;
+  }
+  .book2100 .bk-toolbar .bk-cloud-status{
+    grid-column:3;grid-row:4;
+    width:100%;min-width:0;min-height:36px!important;
+    padding:6px 2px!important;font-size:10px!important;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .book2100 .bk-toolbar .bk-audio-repeat{
+    display:none!important;
+    grid-column:1/span 3;grid-row:7;
+    min-height:34px!important;
+    font-size:11px!important;
+  }
+  .book2100.bk-mobile-options-open .bk-toolbar .bk-audio-repeat{
+    display:flex!important;
+  }
+  .book2100 .bk-toolbar [data-toggle="showEn"]{grid-row:5}
+  .book2100 .bk-toolbar [data-toggle="showJa"]{grid-row:5}
+  .book2100 .bk-toolbar [data-toggle="showWordVi"]{grid-row:5}
+  .book2100 .bk-toolbar [data-toggle="showSentenceVi"]{grid-row:6}
+  .book2100 .bk-rows>.bk-row.bk-row-audio-playing{
+    outline:2px solid #ce915b!important;
+    background:#fffaef!important;
+  }
+  .book2100.bk-keyboard-open .bk-toolbar .bk-sequence,
+  .book2100.bk-keyboard-open .bk-toolbar .bk-cloud-status,
+  .book2100.bk-keyboard-open .bk-toolbar .bk-audio-repeat{
+    display:none!important;
+  }
+}
