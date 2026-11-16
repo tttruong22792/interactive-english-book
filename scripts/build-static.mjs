@@ -601,6 +601,7 @@ if (await exists(vietnameseDir)) {
   for(const step of steps){
     for(const item of step.entries){
       addManifestAudio(item.en,"book-word","book-2100-step-"+step.id);
+      if(item.wordAudio && item.wordAudio!==item.en) addManifestAudio(item.wordAudio,"book-word-alternate","book-2100-step-"+step.id);
       addManifestAudio(item.sentence,"book-sentence","book-2100-step-"+step.id);
       for(const [text] of item.extra){addManifestAudio(text,"book-collocation","book-2100-step-"+step.id);}
     }
