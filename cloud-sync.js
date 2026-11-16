@@ -712,7 +712,7 @@
     const heroText=main.querySelector('.settings-hero p');
     if(heroText) heroText.textContent='Tiến độ học vẫn có local cache để phản hồi nhanh. Từ đã lưu được ghi trực tiếp lên tài khoản Supabase khi bạn đăng nhập.';
     const summaryText=main.querySelector('.data-summary .section-title-row p');
-    if(summaryText) summaryText.textContent=s.signedIn?'My Vocabulary: cloud theo tài khoản + local cache. Các phần tiến độ khác vẫn lưu cục bộ.':'My Vocabulary đang lưu cục bộ. Đăng nhập để tự động đồng bộ giữa các thiết bị.';
+    if(summaryText) summaryText.textContent=s.signedIn?'My Vocabulary và lịch ôn Sách 2100: đồng bộ theo tài khoản + lưu cục bộ khi mất mạng. Những bài học khác vẫn lưu trên thiết bị.':'Từ đã lưu và lịch ôn Sách 2100 đang lưu cục bộ. Đăng nhập để tự động đồng bộ giữa các thiết bị.';
   }
 
   function enhanceVocab(){
