@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v132-book-icons-tourist-audio';
+const APP_CACHE='language-studio-v133-book2100-srs-review';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -27,6 +27,7 @@ const ASSETS=[
   './book-2100-collocations-255-316.js',
   './book-2100-collocations-317-376.js',
   './book-2100-collocations-377-400.js',
+  './book-2100-srs.js',
   './book-2100.js',
   './app-shell-v53.css',
   './reading-studio.css',
