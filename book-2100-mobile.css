@@ -238,7 +238,7 @@
     align-content:normal;
     font-size:clamp(13px,3.5vw,16px)!important;
   }
-  .book2100 .bk-row .bk-number{
+  .book2100 .bk-rows>.bk-row .bk-number{
     grid-area:number;display:flex!important;
     justify-content:space-between;align-items:center;
     margin:0 0 5px;padding:0 0 7px!important;
