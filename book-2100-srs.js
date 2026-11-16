@@ -56,6 +56,7 @@
     var clock=typeof options.clock==="function"?options.clock:function(){return Date.now();};
     var key=options.key||KEY;
     var current=blank();
+    var listeners=new Set(),replaying=false;
     try{current=safeParse(storage&&storage.getItem(key));}catch(e){}
     function persist(){try{if(storage)storage.setItem(key,JSON.stringify(current));}catch(e){}}
     function getRaw(id,skill){
@@ -75,6 +76,18 @@
       persist();
       return get(id,skill);
     }
+    function onChange(listener){
+      if(typeof listener!=="function")return function(){};
+      listeners.add(listener);
+      return function(){listeners.delete(listener);};
+    }
+    function commit(id,skill,rec,event){
+      var result=save(id,skill,rec);
+      if(!replaying && event)listeners.forEach(function(listener){
+        try{listener(Object.assign({id:id,skill:skill},event));}catch(e){console.error(e);}
+      });
+      return result;
+    }
     function rememberEvent(rec,day,result){
       var position=rec.history.findIndex(function(h){return h.day===day;});
       if(position>=0){
@@ -88,7 +101,7 @@
     function record(id,skill,correct,options){
       if(!validId(id))return null;
       skillName(skill);
-      var now=clock(),day=todayKey(now),assisted=!!options?.assisted;
+      var now=Number(options?.at)>0?Number(options.at):clock(),day=todayKey(now),assisted=!!options?.assisted;
       var rec=getRaw(id,skill)||normalized({stage:null,source:"practice",firstAt:now});
       // Once the learner interacts again, the old imported check is no longer
       // an unverified legacy-only record.
@@ -116,7 +129,7 @@
             rec.dueAt=now+DAY;
             rec.lastGradeDay=day;
           }
-          return save(id,skill,rec);
+          return commit(id,skill,rec,{kind:"correct",assisted:true,at:now});
         }
         // Fixing today's error is good practice, but never counts as a new
         // spaced review. Repeated successes before a due date do not level up.
@@ -128,12 +141,12 @@
           rememberEvent(rec,day,"good");
         }
       }
-      return save(id,skill,rec);
+      return commit(id,skill,rec,{kind:correct?"correct":"wrong",assisted:assisted,at:now});
     }
-    function markDue(id,skill){
+    function markDue(id,skill,options){
       if(!validId(id))return null;
       skillName(skill);
-      var now=clock();
+      var now=Number(options?.at)>0?Number(options.at):clock();
       var rec=getRaw(id,skill)||normalized({stage:null,source:"practice",firstAt:now});
       if(!rec.firstAt)rec.firstAt=now;
       // Explicit self-assessment: needs more study. Do not award a spaced
@@ -142,7 +155,7 @@
       rec.dueAt=now;
       rec.lastGradeDay=todayKey(now);
       rec.lastMissDay=todayKey(now);
-      return save(id,skill,rec);
+      return commit(id,skill,rec,{kind:"weak",assisted:false,at:now});
     }
     function seedLegacy(wordIds,sentenceIds){
       if(current.seeded)return false;
@@ -194,9 +207,54 @@
       });
       return counters;
     }
+
+    function rebuild(events){
+      // Reconstruct one deterministic learning history from immutable review
+      // events downloaded from every signed-in device. Baselines preserve
+      // pre-cloud SRS records and are applied before actual review events.
+      var items=Array.isArray(events)?events:[];
+      var snapshots=Object.create(null),actions=[];
+      items.forEach(function(event){
+        if(!event || !validId(event.id) ||
+          (event.skill!=="word"&&event.skill!=="sentence"))return;
+        var at=Number(event.at);
+        if(!(at>0 && Number.isFinite(at)))return;
+        var copy={id:Number(event.id),skill:event.skill,at:at,
+          eventId:String(event.eventId||""),kind:event.kind,assisted:!!event.assisted};
+        if(copy.kind==="baseline"){
+          var rec=normalized(event.baseline);
+          if(!rec)return;
+          var key=copy.skill+":"+copy.id,old=snapshots[key];
+          var recScore=Number(rec.lastAt||0);
+          var oldScore=Number(old?.rec?.lastAt||0);
+          if(!old||recScore>oldScore||(recScore===oldScore && copy.at>old.at)){
+            snapshots[key]={at:copy.at,rec:rec,id:copy.id,skill:copy.skill};
+          }
+        }else if(["correct","wrong","weak"].includes(copy.kind)){
+          actions.push(copy);
+        }
+      });
+      replaying=true;
+      try{
+        current=blank();
+        current.seeded=true;
+        Object.values(snapshots).forEach(function(item){
+          current[item.skill][String(item.id)]=item.rec;
+        });
+        actions.sort(function(a,b){return a.at-b.at||a.eventId.localeCompare(b.eventId);});
+        actions.forEach(function(item){
+          if(item.kind==="weak")markDue(item.id,item.skill,{at:item.at});
+          else record(item.id,item.skill,item.kind==="correct",
+            {at:item.at,assisted:item.assisted});
+        });
+        persist();
+      }finally{replaying=false;}
+      return current;
+    }
     function reload(){try{current=safeParse(storage&&storage.getItem(key));}catch(e){current=blank();}}
     return {get:get,record:record,markDue:markDue,seedLegacy:seedLegacy,
       dueEntries:dueEntries,summary:summary,reload:reload,status:status,
+      rebuild:rebuild,onChange:onChange,
       intervals:INTERVALS.slice(),levels:Object.assign({},LEVELS),
       key:key,_dump:function(){return JSON.parse(JSON.stringify(current));}};
   }
