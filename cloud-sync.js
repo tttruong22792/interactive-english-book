@@ -526,7 +526,7 @@
       return `
         <div class='account-panel-head'>
           <div class='account-panel-icon'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' aria-hidden='true'><path d='M20 21a8 8 0 0 0-16 0'/><circle cx='12' cy='7' r='4'/></svg></div>
-          <div><span class='eyebrow'>ACCOUNT SYNC</span><h2>${escapeHtml(s.email||'Language Studio')}</h2><p>Đã đăng nhập. Mỗi lần Lưu/Xóa từ được ghi trực tiếp lên Supabase.</p></div>
+          <div><span class='eyebrow'>ACCOUNT SYNC</span><h2>${escapeHtml(s.email||'Language Studio')}</h2><p>Đã đăng nhập. Từ đã lưu và lịch ôn Sách 2100 tự đồng bộ giữa điện thoại và máy tính.</p></div>
           <span class='account-live-pill ${live?'is-live':'is-connecting'}'>${live?'Realtime đang hoạt động':'Realtime đang kết nối'}</span>
         </div>
         <div class='account-sync-facts'>
@@ -540,7 +540,7 @@
       `;
     }
     return `
-      <div class='section-title-row'><div><span class='eyebrow'>ACCOUNT SYNC</span><h2>Đăng nhập để đồng bộ tự động</h2><p>Không dùng mã đồng bộ. Cùng một tài khoản sẽ dùng chung danh sách Từ đã lưu trên mọi thiết bị.</p></div></div>
+      <div class='section-title-row'><div><span class='eyebrow'>ACCOUNT SYNC</span><h2>Đăng nhập để đồng bộ tự động</h2><p>Không dùng mã đồng bộ. Cùng tài khoản sẽ dùng chung Từ đã lưu, độ thành thạo và lịch ôn Sách 2100 trên mọi thiết bị.</p></div></div>
       ${authNotice?`<div class='account-notice'>${escapeHtml(authNotice)}</div>`:''}
       <div class='auth-grid'>
         <form id='languageStudioLoginForm' class='auth-card'>
