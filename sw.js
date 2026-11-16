@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v129-book-2100-full-level1';
+const APP_CACHE='language-studio-v130-book2100-practical-chunks';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -19,6 +19,14 @@ const ASSETS=[
   './book-2100-steps-19-23.js',
   './book-2100-steps-24-29.js',
   './book-2100-steps-30-33.js',
+  './book-2100-collocations-core.js',
+  './book-2100-collocations-001-073.js',
+  './book-2100-collocations-074-134.js',
+  './book-2100-collocations-135-194.js',
+  './book-2100-collocations-195-254.js',
+  './book-2100-collocations-255-316.js',
+  './book-2100-collocations-317-376.js',
+  './book-2100-collocations-377-400.js',
   './book-2100.js',
   './app-shell-v53.css',
   './reading-studio.css',
