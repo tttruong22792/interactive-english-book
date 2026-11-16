@@ -49,9 +49,10 @@ function notify(){
 function status(){
   return {ready:ready,signedIn:signedIn,userId:userId,email:email,
     syncing:syncing,lastSyncAt:lastSyncAt,lastError:lastError,
-    pending:!signedIn?ledger.events.length:Math.max(0,ledger.events.length-(lastRemoteCount||0))};
+    pending:!signedIn?ledger.events.length:Math.max(0,ledger.events.length-(lastRemoteCount||0)),
+    revision:revision};
 }
-var lastRemoteCount=0;
+var lastRemoteCount=0,revision=0;
 function snapshotLegacy(){
   if(!store||ledger.events.length)return;
   var state=store._dump();
@@ -135,6 +136,8 @@ async function syncNow(){
       // Collect the CURRENT ledger after the await, so typing during a fetch
       // is not discarded. Every review has its own globally unique event ID.
       var local=ledger.events.slice();
+      var localIds=new Set(local.map(function(e){return e.eventId;}));
+      var hasNewRemote=remote.some(function(e){return !localIds.has(e.eventId);});
       var merged=mergeEvents(local,remote);
       ledger.events=merged;save();
       var missing=local.filter(function(e){return !remoteIds.has(e.eventId);});
@@ -151,7 +154,8 @@ async function syncNow(){
       // flushes them without reusing IDs or resetting local progress.
       var final=mergeEvents(ledger.events,merged);
       ledger.events=final;save();
-      store.rebuild(final);
+      // Avoid resetting input focus / SRS state on every polling pass.
+      if(hasNewRemote){store.rebuild(final);revision++;}
       lastRemoteCount=remoteIds.size+missing.length;
       lastSyncAt=Date.now();lastError="";
       notify();
@@ -186,6 +190,7 @@ function switchOwner(id){
   }
   lastRemoteCount=0;lastSyncAt=0;
   if(store)store.rebuild(ledger.events);
+  revision++;
   notify();
 }
 function handleAuth(statusInfo){
@@ -227,8 +232,12 @@ function boot(){
 function connect(srs,onUpdate){
   store=srs;
   listener=onUpdate;
+  var claimed="";
+  try{claimed=localStorage.getItem(CLAIMED_KEY)||"";}catch(e){}
+  activeOwner=claimed||"guest";
   ledger=load(activeOwner);
-  snapshotLegacy();
+  if(!claimed)snapshotLegacy();
+  else if(ledger.events.length){store.rebuild(ledger.events);revision++;}
   if(unlisten)unlisten();
   unlisten=store.onChange(onStudyEvent);
   if(!bootTimer)boot();
