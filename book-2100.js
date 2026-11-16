@@ -790,6 +790,9 @@
     if(state.mode==="word")state.page="words";
     render();root.hidden=false;document.body.classList.add("book2100-open");
     document.documentElement.classList.add("book2100-open");
+    onCloudStatus(window.Book2100CloudSync?.status?.()||{revision:0});
+    if(window.Book2100CloudSync?.status?.()?.signedIn)
+      window.Book2100CloudSync.syncNow().catch(function(){});
     var exit=root.querySelector("[data-exit]");if(exit)exit.focus({preventScroll:true});
   }
   function onClick(evt){
@@ -920,7 +923,11 @@
     if(!document.hidden)updateVisibleMastery();
   });
   window.addEventListener("hashchange",function(){if(root&&!root.hidden)close();});
-  window.Book2100={open:open,close:close,getData:function(){return BOOK;},getState:function(){return JSON.parse(JSON.stringify(state));}};
+  if(srs && window.Book2100CloudSync)window.Book2100CloudSync.connect(srs,onCloudStatus);
+  window.Book2100={open:open,close:close,
+    getData:function(){return BOOK;},
+    getState:function(){return JSON.parse(JSON.stringify(state));},
+    getSyncStatus:function(){return window.Book2100CloudSync?.status?.()||null;}};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();
 })();
