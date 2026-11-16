@@ -42,17 +42,21 @@
   function input(n,type){
     return '<input type="text" class="bk-entry-input" data-entry="'+type+'" data-n="'+n+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Nhập '+(type==="word"?"từ":"câu")+' tiếng Anh số '+n+'" placeholder="'+(type==="word"?"Nhập từ…":"Nhập câu tiếng Anh…")+'"/><small class="bk-input-note" id="bk-note-'+type+'-'+n+'" aria-live="polite"></small>';
   }
+  function practiceMeaning(type,meaning){
+    return '<div class="bk-practice-meaning" data-practice-meaning="'+type+'">'+
+      '<small>NGHĨA TIẾNG VIỆT</small><strong>'+esc(meaning)+'</strong></div>';
+  }
   function renderRow(item){
     var n=item.n,word=state.mode==="word",sentence=state.mode==="sentence";
     return '<div class="bk-row" data-row="'+n+'">'+
       '<div class="bk-cell bk-number"><span>'+n+'</span><span class="bk-book-checkbox">□</span></div>'+
-      '<div class="bk-cell bk-word"><div class="bk-word-line">'+
+      '<div class="bk-cell bk-word">'+(word?practiceMeaning("word",item.vi):"")+'<div class="bk-word-line">'+
       (word?input(n,"word"):state.showEn?'<strong>'+esc(item.en)+'</strong>':'<span class="bk-masked">••••••</span>')+
-      line(n,"doneWords")+'</div><div class="bk-word-sub"><small>'+esc(item.ipa)+'</small>'+listenButton(n,"word")+'</div></div>'+
+      line(n,"doneWords")+'</div><div class="bk-word-sub">'+(state.mode==="read"?'<small>'+esc(item.ipa)+'</small>':"")+listenButton(n,"word")+'</div></div>'+
       '<div class="bk-cell bk-word-vi">'+(state.showWordVi?esc(item.vi):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-jword">'+(state.showJa?ruby(item.ja):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-extra">'+(item.extra.length?item.extra.map(function(ex){return '<div class="bk-extra-line"><b>• '+esc(ex[0])+'</b><span>'+esc(ex[1])+'</span></div>';}).join(''):'<span class="bk-subtle">—</span>')+'</div>'+
-      '<div class="bk-cell bk-sentence"><div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
+      '<div class="bk-cell bk-sentence">'+(sentence?practiceMeaning("sentence",item.sentenceVi):"")+'<div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
       '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+'</div></div>'+
       '<div class="bk-cell bk-svi">'+(state.showSentenceVi?esc(item.sentenceVi):'<span class="bk-masked">••••••</span>')+'</div>'+
       '<div class="bk-cell bk-sja">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
@@ -78,8 +82,12 @@
     if(!root)return;
     var step=currentStep();
     root.classList.toggle("bk-fit",!!state.fitPage);
+    root.classList.toggle("bk-study-word",state.mode==="word");
+    root.classList.toggle("bk-study-sentence",state.mode==="sentence");
+    root.classList.remove("bk-focused","bk-keyboard-open");
     root.style.setProperty("--bk-row-count",String(step.entries.length));
     root.innerHTML=toolbar()+
+      '<div class="bk-focus-banner" id="bkFocusBanner" role="status" aria-live="polite"><span>NGHĨA TIẾNG VIỆT</span><strong id="bkFocusMeaning"></strong></div>'+
       '<div class="bk-page-switch" role="group" aria-label="Chọn trang sách"><button data-page="words" class="'+(state.page==="words"?"is-active":"")+'">Trang từ vựng</button><button data-page="sentences" class="'+(state.page==="sentences"?"is-active":"")+'">Trang câu ví dụ</button></div>'+
       '<div class="bk-scroll"><div class="bk-book '+(state.page==="sentences"?"bk-show-sentences":"bk-show-words")+'">'+
       '<div class="bk-book-title"><div><span class="bk-level">LEVEL<br><b>1</b></span><span class="bk-stepflag">STEP '+step.id+'</span><strong>'+step.start+'–'+step.end+'</strong><small>中学1・2年生レベル</small></div><div class="bk-book-title-right"><strong>LEVEL 1</strong>　● ━━━━○ ━━━━　<span>GOAL 400</span></div></div>'+
@@ -104,6 +112,26 @@
     if(output)output.innerHTML="<b>"+w+"/"+step.entries.length+"</b> từ · <b>"+s+"/"+step.entries.length+"</b> câu";
   }
   function message(s){var node=root.querySelector("#bkGlobalMessage");if(node)node.textContent=s||"";}
+  function focusedMeaning(inputNode){
+    if(!inputNode||!inputNode.matches(".bk-entry-input"))return;
+    var n=Number(inputNode.dataset.n),type=inputNode.dataset.entry;
+    var entry=currentStep().entries.find(function(item){return item.n===n;});
+    if(!entry)return;
+    var value=type==="word"?entry.vi:entry.sentenceVi;
+    var banner=root.querySelector("#bkFocusMeaning");
+    if(banner)banner.textContent=n+". "+value;
+    root.classList.add("bk-focused","bk-keyboard-open");
+    var cell=inputNode.closest(".bk-row");
+    if(cell)cell.classList.add("bk-row-focused");
+  }
+  function clearFocusedMeaning(inputNode){
+    if(!root)return;
+    if(inputNode){
+      var cell=inputNode.closest(".bk-row");
+      if(cell)cell.classList.remove("bk-row-focused");
+    }
+    root.classList.remove("bk-focused","bk-keyboard-open");
+  }
   function switchStep(delta){
     var idx=BOOK.steps.findIndex(function(x){return x.id===Number(state.step);});
     if(idx+delta<0||idx+delta>=BOOK.steps.length){message("Chưa có ảnh của STEP tiếp theo.");return false;}
@@ -118,7 +146,7 @@
     if(type==="sentence")state.page="sentences";
     else state.page="words";
     var inputNode=root.querySelector('[data-entry="'+type+'"][data-n="'+next.n+'"]');
-    if(inputNode){inputNode.focus({preventScroll:true});inputNode.scrollIntoView({block:"nearest",behavior:"smooth"});}
+    if(inputNode){inputNode.focus({preventScroll:true});inputNode.scrollIntoView({block:"center",behavior:"smooth"});}
   }
   function submitInput(inputNode){
     var type=inputNode.dataset.entry, n=Number(inputNode.dataset.n);
@@ -186,6 +214,12 @@
       root.id="book2100Root";root.className="book2100";root.setAttribute("aria-label","Sách học 2100 từ vựng Anh Nhật");
       root.hidden=true;document.body.appendChild(root);
       root.addEventListener("click",onClick);
+      root.addEventListener("focusin",function(evt){
+        if(evt.target.matches(".bk-entry-input"))focusedMeaning(evt.target);
+      });
+      root.addEventListener("focusout",function(evt){
+        if(evt.target.matches(".bk-entry-input"))clearFocusedMeaning(evt.target);
+      });
       root.addEventListener("change",function(evt){
         if(evt.target.id==="bkStepSelect"){state.step=Number(evt.target.value);persist();render();}
       });
@@ -214,6 +248,8 @@
     if(button.dataset.listen){speak(Number(button.dataset.n),button.dataset.listen);return;}
     if(button.dataset.mode){
       state.mode=button.dataset.mode;
+      if(state.mode==="word")state.showWordVi=true;
+      if(state.mode==="sentence")state.showSentenceVi=true;
       if(state.mode==="word")state.page="words";
       if(state.mode==="sentence")state.page="sentences";
       persist();render();return;
