@@ -763,3 +763,67 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
 .book2100.bk-fit .bk-answer-toggle{
   min-height:21px;height:21px;width:22px;min-width:22px;flex-basis:22px;
 }
+
+
+/* Grammar-first hints use a compact icon and the existing floating answer
+   preview, without enlarging the desktop 12/13-row textbook grid. */
+.book2100 .bk-practice-actions{
+  display:inline-flex;align-items:center;justify-content:flex-end;
+  gap:3px;flex:0 0 auto;min-width:0;
+}
+.book2100 .bk-grammar-toggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  width:27px;min-width:27px;height:27px;min-height:27px;
+  padding:0;border:1px solid #d8af83;border-radius:7px;
+  background:#fff7df;color:#996d35;cursor:pointer;flex-shrink:0;
+}
+.book2100 .bk-grammar-toggle svg{width:16px;height:16px;flex:none}
+.book2100 .bk-grammar-toggle span{display:none}
+.book2100 .bk-grammar-toggle:hover{background:#ffebc0}
+.book2100 .bk-grammar-toggle[aria-pressed="true"]{
+  background:#a66b22;border-color:#a66b22;color:#fff;
+}
+.book2100 .bk-grammar-toggle:focus-visible{
+  outline:2px solid #3879bd;outline-offset:2px;
+}
+.book2100 .bk-grammar-popover{
+  border-color:#debd82;background:#fffef9;
+  max-height:min(460px,68dvh);overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;
+}
+.book2100 .bk-grammar-heading{
+  display:block;color:#6e421f;
+  font-size:clamp(15px,1.5vw,18px);line-height:1.35;
+  margin:6px 0;
+}
+.book2100 .bk-grammar-description{
+  font-size:12px;line-height:1.5;color:#655146;margin:4px 0 10px;
+}
+.book2100 .bk-grammar-patterns{
+  background:#fff5e0;border:1px solid #efdbb6;
+  border-radius:9px;padding:8px 10px;
+}
+.book2100 .bk-grammar-pattern{
+  font-size:clamp(12px,1.1vw,14px);font-weight:850;
+  line-height:1.5;overflow-wrap:anywhere;
+  padding:5px 0;color:#563d23;
+}
+.book2100 .bk-grammar-pattern+.bk-grammar-pattern{
+  border-top:1px solid #ead8b9;
+}
+.book2100 .bk-grammar-apply{
+  margin:10px 0 2px;
+  padding:8px 10px;background:#f5f7f2;border-radius:8px;
+}
+.book2100 .bk-grammar-apply b{
+  display:block;margin-bottom:4px;color:#3d6e56;
+  font-size:10px;letter-spacing:.06em;
+}
+.book2100 .bk-grammar-apply p{
+  font-size:12px;line-height:1.52;margin:0;color:#45594d;
+}
+.book2100.bk-fit .bk-practice-actions{gap:2px}
+.book2100.bk-fit .bk-grammar-toggle{
+  width:22px;min-width:22px;height:21px;min-height:21px;padding:0;
+}
+.book2100.bk-fit .bk-grammar-toggle svg{width:13px;height:13px}
