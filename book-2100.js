@@ -703,6 +703,9 @@
     }
     var field=type==="word"?"doneWords":"doneSentences";
     if(srs)srs.record(n,type,true,{assisted:assistedInputs.has(type+":"+n)});
+    // A hint is assistance for this answer, not a permanent penalty on a
+    // future independent recall of the same word or sentence.
+    assistedInputs.delete(type+":"+n);
     refreshMastery(n);
     if(!state[field].includes(n))state[field].push(n);
     persist();
