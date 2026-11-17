@@ -77,7 +77,7 @@ helpers.togglePracticeAnswer(button);
 assert.equal(popup,null,"Wrong-mode response must not appear");
 for(const token of [
   '(word?answerButton(n,"word"):"")',
-  '(sentence?answerButton(n,"sentence"):"")',
+  '(sentence?\'<div class="bk-practice-actions">\'+grammarHintButton(n)+answerButton(n,"sentence")',
   'if(button.hasAttribute("data-reveal-answer")){togglePracticeAnswer(button);return;}',
   'if(button.hasAttribute("data-answer-close")){closePracticeAnswer();return;}',
   'closePracticeAnswer();stopAudio();',
