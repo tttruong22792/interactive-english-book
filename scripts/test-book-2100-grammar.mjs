@@ -10,6 +10,9 @@ const paths=[
 const win={};
 const ctx=vm.createContext({window:win});
 for(const path of paths)vm.runInContext(await read(path),ctx,{filename:path});
+for(const name of ["book-2100-deep-001-100.js","book-2100-deep-101-200.js",
+  "book-2100-deep-201-300.js","book-2100-deep-301-400.js"])
+  vm.runInContext(await read(name),ctx,{filename:name});
 vm.runInContext(await read("book-2100-grammar.js"),ctx,{filename:"book-2100-grammar.js"});
 const book=win.BOOK_2100_DATA,api=win.Book2100GrammarHints;
 const entries=book.steps.flatMap(step=>step.entries);
@@ -21,8 +24,12 @@ for(const entry of entries){
   const hint=api.get(entry);
   assert.ok(hint,"Sentence "+entry.n+" has no grammar hint");
   assert.ok(hint.title&&hint.idea&&hint.apply);
+  assert.ok(typeof hint.context==="string"&&hint.context.length>=55,
+    "Item "+entry.n+" needs a substantive sentence-specific reasoning");
+  assert.ok(typeof hint.pitfall==="string"&&hint.pitfall.length>=50,
+    "Item "+entry.n+" needs an individual common-mistake explanation");
   assert.ok(hint.patterns.length>=1&&hint.patterns.length<=2);
-  const visible=[hint.title,hint.idea,...hint.patterns,hint.apply].join("\n").toLowerCase();
+  const visible=[hint.title,hint.idea,...hint.patterns,hint.apply,hint.context,hint.pitfall].join("\n").toLowerCase();
   assert.ok(!visible.includes(entry.sentence.toLowerCase()),"Grammar hint must not reveal full English answer "+entry.n);
   // Grammar explanations can naturally contain Vietnamese words appearing in
   // a vocabulary translation; check full English answer leakage instead.
@@ -63,6 +70,16 @@ assert.match(there.apply,/một bài kiểm tra/);
 assert.match(negative.apply,/chủ ngữ 'Tôi'/i);
 assert.ok(negative.patterns.some(x=>x.includes("don't + V nguyên mẫu")));
 assert.ok(!negative.patterns.some(x=>x.includes("drink coffee")));
+const contexts=entries.map(x=>api.get(x).context);
+const pitfalls=entries.map(x=>api.get(x).pitfall);
+assert.equal(new Set(contexts).size,400,"Each entry must have its own grammar analysis");
+assert.equal(new Set(pitfalls).size,400,"Each entry must have its own concrete pitfall");
+assert.match(api.get(examples.get(1)).context,/nhiều người/);
+assert.match(api.get(examples.get(1)).pitfall,/There are/);
+assert.match(api.get(examples.get(10)).context,/There is/);
+assert.match(api.get(examples.get(11)).pitfall,/don't/);
+assert.match(api.get(examples.get(251)).pitfall,/Every student/);
+assert.match(api.get(examples.get(393)).pitfall,/everyone/i);
 assert.ok(!there.patterns.some(x=>x.includes("test tomorrow")));
 
 const js=await read("book-2100.js");
@@ -70,6 +87,8 @@ new vm.Script(js,{filename:"book-2100.js"});
 for(const token of [
   'function grammarHintButton(n)',
   'function toggleGrammarHint(button)',
+  '<div class="bk-grammar-context"><b>PHÂN TÍCH CÂU ĐANG HỌC</b>',
+  '<div class="bk-grammar-pitfall"><b>LỖI DỄ MẮC</b>',
   'data-grammar-hint',
   '(sentence?\'<div class="bk-practice-actions">\'+grammarHintButton(n)+answerButton(n,"sentence")',
   'assistedInputs.add("sentence:"+n)',
@@ -112,6 +131,8 @@ assert.ok(popup,"Click reveals a floating hint panel");
 assert.ok(positioned && closed);
 assert.equal(button.attributes["aria-pressed"],"true");
 assert.ok(popup.innerHTML.includes("don't"));
+assert.ok(popup.innerHTML.includes("PHÂN TÍCH CÂU ĐANG HỌC"));
+assert.ok(popup.innerHTML.includes("LỖI DỄ MẮC"));
 assert.ok(!popup.innerHTML.includes("I don't drink coffee at night."));
 assert.ok(assistedInputs.has("sentence:11"),"Grammar hint is an assisted recall");
 assert.equal(popup.className,"bk-answer-popover bk-grammar-popover");
@@ -132,9 +153,17 @@ assert.ok(desktop.includes(".book2100.bk-fit .bk-rows"),"Full STEP desktop grid 
 assert.ok(mobile.includes(".book2100.bk-study-sentence .bk-row .bk-sentence-wrap"),"Mobile actions move below keyboard input");
 assert.ok(mobile.includes("grid-template-columns:34px minmax(0,1fr) 20px"));
 assert.ok(mobile.includes("overflow-x:hidden!important"),"No horizontal scrolling");
-assert.ok(sw.includes("language-studio-v138-book2100-grammar-hints"));
+assert.ok(sw.includes("language-studio-v139-book2100-contextual-deep-hints"));
 assert.ok(sw.includes("'./book-2100-grammar.js'"));
 assert.ok(build.includes('"book-2100-grammar.js"'));
+for(const filename of ["book-2100-deep-001-100.js","book-2100-deep-101-200.js",
+  "book-2100-deep-201-300.js","book-2100-deep-301-400.js"]){
+  assert.ok(sw.includes("'./"+filename+"'"),"PWA cache must contain "+filename);
+  assert.ok(build.includes('"'+filename+'"'),"Production bundle must contain "+filename);
+  assert.ok(html.includes('src="'+filename),'Load order must include '+filename);
+  assert.ok(html.indexOf('src="'+filename)<html.indexOf('src="book-2100-grammar.js'),
+    "Deep detail must load before core grammar mapping");
+}
 assert.ok(html.indexOf('src="book-2100-grammar.js')>0);
 assert.ok(html.indexOf('src="book-2100-grammar.js')<html.indexOf('src="book-2100.js'));
-console.log("PASS — 400 curated grammar hints (all 33 STEPs), no answer leakage, exact example rules, accessible hint interaction, assisted SRS and responsive layout.");
+console.log("PASS — 400 individually authored deep grammar hints, unique subject-specific reasoning/pitfall, no full-answer leakage, keyboard-aware UI, assisted SRS, offline/PWA and responsive layout.");
