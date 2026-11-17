@@ -25,6 +25,10 @@ jobs:
           node --check book-2100-data.js
           node --check book-2100-srs.js
           node --check book-2100-cloud.js
+          node --check book-2100-deep-001-100.js
+          node --check book-2100-deep-101-200.js
+          node --check book-2100-deep-201-300.js
+          node --check book-2100-deep-301-400.js
           node --check book-2100-grammar.js
           node --check book-2100.js
           node --check scripts/test-book-2100-srs.mjs
@@ -42,6 +46,10 @@ jobs:
           test -s dist/book-2100-data.js
           test -s dist/book-2100-srs.js
           test -s dist/book-2100-cloud.js
+          test -s dist/book-2100-deep-001-100.js
+          test -s dist/book-2100-deep-101-200.js
+          test -s dist/book-2100-deep-201-300.js
+          test -s dist/book-2100-deep-301-400.js
           test -s dist/book-2100-grammar.js
           test -s dist/book-2100.js
           test -s dist/book-2100.css
