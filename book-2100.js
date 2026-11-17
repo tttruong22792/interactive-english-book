@@ -106,8 +106,9 @@
       '<div class="bk-grammar-patterns">'+hint.patterns.map(function(pattern){
         return '<div class="bk-grammar-pattern">'+esc(pattern)+'</div>';
       }).join('')+'</div>'+
-      '<div class="bk-grammar-apply"><b>ÁP DỤNG</b><p>'+esc(hint.apply)+'</p></div>'+
-      '<small>Chỉ gợi ý ngữ pháp · không hiện từ vựng hoặc đáp án · tính là có hỗ trợ</small>';
+      '<div class="bk-grammar-context"><b>PHÂN TÍCH CÂU ĐANG HỌC</b><p>'+esc(hint.context)+'</p></div>'+
+      '<div class="bk-grammar-pitfall"><b>LỖI DỄ MẮC</b><p>'+esc(hint.pitfall)+'</p></div>'+
+      '<small>Chỉ hướng dẫn cấu trúc · không hiện đáp án · tính là có hỗ trợ</small>';
     root.appendChild(panel);
     button.setAttribute("aria-pressed","true");
     button.title="Ẩn gợi ý";
