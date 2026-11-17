@@ -55,6 +55,7 @@ jobs:
           for f in book-2100-steps-*.js book-2100-collocations-*.js; do node --check "$f"; done
           node --check book-2100-srs.js
           node --check book-2100-cloud.js
+          node --check book-2100-grammar.js
           node --check book-2100.js
           node --check scripts/test-book-2100-mobile.mjs
           node --check scripts/test-book-2100.mjs
@@ -203,6 +204,7 @@ jobs:
           node scripts/test-book-2100-srs.mjs
           node scripts/test-book-2100-mobile.mjs
           node scripts/test-book-2100-answer.mjs
+          node scripts/test-book-2100-grammar.mjs
           node scripts/test-book-2100-cloud.mjs
 
       - name: Build static site
