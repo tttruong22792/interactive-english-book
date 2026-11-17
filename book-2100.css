@@ -827,3 +827,36 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
   width:22px;min-width:22px;height:21px;min-height:21px;padding:0;
 }
 .book2100.bk-fit .bk-grammar-toggle svg{width:13px;height:13px}
+
+
+/* Sentence-specific grammar guidance — detailed but comfortably readable.
+   Popover stays floating so the desktop STEP grid never grows vertically. */
+.book2100 .bk-grammar-context,
+.book2100 .bk-grammar-pitfall{
+  margin-top:10px;padding:10px 11px;
+  border-radius:9px;overflow-wrap:anywhere;
+}
+.book2100 .bk-grammar-context{
+  background:#f1f8f2;
+  border:1px solid #d7e7d8;
+}
+.book2100 .bk-grammar-pitfall{
+  background:#fff6ef;
+  border:1px solid #eddaca;
+}
+.book2100 .bk-grammar-context b,
+.book2100 .bk-grammar-pitfall b{
+  display:block;font-size:10px;letter-spacing:.045em;
+  margin-bottom:5px;font-weight:850;
+}
+.book2100 .bk-grammar-context b{color:#38684b}
+.book2100 .bk-grammar-pitfall b{color:#986039}
+.book2100 .bk-grammar-context p,
+.book2100 .bk-grammar-pitfall p{
+  margin:0;font-size:12px;line-height:1.58;color:#493e36;
+  white-space:normal;overflow-wrap:anywhere;
+}
+.book2100 .bk-grammar-popover{
+  max-height:min(490px,70dvh);
+  scrollbar-width:thin;overscroll-behavior:contain;
+}

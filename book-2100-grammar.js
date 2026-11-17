@@ -337,8 +337,14 @@ function get(entry){
   var n=Number(entry.n);
   if(n<1||n>400)return null;
   var code=ids[n-1],r=RULES[code];
+  var deep=global.BOOK_2100_DEEP_HINTS?.[n];
+  if(!Array.isArray(deep) || typeof deep[0]!=="string" ||
+    typeof deep[1]!=="string" || !deep[0].trim() || !deep[1].trim()){
+    console.error("Missing sentence-specific grammar hint for Book 2100 item "+n);
+    return null;
+  }
   return {id:n,code:code,title:r.title,idea:r.idea,patterns:r.patterns.slice(),
-    apply:SPECIAL_APPLICATIONS[n]||r.apply};
+    apply:SPECIAL_APPLICATIONS[n]||r.apply,context:deep[0],pitfall:deep[1]};
 }
 global.Book2100GrammarHints={get:get,codes:ids.slice(),rules:RULES,total:400};
 })(window);
