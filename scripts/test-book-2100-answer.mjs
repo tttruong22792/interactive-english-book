@@ -91,6 +91,6 @@ assert.ok(desktop.includes(".book2100 .bk-answer-popover"),"Popover styling must
 assert.ok(desktop.includes("position:fixed;z-index:10050"),"Desktop popup must not increase the table height");
 assert.ok(mobile.includes(".book2100 .bk-row .bk-answer-toggle"),"Mobile cards must show answer toggle");
 assert.ok(mobile.includes("max-width:calc(100vw - 24px)"),"Answer must not overflow phone width");
-assert.ok(html.includes('book-2100.js?v=20261117-answer-peek-v1'));
-assert.ok(sw.includes("language-studio-v137-book2100-reveal-answer"));
+assert.ok(html.includes('book-2100.js?v=20261117-grammar-hints-v1'));
+assert.ok(sw.includes("language-studio-v138-book2100-grammar-hints"));
 console.log("PASS — Reveal answer for word/sentence, dismiss, a11y, hint-protected SRS, no desktop row growth or mobile horizontal overflow.");
