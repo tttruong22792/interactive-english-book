@@ -66,6 +66,67 @@
   function input(n,type){
     return '<input type="text" class="bk-entry-input" data-entry="'+type+'" data-n="'+n+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Nhập '+(type==="word"?"từ":"câu")+' tiếng Anh số '+n+'" placeholder="'+(type==="word"?"Nhập từ…":"Nhập câu tiếng Anh…")+'"/>';
   }
+
+  // Show the exact answer on demand without submitting or awarding mastery.
+  // An answer viewed before typing is treated as assisted recall by SRS.
+  function answerButton(n,type){
+    return '<button type="button" class="bk-answer-toggle" data-reveal-answer="'+type+'" data-answer-n="'+n+'" '+
+      'aria-pressed="false" aria-label="Hiện đáp án '+(type==="word"?"từ ":"câu ")+n+'" title="Hiện đáp án">'+
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
+      '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>'+
+      '<span>Đáp án</span></button>';
+  }
+  function closePracticeAnswer(){
+    if(!root)return;
+    var active=root.querySelector('[data-reveal-answer][aria-pressed="true"]');
+    if(active){active.setAttribute("aria-pressed","false");active.title="Hiện đáp án";}
+    root.querySelector(".bk-answer-popover")?.remove();
+  }
+  function positionPracticeAnswer(button,popup){
+    if(!button?.isConnected || !popup?.isConnected)return;
+    var viewport=window.visualViewport;
+    var leftEdge=Number(viewport?.offsetLeft)||0;
+    var topEdge=Number(viewport?.offsetTop)||0;
+    var vw=Number(viewport?.width)||window.innerWidth||360;
+    var vh=Number(viewport?.height)||window.innerHeight||640;
+    var rect=button.getBoundingClientRect();
+    var width=Math.min(360,Math.max(200,vw-24));
+    var left=Math.min(Math.max(rect.left,leftEdge+12),leftEdge+vw-width-12);
+    popup.style.width=width+"px";
+    popup.style.left=left+"px";
+    var height=popup.getBoundingClientRect().height||92;
+    var above=rect.top-height-8;
+    var below=rect.bottom+8;
+    var y=above>=topEdge+8?above:below;
+    popup.style.top=Math.max(topEdge+8,Math.min(y,topEdge+vh-height-8))+"px";
+  }
+  function togglePracticeAnswer(button){
+    var n=Number(button.dataset.answerN),type=button.dataset.revealAnswer;
+    if(!Number.isInteger(n) || (type!=="word"&&type!=="sentence") ||
+       state.mode!==type)return;
+    var prior=root.querySelector(".bk-answer-popover");
+    var same=button.getAttribute("aria-pressed")==="true";
+    closePracticeAnswer();
+    if(same)return;
+    var entry=currentStep().entries.find(function(e){return e.n===n;});
+    if(!entry)return;
+    assistedInputs.add(type+":"+n);
+    var answer=type==="word"?entry.en:entry.sentence;
+    var panel=document.createElement("div");
+    panel.className="bk-answer-popover";
+    panel.id="bkCurrentAnswer";
+    panel.setAttribute("role","status");
+    panel.setAttribute("aria-live","polite");
+    panel.innerHTML='<div class="bk-answer-popover-head"><b>ĐÁP ÁN '+(type==="word"?"TỪ":"CÂU")+' '+n+'</b>'+
+      '<button type="button" data-answer-close aria-label="Ẩn đáp án">×</button></div>'+
+      '<div class="bk-answer-popover-text">'+esc(answer)+'</div>'+
+      '<small>Đã xem gợi ý · không tính là thuộc</small>';
+    root.appendChild(panel);
+    button.setAttribute("aria-pressed","true");
+    button.title="Ẩn đáp án";
+    positionPracticeAnswer(button,panel);
+  }
+
   function practiceMeaning(type,meaning){
     return '<div class="bk-practice-meaning" data-practice-meaning="'+type+'">'+
       '<small>NGHĨA TIẾNG VIỆT</small><strong>'+esc(meaning)+'</strong></div>';
@@ -295,12 +356,12 @@
       '<div class="bk-cell bk-number"><span>'+n+'</span>'+masteryButton(n)+'</div>'+
       '<div class="bk-cell bk-word">'+(word?practiceMeaning("word",item.vi):"")+'<div class="bk-word-line">'+
       (word?input(n,"word"):state.showEn?'<strong>'+esc(item.en)+'</strong>':'<span class="bk-masked">••••••</span>')+
-      line(n,"doneWords")+'</div><div class="bk-word-sub">'+(state.mode==="read"?'<small>'+esc(item.ipa)+'</small>':"")+listenButton(n,"word")+'</div></div>'+
+      line(n,"doneWords")+'</div><div class="bk-word-sub">'+(state.mode==="read"?'<small>'+esc(item.ipa)+'</small>':"")+listenButton(n,"word")+(word?answerButton(n,"word"):"")+'</div></div>'+
       '<div class="bk-cell bk-word-vi">'+(state.showWordVi?esc(item.vi):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-jword">'+(state.showJa?ruby(item.ja):'<span class="bk-masked">••••</span>')+'</div>'+
       '<div class="bk-cell bk-extra" id="bk-card-words-details-'+n+'">'+renderExtra(item)+'</div>'+
       '<div class="bk-cell bk-sentence">'+(sentence?practiceMeaning("sentence",item.sentenceVi):"")+'<div class="bk-sentence-wrap">'+listenButton(n,"sentence")+
-      '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+'</div></div>'+
+      '<div class="bk-sentence-value">'+(sentence?input(n,"sentence"):state.showEn?highlight(item.sentence,item.en):'<span class="bk-masked">••••••••••</span>')+'</div>'+line(n,"doneSentences")+(sentence?answerButton(n,"sentence"):"")+'</div></div>'+
       '<div class="bk-cell bk-svi">'+(state.showSentenceVi?esc(item.sentenceVi):'<span class="bk-masked">••••••</span>')+'</div>'+
       '<div class="bk-cell bk-sja" id="bk-card-sentences-details-'+n+'">'+(state.showJa?ruby(item.sentenceJa):'<span class="bk-masked">••••••</span>')+'</div>'+
       mobileCardAction(n)+'</div>';
@@ -520,6 +581,9 @@
   }
   function onKeyboardViewportResize(){
     if(focusedPracticeInput())queueKeyboardAlignment();
+    var button=root?.querySelector('[data-reveal-answer][aria-pressed="true"]');
+    var popup=root?.querySelector(".bk-answer-popover");
+    if(button&&popup)positionPracticeAnswer(button,popup);
   }
 
   function focusedMeaning(inputNode){
@@ -551,7 +615,7 @@
     stopAudio();state.step=BOOK.steps[idx+delta].id;assistedInputs.clear();persist();render();return true;
   }
   function focusNext(n,type){
-    stopAudio();
+    closePracticeAnswer();stopAudio();
     var next=currentStep().entries.find(function(x){return x.n>n;});
     if(!next){
       if(!switchStep(1))return;
@@ -606,6 +670,7 @@
     inputNode.classList.add("is-correct");
     inputNode.removeAttribute("aria-invalid");
     showAnswerMark(inputNode,"correct");
+    closePracticeAnswer();
     updateCounter();
     inputNode.focus({preventScroll:true});
     // Correct Enter: pronounce exactly the word or full sentence just recalled.
@@ -743,7 +808,10 @@
       window.visualViewport?.addEventListener("resize",onKeyboardViewportResize);
       window.addEventListener("resize",onKeyboardViewportResize);
       root.addEventListener("focusin",function(evt){
-        if(evt.target.matches(".bk-entry-input"))focusedMeaning(evt.target);
+        if(evt.target.matches(".bk-entry-input")){
+          closePracticeAnswer();
+          focusedMeaning(evt.target);
+        }
       });
       root.addEventListener("focusout",function(evt){
         if(evt.target.matches(".bk-entry-input") &&
@@ -799,6 +867,8 @@
     if(evt.target.classList?.contains("bk-chunk-layer")){closeChunks();return;}
     if(evt.target.classList?.contains("bk-srs-layer")){closeSrsLayer();return;}
     var button=evt.target.closest("button");if(!button)return;
+    if(button.hasAttribute("data-answer-close")){closePracticeAnswer();return;}
+    if(button.hasAttribute("data-reveal-answer")){togglePracticeAnswer(button);return;}
     if(button.hasAttribute("data-srs-close")){closeSrsLayer();return;}
     if(button.hasAttribute("data-review-skip")){nextReview(true);return;}
     if(button.hasAttribute("data-review-next")){nextReview(true);return;}
@@ -907,7 +977,8 @@
   document.addEventListener("keydown",function(evt){
     if(evt.key==="Escape"&&root&&!root.hidden){
       evt.preventDefault();
-      if(root.querySelector(".bk-srs-layer"))closeSrsLayer();
+      if(root.querySelector(".bk-answer-popover"))closePracticeAnswer();
+      else if(root.querySelector(".bk-srs-layer"))closeSrsLayer();
       else if(root.querySelector(".bk-chunk-layer"))closeChunks();
       else close();
     }

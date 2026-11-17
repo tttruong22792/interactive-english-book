@@ -202,6 +202,7 @@ jobs:
           node scripts/test-book-2100.mjs
           node scripts/test-book-2100-srs.mjs
           node scripts/test-book-2100-mobile.mjs
+          node scripts/test-book-2100-answer.mjs
           node scripts/test-book-2100-cloud.mjs
 
       - name: Build static site

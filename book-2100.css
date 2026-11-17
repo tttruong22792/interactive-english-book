@@ -713,3 +713,53 @@ body.book2100-open #app{visibility:hidden!important;pointer-events:none!importan
 .book2100 .bk-rows>.bk-row.bk-row-audio-playing .bk-cell.bk-number{
   color:#b15e26;font-weight:900;
 }
+
+
+/* Small answer peek in recall mode. Floating detail does not change row height,
+   8-column layout, or no-vertical-scroll desktop fitting. */
+.book2100 .bk-answer-toggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  flex:0 0 27px;width:27px;min-width:27px;height:27px;min-height:27px;
+  padding:0;border:1px solid #c3a999;border-radius:7px;
+  background:#fffaf5;color:#986b56;cursor:pointer;
+}
+.book2100 .bk-answer-toggle svg{width:15px;height:15px;flex:none}
+.book2100 .bk-answer-toggle span{display:none}
+.book2100 .bk-answer-toggle[aria-pressed="true"]{
+  color:#fff;border-color:#ae6250;background:#ae6250;
+}
+.book2100 .bk-answer-toggle:focus-visible{
+  outline:2px solid #3879bd;outline-offset:2px;
+}
+.book2100 .bk-sentence-wrap .bk-answer-toggle{flex-shrink:0}
+.book2100 .bk-answer-popover{
+  position:fixed;z-index:10050;display:block;
+  max-width:calc(100vw - 24px);max-height:45vh;
+  overflow-y:auto;overflow-wrap:anywhere;
+  padding:11px 13px;border:1px solid #d4a895;
+  border-radius:11px;background:#fffefa;
+  color:#432e29;box-shadow:0 9px 35px rgba(39,23,16,.2);
+  text-align:left;
+}
+.book2100 .bk-answer-popover-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:5px;
+}
+.book2100 .bk-answer-popover-head b{
+  color:#925447;font-size:11px;letter-spacing:.04em;font-weight:850;
+}
+.book2100 .bk-answer-popover [data-answer-close]{
+  display:inline-grid;place-items:center;width:27px;height:27px;
+  padding:0;border:0;border-radius:7px;background:#f5ece8;
+  color:#79544a;font-size:21px;line-height:1;
+}
+.book2100 .bk-answer-popover-text{
+  font-size:clamp(15px,1.4vw,19px);font-weight:750;
+  line-height:1.55;white-space:normal;
+}
+.book2100 .bk-answer-popover small{
+  display:block;margin-top:6px;font-size:10px;color:#94766a;
+}
+.book2100.bk-fit .bk-answer-toggle{
+  min-height:21px;height:21px;width:22px;min-width:22px;flex-basis:22px;
+}

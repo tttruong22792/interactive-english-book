@@ -32,6 +32,7 @@ jobs:
           node scripts/test-book-2100-srs.mjs
           node scripts/test-book-2100-mobile.mjs
           node scripts/test-book-2100-cloud.mjs
+          node scripts/test-book-2100-answer.mjs
       - name: Build production artifact
         run: npm run build
       - name: Check shipped assets
