@@ -548,3 +548,49 @@
     display:none!important;
   }
 }
+
+
+@media(max-width:1279px){
+  /* Answer + grammar hint move underneath the input; no squeezed keyboard
+     field and no sideways scroll even on narrow iPhones. */
+  .book2100.bk-study-sentence .bk-row .bk-sentence-wrap{
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) 20px;
+    grid-template-rows:auto auto;
+    gap:5px 8px;
+    align-items:center;
+    width:100%;min-width:0;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-sentence-wrap>.bk-listen{
+    grid-column:1;grid-row:1;min-width:34px;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-sentence-value{
+    grid-column:2;grid-row:1;width:100%;min-width:0;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-sentence-wrap>.bk-done{
+    grid-column:3;grid-row:1;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-practice-actions{
+    grid-column:1/-1;grid-row:2;justify-content:flex-end;
+    gap:7px;width:100%;margin-top:1px;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-grammar-toggle{
+    display:inline-flex!important;width:auto!important;min-width:64px!important;
+    min-height:32px;height:32px;padding:4px 9px!important;
+    font-size:12px;font-weight:800;gap:5px;
+  }
+  .book2100.bk-study-sentence .bk-row .bk-grammar-toggle span{
+    display:inline!important;
+  }
+  .book2100 .bk-grammar-popover{
+    max-width:calc(100vw - 24px);
+    max-height:min(430px,65dvh);
+  }
+  .book2100 .bk-grammar-heading{font-size:16px}
+  .book2100 .bk-grammar-pattern{font-size:13px}
+}
+@media(max-width:359px){
+  .book2100.bk-study-sentence .bk-row .bk-grammar-toggle{
+    min-width:60px!important;padding:4px 6px!important;
+  }
+}
