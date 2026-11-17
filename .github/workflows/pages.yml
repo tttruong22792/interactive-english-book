@@ -55,6 +55,10 @@ jobs:
           for f in book-2100-steps-*.js book-2100-collocations-*.js; do node --check "$f"; done
           node --check book-2100-srs.js
           node --check book-2100-cloud.js
+          node --check book-2100-deep-001-100.js
+          node --check book-2100-deep-101-200.js
+          node --check book-2100-deep-201-300.js
+          node --check book-2100-deep-301-400.js
           node --check book-2100-grammar.js
           node --check book-2100.js
           node --check scripts/test-book-2100-mobile.mjs
