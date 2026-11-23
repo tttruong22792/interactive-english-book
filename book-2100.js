@@ -17,6 +17,7 @@
   var reviewSession=null,overlayReturnFocus=null,assistedInputs=new Set();
   var sequenceEpoch=0,sequenceActive=false,sequenceKind="",sequenceStep=0,sequencePauseTimer=0,sequencePauseResolve=null;
   var browserSpeechResolve=null,cloudRevision=-1;
+  var backgroundSession=null,backgroundPaused=false;
   // Card state is presentation-only; the source book and SRS history are unchanged.
   var expandedMobileCards=new Set(),mobileOptionsOpen=false;
   var byNumber=new Map();
@@ -418,7 +419,12 @@
     var playing=sequenceActive&&sequenceStep===Number(state.step)&&sequenceKind===kind;
     button.classList.toggle("is-playing",playing);
     button.setAttribute("aria-pressed",playing?"true":"false");
-    button.textContent=playing?"■ Dừng nghe":"▶ Nghe "+count+(kind==="word"?" từ":" câu");
+    button.textContent=playing
+      ?(backgroundSession&&backgroundPaused?"▶ Tiếp tục nghe":"■ Dừng nghe")
+      :"▶ Nghe "+count+(kind==="word"?" từ":" câu ↻");
+    button.title=kind==="sentence"
+      ?"Phát tất cả câu trong STEP, tự lặp liên tục và hỗ trợ nghe khi khóa màn hình"
+      :"Phát lần lượt các từ trong STEP";
   }
   function cloudBadge(info){
     if(!info?.signedIn)return "☁ Máy này";
@@ -482,7 +488,10 @@
       '<button class="bk-mode '+(state.mode==="read"?"is-active":"")+'" data-mode="read" type="button">Đọc sách</button>'+
       '<button class="bk-mode '+(state.mode==="word"?"is-active":"")+'" data-mode="word" type="button">Học từ</button>'+
       '<button class="bk-mode '+(state.mode==="sentence"?"is-active":"")+'" data-mode="sentence" type="button">Học câu</button>'+
-      '<button type="button" class="bk-audio-repeat '+(state.repeatAudio?"is-active":"")+'" data-repeat-audio aria-pressed="'+(state.repeatAudio?"true":"false")+'">↻ Lặp toàn STEP</button>'+
+      '<button type="button" class="bk-audio-repeat '+(audioMode()==="sentence"||state.repeatAudio?"is-active":"")+'" data-repeat-audio '+
+      (audioMode()==="sentence"?'disabled title="Nghe câu luôn lặp cho tới khi dừng"':'')+
+      ' aria-pressed="'+(audioMode()==="sentence"||state.repeatAudio?"true":"false")+'">'+
+      (audioMode()==="sentence"?"↻ Câu: tự lặp":"↻ Lặp toàn STEP")+'</button>'+
       '<button class="bk-mobile-options-trigger" type="button" data-mobile-options aria-expanded="'+(mobileOptionsOpen?"true":"false")+'" aria-label="Tùy chọn hiển thị" title="Tùy chọn hiển thị">⚙ Tùy chọn</button>'+
       '<button class="bk-fit-toggle" data-fit type="button">'+(state.fitPage?"⛶ Toàn trang":"🔍 Thu vừa trang")+'</button><button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
   }
@@ -776,6 +785,10 @@
     ++sequenceEpoch;
     sequenceActive=false;
     activeAudio=false;
+    var session=backgroundSession;
+    backgroundSession=null;
+    backgroundPaused=false;
+    if(session){try{session.stop();}catch(error){console.warn("Book audio stop",error);}}
     cancelSequencePause();
     clearPlayingRow();
     try{window.AITTS?.stop?.();}catch(error){}
@@ -798,11 +811,57 @@
   }
   async function playStep(){
     if(!root||root.hidden)return;
-    if(sequenceActive){stopAudio();return;}
+    if(sequenceActive){
+      // The iOS lock-screen Pause command keeps the native media session
+      // alive; the in-page button can resume it without rebuilding the audio.
+      if(backgroundSession&&backgroundPaused){backgroundSession.resume();return;}
+      stopAudio();return;
+    }
     stopAudio();
     if(focusedPracticeInput())document.activeElement.blur();
     var step=currentStep(),kind=audioMode(),epoch=sequenceEpoch;
     var entries=step.entries.slice();
+    if(kind==="sentence"){
+      // MUST create and play synchronously within the tap event. Awaiting
+      // a TTS fetch first loses iOS's user activation for media playback.
+      // Native audio.loop keeps the same MP3 playing when JS is suspended.
+      var player=null;
+      try{
+        player=window.Book2100BackgroundAudio?.create?.(step,{
+          onState:function(status){
+            if(epoch!==sequenceEpoch || backgroundSession!==player)return;
+            backgroundPaused=status==="paused";
+            updateSequenceControl();
+          },
+          onError:function(error){
+            if(epoch!==sequenceEpoch || backgroundSession!==player)return;
+            stopAudio();
+            message("Không tải được âm thanh của STEP. Hãy kết nối mạng và thử lại.");
+            console.warn("Book 2100 background playback",error);
+          },
+          onEnded:function(){
+            if(epoch===sequenceEpoch && backgroundSession===player && !root.hidden){
+              // Normally never fires because audio.loop=true; resilience
+              // for browsers that unexpectedly report a track ending.
+              player.restart();
+            }
+          }
+        })||null;
+      }catch(error){console.warn("Book 2100 audio initialization",error);}
+      if(player){
+        backgroundSession=player;
+        backgroundPaused=false;
+        sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
+        activeAudio=true;
+        if(state.mode==="sentence")entries.forEach(function(item){
+          assistedInputs.add("sentence:"+item.n);
+        });
+        updateSequenceControl();
+        player.play();
+        return;
+      }
+      message("Thiết bị chưa hỗ trợ phát nền. Đang phát câu lần lượt trong trang.");
+    }
     sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
     updateSequenceControl();
     try{
@@ -828,7 +887,7 @@
           if(epoch!==sequenceEpoch)return;
           await sequencePause(280,epoch);
         }
-      }while(epoch===sequenceEpoch && state.repeatAudio && !root.hidden);
+      }while(epoch===sequenceEpoch && (kind==="sentence"||state.repeatAudio) && !root.hidden);
     }finally{
       if(epoch===sequenceEpoch){
         sequenceActive=false;activeAudio=false;
