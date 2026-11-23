@@ -3,6 +3,9 @@
    when the browser is backgrounded. No WebAudio or speechSynthesis here. */
 (function(){
 "use strict";
+// This source is also bundled in runtime.js; explicit Book 2100 loading
+// must not reset a player that an existing reading session already uses.
+if(window.ReadingBackgroundAudio?.create)return;
 const prepared=new Map();
 function wholeText(story){
  return (story?.lines||[]).map(row=>Array.isArray(row)?String(row[0]||"").trim():"").filter(Boolean).join(" ");
