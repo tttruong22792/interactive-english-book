@@ -58,7 +58,7 @@ const allTexts=[];
 for(const step of steps){
  const expected=step.entries.map(e=>e.sentence.trim()).join(" ");
  assert.equal(lib.passage(step),expected,"STEP "+step.id+" must include all sentences in source order");
- assert.equal(expected.split(/(?<=[.!?])\s+/).length>=step.entries.length,true,"STEP passage contains the examples");
+ assert.ok(step.entries.every(e=>expected.includes(e.sentence.trim())),"STEP passage contains every source sentence, including quoted/interrupted punctuation");
  allTexts.push(expected);
 }
 assert.equal(new Set(allTexts).size,33,"Whole STEP passages must be distinct");
