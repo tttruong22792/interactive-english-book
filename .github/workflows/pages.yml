@@ -60,6 +60,8 @@ jobs:
           node --check book-2100-deep-201-300.js
           node --check book-2100-deep-301-400.js
           node --check book-2100-grammar.js
+          node --check reading-background-audio.js
+          node --check book-2100-background.js
           node --check book-2100.js
           node --check scripts/test-book-2100-mobile.mjs
           node --check scripts/test-book-2100.mjs
@@ -210,10 +212,15 @@ jobs:
           node scripts/test-book-2100-answer.mjs
           node scripts/test-book-2100-grammar.mjs
           node scripts/test-book-2100-cloud.mjs
+          node scripts/test-book-2100-background.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
         run: npm run build
+
+      - name: Verify all 33 native STEP listening recordings in TTS allow-list
+        if: steps.head_guard.outputs.deploy == 'true'
+        run: node scripts/test-book-2100-background.mjs --manifest
 
       - name: Verify Day 01 explanation assets in Pages upload
         if: steps.head_guard.outputs.deploy == 'true'
