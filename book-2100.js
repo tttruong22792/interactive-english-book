@@ -499,6 +499,20 @@
       '<button class="bk-mobile-options-trigger" type="button" data-mobile-options aria-expanded="'+(mobileOptionsOpen?"true":"false")+'" aria-label="Tùy chọn hiển thị" title="Tùy chọn hiển thị">⚙ Tùy chọn</button>'+
       '<button class="bk-fit-toggle" data-fit type="button">'+(state.fitPage?"⛶ Toàn trang":"🔍 Thu vừa trang")+'</button><button class="bk-exit" data-exit type="button">✕ Thoát</button></div></div>';
   }
+  // Prepare a STEP as soon as its sentence page becomes visible, so most
+  // learners can tap Play once with a ready MP3 and keep iOS user activation.
+  // This is best-effort and never changes the user's vocabulary/SRS progress.
+  function warmStepAudio(){
+    if(!root||root.hidden||audioMode()!=="sentence")return;
+    var step=currentStep(),id=step.id;
+    var prepare=window.Book2100BackgroundAudio?.prepare;
+    if(typeof prepare!=="function"||backgroundPreparedStep===id)return;
+    prepare(step).then(function(){
+      if(!root.hidden&&Number(state.step)===id)backgroundPreparedStep=id;
+    }).catch(function(error){
+      console.warn("Book 2100 STEP audio prewarm",error);
+    });
+  }
   function render(){
     if(!root)return;
     cancelKeyboardAlignment();restoreKeyboardViewport();
@@ -528,6 +542,7 @@
       '<div class="bk-pager"><button data-step="-1" '+(step.id===BOOK.steps[0].id?"disabled":"")+'>← STEP trước</button><strong>'+step.id+' / '+BOOK.steps.length+' STEP</strong><button data-step="1" '+(step.id===BOOK.steps[BOOK.steps.length-1].id?"disabled":"")+'>STEP tiếp →</button></div></div>';
     updateCloudControl();
     updateSequenceControl();
+    if(!root.hidden)warmStepAudio();
   }
   function updateDueBadge(){
     if(!root||!srs)return;
@@ -1008,7 +1023,7 @@
     }
     if(state.mode==="sentence")state.page="sentences";
     if(state.mode==="word")state.page="words";
-    render();root.hidden=false;document.body.classList.add("book2100-open");
+    render();root.hidden=false;warmStepAudio();document.body.classList.add("book2100-open");
     document.documentElement.classList.add("book2100-open");
     onCloudStatus(window.Book2100CloudSync?.status?.()||{revision:0});
     if(window.Book2100CloudSync?.status?.()?.signedIn)
