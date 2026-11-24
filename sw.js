@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v139-book2100-contextual-deep-hints';
+const APP_CACHE='language-studio-v140-book2100-native-background-loop';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -35,6 +35,8 @@ const ASSETS=[
   './book-2100-deep-201-300.js',
   './book-2100-deep-301-400.js',
   './book-2100-grammar.js',
+  './reading-background-audio.js',
+  './book-2100-background.js',
   './book-2100.js',
   './app-shell-v53.css',
   './reading-studio.css',
