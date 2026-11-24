@@ -10,6 +10,24 @@
       return typeof entry.sentence==="string"?entry.sentence.trim():"";
     }).filter(Boolean).join(" ");
   }
+  // First-time full-STEP MP3s are generated on demand. A media src pointed
+  // at an as-yet missing Supabase object returns 400/404 and never recovers.
+  // Make the file ready before creating the looping Audio element.
+  const preparation=new Map();
+  function prepare(step){
+    const text=passage(step);
+    if(!text||!global.AITTS?.prepareAudioUrl)
+      return Promise.reject(new Error("Không có dịch vụ chuẩn bị giọng đọc."));
+    if(preparation.has(text))return preparation.get(text);
+    const job=Promise.resolve().then(function(){
+      return global.AITTS.prepareAudioUrl(text,{language:"en-US",voice:"marin"});
+    }).then(function(url){
+      if(!url)throw new Error("Không tìm thấy tệp âm thanh STEP.");
+      return url;
+    }).catch(function(error){preparation.delete(text);throw error;});
+    preparation.set(text,job);
+    return job;
+  }
   function create(step,options){
     options=options||{};
     var text=passage(step);
@@ -25,5 +43,5 @@
       onEnded:options.onEnded
     });
   }
-  global.Book2100BackgroundAudio={passage:passage,create:create};
+  global.Book2100BackgroundAudio={passage:passage,prepare:prepare,create:create};
 })(window);
