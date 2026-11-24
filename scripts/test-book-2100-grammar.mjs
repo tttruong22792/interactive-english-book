@@ -153,7 +153,7 @@ assert.ok(desktop.includes(".book2100.bk-fit .bk-rows"),"Full STEP desktop grid 
 assert.ok(mobile.includes(".book2100.bk-study-sentence .bk-row .bk-sentence-wrap"),"Mobile actions move below keyboard input");
 assert.ok(mobile.includes("grid-template-columns:34px minmax(0,1fr) 20px"));
 assert.ok(mobile.includes("overflow-x:hidden!important"),"No horizontal scrolling");
-assert.ok(sw.includes("language-studio-v139-book2100-contextual-deep-hints"));
+assert.ok(sw.includes("language-studio-v140-book2100-native-background-loop"));
 assert.ok(sw.includes("'./book-2100-grammar.js'"));
 assert.ok(build.includes('"book-2100-grammar.js"'));
 for(const filename of ["book-2100-deep-001-100.js","book-2100-deep-101-200.js",

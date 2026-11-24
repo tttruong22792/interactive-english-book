@@ -30,6 +30,8 @@ jobs:
           node --check book-2100-deep-201-300.js
           node --check book-2100-deep-301-400.js
           node --check book-2100-grammar.js
+          node --check reading-background-audio.js
+          node --check book-2100-background.js
           node --check book-2100.js
           node --check scripts/test-book-2100-srs.mjs
           node --check scripts/test-book-2100.mjs
@@ -39,8 +41,11 @@ jobs:
           node scripts/test-book-2100-cloud.mjs
           node scripts/test-book-2100-answer.mjs
           node scripts/test-book-2100-grammar.mjs
+          node scripts/test-book-2100-background.mjs
       - name: Build production artifact
         run: npm run build
+      - name: Verify all 33 native STEP listening recordings in TTS allow-list
+        run: node scripts/test-book-2100-background.mjs --manifest
       - name: Check shipped assets
         run: |
           test -s dist/book-2100-data.js
@@ -51,6 +56,8 @@ jobs:
           test -s dist/book-2100-deep-201-300.js
           test -s dist/book-2100-deep-301-400.js
           test -s dist/book-2100-grammar.js
+          test -s dist/reading-background-audio.js
+          test -s dist/book-2100-background.js
           test -s dist/book-2100.js
           test -s dist/book-2100.css
           test -s dist/book-2100-mobile.css

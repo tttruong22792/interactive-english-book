@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-mobile.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100-cloud.js", "book-2100-deep-001-100.js","book-2100-deep-101-200.js","book-2100-deep-201-300.js","book-2100-deep-301-400.js","book-2100-grammar.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-mobile.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100-cloud.js", "book-2100-deep-001-100.js","book-2100-deep-101-200.js","book-2100-deep-201-300.js","book-2100-deep-301-400.js","book-2100-grammar.js", "reading-background-audio.js", "book-2100-background.js", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -599,6 +599,13 @@ if (await exists(vietnameseDir)) {
     throw new Error("2100 book requires 33 consecutive STEPs with exactly 400 numbered entries.");
   }
   for(const step of steps){
+    // A single MP3 for all sentences in the current STEP is essential for
+    // iPhone background/lock-screen listening: a JS playlist stalls when
+    // Safari suspends timers between individual sentences.
+    const wholeStep=step.entries.map(item=>String(item.sentence||"").trim())
+      .filter(Boolean).join(" ");
+    if(!wholeStep)throw new Error("Empty sentence passage for Book 2100 STEP "+step.id);
+    addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id);
     for(const item of step.entries){
       addManifestAudio(item.en,"book-word","book-2100-step-"+step.id);
       if(item.wordAudio && item.wordAudio!==item.en) addManifestAudio(item.wordAudio,"book-word-alternate","book-2100-step-"+step.id);
