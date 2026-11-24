@@ -17,7 +17,8 @@
   var reviewSession=null,overlayReturnFocus=null,assistedInputs=new Set();
   var sequenceEpoch=0,sequenceActive=false,sequenceKind="",sequenceStep=0,sequencePauseTimer=0,sequencePauseResolve=null;
   var browserSpeechResolve=null,cloudRevision=-1;
-  var backgroundSession=null,backgroundPaused=false;
+  var backgroundSession=null,backgroundPaused=false,backgroundPreparing=false;
+  var backgroundNeedsTap=false,backgroundPreparedStep=0;
   // Card state is presentation-only; the source book and SRS history are unchanged.
   var expandedMobileCards=new Set(),mobileOptionsOpen=false;
   var byNumber=new Map();
@@ -420,8 +421,11 @@
     button.classList.toggle("is-playing",playing);
     button.setAttribute("aria-pressed",playing?"true":"false");
     button.textContent=playing
-      ?(backgroundSession&&backgroundPaused?"▶ Tiếp tục nghe":"■ Dừng nghe")
+      ?(backgroundPreparing?"⌛ Đang chuẩn bị âm thanh · Bấm để hủy":
+        backgroundNeedsTap?"▶ Chạm để phát "+count+" câu":
+        backgroundSession&&backgroundPaused?"▶ Tiếp tục nghe":"■ Dừng nghe")
       :"▶ Nghe "+count+(kind==="word"?" từ":" câu ↻");
+    button.setAttribute("aria-busy",backgroundPreparing?"true":"false");
     button.title=kind==="sentence"
       ?"Phát tất cả câu trong STEP, tự lặp liên tục và hỗ trợ nghe khi khóa màn hình"
       :"Phát lần lượt các từ trong STEP";
@@ -788,6 +792,8 @@
     var session=backgroundSession;
     backgroundSession=null;
     backgroundPaused=false;
+    backgroundPreparing=false;
+    backgroundNeedsTap=false;
     if(session){try{session.stop();}catch(error){console.warn("Book audio stop",error);}}
     cancelSequencePause();
     clearPlayingRow();
@@ -809,59 +815,9 @@
       },milliseconds);
     });
   }
-  async function playStep(){
-    if(!root||root.hidden)return;
-    if(sequenceActive){
-      // The iOS lock-screen Pause command keeps the native media session
-      // alive; the in-page button can resume it without rebuilding the audio.
-      if(backgroundSession&&backgroundPaused){backgroundSession.resume();return;}
-      stopAudio();return;
-    }
-    stopAudio();
-    if(focusedPracticeInput())document.activeElement.blur();
-    var step=currentStep(),kind=audioMode(),epoch=sequenceEpoch;
-    var entries=step.entries.slice();
-    if(kind==="sentence"){
-      // MUST create and play synchronously within the tap event. Awaiting
-      // a TTS fetch first loses iOS's user activation for media playback.
-      // Native audio.loop keeps the same MP3 playing when JS is suspended.
-      var player=null;
-      try{
-        player=window.Book2100BackgroundAudio?.create?.(step,{
-          onState:function(status){
-            if(epoch!==sequenceEpoch || backgroundSession!==player)return;
-            backgroundPaused=status==="paused";
-            updateSequenceControl();
-          },
-          onError:function(error){
-            if(epoch!==sequenceEpoch || backgroundSession!==player)return;
-            stopAudio();
-            message("Không tải được âm thanh của STEP. Hãy kết nối mạng và thử lại.");
-            console.warn("Book 2100 background playback",error);
-          },
-          onEnded:function(){
-            if(epoch===sequenceEpoch && backgroundSession===player && !root.hidden){
-              // Normally never fires because audio.loop=true; resilience
-              // for browsers that unexpectedly report a track ending.
-              player.restart();
-            }
-          }
-        })||null;
-      }catch(error){console.warn("Book 2100 audio initialization",error);}
-      if(player){
-        backgroundSession=player;
-        backgroundPaused=false;
-        sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
-        activeAudio=true;
-        if(state.mode==="sentence")entries.forEach(function(item){
-          assistedInputs.add("sentence:"+item.n);
-        });
-        updateSequenceControl();
-        player.play();
-        return;
-      }
-      message("Thiết bị chưa hỗ trợ phát nền. Đang phát câu lần lượt trong trang.");
-    }
+
+  async function playLegacyStep(step,kind,epoch,entries){
+    if(epoch!==sequenceEpoch||root?.hidden)return;
     sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
     updateSequenceControl();
     try{
@@ -877,8 +833,7 @@
             if(compactBook()&&!focusedPracticeInput())
               row.scrollIntoView({block:"nearest",behavior:"smooth"});
           }
-          // Hearing a word before a later recall makes that recall assisted;
-          // never inflate long-term mastery from a prompted answer.
+          // Listening before recall is assisted, not independent mastery.
           if((state.mode==="word"&&kind==="word")||
              (state.mode==="sentence"&&kind==="sentence")){
             assistedInputs.add(kind+":"+item.n);
@@ -894,6 +849,99 @@
         clearPlayingRow();updateSequenceControl();
       }
     }
+  }
+  function startNativeStep(step,kind,epoch,entries){
+    // This function is also reached by a deliberate second tap if Safari
+    // rejects a post-async audio.play() without fresh user activation.
+    var player=null;
+    try{
+      player=window.Book2100BackgroundAudio?.create?.(step,{
+        onState:function(status){
+          if(epoch!==sequenceEpoch || backgroundSession!==player)return;
+          if(status==="playing")backgroundNeedsTap=false;
+          backgroundPaused=status==="paused";
+          updateSequenceControl();
+        },
+        onError:function(error){
+          if(epoch!==sequenceEpoch || backgroundSession!==player)return;
+          if(error?.name==="NotAllowedError"){
+            backgroundNeedsTap=true; backgroundPaused=true;
+            updateSequenceControl();
+            message("iPhone yêu cầu chạm để phát. Bấm lại nút ▶ Phát câu.");
+            return;
+          }
+          // An unreadable MP3 should never leave the learner with a dead
+          // listening button: fall back to individual foreground sentences.
+          backgroundPreparedStep=0;
+          stopAudio();
+          message("Bản âm thanh chưa phát được. Chuyển sang nghe từng câu.");
+          console.warn("Book 2100 native audio error",error);
+          if(!root.hidden&&state.step===step.id&&audioMode()===kind)
+            void playLegacyStep(step,kind,sequenceEpoch,entries);
+        },
+        onEnded:function(){
+          if(epoch===sequenceEpoch&&backgroundSession===player&&!root.hidden)
+            player.restart();
+        }
+      })||null;
+    }catch(error){console.warn("Book 2100 audio initialization",error);}
+    if(!player)return false;
+    backgroundSession=player;
+    backgroundPaused=false;
+    backgroundNeedsTap=false;
+    backgroundPreparing=false;
+    sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;activeAudio=true;
+    if(state.mode==="sentence")entries.forEach(function(item){
+      assistedInputs.add("sentence:"+item.n);
+    });
+    updateSequenceControl();
+    player.play();
+    return true;
+  }
+  async function playStep(){
+    if(!root||root.hidden)return;
+    if(sequenceActive){
+      if(backgroundSession&&(backgroundPaused||backgroundNeedsTap)){
+        backgroundNeedsTap=false;
+        backgroundSession.resume();
+        return;
+      }
+      // During initial cloud preparation, tapping the same button cancels
+      // the current request's UI work (stale responses are ignored by epoch).
+      stopAudio();return;
+    }
+    stopAudio();
+    if(focusedPracticeInput())document.activeElement.blur();
+    var step=currentStep(),kind=audioMode(),epoch=sequenceEpoch,entries=step.entries.slice();
+    if(kind==="sentence"){
+      if(backgroundPreparedStep===step.id){
+        if(startNativeStep(step,kind,epoch,entries))return;
+      }
+      var prepare=window.Book2100BackgroundAudio?.prepare;
+      if(typeof prepare==="function"){
+        backgroundPreparing=true;
+        sequenceActive=true;sequenceKind=kind;sequenceStep=step.id;
+        updateSequenceControl();
+        try{
+          await prepare(step);
+          if(epoch!==sequenceEpoch || root.hidden || state.step!==step.id ||
+             audioMode()!==kind)return;
+          backgroundPreparedStep=step.id;
+          backgroundPreparing=false;
+          updateSequenceControl();
+          if(startNativeStep(step,kind,epoch,entries))return;
+        }catch(error){
+          if(epoch!==sequenceEpoch || root.hidden)return;
+          backgroundPreparedStep=0;
+          backgroundPreparing=false;
+          console.warn("Book 2100 cannot prepare STEP MP3",error);
+          message("Chưa chuẩn bị được âm thanh nền; chuyển sang nghe từng câu.");
+        }
+      }else{
+        message("Thiết bị chưa có trình phát nền; chuyển sang nghe từng câu.");
+      }
+    }
+    await playLegacyStep(step,kind,epoch,entries);
   }
   function close(){
     if(!root||root.hidden)return;
