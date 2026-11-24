@@ -40,7 +40,16 @@ class FakeAudio{
  emit(name){this.events[name]?.();}
 }
 class FakeMetadata{constructor(data){Object.assign(this,data);}}
-const win={AITTS:{staticAudioUrl:(text,lang,voice)=>{
+let prepareCalls=0,prepareFails=false;
+const win={AITTS:{
+ prepareAudioUrl:(text,opts)=>{
+  assert.equal(opts.language,"en-US");
+  assert.equal(opts.voice,"marin");
+  prepareCalls++;
+  if(prepareFails)return Promise.reject(new Error("TTS temporarily unavailable"));
+  return Promise.resolve("/audio-cloud/"+createHash("sha256").update(text).digest("hex")+".mp3");
+ },
+ staticAudioUrl:(text,lang,voice)=>{
  assert.equal(lang,"en-US");
  assert.equal(voice,"marin");
  return "/audio-cloud/"+createHash("sha256").update(text).digest("hex")+".mp3";
@@ -53,7 +62,7 @@ runInNewContext(readingSource,browser,{filename:"reading-background-audio.js"});
 assert.equal(win.ReadingBackgroundAudio,oldApi,"Standalone import must not replace runtime's media player");
 runInNewContext(source,browser,{filename:"book-2100-background.js"});
 const lib=win.Book2100BackgroundAudio;
-assert.ok(lib&&typeof lib.create==="function"&&typeof lib.passage==="function");
+assert.ok(lib&&typeof lib.create==="function"&&typeof lib.passage==="function"&&typeof lib.prepare==="function");
 const allTexts=[];
 for(const step of steps){
  const expected=step.entries.map(e=>e.sentence.trim()).join(" ");
@@ -66,6 +75,16 @@ assert.equal(lib.passage({entries:[]}),"");
 assert.equal(lib.create({entries:[]}),null,"Empty passage must not play");
 
 const first=steps[0],events=[],errors=[];
+assert.equal(await lib.prepare(first),"/audio-cloud/"+createHash("sha256").update(lib.passage(first)).digest("hex")+".mp3");
+assert.equal(prepareCalls,1,"Missing cloud MP3 must be generated/verified before playback");
+await lib.prepare(first);
+assert.equal(prepareCalls,1,"Preparation is deduplicated per full STEP");
+const second=steps[1];
+prepareFails=true;
+await assert.rejects(()=>lib.prepare(second),/temporarily unavailable/);
+prepareFails=false;
+await lib.prepare(second);
+assert.equal(prepareCalls,3,"Failed preparation must be retryable after connection recovers");
 const player=lib.create(first,{
  onState:state=>events.push(state),
  onError:error=>errors.push(String(error))
@@ -97,7 +116,13 @@ assert.equal(session.playbackState,"none");
 
 assert.ok(bookSource.includes('window.Book2100BackgroundAudio?.create?.(step,'));
 assert.ok(bookSource.includes('if(kind==="sentence"){'));
-assert.ok(bookSource.includes('if(backgroundSession&&backgroundPaused){backgroundSession.resume();return;}'));
+assert.ok(bookSource.includes('if(backgroundSession&&(backgroundPaused||backgroundNeedsTap)){'));
+assert.ok(bookSource.includes('await prepare(step);'),"Audio cannot be played before cloud MP3 exists");
+assert.ok(bookSource.includes('function warmStepAudio()'),"On-page prewarm avoids losing user activation for first tap");
+assert.ok(bookSource.includes('backgroundPreparing=true;'));
+assert.ok(bookSource.includes('if(error?.name==="NotAllowedError")'),"iOS blocked autoplay must show a user-gesture retry");
+assert.ok(bookSource.includes('message("Chưa chuẩn bị được âm thanh nền; chuyển sang nghe từng câu.")'),"Cloud failure must not leave a silent button");
+assert.ok(bookSource.includes('void playLegacyStep(step,kind,sequenceEpoch,entries)'),"Unplayable MP3 uses audible foreground fallback");
 assert.ok(bookSource.includes('if(session){try{session.stop();}'),"Stop must release current background player");
 assert.ok(bookSource.includes('backgroundSession=player;'));
 assert.ok(bookSource.includes('player.play();'));
@@ -111,10 +136,12 @@ assert.ok(!source.includes('setTimeout('),"Native background audio must not use 
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
 assert.ok(sw.includes("'./reading-background-audio.js'"));
-assert.ok(sw.includes("language-studio-v140-book2100-native-background-loop"));
+assert.ok(sw.includes("language-studio-v141-book2100-prepare-first-play"));
 assert.ok(html.indexOf('src="reading-background-audio.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100.js'));
+assert.ok(html.includes('book-2100-background.js?v=20261124-prepare-audio-v1'));
+assert.ok(html.includes('book-2100.js?v=20261124-prepare-audio-v1'));
 
 if(process.argv.includes("--manifest")){
  const manifestPath=new URL("../dist/tts-manifest.json",import.meta.url);
