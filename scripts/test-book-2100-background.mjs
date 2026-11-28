@@ -137,7 +137,7 @@ assert.ok(bookSource.includes('function focusNext(n,type)'),'Enter behavior must
 assert.ok(bookSource.includes('void speak(n,type);'),'Correct Enter pronunciation must be preserved');
 assert.ok(!source.includes('setTimeout('),"Native background audio must not use a JS timer to advance between sentences");
 assert.ok(readingSource.includes('config.audioUrl'),"Shared reading player must accept the prepared audio URL");
-assert.ok(bookSource.includes('bkListeningLibraryLaunch'),"Library listing must include separate 2100 listening entry");
+assert.ok(bookSource.includes('pattern80ListeningLaunch'),"Original 80-pattern listening library must be listed separately from Book 2100");
 
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
