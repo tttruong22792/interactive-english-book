@@ -50,7 +50,9 @@ jobs:
       - name: Build production artifact
         run: npm run build
       - name: Verify all 33 native STEP listening recordings in TTS allow-list
-        run: node scripts/test-book-2100-background.mjs --manifest
+        run: |
+          node scripts/test-book-2100-background.mjs --manifest
+          node scripts/test-pattern-80-listening.mjs --manifest
       - name: Check shipped assets
         run: |
           test -s dist/book-2100-data.js
