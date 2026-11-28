@@ -137,17 +137,17 @@ assert.ok(bookSource.includes('function focusNext(n,type)'),'Enter behavior must
 assert.ok(bookSource.includes('void speak(n,type);'),'Correct Enter pronunciation must be preserved');
 assert.ok(!source.includes('setTimeout('),"Native background audio must not use a JS timer to advance between sentences");
 assert.ok(readingSource.includes('config.audioUrl'),"Shared reading player must accept the prepared audio URL");
-assert.ok(bookSource.includes('bkListeningLibraryLaunch'),"Library listing must include separate 2100 listening entry");
+assert.ok(bookSource.includes('pattern80ListeningLaunch'),"Original 80-pattern listening library must be listed separately from Book 2100");
 
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
 assert.ok(sw.includes("'./reading-background-audio.js'"));
-assert.ok(sw.includes("language-studio-v142-direct-audio-listening-library"));
+assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
 assert.ok(html.indexOf('src="reading-background-audio.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100.js'));
-assert.ok(html.includes('book-2100-background.js?v=20261128-direct-audio-v1'));
-assert.ok(html.includes('book-2100.js?v=20261128-listening-v1'));
+assert.ok(html.includes('book-2100-background.js?v=20261128-pattern80-metadata-v1'));
+assert.ok(html.includes('book-2100.js?v=20261128-pattern80-library-v1'));
 
 if(process.argv.includes("--manifest")){
  const manifestPath=new URL("../dist/tts-manifest.json",import.meta.url);

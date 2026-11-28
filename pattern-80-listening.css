@@ -1,0 +1,27 @@
+/* Reuse Book 2100's proven native listening layout without adding a page. */
+.pattern80-root [data-pattern80-group]{
+  width:100%;min-height:44px;padding:10px 12px;border-radius:11px;
+  border:1px solid #d9b7a8;background:#fff8f1;color:#633d34;
+  font:inherit;font-size:14px;font-weight:800;
+}
+.pattern80-root .pattern80-label{
+  display:inline-block;max-width:100%;
+  margin-bottom:5px;font-size:12px;font-weight:850;color:#b34f43;
+  overflow-wrap:anywhere;
+}
+.pattern80-root .pattern80-visibility{display:flex;gap:6px;align-items:center}
+.pattern80-root .pattern80-visibility button{
+  background:#fff;border:1px solid #ddc7bb;border-radius:9px;
+  color:#91584c;padding:7px 10px;min-height:34px;
+  font:inherit;font-size:12px;font-weight:750;cursor:pointer;
+}
+.pattern80-root .pattern80-hidden{font-size:12px;color:#a19a91;font-weight:500}
+.pattern80-root .bklisten-top h1{letter-spacing:-.03em}
+.pattern80-root .pattern80-item strong{line-height:1.45}
+@media(max-width:420px){
+ .pattern80-root .bklisten-panel{gap:8px}
+ .pattern80-root .bklisten-top p{font-size:11px}
+ .pattern80-root .bklisten-options{flex-wrap:wrap}
+ .pattern80-root .bklisten-visibility button{font-size:11px}
+ .pattern80-root .bklisten-foot button{font-size:11px}
+}

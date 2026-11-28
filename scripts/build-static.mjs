@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-mobile.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100-cloud.js", "book-2100-deep-001-100.js","book-2100-deep-101-200.js","book-2100-deep-201-300.js","book-2100-deep-301-400.js","book-2100-grammar.js", "reading-background-audio.js", "book-2100-background.js", "book-2100-listening.js", "book-2100-listening.css", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-mobile.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100-cloud.js", "book-2100-deep-001-100.js","book-2100-deep-101-200.js","book-2100-deep-201-300.js","book-2100-deep-301-400.js","book-2100-grammar.js", "reading-background-audio.js", "book-2100-background.js", "book-2100-listening.js", "book-2100-listening.css", "pattern-80-round1-data.js", "pattern-80-listening.js", "pattern-80-listening.css", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -612,6 +612,30 @@ if (await exists(vietnameseDir)) {
       addManifestAudio(item.sentence,"book-sentence","book-2100-step-"+step.id);
       for(const [text] of item.extra){addManifestAudio(text,"book-collocation","book-2100-step-"+step.id);}
     }
+  }
+}
+
+
+// The user's original 80 English patterns: ONE sourced example per pattern
+// in the FIRST round. The same English text feeds both the listening UI and
+// the backend TTS allow-list, so full-loop iOS MP3s cannot mismatch.
+{
+  const context=vm.createContext({window:{}});
+  vm.runInContext(await readFile(join(root,"pattern-80-round1-data.js"),"utf8"),
+    context,{filename:"pattern-80-round1-data.js"});
+  const records=context.window.PATTERN80_ROUND1?.items||[];
+  if(records.length!==80||records.some((item,index)=>
+    item.n!==index+1||!item.en?.trim()||!item.vi?.trim()||!item.pattern?.trim()))
+    throw new Error("The first 80-pattern listening round must cover exactly 80 numbered original structures.");
+  const groups=[{id:"all",from:1,to:80},
+    {id:"1",from:1,to:20},{id:"21",from:21,to:40},
+    {id:"41",from:41,to:60},{id:"61",from:61,to:80}];
+  for(const group of groups){
+    const text=records.filter(item=>item.n>=group.from&&item.n<=group.to)
+      .map(item=>item.en.trim()).join(" ");
+    if(!text)throw new Error("Empty 80-pattern listening group "+group.id);
+    addManifestAudio(text,"patterns-80-round1-background-loop",
+      "patterns-80-round1-"+group.id);
   }
 }
 

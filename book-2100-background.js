@@ -42,8 +42,8 @@
     if(!audioUrl)return null;
     return global.ReadingBackgroundAudio.create({
       text:text,
-      title:"STEP "+step.id+" · "+step.entries.length+" câu tiếng Anh",
-      artist:"Sách 2100 · Nghe câu liên tục",
+      title:options.title || ("STEP "+step.id+" · "+step.entries.length+" câu tiếng Anh"),
+      artist:options.artist || "Sách 2100 · Nghe câu liên tục",
       audioUrl:audioUrl,
       loop:true,
       rate:options.rate??0.75,
