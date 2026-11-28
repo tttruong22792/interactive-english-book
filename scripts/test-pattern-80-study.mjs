@@ -121,7 +121,7 @@ assert.ok(root.innerHTML.includes('data-sequence'),"Play current page with nativ
 assert.ok(root.innerHTML.includes('data-review'),"Review-due counter");
 assert.equal(window.Pattern80Book.getMode(),"read");
 assert.equal(window.Pattern80Book.getPage(),1);
-assert.equal(window.Pattern80Book.getProgress().done,0,"Prior test history used another storage instance");
+assert.equal(window.Pattern80Book.getProgress().done,2,"Progress persists under the independent pattern80 SRS key");
 // Read vs practice have DIFFERENT content visibility and active input.
 const clickButton={dataset:{mode:"study"},hasAttribute:key=>key==="data-mode"};
 root.handlers.click({target:{closest:()=>clickButton}});
