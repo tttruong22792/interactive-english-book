@@ -96,7 +96,7 @@ assert.ok(!body.classes.has("bklisten-open"));
 assert.ok(trigger.focused,"Exiting returns focus to library card");
 assert.ok(storage.items["ls-book2100-listening-v1"],"STEP and rate choices persist locally");
 
-for(const k of ["#bkLibraryLaunch","Book2100?.open","pattern80ListeningLaunch"])
+for(const k of ["#bkLibraryLaunch","card.addEventListener(\"click\"","pattern80ListeningLaunch"])
  assert.ok(bookSource.includes(k),"Separate Library card must exist: "+k);
 assert.ok(!source.includes("BOOK_2100_DATA="),"No duplicate 2100 corpus in listening feature");
 assert.ok(source.includes("Book2100BackgroundAudio?.create"));
