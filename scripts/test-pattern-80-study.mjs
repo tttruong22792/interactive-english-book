@@ -40,6 +40,7 @@ assert.match(hints[77].context,/There is no need to/);
 const srsWindow={};
 const storage={items:{},getItem(k){return this.items[k]||null;},
  setItem(k,v){this.items[k]=String(v);},removeItem(k){delete this.items[k];}};
+srsWindow.localStorage=storage;
 vm.runInNewContext(source["book-2100-srs.js"],{window:srsWindow,console,Date});
 const srs=srsWindow.Book2100SRS.createStore({key:"languageStudio:pattern80Srs:v1",storage});
 assert.equal(srs.get(1,"sentence").status,"new");
