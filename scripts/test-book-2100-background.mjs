@@ -142,7 +142,7 @@ assert.ok(bookSource.includes('pattern80ListeningLaunch'),"Original 80-pattern l
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
 assert.ok(sw.includes("'./reading-background-audio.js'"));
-assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
+assert.ok(sw.includes("language-studio-v144-pattern80-responsive-study"));
 assert.ok(html.indexOf('src="reading-background-audio.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100.js'));
