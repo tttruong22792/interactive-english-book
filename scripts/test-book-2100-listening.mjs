@@ -96,7 +96,7 @@ assert.ok(!body.classes.has("bklisten-open"));
 assert.ok(trigger.focused,"Exiting returns focus to library card");
 assert.ok(storage.items["ls-book2100-listening-v1"],"STEP and rate choices persist locally");
 
-for(const k of ["#bkListeningLibraryLaunch","Book2100Listening?.open","Thư viện nghe 2100"])
+for(const k of ["#bkLibraryLaunch","Book2100?.open","pattern80ListeningLaunch"])
  assert.ok(bookSource.includes(k),"Separate Library card must exist: "+k);
 assert.ok(!source.includes("BOOK_2100_DATA="),"No duplicate 2100 corpus in listening feature");
 assert.ok(source.includes("Book2100BackgroundAudio?.create"));
@@ -107,7 +107,7 @@ assert.ok(html.includes('src="book-2100-listening.js?v=20261128-listening-v1"'))
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100-listening.js'));
 assert.ok(sw.includes("'./book-2100-listening.js'"));
 assert.ok(sw.includes("'./book-2100-listening.css'"));
-assert.ok(sw.includes("language-studio-v142-direct-audio-listening-library"));
+assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
 assert.ok(build.includes('"book-2100-listening.js"'));
 assert.ok(build.includes('"book-2100-listening.css"'));
 console.log("PASS — Library card, 33-step source reuse, native background loop, controls, step/rate/translation state, safe-area mobile UI, PWA assets.");
