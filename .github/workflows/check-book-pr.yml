@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'book-2100*'
+      - 'pattern-80*'
+      - 'supabase/migrations/*pattern80*'
       - 'index.html'
       - 'sw.js'
       - 'scripts/build-static.mjs'
@@ -35,6 +37,9 @@ jobs:
           node --check book-2100-listening.js
           node --check pattern-80-round1-data.js
           node --check pattern-80-listening.js
+          node --check pattern-80-hints.js
+          node --check pattern-80-cloud.js
+          node --check pattern-80-study.js
           node --check book-2100.js
           node --check scripts/test-book-2100-srs.mjs
           node --check scripts/test-book-2100.mjs
@@ -47,12 +52,14 @@ jobs:
           node scripts/test-book-2100-background.mjs
           node scripts/test-book-2100-listening.mjs
           node scripts/test-pattern-80-listening.mjs
+          node scripts/test-pattern-80-study.mjs
       - name: Build production artifact
         run: npm run build
       - name: Verify all 33 native STEP listening recordings in TTS allow-list
         run: |
           node scripts/test-book-2100-background.mjs --manifest
           node scripts/test-pattern-80-listening.mjs --manifest
+          node scripts/test-pattern-80-study.mjs --manifest
       - name: Check shipped assets
         run: |
           test -s dist/book-2100-data.js
@@ -70,6 +77,10 @@ jobs:
           test -s dist/pattern-80-round1-data.js
           test -s dist/pattern-80-listening.js
           test -s dist/pattern-80-listening.css
+          test -s dist/pattern-80-hints.js
+          test -s dist/pattern-80-cloud.js
+          test -s dist/pattern-80-study.js
+          test -s dist/pattern-80-study.css
           test -s dist/book-2100.js
           test -s dist/book-2100.css
           test -s dist/book-2100-mobile.css
