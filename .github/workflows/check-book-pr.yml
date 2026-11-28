@@ -33,6 +33,8 @@ jobs:
           node --check reading-background-audio.js
           node --check book-2100-background.js
           node --check book-2100-listening.js
+          node --check pattern-80-round1-data.js
+          node --check pattern-80-listening.js
           node --check book-2100.js
           node --check scripts/test-book-2100-srs.mjs
           node --check scripts/test-book-2100.mjs
@@ -44,6 +46,7 @@ jobs:
           node scripts/test-book-2100-grammar.mjs
           node scripts/test-book-2100-background.mjs
           node scripts/test-book-2100-listening.mjs
+          node scripts/test-pattern-80-listening.mjs
       - name: Build production artifact
         run: npm run build
       - name: Verify all 33 native STEP listening recordings in TTS allow-list
@@ -62,6 +65,9 @@ jobs:
           test -s dist/book-2100-background.js
           test -s dist/book-2100-listening.js
           test -s dist/book-2100-listening.css
+          test -s dist/pattern-80-round1-data.js
+          test -s dist/pattern-80-listening.js
+          test -s dist/pattern-80-listening.css
           test -s dist/book-2100.js
           test -s dist/book-2100.css
           test -s dist/book-2100-mobile.css
