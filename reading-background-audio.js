@@ -111,7 +111,10 @@ function create(config){
  let url;
  try{url=window.AITTS.staticAudioUrl(text,"en-US","marin");}
  catch(error){cleanup();throw error;}
- audio.src=url;
+ // Book 2100 may pass the verified Storage MP3 URL directly.
+ // For other reading lessons preserve the existing service-worker path.
+ audio.src=typeof config.audioUrl==="string"&&/^https:\/\//.test(config.audioUrl)
+   ?config.audioUrl : url;
  return {
   play:resume,pause,resume,restart,stop:cleanup,
   isActive:()=>active,isPlaying:()=>active&&!audio.paused,
