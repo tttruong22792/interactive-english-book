@@ -55,7 +55,7 @@ assert.ok(page.indexOf('src="book-2100-background.js')<
 assert.ok(sw.includes("'./pattern-80-round1-data.js'"));
 assert.ok(sw.includes("'./pattern-80-listening.js'"));
 assert.ok(sw.includes("'./pattern-80-listening.css'"));
-assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
+assert.ok(sw.includes("language-studio-v144-pattern80-responsive-study"));
 assert.ok(read("pattern-80-listening.css").includes("pattern80-root"));
 // Simulate the actual listening-library flow without a real device.
 const root={hidden:true,attributes:{},listeners:{},innerHTML:"",nodes:{},
