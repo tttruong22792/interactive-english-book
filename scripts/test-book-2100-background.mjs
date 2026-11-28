@@ -136,12 +136,12 @@ assert.ok(!source.includes('setTimeout('),"Native background audio must not use 
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
 assert.ok(sw.includes("'./reading-background-audio.js'"));
-assert.ok(sw.includes("language-studio-v141-book2100-prepare-first-play"));
+assert.ok(sw.includes("language-studio-v142-direct-audio-listening-library"));
 assert.ok(html.indexOf('src="reading-background-audio.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100.js'));
-assert.ok(html.includes('book-2100-background.js?v=20261124-prepare-audio-v1'));
-assert.ok(html.includes('book-2100.js?v=20261124-prepare-audio-v1'));
+assert.ok(html.includes('book-2100-background.js?v=20261128-direct-audio-v1'));
+assert.ok(html.includes('book-2100.js?v=20261128-listening-v1'));
 
 if(process.argv.includes("--manifest")){
  const manifestPath=new URL("../dist/tts-manifest.json",import.meta.url);
