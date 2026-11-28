@@ -1,4 +1,4 @@
-const APP_CACHE='language-studio-v143-pattern80-round1-listening';
+const APP_CACHE='language-studio-v144-pattern80-responsive-study';
 const AUDIO_CACHE='language-studio-audio-v1';
 const CLOUD_AUDIO_PUBLIC_BASE='https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/';
 const CLOUD_TTS_ENDPOINT='https://npkekrjzebsjfaizfcyb.supabase.co/functions/v1/language-studio-tts';
@@ -42,6 +42,10 @@ const ASSETS=[
   './pattern-80-round1-data.js',
   './pattern-80-listening.js',
   './pattern-80-listening.css',
+  './pattern-80-hints.js',
+  './pattern-80-cloud.js',
+  './pattern-80-study.js',
+  './pattern-80-study.css',
   './book-2100.js',
   './app-shell-v53.css',
   './reading-studio.css',

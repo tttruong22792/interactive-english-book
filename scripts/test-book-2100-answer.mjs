@@ -92,5 +92,5 @@ assert.ok(desktop.includes("position:fixed;z-index:10050"),"Desktop popup must n
 assert.ok(mobile.includes(".book2100 .bk-row .bk-answer-toggle"),"Mobile cards must show answer toggle");
 assert.ok(mobile.includes("max-width:calc(100vw - 24px)"),"Answer must not overflow phone width");
 assert.ok(html.includes('book-2100.js?v=20261128-pattern80-library-v1'));
-assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
+assert.ok(sw.includes("language-studio-v144-pattern80-responsive-study"));
 console.log("PASS — Reveal answer for word/sentence, dismiss, a11y, hint-protected SRS, no desktop row growth or mobile horizontal overflow.");

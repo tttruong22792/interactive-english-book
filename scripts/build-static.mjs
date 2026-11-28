@@ -133,7 +133,7 @@ function ttsHash(text, language, voice) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-mobile.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100-cloud.js", "book-2100-deep-001-100.js","book-2100-deep-101-200.js","book-2100-deep-201-300.js","book-2100-deep-301-400.js","book-2100-grammar.js", "reading-background-audio.js", "book-2100-background.js", "book-2100-listening.js", "book-2100-listening.css", "pattern-80-round1-data.js", "pattern-80-listening.js", "pattern-80-listening.css", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
+for (const file of ["index.html", "styles.css", "app-shell-v53.css", "reading-studio.css", "easy-play-theme-v58.css", "study-plan-60.css", "daily-80-v60.css", "vocab-arcade.css", "book-2100.css", "book-2100-mobile.css", "book-2100-data.js", "book-2100-steps-03-06.js", "book-2100-steps-07-12.js", "book-2100-steps-13-18.js", "book-2100-steps-19-23.js", "book-2100-steps-24-29.js", "book-2100-steps-30-33.js", "book-2100-collocations-core.js", "book-2100-collocations-001-073.js", "book-2100-collocations-074-134.js", "book-2100-collocations-135-194.js", "book-2100-collocations-195-254.js", "book-2100-collocations-255-316.js", "book-2100-collocations-317-376.js", "book-2100-collocations-377-400.js", "book-2100-srs.js", "book-2100-cloud.js", "book-2100-deep-001-100.js","book-2100-deep-101-200.js","book-2100-deep-201-300.js","book-2100-deep-301-400.js","book-2100-grammar.js", "reading-background-audio.js", "book-2100-background.js", "book-2100-listening.js", "book-2100-listening.css", "pattern-80-round1-data.js", "pattern-80-listening.js", "pattern-80-listening.css", "pattern-80-hints.js", "pattern-80-cloud.js", "pattern-80-study.js", "pattern-80-study.css", "book-2100.js", "manifest.webmanifest", "sw.js"]) {
   await copy(file);
 }
 
@@ -636,6 +636,24 @@ if (await exists(vietnameseDir)) {
     if(!text)throw new Error("Empty 80-pattern listening group "+group.id);
     addManifestAudio(text,"patterns-80-round1-background-loop",
       "patterns-80-round1-"+group.id);
+  }
+}
+
+
+// Each of the 8 study-book pages (10 patterns per page) uses the same
+// complete native MP3/lock-screen player as Book 2100. These 8 exact
+// page passages are separate from the full 80 / groups-of-20 listening
+// library to avoid speech text / TTS hash mismatches.
+{
+  const c=vm.createContext({window:{}});
+  vm.runInContext(await readFile(join(root,"pattern-80-round1-data.js"),"utf8"),c);
+  const all=c.window.PATTERN80_ROUND1?.items||[];
+  if(all.length!==80)throw Error("Need exactly 80 original pattern examples.");
+  for(let page=1;page<=8;page++){
+    const group=all.slice((page-1)*10,page*10);
+    const content=group.map(item=>item.en.trim()).join(" ");
+    if(group.length!==10||!content)throw Error("Invalid 80-pattern page "+page);
+    addManifestAudio(content,"patterns-80-round1-study-page","patterns-80-page-"+page);
   }
 }
 

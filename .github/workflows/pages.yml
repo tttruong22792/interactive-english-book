@@ -65,6 +65,9 @@ jobs:
           node --check book-2100-listening.js
           node --check pattern-80-round1-data.js
           node --check pattern-80-listening.js
+          node --check pattern-80-hints.js
+          node --check pattern-80-cloud.js
+          node --check pattern-80-study.js
           node --check book-2100.js
           node --check scripts/test-book-2100-mobile.mjs
           node --check scripts/test-book-2100.mjs
@@ -218,6 +221,7 @@ jobs:
           node scripts/test-book-2100-background.mjs
           node scripts/test-book-2100-listening.mjs
           node scripts/test-pattern-80-listening.mjs
+          node scripts/test-pattern-80-study.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
@@ -228,6 +232,7 @@ jobs:
         run: |
           node scripts/test-book-2100-background.mjs --manifest
           node scripts/test-pattern-80-listening.mjs --manifest
+          node scripts/test-pattern-80-study.mjs --manifest
 
       - name: Verify Day 01 explanation assets in Pages upload
         if: steps.head_guard.outputs.deploy == 'true'

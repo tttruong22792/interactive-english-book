@@ -107,7 +107,7 @@ assert.ok(html.includes('src="book-2100-listening.js?v=20261128-listening-v1"'))
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100-listening.js'));
 assert.ok(sw.includes("'./book-2100-listening.js'"));
 assert.ok(sw.includes("'./book-2100-listening.css'"));
-assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
+assert.ok(sw.includes("language-studio-v144-pattern80-responsive-study"));
 assert.ok(build.includes('"book-2100-listening.js"'));
 assert.ok(build.includes('"book-2100-listening.css"'));
 console.log("PASS — Library card, 33-step source reuse, native background loop, controls, step/rate/translation state, safe-area mobile UI, PWA assets.");
