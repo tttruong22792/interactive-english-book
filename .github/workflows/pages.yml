@@ -225,7 +225,9 @@ jobs:
 
       - name: Verify all 33 native STEP listening recordings in TTS allow-list
         if: steps.head_guard.outputs.deploy == 'true'
-        run: node scripts/test-book-2100-background.mjs --manifest
+        run: |
+          node scripts/test-book-2100-background.mjs --manifest
+          node scripts/test-pattern-80-listening.mjs --manifest
 
       - name: Verify Day 01 explanation assets in Pages upload
         if: steps.head_guard.outputs.deploy == 'true'
