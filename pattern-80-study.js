@@ -137,6 +137,7 @@ function render(){
   '<div class="p80rows">'+rows.map(row).join('')+'</div>'+
   '<div class="p80book-end">Lượt 1 · nguồn: bộ 80 mẫu câu đang học · '+rows.length+' câu / trang</div>'+
   '</div></main>'+
+  '<div class="p80message" role="status" aria-live="polite"></div>'+
   '<footer class="p80footer"><span class="p80footer-info">Enter kiểm tra · Esc đóng gợi ý</span>'+
   '<div class="p80paging"><button type="button" data-prev '+(state.page===1?"disabled":"")+'>← TRANG trước</button>'+
    '<b>'+state.page+' / '+PAGES+' TRANG</b>'+
@@ -287,7 +288,7 @@ function submit(input){
  input.value="";
  feedback(n,"correct");closePopup();updateStats();
  input.focus({preventScroll:true});
- void speak(n);
+ void speak(n,false);
 }
 function stopLoop(){
  playbackEpoch++;
@@ -346,11 +347,13 @@ function createLoop(t,epoch){
 }
 async function playPage(){
  if(!root||root.hidden)return;
+ if(preparing){stopLoop();notify("Đã hủy chuẩn bị âm thanh.");return;}
  if(player){
   if(playing){stopLoop();return;}
   needsTap=false;player.resume();return;
  }
  const t=track(),epoch=++playbackEpoch;
+ if(state.mode==="study")pageItems().forEach(it=>helped.add(it.n));
  const audio=global.Book2100BackgroundAudio;
  if(audio?.ready?.(t)&&createLoop(t,epoch))return;
  if(!audio?.prepare){notify("Dịch vụ nghe nền chưa sẵn sàng.");return;}
@@ -367,10 +370,10 @@ async function playPage(){
   console.warn("Pattern book audio",error);
  }
 }
-async function speak(n){
+async function speak(n,markAssisted=true){
  const e=items[n-1];if(!e||root?.hidden)return;
  stopLoop();
- if(state.mode==="study")helped.add(n);
+ if(markAssisted&&state.mode==="study")helped.add(n);
  if(global.AITTS?.speak){
   try{await global.AITTS.speak(e.en,{language:"en-US",rate:0.88});return;}
   catch(error){console.warn("Pattern book individual TTS",error);}
