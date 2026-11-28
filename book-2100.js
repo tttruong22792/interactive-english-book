@@ -1133,19 +1133,19 @@
       card.addEventListener("click",function(){open(card);});
       cards.appendChild(card);
     }
-    // A separate listening library on the existing Tools/Thư viện page.
-    // Original book remains untouched; both share the same source STEP data.
+    // The user's original 80 English patterns have their own listening library,
+    // separate from Book 2100 (not another 2100-textbook library card).
     if(cards&&(location.hash==="#home"||!location.hash)&&
-       !cards.querySelector("#bkListeningLibraryLaunch")){
+       !cards.querySelector("#pattern80ListeningLaunch")){
       var listenCard=document.createElement("button");
-      listenCard.id="bkListeningLibraryLaunch";listenCard.type="button";
-      listenCard.className="easy-play-activity bk-listening-library-entry";
+      listenCard.id="pattern80ListeningLaunch";listenCard.type="button";
+      listenCard.className="easy-play-activity pattern80-library-entry";
       listenCard.innerHTML='<span class="easy-play-activity-icon" aria-hidden="true">🎧</span>'+
         '<span class="easy-play-arrow" aria-hidden="true">↗</span>'+
-        '<strong>Thư viện nghe 2100</strong>'+
-        '<small>33 STEP · nghe câu lặp liên tục · hoạt động trong nền</small>';
+        '<strong>Thư viện nghe 80 mẫu câu</strong>'+
+        '<small>Lượt 1 · mỗi mẫu một câu · nghe liên tục trong nền</small>';
       listenCard.addEventListener("click",function(){
-        window.Book2100Listening?.open?.(listenCard);
+        window.Pattern80Listening?.open?.(listenCard);
       });
       cards.appendChild(listenCard);
     }
