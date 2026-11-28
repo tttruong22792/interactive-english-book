@@ -85,7 +85,7 @@ const document={
  querySelector(){return null;}
 };
 let playSentence=[],connectCount=0;
-const window={PATTERN80_ROUND1:data,PATTERN80_HINTS:hints,
+const window={PATTERN80_ROUND1:data,PATTERN80_HINTS:hints,localStorage:storage,
  Book2100SRS:srsWindow.Book2100SRS,
  Pattern80CloudSync:{
   connect(store,cb){connectCount++;assert.ok(store);this.callback=cb;},
