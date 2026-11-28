@@ -62,7 +62,7 @@ assert.ok(indexDesktop>=0 && indexMobile>indexDesktop,"Mobile overrides must loa
 assert.ok(indexMobile<html.indexOf("</head>"),"Cards stylesheet must load in document head");
 assert.ok(build.includes('"book-2100-mobile.css"'),"Production build must ship mobile CSS");
 assert.ok(sw.includes("'./book-2100-mobile.css'"),"PWA must cache the mobile CSS");
-assert.ok(sw.includes("language-studio-v141-book2100-prepare-first-play"),"Old PWA caches must be invalidated");
+assert.ok(sw.includes("language-studio-v142-direct-audio-listening-library"),"Old PWA caches must be invalidated");
 
 
 // iOS keyboard regression: the *last* card must be scrollable into the

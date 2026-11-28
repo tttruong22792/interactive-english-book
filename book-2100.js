@@ -1133,6 +1133,22 @@
       card.addEventListener("click",function(){open(card);});
       cards.appendChild(card);
     }
+    // A separate listening library on the existing Tools/Thư viện page.
+    // Original book remains untouched; both share the same source STEP data.
+    if(cards&&(location.hash==="#home"||!location.hash)&&
+       !cards.querySelector("#bkListeningLibraryLaunch")){
+      var listenCard=document.createElement("button");
+      listenCard.id="bkListeningLibraryLaunch";listenCard.type="button";
+      listenCard.className="easy-play-activity bk-listening-library-entry";
+      listenCard.innerHTML='<span class="easy-play-activity-icon" aria-hidden="true">🎧</span>'+
+        '<span class="easy-play-arrow" aria-hidden="true">↗</span>'+
+        '<strong>Thư viện nghe 2100</strong>'+
+        '<small>33 STEP · nghe câu lặp liên tục · hoạt động trong nền</small>';
+      listenCard.addEventListener("click",function(){
+        window.Book2100Listening?.open?.(listenCard);
+      });
+      cards.appendChild(listenCard);
+    }
   }
   function init(){
     injectEntries();

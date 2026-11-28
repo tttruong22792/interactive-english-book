@@ -47,7 +47,7 @@ const win={AITTS:{
   assert.equal(opts.voice,"marin");
   prepareCalls++;
   if(prepareFails)return Promise.reject(new Error("TTS temporarily unavailable"));
-  return Promise.resolve("/audio-cloud/"+createHash("sha256").update(text).digest("hex")+".mp3");
+  return Promise.resolve("https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/"+createHash("sha256").update(text).digest("hex")+".mp3?ready=1");
  },
  staticAudioUrl:(text,lang,voice)=>{
  assert.equal(lang,"en-US");
@@ -75,8 +75,11 @@ assert.equal(lib.passage({entries:[]}),"");
 assert.equal(lib.create({entries:[]}),null,"Empty passage must not play");
 
 const first=steps[0],events=[],errors=[];
-assert.equal(await lib.prepare(first),"/audio-cloud/"+createHash("sha256").update(lib.passage(first)).digest("hex")+".mp3");
+assert.equal(lib.create(first),null,"Native audio must not point at a missing STEP MP3 before preparation");
+assert.equal(await lib.prepare(first),"https://npkekrjzebsjfaizfcyb.supabase.co/storage/v1/object/public/language-studio-audio/tts/"+createHash("sha256").update(lib.passage(first)).digest("hex")+".mp3?ready=1");
 assert.equal(prepareCalls,1,"Missing cloud MP3 must be generated/verified before playback");
+assert.ok(lib.ready(first),"First STEP is prepared after cloud TTS finishes");
+assert.ok(!lib.ready(steps[2]),"Other STEPs remain unprepared until selected");
 await lib.prepare(first);
 assert.equal(prepareCalls,1,"Preparation is deduplicated per full STEP");
 const second=steps[1];
@@ -94,7 +97,8 @@ assert.equal(audio.loop,true,"The browser's native audio.loop must be on, regard
 assert.equal(audio.playbackRate,.75,"The sentence listening player uses a comfortable 0.75x rate");
 assert.equal(audio.defaultPlaybackRate,.75);
 assert.match(session.metadata.title,/STEP 1/);
-assert.ok(audio.src.startsWith("/audio-cloud/"));
+assert.ok(audio.src.startsWith("https://npkekrjzebsjfaizfcyb.supabase.co/storage/"),"Native iOS audio must use confirmed Storage MP3 directly, not virtual SW audio-cloud URL");
+assert.equal(audio.src.endsWith("?ready=1"),true);
 assert.equal(navigator.audioSession.type,"playback","iOS audio session explicitly allows lock-screen playback");
 assert.equal(typeof actions.pause,"function");
 assert.equal(typeof actions.play,"function");
@@ -132,16 +136,18 @@ assert.ok(bookSource.includes('audioMode()==="sentence"?"↻ Câu: tự lặp"')
 assert.ok(bookSource.includes('function focusNext(n,type)'),'Enter behavior must be preserved');
 assert.ok(bookSource.includes('void speak(n,type);'),'Correct Enter pronunciation must be preserved');
 assert.ok(!source.includes('setTimeout('),"Native background audio must not use a JS timer to advance between sentences");
+assert.ok(readingSource.includes('config.audioUrl'),"Shared reading player must accept the prepared audio URL");
+assert.ok(bookSource.includes('bkListeningLibraryLaunch'),"Library listing must include separate 2100 listening entry");
 
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
 assert.ok(sw.includes("'./reading-background-audio.js'"));
-assert.ok(sw.includes("language-studio-v141-book2100-prepare-first-play"));
+assert.ok(sw.includes("language-studio-v142-direct-audio-listening-library"));
 assert.ok(html.indexOf('src="reading-background-audio.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100.js'));
-assert.ok(html.includes('book-2100-background.js?v=20261124-prepare-audio-v1'));
-assert.ok(html.includes('book-2100.js?v=20261124-prepare-audio-v1'));
+assert.ok(html.includes('book-2100-background.js?v=20261128-direct-audio-v1'));
+assert.ok(html.includes('book-2100.js?v=20261128-listening-v1'));
 
 if(process.argv.includes("--manifest")){
  const manifestPath=new URL("../dist/tts-manifest.json",import.meta.url);

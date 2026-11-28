@@ -62,6 +62,7 @@ jobs:
           node --check book-2100-grammar.js
           node --check reading-background-audio.js
           node --check book-2100-background.js
+          node --check book-2100-listening.js
           node --check book-2100.js
           node --check scripts/test-book-2100-mobile.mjs
           node --check scripts/test-book-2100.mjs
@@ -213,6 +214,7 @@ jobs:
           node scripts/test-book-2100-grammar.mjs
           node scripts/test-book-2100-cloud.mjs
           node scripts/test-book-2100-background.mjs
+          node scripts/test-book-2100-listening.mjs
 
       - name: Build static site
         if: steps.head_guard.outputs.deploy == 'true'
