@@ -142,12 +142,12 @@ assert.ok(bookSource.includes('bkListeningLibraryLaunch'),"Library listing must 
 assert.ok(manifestSource.includes('addManifestAudio(wholeStep,"book-step-sentences-loop","book-2100-step-"+step.id)'));
 assert.ok(sw.includes("'./book-2100-background.js'"));
 assert.ok(sw.includes("'./reading-background-audio.js'"));
-assert.ok(sw.includes("language-studio-v142-direct-audio-listening-library"));
+assert.ok(sw.includes("language-studio-v143-pattern80-round1-listening"));
 assert.ok(html.indexOf('src="reading-background-audio.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')>=0);
 assert.ok(html.indexOf('src="book-2100-background.js')<html.indexOf('src="book-2100.js'));
-assert.ok(html.includes('book-2100-background.js?v=20261128-direct-audio-v1'));
-assert.ok(html.includes('book-2100.js?v=20261128-listening-v1'));
+assert.ok(html.includes('book-2100-background.js?v=20261128-pattern80-metadata-v1'));
+assert.ok(html.includes('book-2100.js?v=20261128-pattern80-library-v1'));
 
 if(process.argv.includes("--manifest")){
  const manifestPath=new URL("../dist/tts-manifest.json",import.meta.url);
