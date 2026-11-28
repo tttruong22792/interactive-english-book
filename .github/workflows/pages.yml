@@ -248,6 +248,28 @@ jobs:
         with:
           path: dist
 
+      # GitHub's artifact listing can briefly lag behind a successful upload.
+      # A fresh run avoids duplicate github-pages artifacts from rerun attempts.
+      - name: Wait for uploaded Pages artifact to be indexed
+        if: steps.head_guard.outputs.deploy == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in {1..12}; do
+            COUNT="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '[.artifacts[] | select(.name == "github-pages" and .expired == false)] | length' || echo 0)"
+            if [ "$COUNT" = "1" ]; then
+              echo "GitHub Pages artifact indexed and uniquely available."
+              sleep 5
+              exit 0
+            fi
+            echo "Pages artifact count: $COUNT (attempt $attempt/12)"
+            sleep 3
+          done
+          echo "Pages artifact was not uniquely indexed."
+          exit 1
+
       - name: Deploy to GitHub Pages
         if: steps.head_guard.outputs.deploy == 'true'
         id: deployment
